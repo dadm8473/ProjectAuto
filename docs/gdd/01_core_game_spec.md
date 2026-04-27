@@ -482,8 +482,8 @@ v0 협동 보너스:
 `link_pulse_save` event:
 
 - Link Pulse 직전 partner board에 `partnerRelayShutdownSoon = true`였고, Link Pulse 후 해당 Relay들의 heat가 모두 90 미만이 되면 발생한다.
-- 또는 Link Pulse의 `linkPulseSignalGain > 0`이고 SignalIntegrity가 35 이하였으면 발생한다.
-- event payload는 `caster`, `targetPlayer`, `savedUnitIds`, `signalGain`, `pendingSupplyDiscountPct: 25`를 포함한다.
+- 또는 Link Pulse의 `linkPulseSignalGain > 0`이고 Link Pulse 직전 `preSignalIntegrity <= 35`였으면 발생한다.
+- event payload는 `playerId`, `targetPlayerId`, `preSignalIntegrity`, `savedUnitIds`, `signalGain`, `pendingSupplyDiscountPct: 25`를 포함한다.
 
 Deferred co-op bonuses:
 

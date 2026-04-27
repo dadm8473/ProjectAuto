@@ -163,6 +163,10 @@ Validation:
 
 - three slots
 - destination socket is `slots[0]`
+- slots are valid indexes 0-11
+- slots are distinct
+- all slots contain Relay
+- all selected Relays belong to player board
 - same type
 - same tier
 - player owns board
@@ -204,9 +208,11 @@ Validation:
 
 Validation:
 
-- player cooldown ready
+- `currentTick >= board.overclockCooldownUntilTick`
 - board has at least one Relay
 - not in post-run state
+- successful Overclock sets `overclockActiveUntilTick = currentTick + 100`
+- successful Overclock sets `overclockCooldownUntilTick = currentTick + 360`
 
 ## 4. Server Messages
 
@@ -241,7 +247,7 @@ Validation:
     "boards": {
       "p1": {
         "anchorIndex": 5,
-        "overclockCooldown": 0,
+        "overclockCooldownUntilTick": 0,
         "swapCooldownUntilTick": 0,
         "overclockActiveUntilTick": 0,
         "anchorSlowedUntilTick": 0,
@@ -403,9 +409,23 @@ Duplicate handling:
     "kind": "link_pulse_save",
     "playerId": "p2",
     "targetPlayerId": "p1",
+    "preSignalIntegrity": 32,
     "savedUnitIds": ["u_12", "u_18"],
     "signalGain": 4,
     "pendingSupplyDiscountPct": 25
+  }
+}
+```
+
+```json
+{
+  "type": "event",
+  "event": {
+    "kind": "saturation_pressure_damage",
+    "tick": 1240,
+    "saturation": 84,
+    "windowSeconds": 10,
+    "damage": 10
   }
 }
 ```

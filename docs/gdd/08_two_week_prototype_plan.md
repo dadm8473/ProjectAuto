@@ -178,9 +178,9 @@ Exit criteria:
 - no early unavoidable loss before wave 3
 - final boss lasts 25-55 seconds
 
-### Day 9: Multiplayer thin slice
+### Day 9: Branch Work
 
-Deliver:
+Core-loop pass branch deliver:
 
 - WebSocket room
 - join
@@ -188,11 +188,24 @@ Deliver:
 - snapshot state
 - no reconnect yet
 
-Exit criteria:
+Core-loop pass branch exit criteria:
 
 - two browser tabs share one run
 - wrong-board command rejected
 - duplicate requestId does not double-execute
+
+Bot-only fallback branch deliver:
+
+- local bot-only polish
+- telemetry gaps fixed
+- known issues updated with deferred multiplayer
+- originality gate artifacts captured from local run
+
+Bot-only fallback branch exit criteria:
+
+- local bot run reaches the best available wave range for the failing seed set
+- known issues name why Day 8 pass band failed
+- no online QA is required in this branch
 
 ### Cut Scope for 2-week Build
 
