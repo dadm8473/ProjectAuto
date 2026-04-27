@@ -216,12 +216,14 @@ heatAfterCycle = currentHeat + relayHeatPerCycle - cooling
 
 Overclock adds +20 heat to every Relay once on activation. It does not add per-cycle heat.
 
-Cooling sources:
+Heat and repair sources:
 
-- Sink tag: listed negative heat
-- Repair tag: adjacent Relay heat -6 to -18
-- Link Pulse: highest heat Relay x2 heat -35
-- Wave clear: all Relay heat -20
+- `relayHeatPerCycle` is the Relay's self heat delta from the roster. Negative values cool self.
+- `coolant_moss` is the only Repair tag Relay that cools adjacent Relays in v0.
+- `rain_pump` and `root_clinic` repair Signal integrity only; they do not cool adjacent Relays.
+- Sink tag effects vent heat exactly as listed in Relay Effect Rules v0.
+- Link Pulse: highest heat Relay x2 heat -35.
+- Wave clear: all Relay heat -20.
 
 Overheat:
 

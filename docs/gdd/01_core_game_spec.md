@@ -168,6 +168,11 @@ supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
 - 비용 처리 순서: 빈 칸 확인 -> cost 계산 -> team Charge 확인 -> team Charge 차감 -> discount token 소비 -> tutorial override 확인 -> grade/type roll 또는 fixed grant -> 자동 배치 -> personal counters 증가.
 - 빈 칸이 없으면 실패
 - 7회 연속 Basic만 나오면 다음 공급은 Tuned 이상 보장
+- 18회 동안 Prime 이상이 없으면 다음 공급은 Prime 이상 보장
+- Basic pity와 Prime pity가 동시에 활성화되면 Prime pity가 우선한다.
+- pity 적용 순서: tutorial override 확인 -> pity grade floor 계산 -> grade odds roll -> floor보다 낮은 grade면 floor로 승격 -> type roll.
+- `pityBasic`은 Basic 결과면 +1, Tuned 이상이면 0으로 reset한다.
+- `pityPrime`은 Prime 미만 결과면 +1, Prime 이상이면 0으로 reset한다.
 - Supply grade odds는 현재 team `Chance Level`을 사용한다.
 - `personalSupplyCount`와 pity는 플레이어별로 증가한다.
 - first-run tutorial override는 각 플레이어의 첫 성공 Supply를 `Needle Beam`, 둘째 성공 Supply를 `Coolant Moss`로 고정한다.
@@ -184,6 +189,7 @@ supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
 - `minimumResultGradeRank = floor((rankA + rankB + rankC) / 3)`.
 - 서버는 결과 grade를 추가 upgrade할 수 있지만 `minimumResultGradeRank`보다 낮게 만들 수 없다.
 - 결과 type은 70% 같은 type, 30% 같은 tag 내 다른 type
+- 같은 tag 내 다른 type 후보가 없으면 결과 type은 100% 같은 type이다.
 - 결과 `linkShape`는 결과 type의 shape pool에서 새로 roll한다. 재료의 linkShape를 상속하지 않는다.
 - v0 shape pool은 roster의 base `linkShape`를 90도씩 회전한 unique variants다. `All`은 회전하지 않고 그대로 사용한다.
 - 결과 heat는 `min(40, floor(averageIngredientHeat * 0.45))`다.
@@ -380,6 +386,12 @@ heat += cycleHeat - coolingFromTags
 
 Overclock heat is not part of the per-cycle formula. It is applied once on activation as `heat += 20` to every Relay on that board.
 
+Heat cascade:
+
+- If 3 or more Relay shutdown events occur on the same board within 10 seconds, Signal integrity -8.
+- The server records `heat_cascade` with `boardOwner`, `shutdownCount`, and `windowSeconds: 10`.
+- A Relay prevented by `dusk_sink` does not count as a shutdown event.
+
 Heat bands:
 
 | heat | 상태 |
@@ -398,6 +410,7 @@ Signal integrity 감소 조건:
 - Boss가 루프를 완료: -15
 - Saturation 80 이상 상태로 10초 유지: -10
 - Null Noise가 Anchor를 감염: -8
+- Heat cascade 발생: -8
 
 Null Anchor infection:
 
@@ -436,13 +449,20 @@ Signal 회복 조건:
 - Heat 상태
 - Merge 선택
 
-협동 보너스:
+v0 협동 보너스:
 
 | 조건 | 효과 |
 |---|---|
-| 양쪽 보드가 서로 다른 tag 3개 이상 활성화 | Signal 안정도 +10% |
 | 한 플레이어가 Link Pulse로 파트너 폭주를 방지 | `pendingSupplyDiscountPct = 25`, 다음 성공한 Supply 1회 |
 | 보스 웨이브 중 양쪽 모두 Overclock 사용 | 4초간 Boss 받는 피해 +30% |
+
+Deferred co-op bonuses:
+
+These are not implemented in the 2-week prototype and should not appear in protocol state until M2.
+
+| 조건 | 효과 |
+|---|---|
+| 양쪽 보드가 서로 다른 tag 3개 이상 활성화 | Signal stability +10% |
 | 한쪽이 Repair 2개, 다른 쪽이 Beam 2개 유지 | 웨이브 보상 +15% |
 
 ## 11. Winning and Losing

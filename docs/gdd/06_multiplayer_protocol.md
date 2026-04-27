@@ -239,6 +239,16 @@ Validation:
       "p1": {
         "anchorIndex": 5,
         "overclockCooldown": 0,
+        "overclockActiveUntilTick": 0,
+        "anchorSlowedUntilTick": 0,
+        "disabledLinks": [
+          {
+            "a": 0,
+            "b": 1,
+            "untilTick": 560,
+            "source": "boss_mirror_linkbreak"
+          }
+        ],
         "relays": [
           {
             "unitId": "u_1",
@@ -251,7 +261,9 @@ Validation:
             "linkShape": ["E", "W"],
             "activeLinks": [1],
             "anchorLinked": false,
-            "shutdownUntilTick": 0
+            "shutdownUntilTick": 0,
+            "linkPulseUntilTick": 0,
+            "debuffs": []
           }
         ]
       }
@@ -304,6 +316,8 @@ Snapshot schema rules:
 - `boards.<playerId>.relays` contains only occupied sockets; empty sockets are implied.
 - `wave.lanesRemaining`, `wave.nextLaneSpawnIn`, and `wave.spawnEndReached` mirror the lane-based spawn schedule. Do not expose legacy sequential-spawn fields in v0.
 - `room.mode` controls tutorial override behavior and local test behavior.
+- `overclockActiveUntilTick`, `anchorSlowedUntilTick`, `disabledLinks`, `linkPulseUntilTick`, `shutdownUntilTick`, and Relay `debuffs` are authoritative display state for two-tab UI.
+- `disabledLinks` stores socket pairs disabled by boss effects. Clients hide those links even if each Relay's `activeLinks` still lists the neighbor.
 - `activeLinks` stores adjacent socket indexes, not directions.
 - All server times are derived from `tick`; clients do not submit combat results.
 

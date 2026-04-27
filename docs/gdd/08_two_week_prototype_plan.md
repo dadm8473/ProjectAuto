@@ -231,6 +231,7 @@ Required artifacts before showing the build:
 - 10-second clips: Supply to first Swap/link decision, Link Pulse rescue, Merge decision.
 - telemetry: Supply is not the only high-frequency action; at least two non-Supply verbs occur in first 60 seconds.
 - telemetry: utility Relay retention is >= 20% of kept Relays after wave 6 in at least one win log.
+- bot-only fallback branch may use a scripted/dev-seeded win log for this artifact, but the seed and script must be listed in known issues.
 - log: at least one Link Pulse rescue prevents shutdown or Signal collapse.
 - visual review: screen does not read as dice/guardian/random-summon UI at a glance.
 

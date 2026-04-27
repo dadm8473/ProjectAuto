@@ -166,7 +166,7 @@ wave +8s: boss enters, timer starts
 
 ```text
 Signal Lost: Heat Cascade
-3 Relay shut down within 8 seconds during Wave 6.
+3 Relay shut down within 10 seconds during Wave 6.
 Next run: keep one Sink Relay near Anchor or save Link Pulse for boss wave.
 ```
 
