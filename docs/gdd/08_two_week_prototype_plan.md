@@ -27,12 +27,20 @@ Build a playable vertical co-op prototype that validates Relay supply, link-base
 
 ## Show Build Hard Cutline
 
-If Day 8 50-seed pass band fails, Day 9 multiplayer is deferred and the show build stays local bot-only until the core loop passes.
+If Day 8 50-seed pass band fails, Day 9 multiplayer is deferred and the show build uses the `bot-only fallback branch` until the core loop passes.
+
+Branches:
+
+| branch | trigger | Day 9 scope | Day 10 online QA |
+|---|---|---|---|
+| core-loop pass branch | Day 8 pass band passes | local two-tab WebSocket | required |
+| bot-only fallback branch | Day 8 pass band fails | local bot-only polish | not required; record as deferred |
 
 Minimum Day 10 content:
 
 - 10-wave deterministic sim remains required.
 - Playable roster may cut to 10 core Relays: Needle Beam, Prism Lance, Coolant Moss, Rain Pump, Pulse Drum, Thunder Bowl, Amber Field, Null Cage, Signal Amp, Sink Stone.
+- In cut scope, `utility Relay` means Repair, Amp, Sink, or Field tags. It does not require the Support tag.
 - Boss implementation may cut Boss Mirror disruption first; Boss Orchid and Origin Null remain required.
 - Multiplayer scope is local two-tab WebSocket only; reconnect, AWS deploy, accounts, and payments are outside the 2-week show build.
 - Any cut content must be listed in `known issues` and must not break docs for the implemented subset.
@@ -222,7 +230,7 @@ Required artifacts before showing the build:
 - 360x800 screenshot: wave 5.
 - 10-second clips: Supply to first Swap/link decision, Link Pulse rescue, Merge decision.
 - telemetry: Supply is not the only high-frequency action; at least two non-Supply verbs occur in first 60 seconds.
-- telemetry: support Relay retention is >= 20% of kept Relays after wave 6 in at least one win log.
+- telemetry: utility Relay retention is >= 20% of kept Relays after wave 6 in at least one win log.
 - log: at least one Link Pulse rescue prevents shutdown or Signal collapse.
 - visual review: screen does not read as dice/guardian/random-summon UI at a glance.
 
@@ -236,8 +244,9 @@ Required artifacts before showing the build:
 - [ ] Boss timer can win and lose.
 - [ ] Saturation 100 loses.
 - [ ] Result screen states one true cause.
-- [ ] Online two-tab run syncs commands.
-- [ ] Refresh/disconnect during Day 9 shows reconnect unsupported notice and does not corrupt the room.
+- [ ] Core-loop pass branch only: online two-tab run syncs commands.
+- [ ] Core-loop pass branch only: refresh/disconnect during Day 9 shows reconnect unsupported notice and does not corrupt the room.
+- [ ] Bot-only fallback branch only: online QA is marked deferred in known issues.
 - [ ] Originality gate artifacts are present and pass.
 
 ## Deliverable Definition

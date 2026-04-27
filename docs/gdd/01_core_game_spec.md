@@ -179,7 +179,10 @@ supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
 같은 `type + tier` 3개를 하나로 합성한다.
 
 - 결과 tier는 +1
-- grade는 합성 재료 평균보다 낮아지지 않는다
+- grade는 합성 재료 평균 rank보다 낮아지지 않는다.
+- grade rank: Basic 0, Tuned 1, Prime 2, Core 3, Origin 4.
+- `minimumResultGradeRank = floor((rankA + rankB + rankC) / 3)`.
+- 서버는 결과 grade를 추가 upgrade할 수 있지만 `minimumResultGradeRank`보다 낮게 만들 수 없다.
 - 결과 type은 70% 같은 type, 30% 같은 tag 내 다른 type
 - 결과 `linkShape`는 결과 type의 shape pool에서 새로 roll한다. 재료의 linkShape를 상속하지 않는다.
 - v0 shape pool은 roster의 base `linkShape`를 90도씩 회전한 unique variants다. `All`은 회전하지 않고 그대로 사용한다.
@@ -201,7 +204,7 @@ supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
 
 - 비용: Link Energy 40
 - 효과: 파트너 보드에서 heat가 가장 높은 Relay 2개의 heat -35, 6초 동안 `cycleMultiplier = 0.80`
-- 보스 웨이브 중 사용하면 추가로 Signal integrity +4
+- Signal 회복은 `linkPulseSignalGain` formula 결과만큼 적용한다.
 - 남발 방지를 위해 팀 쿨다운 12초
 - 같은 Relay에 Link Pulse가 다시 적용되면 배율은 중첩되지 않고 지속시간만 6초로 갱신된다.
 - Signal 회복은 아래 canonical formula로만 계산한다.
@@ -213,7 +216,7 @@ partnerDanger =
   or SignalIntegrity <= 35
 
 linkPulseSignalGain =
-  (bossActive or partnerDanger) ? min(4, 8 - linkPulseSignalGainThisWave) : 0
+  (bossActive or partnerDanger) ? max(0, min(4, 8 - linkPulseSignalGainThisWave)) : 0
 ```
 
 - `partnerRelayShutdownSoon`은 partner board에서 heat >= 92이고 cooldown <= 1.5s인 Relay가 1개 이상인 상태다.
@@ -248,6 +251,7 @@ damage = voltage
        * gradeMultiplier
        * linkMultiplier
        * anchorBonus
+       * heatOutputMultiplier
        * heatPenalty
        * overclockOutputMultiplier
        * dualOverclockBossMultiplier
@@ -259,6 +263,7 @@ damage = voltage
 | gradeMultiplier | Basic 1.0, Tuned 1.35, Prime 1.85, Core 2.55, Origin 3.6 |
 | linkMultiplier | 1 + activeLinks * 0.08, 최대 1.32 |
 | anchorBonus | anchorBonus * boardAnchorBonus, 최대 1.21 |
+| heatOutputMultiplier | heat 50-69면 1.05, 그 외 1.0 |
 | heatPenalty | heat 70 이상 0.8, heat 90 이상 0.55 |
 | overclockOutputMultiplier | own board Overclock active면 1.35, 아니면 1.0 |
 | dualOverclockBossMultiplier | bossActive + both boards Overclock active + target Boss면 1.30, 아니면 1.0 |
@@ -266,10 +271,15 @@ damage = voltage
 Repair formula:
 
 ```text
-repair = baseRepair * repairAmpMultiplier * overclockOutputMultiplier
+signalRepairBeforeCap = baseSignalRepair * repairAmpMultiplier * overclockOutputMultiplier * heatOutputMultiplier
+signalRepairApplied = min(signalRepairBeforeCap, remainingWaveRepairCap)
 ```
 
-Overclock multiplier는 damage/repair 계산의 마지막 출력 계수로 곱한다. effectiveCycle에는 영향을 주지 않는다.
+Repair formula applies only to Signal integrity repair from `rain_pump` and `root_clinic`.
+
+- Heat cooling, Sink venting, Null cage, Saturation reduction, and Amp effects are not Signal repair and do not receive Overclock output multiplier.
+- `remainingWaveRepairCap` is the per-wave +12 Signal repair cap after previous Repair effects.
+- Overclock multiplier는 damage와 Signal repair 계산의 마지막 출력 계수로 곱한다. effectiveCycle에는 영향을 주지 않는다.
 
 Attack tick:
 
@@ -321,7 +331,7 @@ progress += (speed / loopLengthUnits) * deltaSeconds * speedMultiplier
 
 Spawn schedule:
 
-- v0는 단일 순차 spawn queue를 사용하지 않는다.
+- v0는 단일 순차 spawn list를 사용하지 않는다.
 - 각 wave의 enemy group은 type별 병렬 spawn lane으로 생성한다.
 - 각 lane은 Balance Sheet의 `spawnEnd`까지 자기 count를 균등 분배한다.
 - lane spawn time: `spawnAt(i) = laneStart + i * ((spawnEnd - laneStart) / max(1, count - 1))`
@@ -359,7 +369,7 @@ Reward Charge:
 - Splitter가 사망하면 Splitter의 rewardCharge는 지급한다.
 - Splitter가 생성한 Flicker child는 `rewardCharge = 0`, `saturationOnLoop = 1`로 생성된다.
 - Boss가 사망하면 Boss rewardCharge를 즉시 지급한다.
-- Wave clear reward는 spawn queue가 비고, 해당 wave의 남은 Noise가 모두 제거된 뒤 별도로 1회 지급한다.
+- Wave clear reward는 모든 spawn lane이 완료되고, 해당 wave의 살아있는 Noise가 모두 제거된 뒤 별도로 1회 지급한다.
 - Boss rewardCharge와 wave clear reward는 중복 지급된다. 밸런스 표는 이 중복을 포함한 경제 목표다.
 
 Heat gain:

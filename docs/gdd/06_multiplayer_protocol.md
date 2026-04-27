@@ -270,8 +270,9 @@ Validation:
     "wave": {
       "index": 3,
       "active": true,
-      "spawnQueueRemaining": 18,
-      "nextSpawnIn": 0.42,
+      "lanesRemaining": 2,
+      "nextLaneSpawnIn": 0.42,
+      "spawnEndReached": false,
       "bossTimer": 31.5
     },
     "cooldowns": {
@@ -301,6 +302,7 @@ Snapshot schema rules:
 - `swapCharge`, `personalSupplyCount`, and pity counters live under each player.
 - `tutorialSupplyOverridesUsed` is per player and increments only when `room.mode = tutorial` grants the fixed first or second Supply.
 - `boards.<playerId>.relays` contains only occupied sockets; empty sockets are implied.
+- `wave.lanesRemaining`, `wave.nextLaneSpawnIn`, and `wave.spawnEndReached` mirror the lane-based spawn schedule. Do not expose legacy sequential-spawn fields in v0.
 - `room.mode` controls tutorial override behavior and local test behavior.
 - `activeLinks` stores adjacent socket indexes, not directions.
 - All server times are derived from `tick`; clients do not submit combat results.

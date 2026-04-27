@@ -204,7 +204,7 @@ Spawn lane offsets:
 | Boss warning | wave elapsed 0.0s on boss waves |
 | Boss entry | wave elapsed +8.0s |
 
-Each enemy type in a wave spawns on its own lane from `1.0s + laneOffset` through `spawnEnd`. This table is the canonical schedule for v0; do not serialize each wave as a single sequential queue.
+Each enemy type in a wave spawns on its own lane from `1.0s + laneOffset` through `spawnEnd`. This table is the canonical schedule for v0; do not serialize each wave as a single sequential list.
 
 ## 8. Heat Model
 
