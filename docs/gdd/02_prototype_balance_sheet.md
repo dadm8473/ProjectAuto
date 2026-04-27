@@ -99,13 +99,13 @@ Canonical examples:
 | gravity_loom | Gravity Loom | Field | Prime+ | 10 | 2.1 | 18 | E-S-W | Saturation 증가 20% 감소 |
 | null_cage | Null Cage | Field | Core+ | 28 | 2.4 | 24 | All | Null Noise 봉쇄 |
 | signal_amp | Signal Amp | Amp | Basic+ | 0 | 1.0 | 9 | E-W | 연결 Relay voltage +12% |
-| bloom_amp | Bloom Amp | Amp | Tuned+ | 0 | 1.4 | 14 | N-E-S | Repair tag 효과 +18% |
+| bloom_amp | Bloom Amp | Amp | Tuned+ | 0 | 1.4 | 14 | N-E-S | Signal repair +18% |
 | aurora_amp | Aurora Amp | Amp | Origin | 0 | 2.8 | 30 | All | 보드 전체 linkMultiplier +0.25 after normal cap, final cap 1.57 |
 | sink_stone | Sink Stone | Sink | Basic+ | 4 | 1.6 | -16 | S | heat 흡수 |
-| dusk_sink | Dusk Sink | Sink | Prime+ | 8 | 2.0 | -28 | N-S | 과열 Relay 정지 방지 1회 |
+| dusk_sink | Dusk Sink | Sink | Prime+ | 8 | 2.0 | -28 | N-S | 유닛별 wave당 과열 정지 방지 1회 |
 | mirror_port | Mirror Port | Support | Tuned+ | 0 | 2.0 | 10 | E-W | 파트너 같은 tag 피해/Signal repair +8% |
 | twin_gate | Twin Gate | Support | Core+ | 18 | 1.8 | 20 | All | 파트너 Link Pulse 효과 +50% |
-| origin_seed | Origin Seed | Origin | Origin | 64 | 1.0 | 30 | All | 보스 hp 15% 이하 execute |
+| origin_seed | Origin Seed | Origin | Origin | 64 | 1.0 | 30 | All | 보스 hp 15% 이하 즉시 처치 |
 
 ## 3.1 Relay Effect Rules v0
 
@@ -126,13 +126,13 @@ All effects trigger on the Relay's `effectiveCycle` unless the row says passive.
 | gravity_loom | deals 80% finalDamage and applies saturationMultiplier 0.80 for 2s; saturation formula in Core Game Spec | highest saturation Noise in range | `saturation_mark` |
 | null_cage | deals 100% finalDamage; if target is Null, speedMultiplier 0 for 1.2s and blocks Anchor infection | Null first, then normal priority | `null_caged` |
 | signal_amp | passive: linked adjacent Relays voltage *1.12 | active-linked neighbor Relays | `amp_applied`, non-stacking |
-| bloom_amp | passive: linked adjacent Repair effects *1.18 | active-linked Repair Relays | `repair_amp`, non-stacking |
+| bloom_amp | passive: linked adjacent Signal repair effects *1.18; does not modify Coolant Moss heat cooling | active-linked Rain Pump or Root Clinic | `repair_amp`, non-stacking |
 | aurora_amp | passive: board linkMultiplier bonus +0.25 after normal cap, final cap 1.57 | all own-board Relays | `aurora_amp`, one per board |
 | sink_stone | vents 16 heat from hottest adjacent Relay; self applies listed heat/cycle | adjacent Relay with highest heat | `heat_sink` |
-| dusk_sink | vents 28 heat from hottest adjacent Relay; once per wave prevents adjacent shutdown, sets target heat to 78 | adjacent Relay with highest heat | `shutdown_prevented` |
+| dusk_sink | vents 28 heat from hottest adjacent Relay; per-unit once per wave prevents adjacent shutdown, sets target heat to 78 | adjacent Relay with highest heat | `shutdown_prevented`, tie-break in Core Game Spec |
 | mirror_port | passive: partner Relay damage/Signal repair output *1.08 through Mirror Support | partner board, same tag as any active-linked neighbor | `mirror_support`, one per partner Relay |
 | twin_gate | passive: Link Pulse sent by this board has heat reduction and duration *1.50 | caster board must have active Twin Gate link | `twin_link_pulse` |
-| origin_seed | if Boss hp <= 15%, executes once per boss; otherwise deals 100% finalDamage | Boss first | `boss_execute` |
+| origin_seed | if Boss hp <= 15%, kills that Boss once per Origin Seed unit per boss; otherwise deals 100% finalDamage | Boss first | `boss_execute`, payload in Core Game Spec |
 
 Final damage and cycle math come from Core Game Spec. Repair effects cannot raise Signal integrity above 100.
 

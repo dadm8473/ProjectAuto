@@ -280,6 +280,8 @@ Validation:
             "anchorLinked": false,
             "shutdownUntilTick": 0,
             "linkPulseUntilTick": 0,
+            "shutdownPreventedThisWave": false,
+            "executedBossIds": [],
             "debuffs": []
           }
         ]
@@ -305,6 +307,8 @@ Validation:
       "lanesRemaining": 2,
       "nextLaneSpawnIn": 0.42,
       "spawnEndReached": false,
+      "bossSurged": false,
+      "nextDisruptionTick": 724,
       "bossTimer": 31.5
     },
     "cooldowns": {
@@ -344,6 +348,7 @@ Snapshot schema rules:
 - `activeLinks` is the effective combat/display links list after disabled link filtering. Clients and combat code must not count disabled pairs from `disabledLinks`.
 - `activeLinks` stores adjacent socket indexes, not directions.
 - `noise.spawnSequenceId`, `speedMultiplier`, and `saturationMultiplier` are authoritative display/sim helper fields. Targeting tie-breaks use lower `spawnSequenceId`; `speedMultiplier` and `saturationMultiplier` are resolved from active modifiers at `snapshot.tick`.
+- `shutdownPreventedThisWave`, `executedBossIds`, `bossSurged`, and `nextDisruptionTick` are authoritative sim/debug fields used by full-roster fixture tests.
 - All server times are derived from `tick`; clients do not submit combat results.
 
 ### commandResult

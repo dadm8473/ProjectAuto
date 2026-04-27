@@ -391,7 +391,8 @@ Repair formula applies only to Signal integrity repair from `rain_pump` and `roo
 - Overclock multiplier는 damage와 Signal repair 계산의 마지막 출력 계수로 곱한다. effectiveCycle에는 영향을 주지 않는다.
 - `auroraAmpBonus` is 0.25 if this board has at least one active `aurora_amp`; otherwise 0. Multiple Aurora Amp Relays do not stack.
 - `signalAmpMultiplier` is 1.12 if at least one online, active-linked `signal_amp` targets the Relay; it does not stack.
-- `repairAmpMultiplier` is 1.18 if at least one online, active-linked `bloom_amp` targets the Repair Relay; it does not stack.
+- `repairAmpMultiplier` is 1.18 if at least one online, active-linked `bloom_amp` targets a `rain_pump` or `root_clinic`; it does not stack.
+- `bloom_amp` does not modify `coolant_moss` heat cooling. Coolant Moss is a Repair-tag Relay but its cooling is not Signal repair.
 
 Mirror Support:
 
@@ -464,7 +465,7 @@ progress += (speed / loopLengthUnits) * deltaSeconds * speedMultiplier
 - The snapshot `speedMultiplier` field is this resolved `activeSpeedMultiplier`.
 - Same-source speed or saturation effects refresh `untilTick`; different sources coexist and resolve by the lowest multiplier.
 - Expired speed/saturation modifiers where `untilTick <= currentTick` are ignored and may be pruned from the next snapshot.
-- `saturation_mark` duration refreshes instead of stacking and its event payload includes `noiseId`, `multiplier: 0.80`, and `untilTick`.
+- `saturation_mark` duration refreshes instead of stacking and its event payload includes `noiseId`, `multiplier: 0.80`, `untilTick`, and `sourceUnitId`.
 - `slow_field` event payload includes `noiseIds`, `multiplier: 0.82`, `untilTick`, and `sourceUnitId`.
 - `null_caged` event payload includes `noiseId`, `multiplier: 0`, `untilTick`, `sourceUnitId`, and `blocksAnchorInfection: true`.
 
@@ -484,6 +485,14 @@ Spawn schedule:
 - wave 3/6 boss timer가 0이 되면 `boss_surge`가 발생해 Signal integrity -15, 해당 보스 disruption 주기 -35%가 적용된다.
 - wave 10 boss timer가 0이 되면 즉시 패배한다.
 - wave spawn은 모든 type lane이 spawnEnd에 도달하면 종료된다.
+
+Boss surge:
+
+- Applies only once per boss on waves 3 and 6.
+- On surge, set `bossSurged = true` and `bossDisruptionIntervalMultiplier = 0.65` until that boss dies or the run ends.
+- The next disruption tick is recalculated immediately as `currentTick + ceil(baseDisruptionIntervalTicks * 0.65)`.
+- Already queued disruption events are not double-fired; if a disruption would have fired this same tick, resolve the disruption first, then resolve `boss_surge`.
+- Event payload includes `waveIndex`, `bossId`, `signalDamage: 15`, `intervalMultiplier: 0.65`, and `nextDisruptionTick`.
 
 Boss disruption:
 
@@ -510,6 +519,14 @@ Boss Mirror target selection:
 - Add the selected pair to `disabledLinks` until `currentTick + 100`.
 - If a board has no effective active link, record `boss_mirror_linkbreak` with `disabledPair: null`, `noOp: true`, and do not add `disabledLinks`.
 - Event payload includes `boardOwner`, `disabledPair`, `expiresTick`, and `noOp`.
+
+Origin Seed execute:
+
+- `origin_seed` deals normal 100% finalDamage until its target Boss has `hp / maxHp <= 0.15`.
+- The execute is per Origin Seed unit per boss. Track `executedBossIds` on the unit; a newly created Origin Seed starts with an empty set, and existing units keep the set until the run ends.
+- If eligible, damage is `max(normalFinalDamage, boss.hp)`, which kills the current Boss immediately after normal damage modifiers are computed.
+- Execute can trigger on wave 3, 6, or 10 bosses, but never on non-boss Noise or Null spores.
+- Event payload includes `sourceUnitId`, `bossId`, `bossHpBefore`, `bossMaxHp`, `executeThresholdPct: 15`, `damageApplied`, and `executedBossIdsAfter`.
 
 Null spore:
 
@@ -561,6 +578,15 @@ Heat cascade:
 - The server records `heat_cascade` with `boardOwner`, `shutdownCount`, and `windowSeconds: 10`.
 - A Relay prevented by `dusk_sink` does not count as a shutdown event.
 
+Dusk Sink shutdown prevention:
+
+- Prevention is per `dusk_sink` unit per wave.
+- Reset each online or offline Dusk Sink's `shutdownPreventedThisWave = false` at wave start.
+- Candidate Dusk Sinks are online, adjacent to the target Relay, have `shutdownPreventedThisWave == false`, and are not the target Relay.
+- If multiple candidates exist, select higher Dusk Sink tier, then lower Dusk Sink heat, then lower socket index.
+- On prevention, set selected Dusk Sink `shutdownPreventedThisWave = true`, set target Relay heat to 78, do not set `shutdownUntilTick`, and record `shutdown_prevented`.
+- Event payload includes `sourceUnitId`, `sourceSocket`, `targetUnitId`, `targetSocket`, `waveIndex`, and `targetHeatAfter: 78`.
+
 Heat bands:
 
 | heat | 상태 |
@@ -593,10 +619,17 @@ Null Anchor infection:
 
 - Null이 제거되지 않고 루프를 1바퀴 완료하면 감염 판정을 한다.
 - `null_cage` 효과를 받고 있는 Null은 감염하지 못한다.
-- 감염 대상은 `anchorHeat`가 더 높은 보드다. 동률이면 Saturation 기여가 높은 보드를 고른다.
+- 감염 대상은 `anchorHeat`가 더 높은 보드다. 동률이면 canonical target selection을 따른다.
 - `anchorHeat`는 Anchor socket Relay의 heat이며, Anchor socket이 비어 있으면 0이다.
 - 감염 시 Signal integrity -8, 대상 Anchor socket Relay heat +20, `anchorSlowedUntilTick = currentTick + 160`.
 - 로그 이벤트는 `null_anchor_infected`를 기록한다.
+
+Canonical target selection:
+
+- `anchorHeat` compares current heat of the Relay in anchor socket 5; empty anchor socket counts as 0.
+- Tie-break after equal `anchorHeat`: higher current board heat average, then lower boardOwner order `p1`, then `p2`.
+- If the selected anchor socket is empty, apply Signal integrity -8 and `anchorSlowedUntilTick = currentTick + 160`, but skip the heat +20 delta.
+- Event payload includes `boardOwner`, `anchorSocketOccupied`, `anchorUnitId` or null, `anchorHeatBefore`, `heatDeltaApplied`, `signalDamage: 8`, and `anchorSlowedUntilTick`.
 
 Signal 회복 조건:
 
