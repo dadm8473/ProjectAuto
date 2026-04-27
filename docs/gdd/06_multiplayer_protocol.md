@@ -114,7 +114,7 @@ Validation:
 - room status is playing
 - board has empty slot
 - team Charge enough using the Core Game Spec canonical Supply formula
-- player command cooldown ok
+- no Supply command cooldown in v0; spam is limited by Charge and empty sockets
 - server computes grade odds from team Chance Level and player pity
 - server applies first-run tutorial override before RNG only when room mode is `tutorial`
 - server consumes `pendingSupplyDiscountPct` only after a successful Supply
@@ -141,6 +141,8 @@ Validation:
 - player owns board
 - Swap Charge > 0
 - slots are valid indexes 0-11
+- if bossActive, `currentTick >= board.swapCooldownUntilTick`
+- successful bossActive Swap sets `board.swapCooldownUntilTick = currentTick + 40`
 
 ### merge
 
@@ -240,8 +242,8 @@ Validation:
       "p1": {
         "anchorIndex": 5,
         "overclockCooldown": 0,
+        "swapCooldownUntilTick": 0,
         "overclockActiveUntilTick": 0,
-        "dualOverclockBossUntilTick": 0,
         "anchorSlowedUntilTick": 0,
         "disabledLinks": [
           {
@@ -261,7 +263,7 @@ Validation:
             "heat": 24,
             "cooldown": 0.35,
             "linkShape": ["E", "W"],
-            "activeLinks": [1],
+            "activeLinks": [],
             "anchorLinked": false,
             "shutdownUntilTick": 0,
             "linkPulseUntilTick": 0,
@@ -290,7 +292,8 @@ Validation:
       "bossTimer": 31.5
     },
     "cooldowns": {
-      "linkPulseUntilTick": 590
+      "linkPulseUntilTick": 590,
+      "dualOverclockBossUntilTick": 548
     },
     "room": {
       "mode": "tutorial"
@@ -318,7 +321,8 @@ Snapshot schema rules:
 - `boards.<playerId>.relays` contains only occupied sockets; empty sockets are implied.
 - `wave.lanesRemaining`, `wave.nextLaneSpawnIn`, and `wave.spawnEndReached` mirror the lane-based spawn schedule. Do not expose legacy sequential-spawn fields in v0.
 - `room.mode` controls tutorial override behavior and local test behavior.
-- `overclockActiveUntilTick`, `dualOverclockBossUntilTick`, `anchorSlowedUntilTick`, `disabledLinks`, `linkPulseUntilTick`, `shutdownUntilTick`, and Relay `debuffs` are authoritative display state for two-tab UI.
+- `overclockActiveUntilTick`, `anchorSlowedUntilTick`, `disabledLinks`, `linkPulseUntilTick`, `dualOverclockBossUntilTick`, `shutdownUntilTick`, and Relay `debuffs` are authoritative display state for two-tab UI.
+- `dualOverclockBossUntilTick` lives under `cooldowns` because it is team-level.
 - `disabledLinks` stores socket pairs disabled by boss effects.
 - `activeLinks` is the effective combat/display links list after disabled link filtering. Clients and combat code must not count disabled pairs from `disabledLinks`.
 - `activeLinks` stores adjacent socket indexes, not directions.
@@ -376,7 +380,9 @@ Link Pulse result includes Signal recovery:
     "heatReducedUnitIds": ["u_12", "u_18"],
     "signalGain": 4,
     "partnerDanger": true,
-    "waveSignalGainUsed": 4
+    "waveSignalGainUsed": 4,
+    "saveEventTriggered": true,
+    "pendingSupplyDiscountPct": 25
   }
 }
 ```
@@ -394,10 +400,12 @@ Duplicate handling:
 {
   "type": "event",
   "event": {
-    "kind": "clutch_link",
+    "kind": "link_pulse_save",
     "playerId": "p2",
     "targetPlayerId": "p1",
-    "signalSaved": 8
+    "savedUnitIds": ["u_12", "u_18"],
+    "signalGain": 4,
+    "pendingSupplyDiscountPct": 25
   }
 }
 ```

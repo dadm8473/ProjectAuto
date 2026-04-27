@@ -100,8 +100,15 @@ Board index:
 칸 속성:
 
 - 일반 칸 9개
-- 과부하 위험 칸 2개
+- 과부하 위험 칸 2개: index 3, 8
 - Anchor 칸 1개
+
+과부하 위험 칸:
+
+- Relay가 index 3 또는 8에 있으면 self `cycleHeat`에 +2를 더한다.
+- negative heat Relay도 이 보정을 받는다. 예: `cycleHeat = -9`면 위험 칸에서 -7.
+- UI는 해당 socket에 amber hatch pattern을 항상 표시한다.
+- 이 효과는 v0 시뮬레이션과 heat log에 포함한다.
 
 Anchor 칸:
 
@@ -244,7 +251,7 @@ linkPulseSignalGain =
 - 종료 시점에 heat >= 70인 Relay는 `overclock_stall` 이벤트를 기록하고 `shutdownUntilTick = currentTick + 3s`가 된다.
 - Overclock stall은 heat를 reset하지 않는다.
 - Overclock stall은 Heat cascade의 shutdown event로 계산하지 않는다.
-- 양쪽 보드의 Overclock이 동시에 active가 되는 첫 tick에 `dualOverclockBossUntilTick = currentTick + 4s`를 설정한다.
+- 양쪽 보드의 Overclock이 동시에 active가 되는 첫 tick에 team `dualOverclockBossUntilTick = currentTick + 4s`를 설정한다.
 
 ## 8. Combat Rules
 
@@ -416,9 +423,17 @@ Noise가 루프를 한 바퀴 돌면 Saturation이 증가한다.
 Signal integrity 감소 조건:
 
 - Boss가 루프를 완료: -15
-- Saturation 80 이상 상태로 10초 유지: -10
+- Saturation pressure tick: -10
 - Null Noise가 Anchor를 감염: -8
 - Heat cascade 발생: -8
+
+Saturation pressure:
+
+- `saturation >= 80`이 되는 tick에 `saturationPressureStartedTick = currentTick`로 설정한다.
+- `saturation < 80`이 되면 `saturationPressureStartedTick`과 `lastSaturationPressureDamageTick`을 reset한다.
+- `saturation >= 80`이 10초 유지되면 Signal integrity -10, event `saturation_pressure_damage`를 기록한다.
+- 이후에도 `saturation >= 80`이면 마지막 damage tick부터 10초마다 반복 적용한다.
+- event payload는 `saturation`, `windowSeconds: 10`, `damage: 10`을 포함한다.
 
 Null Anchor infection:
 
@@ -461,8 +476,14 @@ v0 협동 보너스:
 
 | 조건 | 효과 |
 |---|---|
-| 한 플레이어가 Link Pulse로 파트너 폭주를 방지 | `pendingSupplyDiscountPct = 25`, 다음 성공한 Supply 1회 |
+| `link_pulse_save` event 발생 | `pendingSupplyDiscountPct = 25`, 다음 성공한 Supply 1회 |
 | 보스 웨이브 중 양쪽 모두 Overclock 사용 | 4초간 Boss 받는 피해 +30% |
+
+`link_pulse_save` event:
+
+- Link Pulse 직전 partner board에 `partnerRelayShutdownSoon = true`였고, Link Pulse 후 해당 Relay들의 heat가 모두 90 미만이 되면 발생한다.
+- 또는 Link Pulse의 `linkPulseSignalGain > 0`이고 SignalIntegrity가 35 이하였으면 발생한다.
+- event payload는 `caster`, `targetPlayer`, `savedUnitIds`, `signalGain`, `pendingSupplyDiscountPct: 25`를 포함한다.
 
 Deferred co-op bonuses:
 

@@ -42,7 +42,9 @@ Minimum Day 10 content:
 - Playable roster may cut to 10 core Relays: Needle Beam, Prism Lance, Coolant Moss, Rain Pump, Pulse Drum, Thunder Bowl, Amber Field, Null Cage, Signal Amp, Sink Stone.
 - In cut scope, `utility Relay` means Repair, Amp, Sink, or Field tags. It does not require the Support tag.
 - Boss implementation may cut Boss Mirror disruption first; Boss Orchid and Origin Null remain required.
-- Multiplayer scope is local two-tab WebSocket only; reconnect, AWS deploy, accounts, and payments are outside the 2-week show build.
+- Core-loop pass branch only: multiplayer scope is local two-tab WebSocket.
+- Bot-only fallback branch: multiplayer is deferred and the show build must run fully with a local bot.
+- Reconnect, AWS deploy, accounts, and payments are outside the 2-week show build in both branches.
 - Any cut content must be listed in `known issues` and must not break docs for the implemented subset.
 
 ## Week 1

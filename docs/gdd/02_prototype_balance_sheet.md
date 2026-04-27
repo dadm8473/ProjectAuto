@@ -214,6 +214,8 @@ Heat is the main originality axis. It makes “strong board” and “safe board
 heatAfterCycle = currentHeat + relayHeatPerCycle - cooling
 ```
 
+If the Relay is on overload-risk socket index 3 or 8, add +2 to `relayHeatPerCycle` before applying cooling.
+
 Overclock adds +20 heat to every Relay once on activation. It does not add per-cycle heat.
 
 Heat and repair sources:
