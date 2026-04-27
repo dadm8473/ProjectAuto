@@ -44,7 +44,7 @@ Relay는 전투 유닛이자 회로 부품이다.
 - `voltage`: 공격력 계열 값
 - `cycle`: 공격 주기
 - `heat`: 과부하 수치
-- `tags`: Beam, Pulse, Field, Repair, Amp, Sink
+- `tags`: Beam, Pulse, Field, Repair, Amp, Sink, Support, Origin
 - `linkShape`: N, E, S, W 방향 연결 정보
 - `range`: 중앙 루프상 공격 가능 거리. 프로토타입 기본 0.34 loop.
 
@@ -56,7 +56,7 @@ Noise는 적이다. 중앙 회로 루프를 돌며 제거되지 않으면 Satura
 
 - `type`: Flicker, Crawler, Bulwark, Splitter, Null, Boss
 - `hp`
-- `speed`
+- `speed`: loop units per second. v0 loop length is 1000 units.
 - `saturationOnLoop`
 - `rewardCharge`
 - `pattern`
@@ -108,7 +108,7 @@ Anchor 칸:
 - 초기 위치는 index 5
 - Anchor는 막힌 칸이 아니라 특수 socket이다. Relay를 배치할 수 있다.
 - Anchor socket의 Relay가 주변 4방향에 active link를 만들면 Link Bonus가 발생한다.
-- Anchor socket이 비어 있으면 `activeLinksToAnchor = 0`이다.
+- Anchor socket이 비어 있으면 `activeLinksOnAnchorRelay = 0`이다.
 - Anchor socket의 Relay heat가 90 이상이거나 Anchor가 감염 중이면 내 보드의 모든 Relay effective cycle이 15% 느려진다.
 
 Link activation:
@@ -178,6 +178,10 @@ supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
 - 결과 tier는 +1
 - grade는 합성 재료 평균보다 낮아지지 않는다
 - 결과 type은 70% 같은 type, 30% 같은 tag 내 다른 type
+- 결과 `linkShape`는 결과 type의 shape pool에서 새로 roll한다. 재료의 linkShape를 상속하지 않는다.
+- v0 shape pool은 roster의 base `linkShape`를 90도씩 회전한 unique variants다. `All`은 회전하지 않고 그대로 사용한다.
+- 결과 heat는 `min(40, floor(averageIngredientHeat * 0.45))`다.
+- Merge preview는 확정 전 destination socket, tier/grade floor, 가능한 link count range를 보여준다. 최종 type/linkShape는 서버 confirm 후 표시한다.
 - 합성 후 1.2초 동안 해당 보드에 Spark Wave 이펙트 발생
 
 ### Swap
@@ -266,6 +270,18 @@ Lane focus:
 loopDistance(a, b) = min(abs(a - b), 1 - abs(a - b))
 ```
 
+Noise movement:
+
+```text
+loopLengthUnits = 1000
+progress += (speed / loopLengthUnits) * deltaSeconds * speedMultiplier
+```
+
+- `speed`는 Balance Sheet의 Enemy Roster 값을 사용한다.
+- `progress >= 1.0`이면 루프 완료 판정을 한 뒤 해당 Noise를 제거한다.
+- 루프 완료 시 Saturation이 `saturationOnLoop`만큼 증가하고, `rewardCharge`는 지급하지 않는다.
+- slow/cage effects apply through `speedMultiplier`.
+
 Spawn cadence:
 
 - 웨이브 시작 후 1.0초 대기.
@@ -285,6 +301,16 @@ Boss disruption:
 | Boss Orchid | highest-link Relay 2개의 heat +12 | spawn 후 10초마다 | `boss_orchid_heatroot` |
 | Boss Mirror | 양쪽 보드에서 active link 1개를 5초간 disable | spawn 후 12초마다 | `boss_mirror_linkbreak` |
 | Origin Null | Null spore 2개 생성, Anchor 감염 위험 +50% | spawn 후 9초마다 | `boss_origin_spore` |
+
+Reward Charge:
+
+- 일반 Noise가 사망하면 server가 즉시 team Charge에 `rewardCharge`를 더한다.
+- 루프 완료로 제거된 Noise는 rewardCharge를 지급하지 않는다.
+- Splitter가 사망하면 Splitter의 rewardCharge는 지급한다.
+- Splitter가 생성한 Flicker child는 `rewardCharge = 0`, `saturationOnLoop = 1`로 생성된다.
+- Boss가 사망하면 Boss rewardCharge를 즉시 지급한다.
+- Wave clear reward는 spawn queue가 비고, 해당 wave의 남은 Noise가 모두 제거된 뒤 별도로 1회 지급한다.
+- Boss rewardCharge와 wave clear reward는 중복 지급된다. 밸런스 표는 이 중복을 포함한 경제 목표다.
 
 Heat gain:
 

@@ -16,7 +16,7 @@ Client sends commands:
 Server sends snapshots:
 
 - game state
-- rejected command
+- commandResult for accepted/rejected commands
 - event feed
 - reconnect payload in M2, not in the 2-week thin slice
 
@@ -296,19 +296,11 @@ Snapshot schema rules:
 - `activeLinks` stores adjacent socket indexes, not directions.
 - All server times are derived from `tick`; clients do not submit combat results.
 
-### commandRejected
-
-```json
-{
-  "type": "commandRejected",
-  "requestId": "cmd_103",
-  "clientId": "c_abc",
-  "code": "MERGE_NOT_MATCHING",
-  "message": "Select three matching Relays."
-}
-```
-
 ### commandResult
+
+All gameplay commands return `commandResult`. Rejections use the same message type with `accepted: false`; there is no separate idempotency path for rejected commands.
+
+Accepted example:
 
 ```json
 {
@@ -326,10 +318,26 @@ Snapshot schema rules:
 }
 ```
 
+Rejected example:
+
+```json
+{
+  "type": "commandResult",
+  "requestId": "cmd_103",
+  "clientId": "c_abc",
+  "accepted": false,
+  "duplicate": false,
+  "serverTick": 524,
+  "code": "MERGE_NOT_MATCHING",
+  "message": "Select three matching Relays."
+}
+```
+
 Duplicate handling:
 
+- Server stores the final `commandResult` for every gameplay command, accepted or rejected.
 - If the same `clientId + requestId` arrives again, server sends the stored `commandResult`.
-- `duplicate` is set to true in the resent response, but `serverTick`, `spentCharge`, `unitId`, and state mutations remain the original result.
+- `duplicate` is set to true in the resent response, but `serverTick`, `result`, `code`, `message`, and state mutations remain the original result.
 - If another `clientId` reuses the same `requestId`, it is a separate command.
 
 ### event

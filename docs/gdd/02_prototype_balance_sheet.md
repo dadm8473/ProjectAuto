@@ -26,7 +26,7 @@ Supply 결과는 Relay `grade`를 먼저 뽑고, 해당 grade 안에서 type을 
 
 | grade | 기본 확률 | Chance Level 1 | Chance Level 2 | Chance Level 3 |
 |---|---:|---:|---:|---:|
-| Basic | 68% | 60% | 53% | 47% |
+| Basic | 68% | 60% | 53% | 46.6% |
 | Tuned | 24% | 29% | 32% | 34% |
 | Prime | 7% | 9% | 12% | 15% |
 | Core | 1% | 2% | 3% | 4% |
@@ -66,7 +66,10 @@ Supply roll order:
 | 15-19 | 29 |
 | 20-24 | 32 |
 | 25-29 | 35 |
-| 30+ | 38 |
+| 30-34 | 38 |
+| 35-39 | 41 |
+| 40-44 | 44 |
+| 45+ | 47 |
 
 Canonical examples:
 
@@ -164,6 +167,15 @@ Final damage and cycle math come from Core Game Spec. Repair effects cannot rais
 | boss_mirror | Boss Mirror | 1550 | 20 | 18 | 85 | 6웨이브 |
 | boss_origin | Origin Null | 2800 | 22 | 25 | 140 | 10웨이브 |
 
+Speed values are loop units per second. Core Game Spec fixes loop length at 1000 units.
+
+Reward contract:
+
+- `rewardCharge` is paid only when that Noise dies.
+- Loop completion pays no Charge.
+- Splitter children use the Flicker stat line but `rewardCharge = 0`.
+- Boss rewardCharge is paid on boss death and is separate from wave clear reward.
+
 ## 7. Wave Table v0
 
 | wave | duration target | enemies | boss timer after entry | clear reward |
@@ -177,7 +189,7 @@ Final damage and cycle math come from Core Game Spec. Repair effects cannot rais
 | 7 | 52s | 48 Flicker, 10 Bulwark | - | Charge 75, Link 16 |
 | 8 | 58s | 24 Splitter, 16 Null, 10 Bulwark | - | Charge 85, Link 18, Chance +1 if Saturation < 70 |
 | 9 | 62s | 40 Crawler, 20 Splitter, 16 Bulwark | - | Charge 95, Link 22, Chance catch-up if < 3 |
-| 10 | 85s | 20 Null, 24 Bulwark, Origin Null | 55s | Win |
+| 10 | 75-83s incl. 20s hold | 20 Null, 24 Bulwark, Origin Null | 55s | Win |
 
 Spawn interval:
 
@@ -240,7 +252,14 @@ These targets are the first acceptance band for a 50-seed automated sim.
 | 7 | 360-500 | 12-17 | 55-82 | 500-640 | 48-66s |
 | 8 | 430-590 | 14-19 | 58-84 | 600-760 | 55-72s |
 | 9 | 520-720 | 16-22 | 60-86 | 720-900 | 58-76s |
-| 10 | 700-980 | 18-26 | 65-90 | 880-1100 | 75-105s |
+| 10 | 700-980 | 18-26 | 65-90 | 880-1100 | 50-62s |
+
+Wave 10 timing:
+
+- target clear time measures wave start to Origin Null death.
+- boss enters at wave +8s and must die before the 55s boss timer expires.
+- after Origin Null death, victory requires the separate 20s Signal hold from Core Game Spec.
+- expected total final-wave time including hold is 70-82s.
 
 50-seed pass band:
 

@@ -69,7 +69,7 @@ Relay는 N/E/S/W 연결 방향을 가진다. 같은 유닛 3개 합성보다 중
 | observed genre appeal | forbidden direct copy | Relay Garden rule |
 |---|---|---|
 | luck tension | “luck” theme as brand | unstable supply from broken city inventory |
-| merge dopamine | identical merge presentation | circuit fusion with heat reset and link reroll |
+| merge dopamine | identical merge presentation | circuit fusion with heat compression and link reroll |
 | co-op visibility | mirrored boards only | partner board has heat beacons and help request lane |
 | boss timer | generic boss countdown | Signal corruption timer with specific board debuffs |
 | simple tap controls | one-button spam | four actions: Supply, Swap, Merge, Link Pulse |
@@ -138,7 +138,7 @@ Before implementation milestone:
 | risk area | similarity risk if copied | Relay Garden differentiator | prototype proof |
 |---|---|---|---|
 | random unit supply | summon button spam becomes the main fun | team Charge is shared, but Supply cost and pity are personal; Supply creates heat-management risk | run telemetry shows Supply is not the only high-frequency action |
-| merge loop | three identical units merge into pure power climb | circuit fusion rerolls link shape and can break or improve network topology | merge result screen shows link impact before confirmation |
+| merge loop | three identical units merge into pure power climb | circuit fusion rerolls link shape, compresses heat, and can break or improve network topology | merge preview shows destination and link-count range before confirmation |
 | board value | strongest unit is always best | heat, Sink, Repair, and Anchor links make low-DPS support pieces valuable | win logs include at least 20% support Relay retention past wave 6 |
 | co-op help | partner support is just a generic buff | Link Pulse targets partner heat, saturation, and board failures | at least one saved run has Link Pulse preventing shutdown or signal collapse |
 | boss pressure | boss is only a large HP enemy with timer | bosses corrupt board rules, link behavior, or heat state | each boss has one named board-level disruption in combat log |
