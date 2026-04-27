@@ -72,11 +72,13 @@ Variable definitions:
 
 ```text
 playerHeatMax = max(partnerBoard.relays.map(heat))
+playerHeatMax = boardHeatMax(partnerBoard), where empty board returns 0
 playerRelayShutdownSoon = count(relay.heat >= 92 and relay.cooldown <= 1.5s) >= 1
 playerBoardDpsShare = partnerBoard.estimatedDps / max(1, teamEstimatedDps)
 playerHasRepairTag = count(partnerBoard.relays where tag includes Repair) >= 1
 teamEstimatedDps = sum(estimatedDps for both boards)
 estimatedDps(relay) = Core Game Spec damage formula for that Relay / effectiveCycle
+boardHeatAverage(board) and boardHeatMax(board) use Core Game Spec empty-board helpers
 nextSupplyCost = canonicalSupplyCost(botPersonalSupplyCount, bossActive, pendingSupplyDiscountPct)
 canonicalSupplyCost(count, bossActive, discountPct) =
   ceil(min(47, 20 + floor(count / 5) * 3) * (bossActive ? 1.20 : 1.00) * (discountPct > 0 ? 0.75 : 1.00))

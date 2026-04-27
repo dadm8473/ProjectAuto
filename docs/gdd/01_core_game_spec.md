@@ -335,6 +335,8 @@ Noise receives a monotonically increasing `spawnSequenceId` when spawned. Server
 
 Relay heat target tie-breaks:
 
+- `boardHeatMax(board)` returns the highest heat among occupied sockets; empty board returns 0.
+- `boardHeatAverage(board)` returns average heat among occupied sockets; empty board returns 0.
 - "highest heat Relay" means higher heat, then more effective active links on that Relay, then lower socket index.
 - "highest-link Relay" means more effective active links on that Relay, then higher heat, then lower socket index.
 - "hottest adjacent Relay" uses the highest heat rule among occupied adjacent sockets.
@@ -475,9 +477,12 @@ Spawn schedule:
 - 각 wave의 enemy group은 type별 병렬 spawn lane으로 생성한다.
 - 각 lane은 Balance Sheet의 `spawnEnd`까지 자기 count를 균등 분배한다.
 - lane spawn time: `spawnAt(i) = laneStart + i * ((spawnEnd - laneStart) / max(1, count - 1))`
+- `spawnTick(i) = waveStartTick + ceil(spawnAt(i) * 20)`.
 - `laneStart = 1.0s + laneOffset[type]`
 - laneOffset: Flicker 0.0s, Crawler 0.2s, Bulwark 0.6s, Splitter 0.4s, Null 0.8s.
 - count가 1이면 `spawnAt = laneStart`.
+- For the same `spawnTick`, create lane spawns in enemy type order: Flicker, Crawler, Bulwark, Splitter, Null.
+- Boss spawn at wave elapsed 8.0s resolves after lane spawns scheduled for the same tick.
 - Every Noise creation increments room `nextSpawnSequenceId`: wave lane spawns, boss spawns, Splitter children, and Null spores all use the same counter.
 - 보스 웨이브는 wave elapsed 0초부터 8초 경고를 표시한다.
 - 보스는 wave elapsed 8.0초에 1회 스폰한다.

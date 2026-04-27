@@ -22,7 +22,7 @@
 
 ## 2. Grade Odds
 
-Supply 결과는 Relay `grade`를 먼저 뽑고, 해당 grade 안에서 type을 뽑는다.
+Supply 결과는 Relay `grade`를 먼저 뽑고, 확정 grade 이하의 `minimumGradeRank`를 가진 type 중에서 뽑는다.
 
 | grade | 기본 확률 | Chance Level 1 | Chance Level 2 | Chance Level 3 |
 |---|---:|---:|---:|---:|
@@ -53,8 +53,18 @@ Supply roll order:
 
 1. 현재 team Chance Level의 grade odds를 선택한다.
 2. 개인 pity가 grade floor를 올릴 수 있다.
-3. grade가 확정되면 해당 grade pool 안에서 type을 뽑는다.
-4. roll 결과는 서버 로그에 `chanceLevel`, `pityApplied`, `grade`, `type`을 기록한다.
+3. grade가 확정되면 eligible type candidates 안에서 type을 뽑는다.
+4. chosen type의 `shapePool`에서 linkShape를 뽑는다.
+5. roll 결과는 서버 로그에 `chanceLevel`, `pityApplied`, `grade`, `type`, `linkShape`를 기록한다.
+
+Supply type/shape RNG:
+
+- Each roster row has `minimumGradeRank` from its grade pool label: `Basic+ = 0`, `Tuned+ = 1`, `Prime+ = 2`, `Core+ = 3`, `Origin = 4`.
+- After grade is finalized, eligible type candidates are rows where `minimumGradeRank <= finalizedGradeRank`.
+- Type roll is uniform across eligible candidates in roster table order.
+- Shape roll uses the same v0 unique rotation `shapePool` rule as Merge. `All` contributes one shape.
+- Shape roll is uniform across the chosen type's `shapePool`.
+- Tutorial fixed grants use the listed type and its first shapePool entry in deterministic order; they do not consume grade/type/shape RNG.
 
 ## 2.2 Supply Cost Curve
 
@@ -258,7 +268,7 @@ By minute:
 
 ## 9.1 Closed-model Simulation Targets
 
-These targets are the first acceptance band for a 50-seed automated sim.
+These targets are the first acceptance band for a full-roster 50-seed automated sim. The 2-week Prototype Plan uses a smaller Day 8 branch gate first; this 50-seed band is the post-branch balance target.
 
 | wave | expected team DPS at start | expected active links/team | expected avg heat | expected team Charge spent | target clear time |
 |---:|---:|---:|---:|---:|---:|
@@ -348,7 +358,7 @@ Sim metrics:
 
 - team DPS uses `sum(finalDamage / effectiveCycle)` for damage Relays, where finalDamage is the Core Game Spec damage formula after link, Aurora, Overclock, dual-overclock, and Mirror Support multipliers.
 - Repair, Amp, Sink, and Support value are reported separately as `supportPower`; Mirror Support is reported as supportPower and as its own `mirror_support` event, but its 1.08 multiplier affects only damage and Signal repair.
-- heat average excludes empty sockets.
+- heat average excludes empty sockets and uses Core Game Spec `boardHeatAverage`; empty board returns 0.
 - clear time is measured from wave start to last wave enemy removed.
 - boss timer is measured from boss entry, not wave start.
 

@@ -62,8 +62,9 @@ Envelope rules:
 - `clientTick` is the last snapshot tick the client had processed when the command was sent.
 - `sentAt` is client wall-clock time for telemetry only; server receive order is authoritative.
 - Server rejects commands older than `currentTick - 40` using `STALE_COMMAND`.
-- Duplicate `requestId` from the same `clientId` returns the stored `commandResult` and does not execute again.
-- Reusing the same `clientId + requestId` with a different payload is rejected with `DUPLICATE_REQUEST`.
+- Server stores `requestPayloadHash = stableJsonHash(command without sentAt)` with each command result.
+- If the same `clientId + requestId` arrives with the same `requestPayloadHash`, return the stored `commandResult` with `duplicate: true`.
+- If the same `clientId + requestId` arrives with a different `requestPayloadHash`, return a fresh rejection with `code: DUPLICATE_REQUEST`, `duplicate: false`, and do not overwrite the stored original result.
 
 ### join
 
@@ -413,8 +414,10 @@ Link Pulse result includes Signal recovery:
 Duplicate handling:
 
 - Server stores the final `commandResult` for every gameplay command, accepted or rejected.
-- If the same `clientId + requestId` arrives again, server sends the stored `commandResult`.
+- Server also stores `requestPayloadHash = stableJsonHash(command without sentAt)`.
+- If the same `clientId + requestId` arrives again with the same hash, server sends the stored `commandResult`.
 - `duplicate` is set to true in the resent response, but `serverTick`, `result`, `code`, `message`, and state mutations remain the original result.
+- If the same `clientId + requestId` arrives with a different hash, server returns a new `DUPLICATE_REQUEST` rejection with `duplicate: false` and leaves the original stored result unchanged.
 - If another `clientId` reuses the same `requestId`, it is a separate command.
 
 ### event
@@ -493,7 +496,7 @@ Prototype:
 - snapshots at 10Hz
 - input commands include `clientTick` and `sentAt` from the common envelope
 - commands are processed in server receive order within the next simulation tick
-- duplicate `requestId` from the same `clientId` returns the original result and does not execute twice
+- duplicate `requestId` from the same `clientId` and same `requestPayloadHash` returns the original result and does not execute twice
 - commands older than `currentTick - 40` are rejected with `STALE_COMMAND`
 - bot commands are generated server-side and use `clientId: "server_bot"`
 

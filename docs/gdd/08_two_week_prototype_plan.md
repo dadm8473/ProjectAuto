@@ -27,19 +27,19 @@ Build a playable vertical co-op prototype that validates Relay supply, link-base
 
 ## Show Build Hard Cutline
 
-If Day 8 50-seed pass band fails, Day 9 multiplayer is deferred and the show build uses the `bot-only fallback branch` until the core loop passes.
+If Day 8 core-loop smoke band or full-roster fixture proof fails, Day 9 multiplayer is deferred and the show build uses the `bot-only fallback branch` until the core loop passes.
 
 Branches:
 
 | branch | trigger | Day 9 scope | Day 10 online QA |
 |---|---|---|---|
-| core-loop pass branch | Day 8 pass band passes | local two-tab WebSocket | required |
-| bot-only fallback branch | Day 8 pass band fails | local bot-only polish | not required; record as deferred |
+| core-loop pass branch | Day 8 core-loop smoke band and full-roster fixtures pass | local two-tab WebSocket | required |
+| bot-only fallback branch | Day 8 smoke band or fixture proof fails | local bot-only polish | not required; record as deferred |
 
 Minimum Day 10 content:
 
 - 10-wave deterministic sim remains required.
-- Day 8 50-seed sim always uses the full v0 roster from the Balance Sheet.
+- Day 8 random sim uses the 10 core Relays; Day 8 targeted fixtures must cover the full v0 roster from the Balance Sheet.
 - Playable roster may cut visual polish and tutorial emphasis to 10 core Relays: Needle Beam, Prism Lance, Coolant Moss, Rain Pump, Pulse Drum, Thunder Bowl, Amber Field, Null Cage, Signal Amp, Sink Stone.
 - The non-highlighted roster may use placeholder art/UI in Day 10, but remains enabled in sim and combat.
 - Full roster means all Relay Effect Rules v0 rows are executable by Day 8: 20 Relay ids, 3 boss disruptions, Supply/Merge/Swap/Link Pulse/Overclock, and bot-visible logs.
@@ -187,15 +187,18 @@ Deliver:
 - tune wave hp/speed
 - tune heat costs
 - tune Supply cost
-- run 50-seed simulations with ScriptedHuman + CasualBot
-- verify full roster and all boss disruptions are enabled in the 50-seed sim
+- run 20-seed core-loop simulations with ScriptedHuman + CasualBot using the 10 core Relays
+- run full-roster targeted fixture suite for all 20 Relay ids and 3 boss disruptions
+- record known issues for full-roster random 50-seed balance if not yet stable
 - verify `origin_seed` execute appears in at least one targeted fixture and is not required to appear naturally in random 50-seed runs
 
 Exit criteria:
 
-- Balance Sheet 50-seed pass band passes in full
-- final boss lasts 25-55 seconds in passing seeds
+- core-loop 20-seed smoke band passes: no pre-wave-3 systemic failures, at least 40% reach wave 6 boss, and no deterministic crashes
+- full-roster fixture checklist remains green before tuning numbers are trusted
 - full-roster fixture checklist remains green after tuning
+
+Full Balance Sheet 50-seed pass band remains the target for core-loop pass branch polish after Day 9 branch selection. It is not required before Day 9 branch selection; if it fails, record the balance gap in known issues and keep the branch decision based on the Day 8 smoke band plus full-roster fixture proof.
 
 ### Day 9: Branch Work
 
@@ -227,7 +230,7 @@ Bot-only fallback branch exit criteria:
 - showable fallback must run at least 5 minutes without console errors
 - showable fallback must demonstrate Supply, Swap, Merge, Link Pulse, Overclock, heat shutdown, and named disruption logs for all reached bosses
 - because showable fallback must reach wave 6 boss, Boss Orchid and Boss Mirror disruption logs are minimum required proof
-- known issues name why Day 8 pass band failed
+- known issues name why Day 8 smoke band, full-roster fixture proof, or optional 50-seed balance target failed
 - no online QA is required in this branch
 
 ### Cut Scope for 2-week Build
