@@ -163,6 +163,7 @@ Final damage and cycle math come from Core Game Spec. Repair effects cannot rais
 | bulwark | Bulwark | 170 | 24 | 5 | 8 | 느리고 단단함 |
 | splitter | Splitter | 80 | 34 | 2 | 5 | 사망 시 Flicker 2 생성 |
 | null | Null | 120 | 30 | 4 | 7 | Anchor 감염 시 Signal -8 |
+| null_spore | Null Spore | 70 | 44 | 2 | 0 | Origin Null disruption child |
 | boss_orchid | Boss Orchid | 900 | 18 | 15 | 60 | 3웨이브 |
 | boss_mirror | Boss Mirror | 1550 | 20 | 18 | 85 | 6웨이브 |
 | boss_origin | Origin Null | 2800 | 22 | 25 | 140 | 10웨이브 |
@@ -180,16 +181,16 @@ Reward contract:
 
 | wave | duration target | enemies | boss timer after entry | clear reward |
 |---:|---:|---|---:|---|
-| 1 | 35s | 16 Flicker, 8 Crawler | - | Charge 35, Link 10, Swap 1 |
-| 2 | 40s | 18 Crawler, 4 Bulwark | - | Charge 45, Link 12 |
-| 3 | 55s | 20 Crawler, 8 Splitter, Boss Orchid | 36s | Charge 65, Link 22, Swap 2, Chance +1 |
-| 4 | 45s | 24 Flicker, 16 Crawler, 5 Bulwark | - | Charge 55, Link 14 |
-| 5 | 50s | 12 Splitter, 8 Bulwark, 6 Null | - | Charge 65, Link 16 |
-| 6 | 65s | 22 Crawler, 12 Null, Boss Mirror | 42s | Charge 85, Link 28, Swap 2, Chance +1 |
-| 7 | 52s | 48 Flicker, 10 Bulwark | - | Charge 75, Link 16 |
-| 8 | 58s | 24 Splitter, 16 Null, 10 Bulwark | - | Charge 85, Link 18, Chance +1 if Saturation < 70 |
-| 9 | 62s | 40 Crawler, 20 Splitter, 16 Bulwark | - | Charge 95, Link 22, Chance catch-up if < 3 |
-| 10 | 75-83s incl. 20s hold | 20 Null, 24 Bulwark, Origin Null | 55s | Win |
+| 1 | 26-32s | 16 Flicker, 8 Crawler | - | Charge 35, Link 10, Swap 1 |
+| 2 | 29-35s | 18 Crawler, 4 Bulwark | - | Charge 45, Link 12 |
+| 3 | 39-47s | 20 Crawler, 8 Splitter, Boss Orchid | 36s | Charge 65, Link 22, Swap 2, Chance +1 |
+| 4 | 32-39s | 24 Flicker, 16 Crawler, 5 Bulwark | - | Charge 55, Link 14 |
+| 5 | 36-44s | 12 Splitter, 8 Bulwark, 6 Null | - | Charge 65, Link 16 |
+| 6 | 45-53s | 22 Crawler, 12 Null, Boss Mirror | 42s | Charge 85, Link 28, Swap 2, Chance +1 |
+| 7 | 38-44s | 48 Flicker, 10 Bulwark | - | Charge 75, Link 16 |
+| 8 | 40-48s | 24 Splitter, 16 Null, 10 Bulwark | - | Charge 85, Link 18, Chance +1 if Saturation < 70 |
+| 9 | 44-52s | 40 Crawler, 20 Splitter, 16 Bulwark | - | Charge 95, Link 22, Chance catch-up if < 3 |
+| 10 | 71-78s incl. 20s hold | 20 Null, 24 Bulwark, Origin Null | 55s | Win |
 
 Spawn interval:
 
@@ -208,8 +209,10 @@ Spawn interval:
 Heat is the main originality axis. It makes “strong board” and “safe board” different decisions.
 
 ```text
-heatAfterCycle = currentHeat + relayHeatPerCycle + overclockHeat - cooling
+heatAfterCycle = currentHeat + relayHeatPerCycle - cooling
 ```
+
+Overclock adds +20 heat to every Relay once on activation. It does not add per-cycle heat.
 
 Cooling sources:
 
@@ -243,23 +246,24 @@ These targets are the first acceptance band for a 50-seed automated sim.
 
 | wave | expected team DPS at start | expected active links/team | expected avg heat | expected team Charge spent | target clear time |
 |---:|---:|---:|---:|---:|---:|
-| 1 | 35-55 | 1-3 | 20-35 | 80-120 | 30-42s |
-| 2 | 65-95 | 3-5 | 28-45 | 130-180 | 35-48s |
-| 3 | 120-170 | 5-8 | 40-62 | 190-260 | 48-65s |
-| 4 | 160-220 | 7-10 | 42-66 | 250-330 | 40-56s |
-| 5 | 210-290 | 8-12 | 48-72 | 320-420 | 45-62s |
-| 6 | 300-420 | 10-15 | 55-78 | 410-540 | 58-78s |
-| 7 | 360-500 | 12-17 | 55-82 | 500-640 | 48-66s |
-| 8 | 430-590 | 14-19 | 58-84 | 600-760 | 55-72s |
-| 9 | 520-720 | 16-22 | 60-86 | 720-900 | 58-76s |
-| 10 | 700-980 | 18-26 | 65-90 | 880-1100 | 50-62s |
+| 1 | 35-55 | 1-3 | 20-35 | 80-120 | 26-32s |
+| 2 | 65-95 | 3-5 | 28-45 | 130-180 | 29-35s |
+| 3 | 120-170 | 5-8 | 40-62 | 190-260 | 39-47s |
+| 4 | 160-220 | 7-10 | 42-66 | 250-330 | 32-39s |
+| 5 | 210-290 | 8-12 | 48-72 | 320-420 | 36-44s |
+| 6 | 300-420 | 10-15 | 55-78 | 410-540 | 45-53s |
+| 7 | 360-500 | 12-17 | 55-82 | 500-640 | 38-44s |
+| 8 | 430-590 | 14-19 | 58-84 | 600-760 | 40-48s |
+| 9 | 520-720 | 16-22 | 60-86 | 720-900 | 44-52s |
+| 10 | 700-980 | 18-26 | 65-90 | 880-1100 | 51-58s |
 
 Wave 10 timing:
 
 - target clear time measures wave start to Origin Null death.
 - boss enters at wave +8s and must die before the 55s boss timer expires.
 - after Origin Null death, victory requires the separate 20s Signal hold from Core Game Spec.
-- expected total final-wave time including hold is 70-82s.
+- expected total final-wave time including hold is 71-78s.
+- total expected session time from wave 1 start to victory is 6m40s-7m52s.
 
 50-seed pass band:
 

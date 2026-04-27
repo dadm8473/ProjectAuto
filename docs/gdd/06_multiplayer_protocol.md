@@ -115,6 +115,7 @@ Validation:
 - team Charge enough using the Core Game Spec canonical Supply formula
 - player command cooldown ok
 - server computes grade odds from team Chance Level and player pity
+- server applies first-run tutorial override before RNG only when room mode is `tutorial`
 - server consumes `pendingSupplyDiscountPct` only after a successful Supply
 
 ### swap

@@ -165,11 +165,14 @@ supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
 
 - `personalSupplyCount`는 비용 계산 후, 성공한 Supply에서만 +1 된다.
 - `pendingSupplyDiscountPct`는 다음 성공한 Supply 1회에만 적용되고 즉시 0으로 돌아간다.
-- 비용 처리 순서: 빈 칸 확인 -> cost 계산 -> team Charge 확인 -> team Charge 차감 -> discount token 소비 -> grade/type roll -> 자동 배치 -> personal counters 증가.
+- 비용 처리 순서: 빈 칸 확인 -> cost 계산 -> team Charge 확인 -> team Charge 차감 -> discount token 소비 -> tutorial override 확인 -> grade/type roll 또는 fixed grant -> 자동 배치 -> personal counters 증가.
 - 빈 칸이 없으면 실패
 - 7회 연속 Basic만 나오면 다음 공급은 Tuned 이상 보장
 - Supply grade odds는 현재 team `Chance Level`을 사용한다.
 - `personalSupplyCount`와 pity는 플레이어별로 증가한다.
+- first-run tutorial override는 각 플레이어의 첫 성공 Supply를 `Needle Beam`, 둘째 성공 Supply를 `Coolant Moss`로 고정한다.
+- tutorial override도 성공한 Supply로 취급해 team Charge를 소모하고, `personalSupplyCount`와 pity를 Basic roll처럼 증가시킨다.
+- tutorial override는 첫 플레이 튜토리얼 방에서만 켜며, 일반 매치/재도전/시뮬레이션에서는 꺼진다.
 
 ### Merge
 
@@ -201,6 +204,8 @@ supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
 - 보스 웨이브 중 사용하면 추가로 Signal integrity +4
 - 남발 방지를 위해 팀 쿨다운 12초
 - 같은 Relay에 Link Pulse가 다시 적용되면 배율은 중첩되지 않고 지속시간만 6초로 갱신된다.
+- Signal 회복은 Link Pulse 1회당 최대 +4다. 보스 중 위험 구조 조건을 동시에 만족해도 +8로 중첩되지 않는다.
+- Link Pulse로 얻는 Signal 회복은 wave당 최대 +8이다.
 
 ### Overclock
 
@@ -209,6 +214,7 @@ supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
 - 비용: Heat +20 전체
 - 효과: 5초 동안 공격/수리량 +35%
 - 위험: 종료 후 heat 70 이상 Relay가 있으면 3초 정지
+- heat 비용은 발동 즉시 모든 Relay에 +20을 더하는 방식이다. 지속시간 동안 heat/cycle multiplier는 없다.
 
 ## 8. Combat Rules
 
@@ -241,7 +247,7 @@ Attack tick:
 - 각 Relay는 `cooldown`을 갖고, `cooldown <= 0`이면 공격/수리/증폭 효과를 실행한다.
 - 실행 후 `cooldown = effectiveCycle`.
 - 클라이언트 snapshot은 10Hz로 받지만 전투 판정은 서버 20Hz 기준이다.
-- 공격 사거리는 중앙 루프 progress 기준 거리다. `abs(relayLaneFocus - noise.progress) <= relay.range`.
+- 공격 사거리는 중앙 루프 progress 기준 거리다. `loopDistance(relayLaneFocus, noise.progress) <= relay.range`.
 - Relay의 기본 `laneFocus`는 보드 index에 따라 고정된다.
 - 특수효과는 [Prototype Balance Sheet](./02_prototype_balance_sheet.md)의 Relay Effect Rules v0만 구현한다.
 
@@ -300,7 +306,16 @@ Boss disruption:
 |---|---|---|---|
 | Boss Orchid | highest-link Relay 2개의 heat +12 | spawn 후 10초마다 | `boss_orchid_heatroot` |
 | Boss Mirror | 양쪽 보드에서 active link 1개를 5초간 disable | spawn 후 12초마다 | `boss_mirror_linkbreak` |
-| Origin Null | Null spore 2개 생성, Anchor 감염 위험 +50% | spawn 후 9초마다 | `boss_origin_spore` |
+| Origin Null | Null spore 2개 생성 | spawn 후 9초마다 | `boss_origin_spore` |
+
+Null spore:
+
+- Origin Null이 disruption을 실행할 때 2개를 생성한다.
+- spawn progress는 `wrap(boss.progress - 0.06)`와 `wrap(boss.progress + 0.06)`이다.
+- stats는 Balance Sheet의 `null_spore` row를 사용한다.
+- `null_spore`는 Null로 취급되어 `null_cage`의 우선 타겟이 된다.
+- `null_spore`가 루프를 완료하면 Signal integrity -4, `anchorSlowedUntilTick = currentTick + 6s`를 적용하고 제거된다.
+- `null_spore`는 일반 Null의 Signal -8 감염 규칙을 사용하지 않는다.
 
 Reward Charge:
 
@@ -315,8 +330,10 @@ Reward Charge:
 Heat gain:
 
 ```text
-heat += cycleHeat * overclockMultiplier - coolingFromTags
+heat += cycleHeat - coolingFromTags
 ```
+
+Overclock heat is not part of the per-cycle formula. It is applied once on activation as `heat += 20` to every Relay on that board.
 
 Heat bands:
 
@@ -350,7 +367,7 @@ Signal 회복 조건:
 
 - 보스 처치: +8
 - Repair tag Relay가 웨이브 중 누적 수리: 최대 +12
-- 파트너가 위험 상태에서 Link Pulse 사용: +4
+- Link Pulse 사용: +4, bossActive 또는 partner danger 중 하나를 만족해야 하며 wave당 최대 +8
 
 ## 10. Co-op Rules
 
@@ -408,8 +425,8 @@ Signal 회복 조건:
 
 튜토리얼은 별도 긴 설명이 아니라 1웨이브 안에서 처리한다.
 
-1. 첫 Supply는 고정으로 `Needle Beam` 지급
-2. 둘째 Supply는 `Coolant Moss` 지급
+1. 첫 성공 Supply는 tutorial override로 `Needle Beam` 지급
+2. 둘째 성공 Supply는 tutorial override로 `Coolant Moss` 지급
 3. 세 번째부터 랜덤
 4. 첫 Noise가 한 바퀴 돌기 전 “Relay는 자동 공격합니다” 토스트
 5. 같은 Relay 3개가 생기면 보드 슬롯에 Merge glow 표시
