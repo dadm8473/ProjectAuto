@@ -3,7 +3,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { createGame, serializeState, tickGame, tryBuildTower, tryBuyShopItem, upgradeTower } from '../src/shared/game.js';
+import {
+  castPartnerBoost,
+  createGame,
+  mergeUnits,
+  serializeState,
+  summonUnit,
+  tickGame,
+  tryBuyShopItem,
+  upgradeSummonOdds
+} from '../src/shared/game.js';
 import { acceptKey, decodeClientFrame, encodeServerFrame } from './ws.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -20,9 +29,10 @@ const mime = {
 };
 
 const room = {
-  game: createGame({ mode: 'online', levelId: 'harbor-spiral', seed: Date.now() % 100000 }),
+  game: createGame({ mode: 'online', seed: Date.now() % 100000 }),
   clients: new Map(),
-  lastTick: Date.now()
+  lastTick: Date.now(),
+  resetAt: null
 };
 
 function safePath(url) {
@@ -64,11 +74,10 @@ function assignPlayers() {
     id: client.playerId,
     name: client.name || `Player ${index + 1}`,
     bot: false,
-    ready: true,
-    builds: room.game.players.find((player) => player.id === client.playerId)?.builds ?? 0
+    ready: true
   }));
   while (room.game.players.length < 2) {
-    room.game.players.push({ id: `bot${room.game.players.length + 1}`, name: 'AUTO-BOT', bot: true, ready: true, builds: 0 });
+    room.game.players.push({ id: 'p2', name: 'AUTO PARTNER', bot: true, ready: true });
   }
 }
 
@@ -83,8 +92,11 @@ function handleAction(socket, action) {
   }
   const playerId = client?.playerId ?? 'guest';
   let result = { ok: false, reason: 'Unknown action.' };
-  if (action.type === 'build') result = tryBuildTower(room.game, { playerId, type: action.tower, x: action.x, y: action.y });
-  if (action.type === 'upgrade') result = upgradeTower(room.game, { playerId, towerId: action.towerId });
+  const boardPlayer = playerId === room.game.players[1]?.id ? 'p2' : 'p1';
+  if (action.type === 'summon') result = summonUnit(room.game, { playerId: boardPlayer });
+  if (action.type === 'merge') result = mergeUnits(room.game, { playerId: boardPlayer, slotIds: action.slotIds ?? [] });
+  if (action.type === 'chance') result = upgradeSummonOdds(room.game, { playerId: boardPlayer });
+  if (action.type === 'boost') result = castPartnerBoost(room.game, { playerId: boardPlayer });
   if (action.type === 'buy') result = tryBuyShopItem(room.game, { playerId, itemId: action.itemId });
   if (!result.ok) send(socket, { type: 'error', reason: result.reason });
 }
@@ -135,7 +147,11 @@ function tickRoom() {
   const dt = Math.min(0.1, (now - room.lastTick) / 1000);
   room.lastTick = now;
   tickGame(room.game, dt);
-  if (room.game.over) room.game = createGame({ mode: 'online', levelId: 'harbor-spiral', seed: Date.now() % 100000 });
+  if (room.game.over && room.resetAt === null) room.resetAt = now + 6000;
+  if (room.resetAt !== null && now >= room.resetAt) {
+    room.game = createGame({ mode: 'online', seed: Date.now() % 100000 });
+    room.resetAt = null;
+  }
   assignPlayers();
   broadcast({ type: 'state', state: serializeState(room.game) });
 }
@@ -143,6 +159,6 @@ function tickRoom() {
 const server = http.createServer(serve);
 server.on('upgrade', upgrade);
 server.listen(port, () => {
-  console.log(`ProjectAuto Relay Defense running at http://localhost:${port}`);
+  console.log(`ProjectAuto Fortune Relay running at http://localhost:${port}`);
 });
 setInterval(tickRoom, 100);

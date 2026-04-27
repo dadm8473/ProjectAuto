@@ -2,88 +2,134 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  castPartnerBoost,
   createGame,
+  mergeUnits,
   serializeState,
+  summonUnit,
   tickGame,
-  tryBuildTower,
-  tryBuyShopItem,
-  upgradeTower
+  upgradeSummonOdds,
+  tryBuyShopItem
 } from '../src/shared/game.js';
-import { LEVELS, SHOP } from '../src/shared/content.js';
+import { HEROES, SHOP } from '../src/shared/content.js';
 
-test('a new squad starts with shared build resources and portrait-ready level data', () => {
-  const game = createGame({ mode: 'bot', levelId: 'harbor-spiral', seed: 7 });
+test('a new run is a two-board co-op defense with monetization scaffolding', () => {
+  const game = createGame({ mode: 'bot', seed: 42 });
 
-  assert.equal(game.resources.scrap, 180);
-  assert.equal(game.players.length, 2);
-  assert.equal(game.level.bounds.w, 390);
-  assert.equal(game.level.bounds.h, 720);
-  assert.ok(game.level.path.length > 5);
-  assert.equal(LEVELS[0].id, 'harbor-spiral');
+  assert.equal(game.title, 'Fortune Relay');
+  assert.equal(game.boards.p1.slots.length, 12);
+  assert.equal(game.boards.p2.slots.length, 12);
+  assert.equal(game.resources.gold, 120);
+  assert.equal(game.pressure.limit, 100);
+  assert.equal(SHOP.items.some((item) => item.category === 'cosmetic'), true);
 });
 
-test('building a tower spends shared scrap and rejects blocked cells', () => {
-  const game = createGame({ mode: 'bot', levelId: 'harbor-spiral', seed: 3 });
+test('summoning is random, spends shared gold, fills a board slot, and advances pity', () => {
+  const game = createGame({ mode: 'bot', seed: 9 });
+  const before = game.resources.gold;
 
-  const built = tryBuildTower(game, { playerId: 'p1', type: 'pulse', x: 90, y: 210 });
-  assert.equal(built.ok, true);
-  assert.equal(game.towers.length, 1);
-  assert.equal(game.resources.scrap, 120);
+  const result = summonUnit(game, { playerId: 'p1' });
 
-  const blocked = tryBuildTower(game, { playerId: 'p2', type: 'pulse', x: game.level.path[1].x, y: game.level.path[1].y });
-  assert.equal(blocked.ok, false);
-  assert.match(blocked.reason, /path/i);
+  assert.equal(result.ok, true);
+  assert.equal(game.resources.gold, before - 20);
+  assert.equal(game.boards.p1.slots.filter(Boolean).length, 1);
+  assert.equal(game.stats.summons.p1, 1);
+  assert.ok(game.rng.pity.p1 >= 1 || HEROES[result.unit.hero].rarity !== 'common');
 });
 
-test('waves spawn enemies, towers damage them, and kills grant squad rewards', () => {
-  const game = createGame({ mode: 'bot', levelId: 'harbor-spiral', seed: 11 });
-  tryBuildTower(game, { playerId: 'p1', type: 'spark', x: 128, y: 170 });
-  tryBuildTower(game, { playerId: 'p2', type: 'pulse', x: 255, y: 225 });
+test('chance upgrades shift the summon table toward higher rarities', () => {
+  const game = createGame({ mode: 'bot', seed: 17 });
+  game.resources.gold = 300;
+  const beforeEpic = game.summonOdds.epic;
 
-  for (let i = 0; i < 550; i += 1) tickGame(game, 0.1);
+  const result = upgradeSummonOdds(game, { playerId: 'p1' });
 
-  assert.ok(game.stats.kills > 0);
-  assert.ok(game.resources.scrap > 0);
+  assert.equal(result.ok, true);
+  assert.ok(game.summonOdds.epic > beforeEpic);
+  assert.equal(game.stats.chanceUps.p1, 1);
+});
+
+test('three matching units merge into a higher-star dramatic unit', () => {
+  const game = createGame({ mode: 'bot', seed: 3 });
+  game.boards.p1.slots[0] = { id: 'u1', hero: 'sprout', star: 1, cooldown: 0, owner: 'p1' };
+  game.boards.p1.slots[1] = { id: 'u2', hero: 'sprout', star: 1, cooldown: 0, owner: 'p1' };
+  game.boards.p1.slots[2] = { id: 'u3', hero: 'sprout', star: 1, cooldown: 0, owner: 'p1' };
+
+  const result = mergeUnits(game, { playerId: 'p1', slotIds: [0, 1, 2] });
+
+  assert.equal(result.ok, true);
+  assert.equal(game.boards.p1.slots[0].star, 2);
+  assert.equal(game.boards.p1.slots[1], null);
+  assert.equal(game.boards.p1.slots[2], null);
+  assert.notEqual(game.boards.p1.slots[0].hero, 'sprout');
+  assert.equal(game.effects.some((effect) => effect.type === 'merge'), true);
+});
+
+test('partner boost is a cooperative action that buffs the other board', () => {
+  const game = createGame({ mode: 'bot', seed: 12 });
+  game.resources.mana = 80;
+  game.boards.p2.slots[0] = { id: 'u9', hero: 'volt', star: 2, cooldown: 0, owner: 'p2' };
+
+  const result = castPartnerBoost(game, { playerId: 'p1' });
+
+  assert.equal(result.ok, true);
+  assert.equal(game.boards.p2.slots[0].boostedUntil > game.now, true);
+  assert.equal(game.resources.mana, 45);
+});
+
+test('bot partner waits for the player to start before spending shared gold', () => {
+  const game = createGame({ mode: 'bot', seed: 44 });
+
+  for (let i = 0; i < 30; i += 1) tickGame(game, 0.1);
+
+  assert.equal(game.boards.p1.slots.filter(Boolean).length, 0);
+  assert.equal(game.boards.p2.slots.filter(Boolean).length, 0);
+  assert.equal(game.resources.gold, 120);
+
+  summonUnit(game, { playerId: 'p1' });
+  for (let i = 0; i < 30; i += 1) tickGame(game, 0.1);
+
+  assert.ok(game.boards.p2.slots.filter(Boolean).length >= 1);
+  assert.ok(game.resources.gold >= 20);
+});
+
+test('combat creates a boss timer, rewards kills, and fails when pressure reaches the cap', () => {
+  const game = createGame({ mode: 'solo', seed: 5 });
+  game.boards.p1.slots[0] = { id: 'u1', hero: 'cannon', star: 3, cooldown: 0, owner: 'p1' };
+  game.boards.p2.slots[0] = { id: 'u2', hero: 'oracle', star: 2, cooldown: 0, owner: 'p2' };
+
+  for (let i = 0; i < 360; i += 1) tickGame(game, 0.1);
+
   assert.ok(game.wave.index >= 1);
-  assert.ok(game.base.hp > 0);
+  assert.ok(game.stats.kills > 0);
+  assert.ok(game.boss.timer <= game.boss.limit);
+
+  game.pressure.count = 100;
+  tickGame(game, 0.1);
+  assert.equal(game.over, true);
+  assert.equal(game.won, false);
 });
 
-test('upgrades are cooperative purchases with clear power growth', () => {
-  const game = createGame({ mode: 'bot', levelId: 'harbor-spiral', seed: 19 });
-  const result = tryBuildTower(game, { playerId: 'p1', type: 'frost', x: 300, y: 350 });
-  const tower = game.towers.find((item) => item.id === result.towerId);
-  const beforeDamage = tower.damage;
-  game.resources.scrap = 200;
+test('shop purchases use earned gems and unlock account-style cosmetics', () => {
+  const game = createGame({ mode: 'bot', seed: 31 });
+  game.resources.gems = 150;
 
-  const upgraded = upgradeTower(game, { playerId: 'p2', towerId: tower.id });
-
-  assert.equal(upgraded.ok, true);
-  assert.equal(tower.level, 2);
-  assert.ok(tower.damage > beforeDamage);
-  assert.equal(game.resources.scrap, 105);
-});
-
-test('shop purchases use earned premium currency without mutating paid platform state', () => {
-  const game = createGame({ mode: 'bot', levelId: 'harbor-spiral', seed: 23 });
-  game.resources.cores = 120;
-
-  const purchase = tryBuyShopItem(game, { playerId: 'p1', itemId: 'starter-cache' });
+  const purchase = tryBuyShopItem(game, { itemId: 'mythic-aura' });
 
   assert.equal(purchase.ok, true);
-  assert.equal(game.resources.cores, 70);
-  assert.equal(game.resources.scrap, 280);
-  assert.equal(SHOP.items.find((item) => item.id === 'starter-cache').price.cores, 50);
+  assert.equal(game.resources.gems, 60);
+  assert.deepEqual(game.unlocks, ['mythic-aura']);
 });
 
-test('serialized state is compact and client-safe', () => {
-  const game = createGame({ mode: 'bot', levelId: 'harbor-spiral', seed: 29 });
-  tryBuildTower(game, { playerId: 'p1', type: 'pulse', x: 90, y: 210 });
+test('serialized state omits private rng data but keeps all client board state', () => {
+  const game = createGame({ mode: 'bot', seed: 29 });
+  summonUnit(game, { playerId: 'p1' });
   tickGame(game, 0.25);
 
   const snapshot = serializeState(game);
 
-  assert.equal(snapshot.level.id, 'harbor-spiral');
-  assert.equal(snapshot.towers.length, 1);
-  assert.equal(typeof snapshot.now, 'number');
   assert.equal(snapshot.privateSeed, undefined);
+  assert.equal(snapshot.rng, undefined);
+  assert.equal(snapshot.boards.p1.slots.length, 12);
+  assert.equal(typeof snapshot.now, 'number');
 });

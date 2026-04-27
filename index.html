@@ -3,50 +3,54 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#101820">
-    <title>ProjectAuto: Relay Defense</title>
+    <meta name="theme-color" content="#11161f">
+    <title>Fortune Relay</title>
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="stylesheet" href="/src/client/styles.css">
   </head>
   <body>
-    <main id="app" class="shell">
-      <section class="topbar">
-        <div>
-          <strong>Relay Defense</strong>
+    <main class="shell">
+      <section class="hud">
+        <div class="brand">
+          <strong>Fortune Relay</strong>
           <span id="netStatus">BOT CO-OP</span>
         </div>
         <div class="meters">
-          <span id="hpMeter">HP 24</span>
-          <span id="scrapMeter">180</span>
-          <span id="coreMeter">25</span>
+          <span id="goldMeter">G 120</span>
+          <span id="manaMeter">M 40</span>
+          <span id="gemMeter">D 30</span>
         </div>
       </section>
 
       <section class="stage-wrap">
-        <canvas id="gameCanvas" width="390" height="720" aria-label="cooperative tower defense board"></canvas>
+        <canvas id="gameCanvas" width="390" height="720" aria-label="Fortune Relay cooperative defense board"></canvas>
         <div id="toast" class="toast" hidden></div>
       </section>
 
-      <nav class="tabs" aria-label="game panels">
-        <button class="tab active" data-panel="build">Build</button>
-        <button class="tab" data-panel="squad">Squad</button>
-        <button class="tab" data-panel="shop">BM</button>
-      </nav>
-
-      <section class="panel active" id="buildPanel">
-        <div class="tower-row" id="towerButtons"></div>
-        <div class="actions">
-          <button id="upgradeButton">Upgrade</button>
-          <button id="botButton">Bot Mode</button>
+      <section class="action-panel">
+        <div class="status-line">
+          <span id="waveMeter">Wave 1</span>
+          <span id="pressureMeter">Pressure 0/100</span>
+          <span id="bossMeter">Boss --</span>
+        </div>
+        <div class="primary-actions">
+          <button id="summonButton">Summon</button>
+          <button id="mergeButton">Merge x3</button>
+          <button id="chanceButton">Chance Up</button>
+          <button id="boostButton">Partner Boost</button>
+        </div>
+        <div class="secondary-actions">
+          <button id="botButton">Bot</button>
           <button id="onlineButton">Online</button>
+          <button id="shopButton">BM / Missions</button>
         </div>
       </section>
 
-      <section class="panel" id="squadPanel">
-        <div id="squadList" class="list"></div>
-      </section>
-
-      <section class="panel" id="shopPanel">
+      <section id="drawer" class="drawer" hidden>
+        <div class="drawer-head">
+          <strong>BM / Missions</strong>
+          <button id="closeDrawer">Close</button>
+        </div>
         <div id="shopList" class="list"></div>
       </section>
     </main>
