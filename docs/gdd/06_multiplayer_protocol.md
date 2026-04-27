@@ -288,12 +288,15 @@ Validation:
     "noise": [
       {
         "noiseId": "n_1",
+        "spawnSequenceId": 27,
         "type": "crawler",
         "hp": 42,
         "maxHp": 55,
         "progress": 0.42,
         "speed": 38,
-        "lane": 0
+        "lane": 0,
+        "speedMultiplier": 1,
+        "saturationMultiplier": 1
       }
     ],
     "wave": {
@@ -339,6 +342,7 @@ Snapshot schema rules:
 - `disabledLinks` stores socket pairs disabled by boss effects.
 - `activeLinks` is the effective combat/display links list after disabled link filtering. Clients and combat code must not count disabled pairs from `disabledLinks`.
 - `activeLinks` stores adjacent socket indexes, not directions.
+- `noise.spawnSequenceId`, `speedMultiplier`, and `saturationMultiplier` are authoritative display/sim helper fields. Targeting tie-breaks use lower `spawnSequenceId`.
 - All server times are derived from `tick`; clients do not submit combat results.
 
 ### commandResult

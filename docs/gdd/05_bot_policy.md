@@ -76,10 +76,10 @@ playerRelayShutdownSoon = count(relay.heat >= 92 and relay.cooldown <= 1.5s) >= 
 playerBoardDpsShare = partnerBoard.estimatedDps / max(1, teamEstimatedDps)
 playerHasRepairTag = count(partnerBoard.relays where tag includes Repair) >= 1
 teamEstimatedDps = sum(estimatedDps for both boards)
-estimatedDps(relay) = voltage * tierMultiplier * gradeMultiplier * linkMultiplier * heatPenalty / effectiveCycle
+estimatedDps(relay) = Core Game Spec damage formula for that Relay / effectiveCycle
 nextSupplyCost = canonicalSupplyCost(botPersonalSupplyCount, bossActive, pendingSupplyDiscountPct)
 canonicalSupplyCost(count, bossActive, discountPct) =
-  ceil((20 + floor(count / 5) * 3) * (bossActive ? 1.20 : 1.00) * (discountPct > 0 ? 0.75 : 1.00))
+  ceil(min(47, 20 + floor(count / 5) * 3) * (bossActive ? 1.20 : 1.00) * (discountPct > 0 ? 0.75 : 1.00))
 ```
 
 `player` in these names means the human partner when the bot evaluates rescue actions.

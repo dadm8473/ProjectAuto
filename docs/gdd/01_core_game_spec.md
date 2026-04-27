@@ -122,7 +122,8 @@ Link activation:
 
 - 두 Relay가 상하좌우로 인접해야 한다.
 - A의 `linkShape`에 B 방향이 있고, B의 `linkShape`에 A 방향이 있으면 raw link 1개다.
-- raw link가 `disabledLinks`에 포함되어 있지 않으면 effective active link 1개다.
+- raw link가 `disabledLinks`에 포함되어 있지 않고 두 Relay가 모두 online이면 effective active link 1개다.
+- Relay with `shutdownUntilTick > currentTick` is offline and cannot be an endpoint of an effective active link.
 - v0에서 `activeLinks`라는 필드명은 항상 effective active links를 뜻한다.
 - Damage, Anchor, Amp, Support, Merge preview link count는 모두 effective active links만 사용한다.
 - `All`은 N/E/S/W 모든 방향으로 취급한다.
@@ -167,7 +168,8 @@ boardAnchorBonus = activeLinksOnAnchorRelay >= 3 ? 1.08 : 1.0
 - 비용은 team Charge를 사용하며 서버가 아래 canonical formula로만 계산한다.
 
 ```text
-baseSupplyCost = 20 + floor(personalSupplyCount / 5) * 3
+uncappedSupplyCost = 20 + floor(personalSupplyCount / 5) * 3
+baseSupplyCost = min(uncappedSupplyCost, 47)
 bossSupplyMultiplier = bossActive ? 1.20 : 1.00
 discountMultiplier = pendingSupplyDiscountPct > 0 ? 0.75 : 1.00
 supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
@@ -323,6 +325,8 @@ Relay는 중앙 루프의 Noise를 자동으로 타겟팅한다.
 
 Noise receives a monotonically increasing `spawnSequenceId` when spawned. Server, client display helpers, bots, and sim use this same tie-break order.
 
+`Signal에 가장 가까운 Noise` uses `remainingDistanceToSignal = 1.0 - noise.progress`. Noise progress never wraps during movement; when `progress >= 1.0`, the loop completion resolves and the Noise is removed before targeting.
+
 Relay heat target tie-breaks:
 
 - "highest heat Relay" means higher heat, then more effective active links on that Relay, then lower socket index.
@@ -330,10 +334,18 @@ Relay heat target tie-breaks:
 - "hottest adjacent Relay" uses the highest heat rule among occupied adjacent sockets.
 - Effects that target 2 Relays select the first target, remove it from candidates, then select the second with the same rule.
 
+Noise effect target tie-breaks:
+
+- "nearest Noise within X progress" means lowest `loopDistance(primary.progress, candidate.progress)`, then normal targeting priority.
+- "highest saturation Noise" means higher `saturationOnLoop`, then lower `remainingDistanceToSignal`, then lower hp, then lower `spawnSequenceId`.
+- "all Noise within range, max N" selects by normal targeting priority until N targets are chosen.
+
 Damage formula:
 
 ```text
-damage = voltage
+effectiveVoltage = voltage * signalAmpMultiplier
+
+damage = effectiveVoltage
        * tierMultiplier
        * gradeMultiplier
        * linkMultiplier
@@ -342,6 +354,7 @@ damage = voltage
        * heatPenalty
        * overclockOutputMultiplier
        * dualOverclockBossMultiplier
+       * mirrorSupportOutputMultiplier
 ```
 
 | 값 | 수식 |
@@ -353,13 +366,15 @@ damage = voltage
 | anchorBonus | anchorBonus * boardAnchorBonus, 최대 1.21 |
 | heatOutputMultiplier | heat 50-69면 1.05, 그 외 1.0 |
 | heatPenalty | heat 70 이상 0.8, heat 90 이상 0.55 |
+| signalAmpMultiplier | linked Signal Amp active면 1.12, 아니면 1.0 |
 | overclockOutputMultiplier | own board Overclock active면 1.35, 아니면 1.0 |
 | dualOverclockBossMultiplier | target Boss + `dualOverclockBossUntilTick > currentTick`이면 1.30, 아니면 1.0 |
+| mirrorSupportOutputMultiplier | partner Mirror Support active for this Relay면 1.08, 아니면 1.0 |
 
 Repair formula:
 
 ```text
-signalRepairBeforeCap = baseSignalRepair * repairAmpMultiplier * overclockOutputMultiplier * heatOutputMultiplier
+signalRepairBeforeCap = baseSignalRepair * repairAmpMultiplier * overclockOutputMultiplier * heatOutputMultiplier * mirrorSupportOutputMultiplier
 signalRepairApplied = min(signalRepairBeforeCap, remainingWaveRepairCap)
 ```
 
@@ -369,6 +384,16 @@ Repair formula applies only to Signal integrity repair from `rain_pump` and `roo
 - `remainingWaveRepairCap` is the per-wave +12 Signal repair cap after previous Repair effects.
 - Overclock multiplier는 damage와 Signal repair 계산의 마지막 출력 계수로 곱한다. effectiveCycle에는 영향을 주지 않는다.
 - `auroraAmpBonus` is 0.25 if this board has at least one active `aurora_amp`; otherwise 0. Multiple Aurora Amp Relays do not stack.
+- `signalAmpMultiplier` is 1.12 if at least one online, active-linked `signal_amp` targets the Relay; it does not stack.
+- `repairAmpMultiplier` is 1.18 if at least one online, active-linked `bloom_amp` targets the Repair Relay; it does not stack.
+
+Mirror Support:
+
+- An online `mirror_port` with at least one effective active link grants Mirror Support to partner-board Relays that share any tag with one of that Mirror Port's online active-linked neighbors.
+- Mirror Support applies only to damage and Signal repair output from the partner Relay.
+- It does not multiply heat cooling, Sink venting, Amp effects, speed/saturation debuffs, Link Pulse, or `supportPower`.
+- Mirror Support is non-stacking: a target Relay either has `mirrorSupportOutputMultiplier = 1.08` or 1.00.
+- `mirror_support` event payload includes `sourceMirrorUnitId`, `targetUnitId`, `sharedTags`, and `multiplier: 1.08`.
 
 Attack tick:
 
@@ -379,6 +404,17 @@ Attack tick:
 - 공격 사거리는 중앙 루프 progress 기준 거리다. `loopDistance(relayLaneFocus, noise.progress) <= relay.range`.
 - Relay의 기본 `laneFocus`는 보드 index에 따라 고정된다.
 - 특수효과는 [Prototype Balance Sheet](./02_prototype_balance_sheet.md)의 Relay Effect Rules v0만 구현한다.
+
+Shutdown/offline rules:
+
+- `relayOnline = shutdownUntilTick <= currentTick`.
+- Offline Relays remain on the board and occupy their socket.
+- Offline Relays do not execute attacks, Signal repair, cooling, Sink venting, Amp, Support, Aurora, Twin Gate, Mirror Port, or any other passive/active effect.
+- Offline Relays are excluded from `countEffectiveActiveLinks`, Anchor bonuses, Amp targets, Support targets, and Merge preview link counts.
+- Cooldown does not decrement while offline; it resumes on the first tick after `shutdownUntilTick`.
+- Offline Relays can still receive heat deltas, cooling, Sink venting, Link Pulse, and wave clear cooling, but they cannot trigger another shutdown event until they are online again.
+- Player commands may Swap or Merge offline Relays. If merged, the result Relay uses normal Merge heat and is online unless the resulting heat later triggers shutdown.
+- Overclock stall uses the same offline action/link/passive rules but is logged as `overclock_stall` and is not counted for Heat cascade.
 
 Effective cycle:
 
@@ -415,8 +451,11 @@ progress += (speed / loopLengthUnits) * deltaSeconds * speedMultiplier
 
 - `speed`는 Balance Sheet의 Enemy Roster 값을 사용한다.
 - `progress >= 1.0`이면 루프 완료 판정을 한 뒤 해당 Noise를 제거한다.
-- 루프 완료 시 Saturation이 `saturationOnLoop`만큼 증가하고, `rewardCharge`는 지급하지 않는다.
+- 루프 완료 시 Saturation이 `saturationOnLoop * activeSaturationMultiplier`만큼 증가하고, `rewardCharge`는 지급하지 않는다.
+- `activeSaturationMultiplier` is the lowest active saturation multiplier on that Noise, or 1.00 if none is active.
+- Saturation can be fractional; UI rounds down for display, but pressure rules use exact value.
 - slow/cage effects apply through `speedMultiplier`.
+- `saturation_mark` duration refreshes instead of stacking and its event payload includes `noiseId`, `multiplier: 0.80`, and `untilTick`.
 
 Spawn schedule:
 
@@ -427,6 +466,7 @@ Spawn schedule:
 - `laneStart = 1.0s + laneOffset[type]`
 - laneOffset: Flicker 0.0s, Crawler 0.2s, Bulwark 0.6s, Splitter 0.4s, Null 0.8s.
 - count가 1이면 `spawnAt = laneStart`.
+- Every Noise creation increments room `nextSpawnSequenceId`: wave lane spawns, boss spawns, Splitter children, and Null spores all use the same counter.
 - 보스 웨이브는 wave elapsed 0초부터 8초 경고를 표시한다.
 - 보스는 wave elapsed 8.0초에 1회 스폰한다.
 - boss timer는 보스 스폰 tick부터 시작하며, duration은 Balance Sheet의 `boss timer after entry`를 사용한다.
@@ -445,9 +485,10 @@ Boss disruption:
 Boss Orchid target selection:
 
 - Select across both boards using the "highest-link Relay" tie-break from Combat Rules.
+- If all Relay tie-break values match across boards, choose lower `boardOwner` order: `p1`, then `p2`.
 - Target up to 2 occupied Relays.
-- If no Relay exists, record `boss_orchid_heatroot` with `targetUnitIds: []` and `noOp: true`.
-- Event payload includes `targetUnitIds`, `targetSockets`, `heatDelta: 12`, and `noOp`.
+- If no Relay exists, record `boss_orchid_heatroot` with `targets: []` and `noOp: true`.
+- Event payload includes `targets: [{ boardOwner, unitId, socket }]`, `heatDelta: 12`, and `noOp`.
 
 Boss Mirror target selection:
 
@@ -474,6 +515,10 @@ Reward Charge:
 - 루프 완료로 제거된 Noise는 rewardCharge를 지급하지 않는다.
 - Splitter가 사망하면 Splitter의 rewardCharge는 지급한다.
 - Splitter가 생성한 Flicker child는 `rewardCharge = 0`, `saturationOnLoop = 1`로 생성된다.
+- Splitter children spawn in the same tick after parent death resolves and after the parent reward is granted.
+- Child A progress is `max(0, parent.progress - 0.015)`.
+- Child B progress is `min(0.995, parent.progress + 0.015)`.
+- Both children inherit `lane` from the parent, use Flicker hp/speed/range stats, and receive `spawnSequenceId` in A then B order.
 - Boss가 사망하면 Boss rewardCharge를 즉시 지급한다.
 - Wave clear reward는 모든 spawn lane이 완료되고, 해당 wave의 살아있는 Noise가 모두 제거된 뒤 별도로 1회 지급한다.
 - Boss rewardCharge와 wave clear reward는 중복 지급된다. 밸런스 표는 이 중복을 포함한 경제 목표다.

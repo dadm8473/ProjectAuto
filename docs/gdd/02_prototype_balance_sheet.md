@@ -71,6 +71,8 @@ Supply roll order:
 | 40-44 | 44 |
 | 45+ | 47 |
 
+This table is the capped `baseSupplyCost` before boss and discount multipliers. Core Game Spec and Bot Policy use the same `min(47, 20 + floor(personalSupplyCount / 5) * 3)` base.
+
 Canonical examples:
 
 | state | formula | cost |
@@ -101,7 +103,7 @@ Canonical examples:
 | aurora_amp | Aurora Amp | Amp | Origin | 0 | 2.8 | 30 | All | 보드 전체 linkMultiplier +0.25 after normal cap, final cap 1.57 |
 | sink_stone | Sink Stone | Sink | Basic+ | 4 | 1.6 | -16 | S | heat 흡수 |
 | dusk_sink | Dusk Sink | Sink | Prime+ | 8 | 2.0 | -28 | N-S | 과열 Relay 정지 방지 1회 |
-| mirror_port | Mirror Port | Support | Tuned+ | 0 | 2.0 | 10 | E-W | 파트너 같은 tag 출력 +8% |
+| mirror_port | Mirror Port | Support | Tuned+ | 0 | 2.0 | 10 | E-W | 파트너 같은 tag 피해/Signal repair +8% |
 | twin_gate | Twin Gate | Support | Core+ | 18 | 1.8 | 20 | All | 파트너 Link Pulse 효과 +50% |
 | origin_seed | Origin Seed | Origin | Origin | 64 | 1.0 | 30 | All | 보스 hp 15% 이하 execute |
 
@@ -121,14 +123,14 @@ All effects trigger on the Relay's `effectiveCycle` unless the row says passive.
 | thunder_bowl | primary target 100%, up to 2 chain targets 45% | nearest Noise within 0.12 progress of primary | `chain_damage` |
 | storm_heart | primary target 100%, chain targets 45%; chain count = min(5, 1 + activeLinks) | nearest Noise within 0.14 progress | `chain_damage` |
 | amber_field | deals 70% finalDamage and applies speedMultiplier 0.82 for 1.5s | all Noise within range, max 5 | `slow_field` |
-| gravity_loom | deals 80% finalDamage and applies saturationMultiplier 0.80 for 2s | highest saturation Noise in range | `saturation_mark` |
+| gravity_loom | deals 80% finalDamage and applies saturationMultiplier 0.80 for 2s; saturation formula in Core Game Spec | highest saturation Noise in range | `saturation_mark` |
 | null_cage | deals 100% finalDamage; if target is Null, speedMultiplier 0 for 1.2s and blocks Anchor infection | Null first, then normal priority | `null_caged` |
 | signal_amp | passive: linked adjacent Relays voltage *1.12 | active-linked neighbor Relays | `amp_applied`, non-stacking |
 | bloom_amp | passive: linked adjacent Repair effects *1.18 | active-linked Repair Relays | `repair_amp`, non-stacking |
 | aurora_amp | passive: board linkMultiplier bonus +0.25 after normal cap, final cap 1.57 | all own-board Relays | `aurora_amp`, one per board |
 | sink_stone | vents 16 heat from hottest adjacent Relay; self applies listed heat/cycle | adjacent Relay with highest heat | `heat_sink` |
 | dusk_sink | vents 28 heat from hottest adjacent Relay; once per wave prevents adjacent shutdown, sets target heat to 78 | adjacent Relay with highest heat | `shutdown_prevented` |
-| mirror_port | passive: partner Relays sharing any tag output *1.08 | partner board, same tag as any active-linked neighbor | `mirror_support`, one per partner Relay |
+| mirror_port | passive: partner Relay damage/Signal repair output *1.08 through Mirror Support | partner board, same tag as any active-linked neighbor | `mirror_support`, one per partner Relay |
 | twin_gate | passive: Link Pulse sent by this board has heat reduction and duration *1.50 | caster board must have active Twin Gate link | `twin_link_pulse` |
 | origin_seed | if Boss hp <= 15%, executes once per boss; otherwise deals 100% finalDamage | Boss first | `boss_execute` |
 
@@ -174,7 +176,7 @@ Reward contract:
 
 - `rewardCharge` is paid only when that Noise dies.
 - Loop completion pays no Charge.
-- Splitter children use the Flicker stat line but `rewardCharge = 0`.
+- Splitter children use the Flicker stat line but `rewardCharge = 0`; child progress, lane, and `spawnSequenceId` are defined in Core Game Spec.
 - Boss rewardCharge is paid on boss death and is separate from wave clear reward.
 
 ## 7. Wave Table v0
@@ -344,8 +346,8 @@ scriptedSwapScore =
 
 Sim metrics:
 
-- team DPS uses `sum(finalDamage / effectiveCycle)` for damage Relays, where finalDamage includes overclock and dual-overclock boss multipliers.
-- Repair, Amp, Sink, and Support value are reported separately as `supportPower`.
+- team DPS uses `sum(finalDamage / effectiveCycle)` for damage Relays, where finalDamage is the Core Game Spec damage formula after link, Aurora, Overclock, dual-overclock, and Mirror Support multipliers.
+- Repair, Amp, Sink, and Support value are reported separately as `supportPower`; Mirror Support is reported as supportPower and as its own `mirror_support` event, but its 1.08 multiplier affects only damage and Signal repair.
 - heat average excludes empty sockets.
 - clear time is measured from wave start to last wave enemy removed.
 - boss timer is measured from boss entry, not wave start.
