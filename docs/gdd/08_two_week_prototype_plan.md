@@ -44,6 +44,7 @@ Minimum Day 10 content:
 - `coreLoopRosterProfile` is exactly those 10 core Relays. Day 8 smoke sim passes this filtered roster to Supply, Merge candidate generation, `computeMergePreview`, ScriptedHuman, and CasualBot helpers.
 - The non-highlighted roster may use placeholder art/UI in Day 10. It must pass targeted fixtures, but it is disabled in random smoke sim and optional in the show build combat roster.
 - Full roster means all Relay Effect Rules v0 rows are executable by Day 8: 20 Relay ids, 3 boss disruptions, Supply/Merge/Swap/Link Pulse/Overclock, and bot-visible logs.
+- Full prototype Ready additionally requires at least one retained deterministic/dev-seeded wave 10 win log; without it, the build is labeled diagnostic/show only.
 - In cut scope, `utility Relay` means Repair, Amp, Sink, or Field tags. It does not require the Support tag.
 - Boss Orchid, Boss Mirror, and Origin Null disruptions remain required in both branches. Cut boss visual polish before cutting named board-level disruption logs.
 - Core-loop pass branch only: multiplayer scope is local two-tab WebSocket.
@@ -82,6 +83,7 @@ Deliver:
 - 10-wave table
 - boss timers
 - Beam/Pulse/Field damage effects: Needle Beam, Prism Lance, Split Ray, Pulse Drum, Thunder Bowl, Storm Heart, Amber Field, Gravity Loom, Null Cage
+- Origin Seed boss execute damage variant and `boss_execute` event fixture
 - speed/saturation modifier resolver
 
 Exit criteria:
@@ -90,6 +92,7 @@ Exit criteria:
 - wave 3 boss triggers
 - Saturation 100 loss works
 - chain, slow, cage, and saturation mark tests pass
+- `origin_seed` execute fixture emits `boss_execute` payload and boss death reward resolves once
 
 ### Day 3: Co-op actions
 
@@ -200,6 +203,7 @@ Exit criteria:
 - core-loop 20-seed smoke band passes: `deterministicCrashCount = 0`, `preWave3LossCount <= 1`, `wave6BossReachedCount >= 8`
 - full-roster fixture checklist remains green before tuning numbers are trusted
 - full-roster fixture checklist remains green after tuning
+- core-loop pass branch may continue into Day 9 after smoke/fixture proof, but full prototype Ready cannot be claimed until a deterministic/dev-seeded wave 10 win log is retained
 
 Full Balance Sheet 50-seed pass band remains the target for core-loop pass branch polish after Day 9 branch selection. It is not required before Day 9 branch selection; if it fails, record the balance gap in known issues and keep the branch decision based on the Day 8 smoke band plus full-roster fixture proof.
 
@@ -228,7 +232,7 @@ Bot-only fallback branch deliver:
 
 Bot-only fallback branch exit criteria:
 
-- fallback is internal diagnostic only unless the criteria below pass
+- fallback is a diagnostic/show build, not full prototype Ready; it may be shown only if the criteria below pass
 - showable fallback must reach wave 6 boss in at least one scripted/dev-seeded run
 - showable fallback must run at least 5 minutes without console errors
 - showable fallback must demonstrate Supply, Swap, Merge, Link Pulse, Overclock, heat shutdown, and named disruption logs for all reached bosses
@@ -263,6 +267,7 @@ Exit criteria:
 - 5-person playtest possible
 - browser/mobile test checklist complete
 - branch-specific originality gate complete: full artifacts for core-loop pass branch; fallback subset plus explicit known-issues deferrals for bot-only fallback branch
+- core-loop pass branch full Ready includes one retained deterministic/dev-seeded wave 10 win log; fallback branch known issues state that this proof is deferred
 - all unit tests pass
 - no console errors in 10-minute run
 
@@ -276,7 +281,8 @@ Core-loop pass branch required artifacts before showing the build:
 - telemetry: Supply is not the only high-frequency action; at least two non-Supply verbs occur in first 60 seconds.
 - telemetry: utility Relay retention is >= 20% of kept Relays after wave 6 in at least one win log.
 - log: at least one Link Pulse rescue prevents shutdown or Signal collapse.
-- visual review: screen does not read as dice/guardian/random-summon UI at a glance.
+- log: at least one deterministic/dev-seeded wave 10 win is retained with seed, bot policy version, run duration, and event-log hash.
+- visual review: run [Originality Matrix](./03_originality_matrix.md) §10 UX Silhouette Test Plan, store raw 5-reviewer responses and pass/fail calculation, and pass the 4/5 threshold without dice/guardian/random-summon first impressions.
 
 Bot-only fallback branch originality subset:
 
@@ -285,7 +291,7 @@ Bot-only fallback branch originality subset:
 - 10-second clips: Supply to first Swap/link decision, Link Pulse rescue, Merge decision.
 - telemetry: at least two non-Supply verbs occur in first 60 seconds.
 - log: at least one Link Pulse rescue prevents shutdown or Signal collapse.
-- visual review: screen does not read as dice/guardian/random-summon UI at a glance.
+- visual review: run [Originality Matrix](./03_originality_matrix.md) §10 UX Silhouette Test Plan on the fallback subset, store raw 5-reviewer responses and pass/fail calculation, and pass the 4/5 threshold without dice/guardian/random-summon first impressions.
 - known issues must state that final boss screenshot and win-log retention proof are deferred until core-loop pass branch.
 - Boss disruption logs are still required for every boss reached in the fallback run; if a boss is not reached, the missing proof is listed as deferred rather than passed.
 
@@ -304,6 +310,7 @@ Bot-only fallback branch originality subset:
 - [ ] Bot-only fallback branch only: online QA is marked deferred in known issues.
 - [ ] Core-loop pass branch: full originality gate artifacts are present and pass.
 - [ ] Bot-only fallback branch: fallback originality subset is present and known-issues deferrals are explicit.
+- [ ] Originality visual review raw responses and 4/5 pass/fail calculation are stored for the selected branch.
 
 ## Deliverable Definition
 

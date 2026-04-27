@@ -126,7 +126,8 @@ Link Pulse 사용:
 2. 내 Link Pulse 버튼이 파란색으로 점멸
 3. 누르면 에너지 파동이 내 보드에서 파트너 보드로 이동
 4. 파트너 Relay heat가 내려가고 effective cycle이 Core effective duration 동안 80%로 짧아짐: base 120 ticks, Twin Gate 180 ticks
-5. 양쪽 화면에 “Saved by Link Pulse” 표시
+5. 정상 사용 시 양쪽 화면에는 “Link Pulse”만 표시
+6. `link_pulse_save` event가 발생한 경우에만 “Saved by Link Pulse” 표시
 
 ## 7. Boss Flow
 

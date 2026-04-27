@@ -137,7 +137,7 @@ anchorBonus = anchorLinked ? 1.12 : 1.0
 boardAnchorBonus = activeLinksOnAnchorRelay >= 3 ? 1.08 : 1.0
 ```
 
-위 보너스는 `linkMultiplier`에 곱한다.
+위 보너스는 `linkMultiplier`에 포함하지 않고 damage formula의 `anchorBonus` 항에서만 곱한다.
 
 배치 규칙:
 
@@ -371,7 +371,7 @@ damage = effectiveVoltage
 | gradeMultiplier | Basic 1.0, Tuned 1.35, Prime 1.85, Core 2.55, Origin 3.6 |
 | baseLinkMultiplier | `min(1 + activeLinks * 0.08, 1.32)` |
 | linkMultiplier | `baseLinkMultiplier + auroraAmpBonus`, maximum 1.57 |
-| anchorBonus | anchorBonus * boardAnchorBonus, 최대 1.21 |
+| anchorBonus | `(anchorLinked ? 1.12 : 1.0) * (activeLinksOnAnchorRelay >= 3 ? 1.08 : 1.0)`, maximum 1.21; separate from `linkMultiplier` |
 | heatOutputMultiplier | heat 50-69면 1.05, 그 외 1.0 |
 | heatPenalty | heat 70 이상 0.8, heat 90 이상 0.55 |
 | signalAmpMultiplier | linked Signal Amp active면 1.12, 아니면 1.0 |
@@ -423,8 +423,8 @@ Canonical tick pipeline:
 5. Move all Noise alive after phase 4 and resolve loop completion. Loop completion Signal/Saturation changes and no-reward removals are applied immediately.
 6. Resolve boss disruption due at this tick. If `boss_surge` also resolves this tick, fire the disruption first, then surge.
 7. Resolve Relay actions in deterministic order: boardOwner `p1`, then `p2`; lower socket index; lower `unitId` as final tie-break. Targets are chosen from state visible at the start of this phase.
-8. Queue child/spore spawns created by Relay actions or boss disruption, but do not make them targetable until phase 9.
-9. Apply queued damage, repair, heat deltas, rewards, child/spore insertions, event records, and cooldown resets in the order they were produced. Splitter reward is applied before its children are inserted. Newly inserted children/spores become targetable on the next tick.
+8. Queue non-damage spawn intents created directly by Relay actions or boss disruption, such as Null spores. Splitter child intents are not created here; they are produced only by the death transition in phase 9.
+9. Apply queued damage, repair, heat deltas, direct spawn intents, event records, and cooldown resets in the order they were produced. When a Noise reaches `hp <= 0` and `deathResolved == false`, atomically set `deathResolved = true`, pay its reward once, and enqueue its death-only outputs once: Splitter child spawns, Boss rewardCharge, and death event records. After the current production step settles, insert spawned children/spores. Newly inserted children/spores become targetable on the next tick.
 10. Recompute derived fields: active links, anchor state, speed/saturation multipliers, board heat helpers, loss/win conditions.
 11. Emit snapshot/event feed if this is a 10Hz snapshot tick.
 
@@ -567,6 +567,7 @@ Reward Charge:
 
 - 일반 Noise가 사망하면 server가 즉시 team Charge에 `rewardCharge`를 더한다.
 - 루프 완료로 제거된 Noise는 rewardCharge를 지급하지 않는다.
+- Each Noise has `deathResolved`, initialized false. Reward Charge, Splitter child spawns, Boss rewardCharge, and death event records are created only during the first transition from alive to `hp <= 0`; later damage in the same tick cannot repeat them.
 - Splitter가 사망하면 Splitter의 rewardCharge는 지급한다.
 - Splitter가 생성한 Flicker child는 `rewardCharge = 0`, `saturationOnLoop = 1`로 생성된다.
 - Splitter children spawn in the same tick after parent death resolves and after the parent reward is granted.
@@ -741,10 +742,21 @@ These are not implemented in the 2-week prototype and should not appear in proto
 
 ## 13. Prototype Acceptance Criteria
 
-2주 프로토타입은 아래를 만족해야 한다.
+2주 프로토타입은 branch별 readiness를 명확히 구분한다. `bot-only fallback branch`는 diagnostic/show build이며, core-loop pass branch 조건을 만족하기 전에는 full prototype Ready라고 부르지 않는다.
 
-- 봇과 플레이할 때 10웨이브까지 평균 6-8분
+Core-loop pass branch full prototype Ready:
+
+- deterministic/dev-seeded bot run이 wave 10 승리까지 도달하고 재현 가능한 win log를 남긴다.
+- 봇과 플레이할 때 10-wave run 평균 6-8분
 - 첫 플레이어가 2분 안에 Merge를 최소 1회 수행
 - 보스 웨이브에서 Link Pulse 사용률 50% 이상
 - 패배 시 원인 메시지가 실제 로그와 일치
+- local two-tab WebSocket run이 명령 sync, wrong-board command rejection, duplicate request handling을 통과한다.
 - 플레이테스트 5명 중 3명 이상이 “한 판 더”를 선택
+
+Bot-only fallback branch diagnostic/show build:
+
+- scripted/dev-seeded run에서 wave 6 boss까지 도달한다.
+- 5분 이상 console error 없이 실행된다.
+- Supply, Swap, Merge, Link Pulse, Overclock, heat shutdown, reached boss disruption logs를 보여준다.
+- known issues에 multiplayer, final boss screenshot, win-log retention proof, full prototype Ready가 deferred라고 명시한다.
