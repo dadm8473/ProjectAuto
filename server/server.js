@@ -4,14 +4,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  castPartnerBoost,
+  castLinkPulse,
   createGame,
-  mergeUnits,
+  mergeRelays,
+  overclockRelay,
   serializeState,
-  summonUnit,
+  supplyRelay,
+  swapRelays,
   tickGame,
   tryBuyShopItem,
-  upgradeSummonOdds
+  upgradeSupplyFocus
 } from '../src/shared/game.js';
 import { acceptKey, decodeClientFrame, encodeServerFrame } from './ws.js';
 
@@ -25,7 +27,8 @@ const mime = {
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.webmanifest': 'application/manifest+json; charset=utf-8',
-  '.svg': 'image/svg+xml'
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png'
 };
 
 const room = {
@@ -93,10 +96,12 @@ function handleAction(socket, action) {
   const playerId = client?.playerId ?? 'guest';
   let result = { ok: false, reason: 'Unknown action.' };
   const boardPlayer = playerId === room.game.players[1]?.id ? 'p2' : 'p1';
-  if (action.type === 'summon') result = summonUnit(room.game, { playerId: boardPlayer });
-  if (action.type === 'merge') result = mergeUnits(room.game, { playerId: boardPlayer, slotIds: action.slotIds ?? [] });
-  if (action.type === 'chance') result = upgradeSummonOdds(room.game, { playerId: boardPlayer });
-  if (action.type === 'boost') result = castPartnerBoost(room.game, { playerId: boardPlayer });
+  if (action.type === 'supply' || action.type === 'summon') result = supplyRelay(room.game, { playerId: boardPlayer });
+  if (action.type === 'merge') result = mergeRelays(room.game, { playerId: boardPlayer, slotIds: action.slotIds ?? [] });
+  if (action.type === 'swap') result = swapRelays(room.game, { playerId: boardPlayer, from: action.from, to: action.to });
+  if (action.type === 'focus' || action.type === 'chance') result = upgradeSupplyFocus(room.game, { playerId: boardPlayer });
+  if (action.type === 'pulse' || action.type === 'boost') result = castLinkPulse(room.game, { playerId: boardPlayer });
+  if (action.type === 'overclock') result = overclockRelay(room.game, { playerId: boardPlayer, slot: action.slot });
   if (action.type === 'buy') result = tryBuyShopItem(room.game, { playerId, itemId: action.itemId });
   if (!result.ok) send(socket, { type: 'error', reason: result.reason });
 }
@@ -159,6 +164,6 @@ function tickRoom() {
 const server = http.createServer(serve);
 server.on('upgrade', upgrade);
 server.listen(port, () => {
-  console.log(`ProjectAuto Fortune Relay running at http://localhost:${port}`);
+  console.log(`ProjectAuto Signal Relay running at http://localhost:${port}`);
 });
 setInterval(tickRoom, 100);

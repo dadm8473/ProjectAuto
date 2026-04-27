@@ -1,16 +1,15 @@
 :root {
   color-scheme: dark;
-  --bg: #11161f;
-  --panel: #182331;
-  --panel-2: #223044;
-  --ink: #f7f4e9;
-  --muted: #aeb8c4;
-  --line: rgba(255, 255, 255, 0.15);
-  --gold: #ffcf5a;
-  --mana: #49d7ff;
-  --gem: #d0a2ff;
-  --danger: #ff5c7a;
-  --good: #6ee787;
+  --bg: #101312;
+  --panel: #151b18;
+  --panel-2: #202620;
+  --ink: #f5f0dc;
+  --muted: #a8b4a7;
+  --line: rgba(245, 240, 220, 0.16);
+  --charge: #f4c95d;
+  --link: #58d7ff;
+  --gem: #95d5b2;
+  --danger: #ff6f59;
 }
 
 * {
@@ -24,7 +23,9 @@ body {
   height: 100%;
   margin: 0;
   overflow: hidden;
-  background: var(--bg);
+  background:
+    radial-gradient(circle at 35% 0%, rgba(88, 215, 255, 0.18), transparent 32%),
+    linear-gradient(180deg, #101312, #181615 58%, #121614);
   color: var(--ink);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -32,13 +33,13 @@ body {
 button {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: linear-gradient(180deg, #2b3d55, #1f2e43);
+  background: linear-gradient(180deg, #263126, #171d19);
   color: var(--ink);
   font: inherit;
   font-weight: 850;
   letter-spacing: 0;
   min-height: 42px;
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08), 0 4px 10px rgba(0, 0, 0, 0.18);
+  box-shadow: inset 0 1px rgba(245, 240, 220, 0.08), 0 7px 16px rgba(0, 0, 0, 0.24);
 }
 
 button:active {
@@ -52,8 +53,8 @@ button:active {
   height: 100dvh;
   margin: 0 auto;
   display: grid;
-  grid-template-rows: 54px minmax(0, 1fr) 158px;
-  background: #11161f;
+  grid-template-rows: 56px minmax(0, 1fr) 190px;
+  background: rgba(10, 13, 12, 0.96);
 }
 
 .hud {
@@ -63,19 +64,20 @@ button:active {
   gap: 8px;
   padding: max(8px, env(safe-area-inset-top)) 10px 8px;
   border-bottom: 1px solid var(--line);
-  background: rgba(17, 22, 31, 0.98);
+  background: rgba(16, 19, 18, 0.98);
 }
 
 .brand strong {
   display: block;
   font-size: 16px;
+  letter-spacing: 0;
 }
 
 .brand span {
   display: block;
   color: var(--muted);
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 800;
 }
 
 .meters {
@@ -92,10 +94,22 @@ button:active {
   padding: 0 7px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(245, 240, 220, 0.055);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 850;
   white-space: nowrap;
+}
+
+#chargeMeter {
+  color: var(--charge);
+}
+
+#linkMeter {
+  color: var(--link);
+}
+
+#gemMeter {
+  color: var(--gem);
 }
 
 .stage-wrap {
@@ -104,27 +118,27 @@ button:active {
   place-items: center;
   min-height: 0;
   overflow: hidden;
-  background: #0d121a;
+  background: #0a0d0c;
 }
 
 #gameCanvas {
-  width: min(100%, calc((100dvh - 212px) * 390 / 720));
+  width: min(100%, calc((100dvh - 246px) * 390 / 500));
   height: auto;
   max-height: 100%;
-  aspect-ratio: 390 / 720;
+  aspect-ratio: 390 / 500;
   touch-action: none;
 }
 
 .toast {
   position: absolute;
   left: 50%;
-  bottom: 14px;
+  bottom: 12px;
   transform: translateX(-50%);
   max-width: 88%;
   padding: 10px 12px;
-  border: 1px solid rgba(255, 207, 90, 0.55);
+  border: 1px solid rgba(244, 201, 93, 0.55);
   border-radius: 8px;
-  background: rgba(22, 28, 38, 0.94);
+  background: rgba(14, 18, 16, 0.94);
   color: var(--ink);
   font-weight: 850;
   text-align: center;
@@ -139,36 +153,47 @@ button:active {
 
 .status-line {
   display: grid;
-  grid-template-columns: 0.75fr 1.2fr 1fr;
+  grid-template-columns: 0.75fr 1.55fr 1fr;
   gap: 6px;
   margin-bottom: 8px;
 }
 
 .primary-actions {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 7px;
 }
 
 .secondary-actions {
   display: grid;
-  grid-template-columns: 0.7fr 0.8fr 1.2fr;
+  grid-template-columns: 0.72fr 0.86fr 1.36fr;
   gap: 7px;
   margin-top: 7px;
 }
 
-#summonButton {
-  border-color: rgba(255, 207, 90, 0.58);
-  background: linear-gradient(180deg, #74591f, #3f331c);
+#supplyButton {
+  border-color: rgba(244, 201, 93, 0.62);
+  background: linear-gradient(180deg, #6d531f, #2d2517);
 }
 
 #mergeButton {
-  border-color: rgba(255, 122, 89, 0.58);
-  background: linear-gradient(180deg, #6c382d, #3d2630);
+  border-color: rgba(255, 111, 89, 0.6);
+  background: linear-gradient(180deg, #65332b, #261c1a);
 }
 
-#boostButton {
-  border-color: rgba(73, 215, 255, 0.58);
+#swapButton {
+  border-color: rgba(88, 215, 255, 0.56);
+  background: linear-gradient(180deg, #244950, #142123);
+}
+
+#pulseButton {
+  border-color: rgba(88, 215, 255, 0.74);
+  background: linear-gradient(180deg, #1d6072, #14272b);
+}
+
+#overclockButton {
+  border-color: rgba(255, 111, 89, 0.72);
+  background: linear-gradient(180deg, #743d2a, #261817);
 }
 
 .drawer {
@@ -177,11 +202,11 @@ button:active {
   right: 8px;
   bottom: 8px;
   z-index: 4;
-  max-height: min(62dvh, 420px);
+  max-height: min(64dvh, 440px);
   padding: 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(24, 35, 49, 0.98);
+  background: rgba(21, 27, 24, 0.98);
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.42);
 }
 
@@ -202,7 +227,7 @@ button:active {
   display: grid;
   gap: 8px;
   overflow: auto;
-  max-height: calc(min(62dvh, 420px) - 60px);
+  max-height: calc(min(64dvh, 440px) - 60px);
 }
 
 .row {
@@ -213,7 +238,7 @@ button:active {
   padding: 9px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(245, 240, 220, 0.055);
 }
 
 .row strong {

@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#11161f">
-    <title>Fortune Relay</title>
+    <meta name="theme-color" content="#101312">
+    <title>Signal Relay</title>
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="stylesheet" href="/src/client/styles.css">
   </head>
@@ -12,32 +12,34 @@
     <main class="shell">
       <section class="hud">
         <div class="brand">
-          <strong>Fortune Relay</strong>
+          <strong>Signal Relay</strong>
           <span id="netStatus">BOT CO-OP</span>
         </div>
         <div class="meters">
-          <span id="goldMeter">G 120</span>
-          <span id="manaMeter">M 40</span>
-          <span id="gemMeter">D 30</span>
+          <span id="chargeMeter">C 110</span>
+          <span id="linkMeter">L 36</span>
+          <span id="gemMeter">G 30</span>
         </div>
       </section>
 
       <section class="stage-wrap">
-        <canvas id="gameCanvas" width="390" height="720" aria-label="Fortune Relay cooperative defense board"></canvas>
+        <canvas id="gameCanvas" width="390" height="500" aria-label="Signal Relay cooperative defense board"></canvas>
         <div id="toast" class="toast" hidden></div>
       </section>
 
       <section class="action-panel">
         <div class="status-line">
           <span id="waveMeter">Wave 1</span>
-          <span id="pressureMeter">Pressure 0/100</span>
+          <span id="signalMeter">Signal 100 / Sat 0</span>
           <span id="bossMeter">Boss --</span>
         </div>
         <div class="primary-actions">
-          <button id="summonButton">Summon</button>
+          <button id="supplyButton">Supply</button>
           <button id="mergeButton">Merge x3</button>
-          <button id="chanceButton">Chance Up</button>
-          <button id="boostButton">Partner Boost</button>
+          <button id="swapButton">Swap</button>
+          <button id="focusButton">Focus</button>
+          <button id="pulseButton">Link Pulse</button>
+          <button id="overclockButton">Overclock</button>
         </div>
         <div class="secondary-actions">
           <button id="botButton">Bot</button>

@@ -2,115 +2,167 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  castPartnerBoost,
+  castLinkPulse,
   createGame,
-  mergeUnits,
+  computeActiveLinks,
+  mergeRelays,
+  overclockRelay,
   serializeState,
-  summonUnit,
+  supplyRelay,
+  swapRelays,
   tickGame,
-  upgradeSummonOdds,
-  tryBuyShopItem
+  tryBuyShopItem,
+  upgradeSupplyFocus
 } from '../src/shared/game.js';
-import { HEROES, SHOP } from '../src/shared/content.js';
+import { RELAY_TYPES, SHOP } from '../src/shared/content.js';
 
-test('a new run is a two-board co-op defense with monetization scaffolding', () => {
+function installRelay(game, playerId, slot, relayId, overrides = {}) {
+  game.boards[playerId].slots[slot] = {
+    id: `${playerId}-${slot}-${relayId}`,
+    relayId,
+    tier: overrides.tier ?? 1,
+    grade: overrides.grade ?? RELAY_TYPES[relayId].grade,
+    heat: overrides.heat ?? 0,
+    cooldown: overrides.cooldown ?? 0,
+    owner: playerId,
+    linkShape: overrides.linkShape ?? RELAY_TYPES[relayId].linkShape,
+    overclockUntil: 0,
+    linkPulseUntil: 0,
+    shutdownUntil: overrides.shutdownUntil ?? 0
+  };
+  return game.boards[playerId].slots[slot];
+}
+
+test('a new run is a two-board Signal Relay defense with earned-only BM scaffolding', () => {
   const game = createGame({ mode: 'bot', seed: 42 });
 
-  assert.equal(game.title, 'Fortune Relay');
+  assert.equal(game.title, 'Signal Relay');
   assert.equal(game.boards.p1.slots.length, 12);
   assert.equal(game.boards.p2.slots.length, 12);
-  assert.equal(game.resources.gold, 120);
-  assert.equal(game.pressure.limit, 100);
-  assert.equal(SHOP.items.some((item) => item.category === 'cosmetic'), true);
+  assert.equal(game.resources.charge, 110);
+  assert.equal(game.resources.linkEnergy, 36);
+  assert.equal(game.signal.integrity, 100);
+  assert.equal(game.saturation.limit, 100);
+  assert.equal(SHOP.items.every((item) => item.realMoney === false), true);
 });
 
-test('summoning is random, spends shared gold, fills a board slot, and advances pity', () => {
+test('Supply spends Charge, fills the first empty socket, and advances pity', () => {
   const game = createGame({ mode: 'bot', seed: 9 });
-  const before = game.resources.gold;
+  const before = game.resources.charge;
 
-  const result = summonUnit(game, { playerId: 'p1' });
+  const result = supplyRelay(game, { playerId: 'p1' });
 
   assert.equal(result.ok, true);
-  assert.equal(game.resources.gold, before - 20);
+  assert.equal(game.resources.charge, before - 20);
   assert.equal(game.boards.p1.slots.filter(Boolean).length, 1);
-  assert.equal(game.stats.summons.p1, 1);
-  assert.ok(game.rng.pity.p1 >= 1 || HEROES[result.unit.hero].rarity !== 'common');
+  assert.equal(game.stats.supplies.p1, 1);
+  assert.ok(game.rng.pity.p1 >= 1 || result.relay.grade !== 'Basic');
 });
 
-test('chance upgrades shift the summon table toward higher rarities', () => {
+test('Supply Focus shifts the table toward higher grades without paid power', () => {
   const game = createGame({ mode: 'bot', seed: 17 });
-  game.resources.gold = 300;
-  const beforeEpic = game.summonOdds.epic;
+  game.resources.charge = 300;
+  const beforePrime = game.supplyOdds.Prime;
 
-  const result = upgradeSummonOdds(game, { playerId: 'p1' });
+  const result = upgradeSupplyFocus(game, { playerId: 'p1' });
 
   assert.equal(result.ok, true);
-  assert.ok(game.summonOdds.epic > beforeEpic);
-  assert.equal(game.stats.chanceUps.p1, 1);
+  assert.ok(game.supplyOdds.Prime > beforePrime);
+  assert.equal(game.stats.focusUps.p1, 1);
 });
 
-test('three matching units merge into a higher-star dramatic unit', () => {
+test('active links require reciprocal link shapes and ignore offline relays', () => {
   const game = createGame({ mode: 'bot', seed: 3 });
-  game.boards.p1.slots[0] = { id: 'u1', hero: 'sprout', star: 1, cooldown: 0, owner: 'p1' };
-  game.boards.p1.slots[1] = { id: 'u2', hero: 'sprout', star: 1, cooldown: 0, owner: 'p1' };
-  game.boards.p1.slots[2] = { id: 'u3', hero: 'sprout', star: 1, cooldown: 0, owner: 'p1' };
+  installRelay(game, 'p1', 4, 'needle_beam', { linkShape: ['E'] });
+  installRelay(game, 'p1', 5, 'signal_amp', { linkShape: ['W', 'E'] });
+  installRelay(game, 'p1', 6, 'sink_stone', { linkShape: ['W'], shutdownUntil: 5 });
 
-  const result = mergeUnits(game, { playerId: 'p1', slotIds: [0, 1, 2] });
+  assert.equal(computeActiveLinks(game.boards.p1, 0).length, 1);
+  assert.equal(computeActiveLinks(game.boards.p1, 6).length, 2);
+});
+
+test('three matching relays merge into a hotter higher-tier relay and clear sockets', () => {
+  const game = createGame({ mode: 'bot', seed: 3 });
+  installRelay(game, 'p1', 0, 'needle_beam', { heat: 60 });
+  installRelay(game, 'p1', 1, 'needle_beam', { heat: 30 });
+  installRelay(game, 'p1', 2, 'needle_beam', { heat: 45 });
+
+  const result = mergeRelays(game, { playerId: 'p1', slotIds: [0, 1, 2] });
 
   assert.equal(result.ok, true);
-  assert.equal(game.boards.p1.slots[0].star, 2);
+  assert.equal(game.boards.p1.slots[0].tier, 2);
+  assert.equal(game.boards.p1.slots[0].heat, 20);
   assert.equal(game.boards.p1.slots[1], null);
   assert.equal(game.boards.p1.slots[2], null);
-  assert.notEqual(game.boards.p1.slots[0].hero, 'sprout');
   assert.equal(game.effects.some((effect) => effect.type === 'merge'), true);
 });
 
-test('partner boost is a cooperative action that buffs the other board', () => {
+test('Swap changes board geometry and Link Pulse only emits save copy on a real save event', () => {
   const game = createGame({ mode: 'bot', seed: 12 });
-  game.resources.mana = 80;
-  game.boards.p2.slots[0] = { id: 'u9', hero: 'volt', star: 2, cooldown: 0, owner: 'p2' };
+  game.resources.linkEnergy = 80;
+  installRelay(game, 'p1', 0, 'needle_beam', { linkShape: ['E'] });
+  installRelay(game, 'p1', 1, 'signal_amp', { linkShape: ['W'] });
+  installRelay(game, 'p2', 5, 'coolant_moss', { heat: 96 });
 
-  const result = castPartnerBoost(game, { playerId: 'p1' });
+  const beforeLinks = computeActiveLinks(game.boards.p1, game.now).length;
+  const swap = swapRelays(game, { playerId: 'p1', from: 0, to: 4 });
+  const pulse = castLinkPulse(game, { playerId: 'p1' });
 
-  assert.equal(result.ok, true);
-  assert.equal(game.boards.p2.slots[0].boostedUntil > game.now, true);
-  assert.equal(game.resources.mana, 45);
+  assert.equal(swap.ok, true);
+  assert.equal(beforeLinks, 1);
+  assert.equal(computeActiveLinks(game.boards.p1, game.now).length, 0);
+  assert.equal(pulse.ok, true);
+  assert.equal(game.boards.p2.slots[5].heat < 90, true);
+  assert.equal(game.effects.some((effect) => effect.type === 'link_pulse'), true);
+  assert.equal(game.effects.some((effect) => effect.type === 'link_pulse_save'), true);
 });
 
-test('bot partner waits for the player to start before spending shared gold', () => {
+test('Overclock creates boss burst power and heat shutdown risk', () => {
+  const game = createGame({ mode: 'bot', seed: 19 });
+  game.boss.active = true;
+  const relay = installRelay(game, 'p1', 0, 'prism_lance', { heat: 82 });
+
+  const result = overclockRelay(game, { playerId: 'p1', slot: 0 });
+
+  assert.equal(result.ok, true);
+  assert.equal(relay.heat >= 100, true);
+  assert.equal(relay.shutdownUntil > game.now, true);
+  assert.equal(game.effects.some((effect) => effect.type === 'shutdown'), true);
+});
+
+test('bot partner waits for the player to start before spending shared Charge', () => {
   const game = createGame({ mode: 'bot', seed: 44 });
 
   for (let i = 0; i < 30; i += 1) tickGame(game, 0.1);
 
   assert.equal(game.boards.p1.slots.filter(Boolean).length, 0);
   assert.equal(game.boards.p2.slots.filter(Boolean).length, 0);
-  assert.equal(game.resources.gold, 120);
+  assert.equal(game.resources.charge, 110);
 
-  summonUnit(game, { playerId: 'p1' });
-  for (let i = 0; i < 30; i += 1) tickGame(game, 0.1);
+  supplyRelay(game, { playerId: 'p1' });
+  for (let i = 0; i < 36; i += 1) tickGame(game, 0.1);
 
   assert.ok(game.boards.p2.slots.filter(Boolean).length >= 1);
-  assert.ok(game.resources.gold >= 20);
 });
 
-test('combat creates a boss timer, rewards kills, and fails when pressure reaches the cap', () => {
+test('combat rewards kills, starts boss timers, and loses on Signal collapse', () => {
   const game = createGame({ mode: 'solo', seed: 5 });
-  game.boards.p1.slots[0] = { id: 'u1', hero: 'cannon', star: 3, cooldown: 0, owner: 'p1' };
-  game.boards.p2.slots[0] = { id: 'u2', hero: 'oracle', star: 2, cooldown: 0, owner: 'p2' };
+  installRelay(game, 'p1', 5, 'storm_heart', { tier: 3, grade: 'Core' });
+  installRelay(game, 'p2', 5, 'origin_seed', { tier: 2, grade: 'Origin' });
 
-  for (let i = 0; i < 360; i += 1) tickGame(game, 0.1);
+  for (let i = 0; i < 520; i += 1) tickGame(game, 0.1);
 
   assert.ok(game.wave.index >= 1);
   assert.ok(game.stats.kills > 0);
   assert.ok(game.boss.timer <= game.boss.limit);
 
-  game.pressure.count = 100;
+  game.signal.integrity = 0;
   tickGame(game, 0.1);
   assert.equal(game.over, true);
   assert.equal(game.won, false);
 });
 
-test('shop purchases use earned gems and unlock account-style cosmetics', () => {
+test('shop purchases use earned gems and unlock cosmetic-only rewards', () => {
   const game = createGame({ mode: 'bot', seed: 31 });
   game.resources.gems = 150;
 
@@ -121,9 +173,9 @@ test('shop purchases use earned gems and unlock account-style cosmetics', () => 
   assert.deepEqual(game.unlocks, ['mythic-aura']);
 });
 
-test('serialized state omits private rng data but keeps all client board state', () => {
+test('serialized state omits private rng data and exposes player-readable Relay state', () => {
   const game = createGame({ mode: 'bot', seed: 29 });
-  summonUnit(game, { playerId: 'p1' });
+  supplyRelay(game, { playerId: 'p1' });
   tickGame(game, 0.25);
 
   const snapshot = serializeState(game);
@@ -132,4 +184,6 @@ test('serialized state omits private rng data but keeps all client board state',
   assert.equal(snapshot.rng, undefined);
   assert.equal(snapshot.boards.p1.slots.length, 12);
   assert.equal(typeof snapshot.now, 'number');
+  assert.equal(snapshot.resources.charge >= 0, true);
+  assert.equal(snapshot.signal.integrity <= 100, true);
 });
