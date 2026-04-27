@@ -194,11 +194,14 @@ supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
 같은 `type + tier` 3개를 하나로 합성한다.
 
 - 결과 tier는 +1
+- tier 5 Relay는 Merge할 수 없다. 서버는 `MERGE_MAX_TIER`로 거부한다.
 - grade는 합성 재료 평균 rank보다 낮아지지 않는다.
 - grade rank: Basic 0, Tuned 1, Prime 2, Core 3, Origin 4.
 - `minimumResultGradeRank = floor((rankA + rankB + rankC) / 3)`.
 - 서버는 결과 grade를 추가 upgrade할 수 있지만 `minimumResultGradeRank`보다 낮게 만들 수 없다.
 - 결과 type은 70% 같은 type, 30% 같은 tag 내 다른 type
+- result type 후보는 최종 result grade에서 사용 가능한 grade pool을 가진 type으로 제한한다.
+- 다른 type 후보가 현재 result grade보다 높은 minimum grade를 요구하면 result grade를 그 minimum grade까지 승격한 뒤 후보에 포함할 수 있다.
 - 같은 tag 내 다른 type 후보가 없으면 결과 type은 100% 같은 type이다.
 - 결과 `linkShape`는 결과 type의 shape pool에서 새로 roll한다. 재료의 linkShape를 상속하지 않는다.
 - v0 shape pool은 roster의 base `linkShape`를 90도씩 회전한 unique variants다. `All`은 회전하지 않고 그대로 사용한다.
@@ -248,10 +251,10 @@ linkPulseSignalGain =
 - 효과: 5초 동안 공격/수리량 +35%
 - 위험: 종료 후 heat 70 이상 Relay가 있으면 3초 정지
 - heat 비용은 발동 즉시 모든 Relay에 +20을 더하는 방식이다. 지속시간 동안 heat/cycle multiplier는 없다.
-- 종료 시점에 heat >= 70인 Relay는 `overclock_stall` 이벤트를 기록하고 `shutdownUntilTick = currentTick + 3s`가 된다.
+- 종료 시점에 heat >= 70인 Relay는 `overclock_stall` 이벤트를 기록하고 `shutdownUntilTick = currentTick + 60`이 된다.
 - Overclock stall은 heat를 reset하지 않는다.
 - Overclock stall은 Heat cascade의 shutdown event로 계산하지 않는다.
-- 양쪽 보드의 Overclock이 동시에 active가 되는 첫 tick에 team `dualOverclockBossUntilTick = currentTick + 4s`를 설정한다.
+- 양쪽 보드의 Overclock이 동시에 active가 되는 첫 tick에 team `dualOverclockBossUntilTick = currentTick + 80`을 설정한다.
 
 ## 8. Combat Rules
 
@@ -380,7 +383,7 @@ Null spore:
 - spawn progress는 `wrap(boss.progress - 0.06)`와 `wrap(boss.progress + 0.06)`이다.
 - stats는 Balance Sheet의 `null_spore` row를 사용한다.
 - `null_spore`는 Null로 취급되어 `null_cage`의 우선 타겟이 된다.
-- `null_spore`가 루프를 완료하면 Signal integrity -4, `anchorSlowedUntilTick = currentTick + 6s`를 적용하고 제거된다.
+- `null_spore`가 루프를 완료하면 Signal integrity -4, `anchorSlowedUntilTick = currentTick + 120`을 적용하고 제거된다.
 - `null_spore`는 일반 Null의 Signal -8 감염 규칙을 사용하지 않는다.
 
 Reward Charge:
@@ -441,7 +444,7 @@ Null Anchor infection:
 - `null_cage` 효과를 받고 있는 Null은 감염하지 못한다.
 - 감염 대상은 `anchorHeat`가 더 높은 보드다. 동률이면 Saturation 기여가 높은 보드를 고른다.
 - `anchorHeat`는 Anchor socket Relay의 heat이며, Anchor socket이 비어 있으면 0이다.
-- 감염 시 Signal integrity -8, 대상 Anchor socket Relay heat +20, `anchorSlowedUntilTick = currentTick + 8s`.
+- 감염 시 Signal integrity -8, 대상 Anchor socket Relay heat +20, `anchorSlowedUntilTick = currentTick + 160`.
 - 로그 이벤트는 `null_anchor_infected`를 기록한다.
 
 Signal 회복 조건:

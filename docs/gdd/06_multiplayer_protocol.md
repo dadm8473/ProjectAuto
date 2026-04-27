@@ -167,6 +167,7 @@ Validation:
 - slots are distinct
 - all slots contain Relay
 - all selected Relays belong to player board
+- selected Relays are not tier 5
 - same type
 - same tier
 - player owns board
@@ -507,6 +508,7 @@ Server owns:
 | NOT_ENOUGH_LINK | Link Energy too low |
 | COOLDOWN | action cooldown active |
 | MERGE_NOT_MATCHING | invalid merge |
+| MERGE_MAX_TIER | selected Relays are already tier 5 |
 | GAME_ALREADY_ENDED | command after result |
 | STALE_COMMAND | command arrived too late |
 | DUPLICATE_REQUEST | same clientId/requestId reused with different payload |
