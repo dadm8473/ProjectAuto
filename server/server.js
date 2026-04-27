@@ -15,6 +15,7 @@ import {
   tryBuyShopItem,
   upgradeSupplyFocus
 } from '../src/shared/game.js';
+import { boardForPlayer } from './room.js';
 import { acceptKey, decodeClientFrame, encodeServerFrame } from './ws.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -69,7 +70,7 @@ function send(client, message) {
 
 function broadcast(message) {
   for (const [client, meta] of room.clients.entries()) {
-    const boardPlayer = meta.playerId === room.game.players[1]?.id ? 'p2' : 'p1';
+    const boardPlayer = boardForPlayer(room.game.players, meta.playerId);
     send(client, { ...message, playerId: meta.playerId, boardPlayer });
   }
 }
@@ -93,13 +94,13 @@ function handleAction(socket, action) {
     client.playerId = action.playerId || client.playerId;
     client.name = String(action.name || 'Player').slice(0, 18);
     assignPlayers();
-    const boardPlayer = client.playerId === room.game.players[1]?.id ? 'p2' : 'p1';
+    const boardPlayer = boardForPlayer(room.game.players, client.playerId);
     send(socket, { type: 'state', state: serializeState(room.game), playerId: client.playerId, boardPlayer });
     return;
   }
   const playerId = client?.playerId ?? 'guest';
   let result = { ok: false, reason: 'Unknown action.' };
-  const boardPlayer = playerId === room.game.players[1]?.id ? 'p2' : 'p1';
+  const boardPlayer = boardForPlayer(room.game.players, playerId);
   if (action.type === 'supply' || action.type === 'summon') result = supplyRelay(room.game, { playerId: boardPlayer });
   if (action.type === 'merge') result = mergeRelays(room.game, { playerId: boardPlayer, slotIds: action.slotIds ?? [] });
   if (action.type === 'swap') result = swapRelays(room.game, { playerId: boardPlayer, from: action.from, to: action.to });
@@ -148,7 +149,7 @@ function upgrade(req, socket) {
     room.clients.delete(socket);
     assignPlayers();
   });
-  const boardPlayer = id === room.game.players[1]?.id ? 'p2' : 'p1';
+  const boardPlayer = boardForPlayer(room.game.players, id);
   send(socket, { type: 'state', state: serializeState(room.game), playerId: id, boardPlayer });
 }
 

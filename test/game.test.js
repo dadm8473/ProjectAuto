@@ -201,6 +201,25 @@ test('Swap changes board geometry and Link Pulse only emits save copy on a real 
   assert.equal(game.effects.some((effect) => effect.type === 'link_pulse_save'), true);
 });
 
+test('Link Pulse enforces team cooldown and Twin Gate improves heat drop and duration', () => {
+  const game = createGame({ mode: 'bot', seed: 91 });
+  game.resources.linkEnergy = 100;
+  installRelay(game, 'p1', 5, 'twin_gate', { linkShape: ['E'] });
+  installRelay(game, 'p1', 6, 'signal_amp', { linkShape: ['W'] });
+  installRelay(game, 'p2', 5, 'coolant_moss', { heat: 98 });
+  installRelay(game, 'p2', 6, 'rain_pump', { heat: 92 });
+
+  const firstPulse = castLinkPulse(game, { playerId: 'p1' });
+  const secondPulse = castLinkPulse(game, { playerId: 'p2' });
+
+  assert.equal(firstPulse.ok, true);
+  assert.equal(game.boards.p2.slots[5].heat, 45);
+  assert.equal(game.boards.p2.slots[6].heat, 39);
+  assert.equal(game.boards.p2.slots[5].linkPulseUntil - game.now, 9);
+  assert.equal(secondPulse.ok, false);
+  assert.equal(game.resources.linkEnergy, 60);
+});
+
 test('Overclock buffs the whole board, adds heat to every Relay, and stalls hot Relays on expiry', () => {
   const game = createGame({ mode: 'bot', seed: 19 });
   game.boss.active = true;
@@ -240,6 +259,25 @@ test('Dual Overclock applies a boss-only damage multiplier while both boards are
   assert.equal(dualOverclockDamage > soloOverclockDamage * 1.25, true);
   assert.equal(dualOverclockDamage < soloOverclockDamage * 1.35, true);
 });
+
+test('Dual Overclock does not buff non-boss damage and expires after 4 seconds', () => {
+  function runScenario({ dual, targetType, elapsed }) {
+    const game = createGame({ mode: 'solo', seed: 78 });
+    game.boss.active = targetType === 'boss';
+    installRelay(game, 'p1', 5, 'needle_beam', { heat: 0 });
+    installRelay(game, 'p2', 5, 'coolant_moss', { heat: 0 });
+    installNoise(game, { type: targetType, hp: 1000, maxHp: 1000, speed: 0, progress: 0.2, rewardCharge: 0, rewardLink: 0 });
+    overclockRelay(game, { playerId: 'p1', slot: 5 });
+    if (dual) overclockRelay(game, { playerId: 'p2', slot: 5 });
+    if (elapsed > 0) game.now += elapsed;
+    tickGame(game, 0.1);
+    return game.effects.find((effect) => effect.type === 'hit')?.damage ?? 0;
+  }
+
+  assert.equal(runScenario({ dual: true, targetType: 'crawler', elapsed: 0 }), runScenario({ dual: false, targetType: 'crawler', elapsed: 0 }));
+  assert.equal(runScenario({ dual: true, targetType: 'boss', elapsed: 4.2 }), runScenario({ dual: false, targetType: 'boss', elapsed: 4.2 }));
+});
+
 
 test('bot partner waits for the player to start before spending shared Charge', () => {
   const game = createGame({ mode: 'bot', seed: 44 });

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { decodeClientFrame, encodeServerFrame } from '../server/ws.js';
+import { boardForPlayer } from '../server/room.js';
 
 test('server frames encode a readable text websocket payload', () => {
   const frame = encodeServerFrame(JSON.stringify({ type: 'state', ok: true }));
@@ -20,4 +21,15 @@ test('masked client frames decode into text payloads', () => {
   for (let i = 0; i < payload.length; i += 1) frame[6 + i] = payload[i] ^ mask[i % 4];
 
   assert.equal(decodeClientFrame(frame), '{"type":"join"}');
+});
+
+test('room player mapping gives the second online socket board p2', () => {
+  const players = [
+    { id: 'socket-a', name: 'Player 1', bot: false },
+    { id: 'socket-b', name: 'Player 2', bot: false }
+  ];
+
+  assert.equal(boardForPlayer(players, 'socket-a'), 'p1');
+  assert.equal(boardForPlayer(players, 'socket-b'), 'p2');
+  assert.equal(boardForPlayer(players, 'late-joiner'), 'p1');
 });
