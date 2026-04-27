@@ -140,7 +140,7 @@ Before implementation milestone:
 | random unit supply | summon button spam becomes the main fun | team Charge is shared, but Supply cost and pity are personal; Supply creates heat-management risk | run telemetry shows Supply is not the only high-frequency action |
 | merge loop | three identical units merge into pure power climb | circuit fusion rerolls link shape, compresses heat, and can break or improve network topology | merge preview shows destination and link-count range before confirmation |
 | board value | strongest unit is always best | heat, Sink, Repair, Field, Amp, and Anchor links make low-DPS utility pieces valuable | win logs include at least 20% utility Relay retention past wave 6 |
-| co-op help | partner support is just a generic buff | Link Pulse targets partner heat, saturation, and board failures | at least one saved run has Link Pulse preventing shutdown or signal collapse |
+| co-op help | partner support is just a generic buff | Link Pulse targets partner heat, cycle recovery, and board failure prevention | at least one saved run has Link Pulse preventing shutdown or signal collapse |
 | boss pressure | boss is only a large HP enemy with timer | bosses corrupt board rules, link behavior, or heat state | each boss has one named board-level disruption in combat log |
 | economy | paid or random power is the long-term chase | BM remains cosmetic/meta-expression only for v0 | combat sim works with all store data disabled |
 | UX rhythm | player repeatedly taps summon/merge without reading board | automatic Supply is followed by Swap, Merge, and Link evaluation | tutorial telemetry records Swap or Link evaluation before first boss |

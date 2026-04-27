@@ -67,7 +67,7 @@ Signal은 팀 생명력이다.
 
 - `integrity`: 100에서 시작
 - `saturation`: 0에서 시작, 100 도달 시 패배
-- `stability`: 웨이브 종료 시 회복/보너스에 사용
+- `stability`: M2/deferred field. 2주 v0 state와 protocol snapshot에는 포함하지 않는다.
 
 ### Team Economy
 
@@ -114,7 +114,10 @@ Anchor 칸:
 Link activation:
 
 - 두 Relay가 상하좌우로 인접해야 한다.
-- A의 `linkShape`에 B 방향이 있고, B의 `linkShape`에 A 방향이 있으면 active link 1개다.
+- A의 `linkShape`에 B 방향이 있고, B의 `linkShape`에 A 방향이 있으면 raw link 1개다.
+- raw link가 `disabledLinks`에 포함되어 있지 않으면 effective active link 1개다.
+- v0에서 `activeLinks`라는 필드명은 항상 effective active links를 뜻한다.
+- Damage, Anchor, Amp, Support, Merge preview link count는 모두 effective active links만 사용한다.
 - `All`은 N/E/S/W 모든 방향으로 취급한다.
 - active link는 Relay별 최대 4개, damage formula에서는 최대 4개까지만 계산한다.
 - Anchor socket Relay와 active link로 연결된 Relay는 `anchorLinked = true`.
@@ -195,6 +198,7 @@ supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
 - 결과 heat는 `min(40, floor(averageIngredientHeat * 0.45))`다.
 - Merge preview는 확정 전 destination socket, tier/grade floor, 가능한 link count range를 보여준다. 최종 type/linkShape는 서버 confirm 후 표시한다.
 - 합성 후 1.2초 동안 해당 보드에 Spark Wave 이펙트 발생
+- Merge command의 destination socket은 `slots[0]`이다.
 
 ### Swap
 
@@ -237,6 +241,10 @@ linkPulseSignalGain =
 - 효과: 5초 동안 공격/수리량 +35%
 - 위험: 종료 후 heat 70 이상 Relay가 있으면 3초 정지
 - heat 비용은 발동 즉시 모든 Relay에 +20을 더하는 방식이다. 지속시간 동안 heat/cycle multiplier는 없다.
+- 종료 시점에 heat >= 70인 Relay는 `overclock_stall` 이벤트를 기록하고 `shutdownUntilTick = currentTick + 3s`가 된다.
+- Overclock stall은 heat를 reset하지 않는다.
+- Overclock stall은 Heat cascade의 shutdown event로 계산하지 않는다.
+- 양쪽 보드의 Overclock이 동시에 active가 되는 첫 tick에 `dualOverclockBossUntilTick = currentTick + 4s`를 설정한다.
 
 ## 8. Combat Rules
 
@@ -272,7 +280,7 @@ damage = voltage
 | heatOutputMultiplier | heat 50-69면 1.05, 그 외 1.0 |
 | heatPenalty | heat 70 이상 0.8, heat 90 이상 0.55 |
 | overclockOutputMultiplier | own board Overclock active면 1.35, 아니면 1.0 |
-| dualOverclockBossMultiplier | bossActive + both boards Overclock active + target Boss면 1.30, 아니면 1.0 |
+| dualOverclockBossMultiplier | target Boss + `dualOverclockBossUntilTick > currentTick`이면 1.30, 아니면 1.0 |
 
 Repair formula:
 

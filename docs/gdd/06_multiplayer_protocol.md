@@ -160,6 +160,7 @@ Validation:
 Validation:
 
 - three slots
+- destination socket is `slots[0]`
 - same type
 - same tier
 - player owns board
@@ -240,6 +241,7 @@ Validation:
         "anchorIndex": 5,
         "overclockCooldown": 0,
         "overclockActiveUntilTick": 0,
+        "dualOverclockBossUntilTick": 0,
         "anchorSlowedUntilTick": 0,
         "disabledLinks": [
           {
@@ -316,8 +318,9 @@ Snapshot schema rules:
 - `boards.<playerId>.relays` contains only occupied sockets; empty sockets are implied.
 - `wave.lanesRemaining`, `wave.nextLaneSpawnIn`, and `wave.spawnEndReached` mirror the lane-based spawn schedule. Do not expose legacy sequential-spawn fields in v0.
 - `room.mode` controls tutorial override behavior and local test behavior.
-- `overclockActiveUntilTick`, `anchorSlowedUntilTick`, `disabledLinks`, `linkPulseUntilTick`, `shutdownUntilTick`, and Relay `debuffs` are authoritative display state for two-tab UI.
-- `disabledLinks` stores socket pairs disabled by boss effects. Clients hide those links even if each Relay's `activeLinks` still lists the neighbor.
+- `overclockActiveUntilTick`, `dualOverclockBossUntilTick`, `anchorSlowedUntilTick`, `disabledLinks`, `linkPulseUntilTick`, `shutdownUntilTick`, and Relay `debuffs` are authoritative display state for two-tab UI.
+- `disabledLinks` stores socket pairs disabled by boss effects.
+- `activeLinks` is the effective combat/display links list after disabled link filtering. Clients and combat code must not count disabled pairs from `disabledLinks`.
 - `activeLinks` stores adjacent socket indexes, not directions.
 - All server times are derived from `tick`; clients do not submit combat results.
 
