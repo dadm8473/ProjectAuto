@@ -164,6 +164,14 @@ Test set:
 - 10-second video of Link Pulse rescue
 - 10-second video of Merge decision
 
+Review protocol:
+
+- Use 5 reviewers who did not work on the build.
+- Show each screenshot or clip for 5 seconds, without title, store context, or mechanics explanation.
+- Ask: "What genre and core action does this look like?", "What visual element do you remember first?", and "Does this resemble a dice/guardian/random-summon game?"
+- Pass requires at least 4 of 5 reviewers to identify Signal/Relay/heat/loop language before luck/dice/summon language.
+- Fail if 2 or more reviewers independently answer dice, guardian, random summon, or summon spam as the first impression.
+
 Fail conditions:
 
 - Main screen reads as dice/guardian/random-summon UI at a glance.

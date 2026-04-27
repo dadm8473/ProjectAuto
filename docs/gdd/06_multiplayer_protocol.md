@@ -61,7 +61,8 @@ Envelope rules:
 - `requestId` is unique per `clientId` for the room lifetime.
 - `clientTick` is the last snapshot tick the client had processed when the command was sent.
 - `sentAt` is client wall-clock time for telemetry only; server receive order is authoritative.
-- Server rejects commands older than `currentTick - 40` using `STALE_COMMAND`.
+- Duplicate lookup runs before stale validation for existing `clientId + requestId`.
+- If no stored command exists, server rejects commands older than `currentTick - 40` using `STALE_COMMAND`.
 - Server stores `requestPayloadHash = stableJsonHash(command without sentAt)` with each command result.
 - If the same `clientId + requestId` arrives with the same `requestPayloadHash`, return the stored `commandResult` with `duplicate: true`.
 - If the same `clientId + requestId` arrives with a different `requestPayloadHash`, return a fresh rejection with `code: DUPLICATE_REQUEST`, `duplicate: false`, and do not overwrite the stored original result.
@@ -104,6 +105,13 @@ Server response:
 
 `reconnectToken` may be omitted in the 2-week thin slice. If sent before M2, clients store it but do not call reconnect.
 
+Join/session ownership:
+
+- On successful join, server binds `clientId -> playerId` for that room.
+- All gameplay commands must use the bound `playerId`.
+- If a command's `playerId` does not match the bound player for `clientId`, reject with `NOT_YOUR_BOARD`.
+- Reconnect may rebind the same playerId to a new client connection only after reconnect token validation.
+
 ### supply
 
 ```json
@@ -120,6 +128,7 @@ Server response:
 
 Validation:
 
+- `clientId` is bound to `playerId` in this room
 - player is in room
 - room status is playing
 - board has empty slot
@@ -147,6 +156,7 @@ Validation:
 
 Validation:
 
+- `clientId` is bound to `playerId` in this room
 - both slots contain Relay
 - player owns board
 - Swap Charge > 0
@@ -171,6 +181,7 @@ Validation:
 
 Validation:
 
+- `clientId` is bound to `playerId` in this room
 - three slots
 - destination socket is `slots[0]`
 - slots are valid indexes 0-11
@@ -204,6 +215,7 @@ Preview contract:
 
 Validation:
 
+- `clientId` is bound to `playerId` in this room
 - Link Energy >= 40
 - team cooldown ready
 - partner has at least one Relay
@@ -225,6 +237,7 @@ Validation:
 
 Validation:
 
+- `clientId` is bound to `playerId` in this room
 - `currentTick >= board.overclockCooldownUntilTick`
 - board has at least one Relay
 - not in post-run state
@@ -424,6 +437,7 @@ Duplicate handling:
 
 - Server stores the final `commandResult` for every gameplay command, accepted or rejected.
 - Server also stores `requestPayloadHash = stableJsonHash(command without sentAt)`.
+- Duplicate lookup happens before stale-command validation, so a late retry with the same hash returns the stored result instead of `STALE_COMMAND`.
 - If the same `clientId + requestId` arrives again with the same hash, server sends the stored `commandResult`.
 - `duplicate` is set to true in the resent response, but `serverTick`, `result`, `code`, `message`, and state mutations remain the original result.
 - If the same `clientId + requestId` arrives with a different hash, server returns a new `DUPLICATE_REQUEST` rejection with `duplicate: false` and leaves the original stored result unchanged.
@@ -523,6 +537,7 @@ Server ignores:
 - client-provided damage
 - client-provided rewards
 - commands from wrong player board
+- commands where `clientId` is not bound to submitted `playerId`
 
 Server owns:
 

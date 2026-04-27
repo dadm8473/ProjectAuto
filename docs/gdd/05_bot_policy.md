@@ -162,7 +162,7 @@ score >= 40이면 Swap.
 | Tutorial | 2.5s | 45 | 70 | high |
 | Casual | 1.2s | 25 | 55 | medium |
 | Tester | 0.4s | 10 | configurable | configurable |
-| Hard Carry | 0.2s | 0 | 35 | very high |
+| Hard Carry | post-prototype | post-prototype | post-prototype | post-prototype |
 
 ## 9. Bot Logs
 
@@ -186,5 +186,5 @@ QA 로그:
 - 첫 20초 동안 봇이 Supply를 누르지 않는다.
 - 5판 중 4판에서 플레이어가 첫 Merge를 직접 한다.
 - 플레이어 heat 90 이상 상황에서 봇 Link Pulse 반응률 70% 이상.
-- 봇 혼자 Hard Carry 모드로 10웨이브 클리어율 80% 이상.
 - Casual 봇과 초보 플레이어의 3웨이브 도달률 75% 이상.
+- Hard Carry 10-wave clear tuning is post-prototype and must not block the 2-week show build.

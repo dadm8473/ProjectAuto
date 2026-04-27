@@ -414,6 +414,22 @@ Attack tick:
 - Relay의 기본 `laneFocus`는 보드 index에 따라 고정된다.
 - 특수효과는 [Prototype Balance Sheet](./02_prototype_balance_sheet.md)의 Relay Effect Rules v0만 구현한다.
 
+Canonical tick pipeline:
+
+1. Prune expired timed state where `untilTick <= currentTick`.
+2. Run duplicate lookup for received commands. Same-hash duplicates return stored results immediately; different-hash duplicates return `DUPLICATE_REQUEST`.
+3. Validate and apply non-duplicate commands for this tick in server receive order. Bot commands are appended after player commands for the same tick.
+4. Spawn scheduled lane Noise for `currentTick`, then boss spawn for the same tick, using the spawn ordering rules below.
+5. Move all Noise alive after phase 4 and resolve loop completion. Loop completion Signal/Saturation changes and no-reward removals are applied immediately.
+6. Resolve boss disruption due at this tick. If `boss_surge` also resolves this tick, fire the disruption first, then surge.
+7. Resolve Relay actions in deterministic order: boardOwner `p1`, then `p2`; lower socket index; lower `unitId` as final tie-break. Targets are chosen from state visible at the start of this phase.
+8. Queue child/spore spawns created by Relay actions or boss disruption, but do not make them targetable until phase 9.
+9. Apply queued damage, repair, heat deltas, rewards, child/spore insertions, event records, and cooldown resets in the order they were produced. Splitter reward is applied before its children are inserted. Newly inserted children/spores become targetable on the next tick.
+10. Recompute derived fields: active links, anchor state, speed/saturation multipliers, board heat helpers, loss/win conditions.
+11. Emit snapshot/event feed if this is a 10Hz snapshot tick.
+
+No phase may iterate over object/map insertion order. Use the tie-breaks above or the event production order explicitly stated here.
+
 Shutdown/offline rules:
 
 - `relayOnline = shutdownUntilTick <= currentTick`.
