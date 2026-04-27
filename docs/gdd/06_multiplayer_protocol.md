@@ -18,7 +18,7 @@ Server sends snapshots:
 - game state
 - rejected command
 - event feed
-- reconnect payload
+- reconnect payload in M2, not in the 2-week thin slice
 
 ## 2. Room Model
 
@@ -40,6 +40,29 @@ Room starts when:
 - local test mode creates room with bot.
 
 ## 3. Client Commands
+
+All gameplay commands use the same envelope. Server ignores client-provided combat results, costs, rolls, and rewards.
+
+```json
+{
+  "type": "supply",
+  "requestId": "cmd_101",
+  "clientId": "c_abc",
+  "playerId": "p1",
+  "roomId": "R7K2",
+  "clientTick": 512,
+  "sentAt": 1714200000.100
+}
+```
+
+Envelope rules:
+
+- `requestId` is unique per `clientId` for the room lifetime.
+- `clientTick` is the last snapshot tick the client had processed when the command was sent.
+- `sentAt` is client wall-clock time for telemetry only; server receive order is authoritative.
+- Server rejects commands older than `currentTick - 40` using `STALE_COMMAND`.
+- Duplicate `requestId` from the same `clientId` returns the stored `commandResult` and does not execute again.
+- Reusing the same `clientId + requestId` with a different payload is rejected with `DUPLICATE_REQUEST`.
 
 ### join
 
@@ -68,13 +91,19 @@ Server response:
 }
 ```
 
+`reconnectToken` may be omitted in the 2-week thin slice. If sent before M2, clients store it but do not call reconnect.
+
 ### supply
 
 ```json
 {
   "type": "supply",
   "requestId": "cmd_101",
-  "playerId": "p1"
+  "clientId": "c_abc",
+  "playerId": "p1",
+  "roomId": "R7K2",
+  "clientTick": 512,
+  "sentAt": 1714200000.100
 }
 ```
 
@@ -83,8 +112,10 @@ Validation:
 - player is in room
 - room status is playing
 - board has empty slot
-- team Charge enough using `20 + floor(personalSupplyCount / 5) * 3`
+- team Charge enough using the Core Game Spec canonical Supply formula
 - player command cooldown ok
+- server computes grade odds from team Chance Level and player pity
+- server consumes `pendingSupplyDiscountPct` only after a successful Supply
 
 ### swap
 
@@ -92,7 +123,11 @@ Validation:
 {
   "type": "swap",
   "requestId": "cmd_102",
+  "clientId": "c_abc",
   "playerId": "p1",
+  "roomId": "R7K2",
+  "clientTick": 520,
+  "sentAt": 1714200000.500,
   "a": 2,
   "b": 7
 }
@@ -111,7 +146,11 @@ Validation:
 {
   "type": "merge",
   "requestId": "cmd_103",
+  "clientId": "c_abc",
   "playerId": "p1",
+  "roomId": "R7K2",
+  "clientTick": 528,
+  "sentAt": 1714200000.900,
   "slots": [1, 5, 9]
 }
 ```
@@ -129,7 +168,11 @@ Validation:
 {
   "type": "linkPulse",
   "requestId": "cmd_104",
-  "playerId": "p1"
+  "clientId": "c_abc",
+  "playerId": "p1",
+  "roomId": "R7K2",
+  "clientTick": 540,
+  "sentAt": 1714200001.400
 }
 ```
 
@@ -145,7 +188,11 @@ Validation:
 {
   "type": "overclock",
   "requestId": "cmd_105",
-  "playerId": "p1"
+  "clientId": "c_abc",
+  "playerId": "p1",
+  "roomId": "R7K2",
+  "clientTick": 548,
+  "sentAt": 1714200001.800
 }
 ```
 
@@ -169,7 +216,9 @@ Validation:
       "integrity": 92,
       "saturation": 34,
       "linkEnergy": 58,
-      "teamCharge": 126
+      "teamCharge": 126,
+      "chanceLevel": 1,
+      "pendingSupplyDiscountPct": 25
     },
     "players": [
       {
@@ -241,6 +290,7 @@ Validation:
 Snapshot schema rules:
 
 - `teamCharge` and `linkEnergy` live under `signal` because they are team shared.
+- `chanceLevel` and `pendingSupplyDiscountPct` also live under `signal` because they affect team-level Supply resolution.
 - `swapCharge`, `personalSupplyCount`, and pity counters live under each player.
 - `boards.<playerId>.relays` contains only occupied sockets; empty sockets are implied.
 - `activeLinks` stores adjacent socket indexes, not directions.
@@ -252,10 +302,35 @@ Snapshot schema rules:
 {
   "type": "commandRejected",
   "requestId": "cmd_103",
+  "clientId": "c_abc",
   "code": "MERGE_NOT_MATCHING",
   "message": "Select three matching Relays."
 }
 ```
+
+### commandResult
+
+```json
+{
+  "type": "commandResult",
+  "requestId": "cmd_101",
+  "clientId": "c_abc",
+  "accepted": true,
+  "duplicate": false,
+  "serverTick": 524,
+  "result": {
+    "spentCharge": 23,
+    "unitId": "u_44",
+    "socket": 6
+  }
+}
+```
+
+Duplicate handling:
+
+- If the same `clientId + requestId` arrives again, server sends the stored `commandResult`.
+- `duplicate` is set to true in the resent response, but `serverTick`, `spentCharge`, `unitId`, and state mutations remain the original result.
+- If another `clientId` reuses the same `requestId`, it is a separate command.
 
 ### event
 
@@ -271,7 +346,11 @@ Snapshot schema rules:
 }
 ```
 
-## 5. Reconnect
+## 5. Reconnect M2
+
+Reconnect is specified for the post-prototype multiplayer milestone. It is not required for the 2-week thin slice in the prototype plan.
+
+In the 2-week prototype, a reconnect command can return `NOT_IMPLEMENTED` and must not corrupt the active room.
 
 Client reconnect window: 45 seconds.
 
@@ -302,7 +381,7 @@ Prototype:
 - optimistic button feedback allowed
 - server rejection rolls UI back
 - snapshots at 10Hz
-- input commands timestamped
+- input commands include `clientTick` and `sentAt` from the common envelope
 - commands are processed in server receive order within the next simulation tick
 - duplicate `requestId` from the same `clientId` returns the original result and does not execute twice
 - commands older than `currentTick - 40` are rejected with `STALE_COMMAND`
@@ -346,5 +425,6 @@ Server owns:
 | MERGE_NOT_MATCHING | invalid merge |
 | GAME_ALREADY_ENDED | command after result |
 | STALE_COMMAND | command arrived too late |
-| DUPLICATE_REQUEST | requestId already processed |
+| DUPLICATE_REQUEST | same clientId/requestId reused with different payload |
 | INVALID_RECONNECT_TOKEN | reconnect token mismatch |
+| NOT_IMPLEMENTED | command belongs to a later milestone |

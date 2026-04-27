@@ -124,18 +124,18 @@ Link Pulse 사용:
 1. 파트너 보드 가장자리에 “LINK?” beacon
 2. 내 Link Pulse 버튼이 파란색으로 점멸
 3. 누르면 에너지 파동이 내 보드에서 파트너 보드로 이동
-4. 파트너 Relay heat가 내려가고 cycle이 빨라짐
+4. 파트너 Relay heat가 내려가고 effective cycle이 6초 동안 80%로 짧아짐
 5. 양쪽 화면에 “Saved by Link Pulse” 표시
 
 ## 7. Boss Flow
 
-보스는 8초 전에 예고한다.
+보스 웨이브는 시작과 동시에 8초 예고를 보여준다. 보스가 실제로 들어오는 순간 boss timer가 시작된다.
 
 ```text
-8s before: central loop darkens
-5s before: boss name card
-3s before: partner board heat scan
-0s: boss enters, timer starts
+wave +0s: central loop darkens
+wave +3s: boss name card
+wave +5s: partner board heat scan
+wave +8s: boss enters, timer starts
 ```
 
 보스 중 UI 변화:

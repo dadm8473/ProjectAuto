@@ -143,7 +143,7 @@ Before implementation milestone:
 | co-op help | partner support is just a generic buff | Link Pulse targets partner heat, saturation, and board failures | at least one saved run has Link Pulse preventing shutdown or signal collapse |
 | boss pressure | boss is only a large HP enemy with timer | bosses corrupt board rules, link behavior, or heat state | each boss has one named board-level disruption in combat log |
 | economy | paid or random power is the long-term chase | BM remains cosmetic/meta-expression only for v0 | combat sim works with all store data disabled |
-| UX rhythm | player repeatedly taps summon/merge without reading board | Swap and Link decisions must be visible in first 60 seconds | tutorial telemetry records Swap or Link evaluation before first boss |
+| UX rhythm | player repeatedly taps summon/merge without reading board | automatic Supply is followed by Swap, Merge, and Link evaluation | tutorial telemetry records Swap or Link evaluation before first boss |
 | two-player layout | two mirrored boards around a path | partner board is compact status surface, central element is Signal loop, help appears as Pulse beacon | screenshot review passes silhouette checklist below |
 
 Acceptance rule:
@@ -160,7 +160,7 @@ Test set:
 
 - 390x844 gameplay screenshot at wave 1, wave 5, final boss
 - 360x800 small-device screenshot at wave 5
-- 10-second video of Supply to placement
+- 10-second video of Supply to first Swap/link decision
 - 10-second video of Link Pulse rescue
 - 10-second video of Merge decision
 
@@ -178,5 +178,5 @@ Pass targets:
 - A new viewer can identify heat as a core pressure within 5 seconds.
 - A new viewer can tell which board belongs to the partner within 5 seconds.
 - The most memorable visual is Signal/Relay/heat language, not luck/dice/monster language.
-- The first 60 seconds show at least two distinct verbs besides Supply.
+- The first 60 seconds show at least two distinct verbs besides Supply, usually Swap evaluation and Link/heat reading.
 - Combat screenshots remain readable without copying a two-board-plus-path silhouette from reference games.

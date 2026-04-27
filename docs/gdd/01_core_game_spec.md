@@ -8,7 +8,7 @@
 
 플레이어가 재미를 느껴야 하는 순간:
 
-- 새 Relay가 들어왔을 때 “이걸 어디에 꽂으면 살아날까?”라고 3초 안에 판단하는 순간
+- 새 Relay가 자동 배치됐을 때 “이걸 어디로 옮기고 무엇과 연결하면 살아날까?”라고 3초 안에 판단하는 순간
 - 3개 합성으로 고급 Relay가 만들어졌을 때 보드 전체 연결이 다시 살아나는 순간
 - 내 보드가 과부하로 터지기 직전에 파트너가 Link Pulse로 구해주는 순간
 - 보스성 Noise가 중앙 신호를 잠식할 때, 둘이 서로 다른 역할로 버텨내는 순간
@@ -77,6 +77,8 @@ Signal은 팀 생명력이다.
 |---|---|---|
 | Charge | team shared | Supply |
 | Link Energy | team shared | Link Pulse |
+| Chance Level | team shared | Supply grade odds |
+| Pending Supply Discount | team shared | next successful Supply cost reduction |
 | Signal Integrity | team shared | loss/win pressure |
 | Noise Saturation | team shared | loss pressure |
 | Swap Charge | individual | Swap |
@@ -104,8 +106,10 @@ Board index:
 Anchor 칸:
 
 - 초기 위치는 index 5
-- Anchor 주변 4방향에 Relay를 연결하면 Link Bonus 발생
-- Anchor가 과열되면 내 보드의 모든 Relay cycle이 15% 느려진다
+- Anchor는 막힌 칸이 아니라 특수 socket이다. Relay를 배치할 수 있다.
+- Anchor socket의 Relay가 주변 4방향에 active link를 만들면 Link Bonus가 발생한다.
+- Anchor socket이 비어 있으면 `activeLinksToAnchor = 0`이다.
+- Anchor socket의 Relay heat가 90 이상이거나 Anchor가 감염 중이면 내 보드의 모든 Relay effective cycle이 15% 느려진다.
 
 Link activation:
 
@@ -113,23 +117,25 @@ Link activation:
 - A의 `linkShape`에 B 방향이 있고, B의 `linkShape`에 A 방향이 있으면 active link 1개다.
 - `All`은 N/E/S/W 모든 방향으로 취급한다.
 - active link는 Relay별 최대 4개, damage formula에서는 최대 4개까지만 계산한다.
-- Anchor와 active link가 연결된 Relay는 `anchorLinked = true`.
+- Anchor socket Relay와 active link로 연결된 Relay는 `anchorLinked = true`.
 
 Anchor bonus:
 
 ```text
 anchorBonus = anchorLinked ? 1.12 : 1.0
-boardAnchorBonus = activeLinksToAnchor >= 3 ? 1.08 : 1.0
+boardAnchorBonus = activeLinksOnAnchorRelay >= 3 ? 1.08 : 1.0
 ```
 
 위 보너스는 `linkMultiplier`에 곱한다.
 
 배치 규칙:
 
-- Relay는 빈 칸에 자동으로 들어온다.
+- v0에서 Supply는 target socket을 받지 않는다. Relay는 아래 우선순위의 첫 빈 칸에 자동 배치된다.
+- Supply placement priority: `[5, 4, 6, 1, 9, 0, 2, 8, 10, 3, 7, 11]`
 - 플레이어는 Relay 두 개의 위치를 바꿀 수 있다.
 - 위치 교환에는 `Swap Charge` 1개가 필요하다.
 - Swap Charge는 웨이브 시작 시 1개, 보스 처치 시 2개 지급된다.
+- 따라서 v0의 공간 판단은 Supply 직후 수동 배치가 아니라 Swap, Merge, Link shape 복구에서 나온다.
 
 ## 6. Core Loop
 
@@ -148,11 +154,21 @@ boardAnchorBonus = activeLinksToAnchor >= 3 ? 1.08 : 1.0
 
 랜덤 Relay 1개를 공급한다.
 
-- 비용: team Charge를 사용한다.
-- 비용식: `20 + floor(personalSupplyCount / 5) * 3`
+- 비용은 team Charge를 사용하며 서버가 아래 canonical formula로만 계산한다.
+
+```text
+baseSupplyCost = 20 + floor(personalSupplyCount / 5) * 3
+bossSupplyMultiplier = bossActive ? 1.20 : 1.00
+discountMultiplier = pendingSupplyDiscountPct > 0 ? 0.75 : 1.00
+supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
+```
+
+- `personalSupplyCount`는 비용 계산 후, 성공한 Supply에서만 +1 된다.
+- `pendingSupplyDiscountPct`는 다음 성공한 Supply 1회에만 적용되고 즉시 0으로 돌아간다.
+- 비용 처리 순서: 빈 칸 확인 -> cost 계산 -> team Charge 확인 -> team Charge 차감 -> discount token 소비 -> grade/type roll -> 자동 배치 -> personal counters 증가.
 - 빈 칸이 없으면 실패
 - 7회 연속 Basic만 나오면 다음 공급은 Tuned 이상 보장
-- 보스 웨이브 중 Supply 비용 +20%
+- Supply grade odds는 현재 team `Chance Level`을 사용한다.
 - `personalSupplyCount`와 pity는 플레이어별로 증가한다.
 
 ### Merge
@@ -177,9 +193,10 @@ boardAnchorBonus = activeLinksToAnchor >= 3 ? 1.08 : 1.0
 파트너 보드에 지원 펄스를 보낸다.
 
 - 비용: Link Energy 40
-- 효과: 파트너 보드에서 heat가 가장 높은 Relay 2개의 heat -35, 6초 동안 cycle +20%
+- 효과: 파트너 보드에서 heat가 가장 높은 Relay 2개의 heat -35, 6초 동안 `cycleMultiplier = 0.80`
 - 보스 웨이브 중 사용하면 추가로 Signal integrity +4
 - 남발 방지를 위해 팀 쿨다운 12초
+- 같은 Relay에 Link Pulse가 다시 적용되면 배율은 중첩되지 않고 지속시간만 6초로 갱신된다.
 
 ### Overclock
 
@@ -218,10 +235,22 @@ Attack tick:
 
 - 서버 시뮬레이션 tick은 20Hz다.
 - 각 Relay는 `cooldown`을 갖고, `cooldown <= 0`이면 공격/수리/증폭 효과를 실행한다.
-- 실행 후 `cooldown = cycle`.
+- 실행 후 `cooldown = effectiveCycle`.
 - 클라이언트 snapshot은 10Hz로 받지만 전투 판정은 서버 20Hz 기준이다.
 - 공격 사거리는 중앙 루프 progress 기준 거리다. `abs(relayLaneFocus - noise.progress) <= relay.range`.
 - Relay의 기본 `laneFocus`는 보드 index에 따라 고정된다.
+- 특수효과는 [Prototype Balance Sheet](./02_prototype_balance_sheet.md)의 Relay Effect Rules v0만 구현한다.
+
+Effective cycle:
+
+```text
+effectiveCycle = cycle * linkPulseCycleMultiplier * anchorCycleMultiplier
+linkPulseCycleMultiplier = relay.linkPulseUntilTick > currentTick ? 0.80 : 1.00
+anchorCycleMultiplier =
+  board.anchorRelayHeat >= 90 or board.anchorSlowedUntilTick > currentTick ? 1.15 : 1.00
+```
+
+빠른 효과는 cycle 값을 더하거나 늘리는 표현이 아니라, cycle을 줄이는 multiplier로만 표현한다.
 
 Lane focus:
 
@@ -242,8 +271,20 @@ Spawn cadence:
 - 웨이브 시작 후 1.0초 대기.
 - 기본 spawn interval은 0.75초.
 - Flicker는 0.45초, Crawler는 0.7초, Bulwark는 1.2초, Splitter는 0.9초, Null은 1.0초.
-- 보스는 해당 웨이브 시작 8초 후 1회 스폰한다.
+- 보스 웨이브는 wave elapsed 0초부터 8초 경고를 표시한다.
+- 보스는 wave elapsed 8.0초에 1회 스폰한다.
+- boss timer는 보스 스폰 tick부터 시작하며, duration은 Balance Sheet의 `boss timer after entry`를 사용한다.
+- wave 3/6 boss timer가 0이 되면 `boss_surge`가 발생해 Signal integrity -15, 해당 보스 disruption 주기 -35%가 적용된다.
+- wave 10 boss timer가 0이 되면 즉시 패배한다.
 - 동일 웨이브 내 남은 큐가 비면 spawn 종료.
+
+Boss disruption:
+
+| boss | disruption | timing | event |
+|---|---|---|---|
+| Boss Orchid | highest-link Relay 2개의 heat +12 | spawn 후 10초마다 | `boss_orchid_heatroot` |
+| Boss Mirror | 양쪽 보드에서 active link 1개를 5초간 disable | spawn 후 12초마다 | `boss_mirror_linkbreak` |
+| Origin Null | Null spore 2개 생성, Anchor 감염 위험 +50% | spawn 후 9초마다 | `boss_origin_spore` |
 
 Heat gain:
 
@@ -270,6 +311,15 @@ Signal integrity 감소 조건:
 - Saturation 80 이상 상태로 10초 유지: -10
 - Null Noise가 Anchor를 감염: -8
 
+Null Anchor infection:
+
+- Null이 제거되지 않고 루프를 1바퀴 완료하면 감염 판정을 한다.
+- `null_cage` 효과를 받고 있는 Null은 감염하지 못한다.
+- 감염 대상은 `anchorHeat`가 더 높은 보드다. 동률이면 Saturation 기여가 높은 보드를 고른다.
+- `anchorHeat`는 Anchor socket Relay의 heat이며, Anchor socket이 비어 있으면 0이다.
+- 감염 시 Signal integrity -8, 대상 Anchor socket Relay heat +20, `anchorSlowedUntilTick = currentTick + 8s`.
+- 로그 이벤트는 `null_anchor_infected`를 기록한다.
+
 Signal 회복 조건:
 
 - 보스 처치: +8
@@ -287,6 +337,8 @@ Signal 회복 조건:
 - Charge
 - 보스 타이머
 - Link Energy
+- Chance Level
+- Pending Supply Discount
 
 개별인 것:
 
@@ -301,7 +353,7 @@ Signal 회복 조건:
 | 조건 | 효과 |
 |---|---|
 | 양쪽 보드가 서로 다른 tag 3개 이상 활성화 | Signal 안정도 +10% |
-| 한 플레이어가 Link Pulse로 파트너 폭주를 방지 | 다음 Supply 비용 -25% |
+| 한 플레이어가 Link Pulse로 파트너 폭주를 방지 | `pendingSupplyDiscountPct = 25`, 다음 성공한 Supply 1회 |
 | 보스 웨이브 중 양쪽 모두 Overclock 사용 | 4초간 Boss 받는 피해 +30% |
 | 한쪽이 Repair 2개, 다른 쪽이 Beam 2개 유지 | 웨이브 보상 +15% |
 

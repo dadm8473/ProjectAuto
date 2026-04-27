@@ -148,11 +148,11 @@ Deliver:
 - tune wave hp/speed
 - tune heat costs
 - tune Supply cost
-- run 50 seed simulations
+- run 50-seed simulations with ScriptedHuman + CasualBot
 
 Exit criteria:
 
-- bot+player simulation win rate 35-65%
+- ScriptedHuman + CasualBot simulation win rate 35-65%
 - no early unavoidable loss before wave 3
 - final boss lasts 25-55 seconds
 
@@ -211,7 +211,7 @@ Exit criteria:
 - [ ] Saturation 100 loses.
 - [ ] Result screen states one true cause.
 - [ ] Online two-tab run syncs commands.
-- [ ] Reconnect restores player seat.
+- [ ] Refresh/disconnect during Day 9 shows reconnect unsupported notice and does not corrupt the room.
 
 ## Deliverable Definition
 

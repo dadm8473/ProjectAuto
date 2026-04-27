@@ -10,6 +10,8 @@
 | Noise Saturation | 0 |
 | 시작 team Charge | 90 |
 | 시작 team Link Energy | 40 |
+| 시작 team Chance Level | 0 |
+| 시작 pending Supply discount | 0% |
 | 시작 개인 Swap Charge | 2 |
 | Supply 기본 비용 | 20 |
 | Supply 비용 증가 | 개인 Supply 5회마다 +3 |
@@ -36,7 +38,25 @@ Pity:
 - 18회 동안 Prime 이상이 없으면 다음 Supply는 Prime 이상
 - Pity는 플레이어별로 관리한다
 
-## 2.1 Supply Cost Curve
+## 2.1 Chance Level Rules
+
+Chance Level은 run 안에서만 유지되는 team shared 값이다. BM, 계정 성장, 결제와 연결하지 않는다.
+
+| event | change | max |
+|---|---:|---:|
+| Wave 3 boss defeated | +1 | 3 |
+| Wave 6 boss defeated | +1 | 3 |
+| Wave 8 cleared with Saturation < 70 | +1 | 3 |
+| Wave 9 cleared and Chance Level < 3 | +1 catch-up | 3 |
+
+Supply roll order:
+
+1. 현재 team Chance Level의 grade odds를 선택한다.
+2. 개인 pity가 grade floor를 올릴 수 있다.
+3. grade가 확정되면 해당 grade pool 안에서 type을 뽑는다.
+4. roll 결과는 서버 로그에 `chanceLevel`, `pityApplied`, `grade`, `type`을 기록한다.
+
+## 2.2 Supply Cost Curve
 
 | personalSupplyCount | cost |
 |---:|---:|
@@ -47,6 +67,15 @@ Pity:
 | 20-24 | 32 |
 | 25-29 | 35 |
 | 30+ | 38 |
+
+Canonical examples:
+
+| state | formula | cost |
+|---|---|---:|
+| count 8, normal | ceil(23 * 1.00 * 1.00) | 23 |
+| count 8, boss active | ceil(23 * 1.20 * 1.00) | 28 |
+| count 8, discount active | ceil(23 * 1.00 * 0.75) | 18 |
+| count 8, boss + discount | ceil(23 * 1.20 * 0.75) | 21 |
 
 ## 3. Relay Roster v0
 
@@ -72,6 +101,35 @@ Pity:
 | mirror_port | Mirror Port | Support | Tuned+ | 0 | 2.0 | 10 | E-W | 파트너 같은 tag 출력 +8% |
 | twin_gate | Twin Gate | Support | Core+ | 18 | 1.8 | 20 | All | 파트너 Link Pulse 효과 +50% |
 | origin_seed | Origin Seed | Origin | Origin | 64 | 1.0 | 30 | All | 보스 hp 15% 이하 execute |
+
+## 3.1 Relay Effect Rules v0
+
+All effects trigger on the Relay's `effectiveCycle` unless the row says passive. Only the highest applicable Amp modifier applies to the same target; slow and cage durations refresh instead of stacking.
+
+| id | executable effect | target rule | stacking/log |
+|---|---|---|---|
+| needle_beam | deals 100% finalDamage | highest priority Noise in range | `damage` |
+| prism_lance | deals 100% finalDamage, or 135% to Boss | Boss first, then normal priority | `damage`, `boss_bonus_damage` |
+| split_ray | hits up to 2 Noise for 70% finalDamage each | two highest priority Noise in range | `multi_damage` |
+| coolant_moss | adjacent Relay heat -6; self applies listed heat/cycle | N/E/S/W adjacent occupied sockets | `cooling` |
+| rain_pump | Signal integrity +0.35, capped by Repair max per wave | team Signal | `signal_repair` |
+| root_clinic | Signal integrity +0.45, doubled while bossActive | team Signal | `signal_repair` |
+| pulse_drum | deals 100% finalDamage | normal priority | `damage` |
+| thunder_bowl | primary target 100%, up to 2 chain targets 45% | nearest Noise within 0.12 progress of primary | `chain_damage` |
+| storm_heart | primary target 100%, chain targets 45%; chain count = min(5, 1 + activeLinks) | nearest Noise within 0.14 progress | `chain_damage` |
+| amber_field | deals 70% finalDamage and applies speedMultiplier 0.82 for 1.5s | all Noise within range, max 5 | `slow_field` |
+| gravity_loom | deals 80% finalDamage and applies saturationMultiplier 0.80 for 2s | highest saturation Noise in range | `saturation_mark` |
+| null_cage | deals 100% finalDamage; if target is Null, speedMultiplier 0 for 1.2s and blocks Anchor infection | Null first, then normal priority | `null_caged` |
+| signal_amp | passive: linked adjacent Relays voltage *1.12 | active-linked neighbor Relays | `amp_applied`, non-stacking |
+| bloom_amp | passive: linked adjacent Repair effects *1.18 | active-linked Repair Relays | `repair_amp`, non-stacking |
+| aurora_amp | passive: board linkMultiplier bonus +0.25 after normal cap | all own-board Relays | `aurora_amp`, one per board |
+| sink_stone | vents 16 heat from hottest adjacent Relay; self applies listed heat/cycle | adjacent Relay with highest heat | `heat_sink` |
+| dusk_sink | vents 28 heat from hottest adjacent Relay; once per wave prevents adjacent shutdown, sets target heat to 78 | adjacent Relay with highest heat | `shutdown_prevented` |
+| mirror_port | passive: partner Relays sharing any tag output *1.08 | partner board, same tag as any active-linked neighbor | `mirror_support`, one per partner Relay |
+| twin_gate | passive: Link Pulse sent by this board has heat reduction and duration *1.50 | caster board must have active Twin Gate link | `twin_link_pulse` |
+| origin_seed | if Boss hp <= 15%, executes once per boss; otherwise deals 100% finalDamage | Boss first | `boss_execute` |
+
+Final damage and cycle math come from Core Game Spec. Repair effects cannot raise Signal integrity above 100.
 
 ## 4. Tier Multipliers
 
@@ -108,17 +166,17 @@ Pity:
 
 ## 7. Wave Table v0
 
-| wave | duration target | enemies | boss timer | clear reward |
+| wave | duration target | enemies | boss timer after entry | clear reward |
 |---:|---:|---|---:|---|
 | 1 | 35s | 16 Flicker, 8 Crawler | - | Charge 35, Link 10, Swap 1 |
 | 2 | 40s | 18 Crawler, 4 Bulwark | - | Charge 45, Link 12 |
-| 3 | 55s | 20 Crawler, 8 Splitter, Boss Orchid | 36s | Charge 65, Link 22, Swap 2 |
+| 3 | 55s | 20 Crawler, 8 Splitter, Boss Orchid | 36s | Charge 65, Link 22, Swap 2, Chance +1 |
 | 4 | 45s | 24 Flicker, 16 Crawler, 5 Bulwark | - | Charge 55, Link 14 |
 | 5 | 50s | 12 Splitter, 8 Bulwark, 6 Null | - | Charge 65, Link 16 |
-| 6 | 65s | 22 Crawler, 12 Null, Boss Mirror | 42s | Charge 85, Link 28, Swap 2 |
+| 6 | 65s | 22 Crawler, 12 Null, Boss Mirror | 42s | Charge 85, Link 28, Swap 2, Chance +1 |
 | 7 | 52s | 48 Flicker, 10 Bulwark | - | Charge 75, Link 16 |
-| 8 | 58s | 24 Splitter, 16 Null, 10 Bulwark | - | Charge 85, Link 18 |
-| 9 | 62s | 40 Crawler, 20 Splitter, 16 Bulwark | - | Charge 95, Link 22 |
+| 8 | 58s | 24 Splitter, 16 Null, 10 Bulwark | - | Charge 85, Link 18, Chance +1 if Saturation < 70 |
+| 9 | 62s | 40 Crawler, 20 Splitter, 16 Bulwark | - | Charge 95, Link 22, Chance catch-up if < 3 |
 | 10 | 85s | 20 Null, 24 Bulwark, Origin Null | 55s | Win |
 
 Spawn interval:
@@ -130,7 +188,8 @@ Spawn interval:
 | Bulwark | 1.20s |
 | Splitter | 0.90s |
 | Null | 1.00s |
-| Boss | wave start +8.0s |
+| Boss warning | wave elapsed 0.0s on boss waves |
+| Boss entry | wave elapsed +8.0s |
 
 ## 8. Heat Model
 
@@ -185,21 +244,50 @@ These targets are the first acceptance band for a 50-seed automated sim.
 
 50-seed pass band:
 
-- win rate with Casual bot: 35-65%
+- win rate with ScriptedHuman + CasualBot: 35-65%
 - loss before wave 3: <= 8%
 - final boss reached: >= 45%
 - Link Pulse used at least once: >= 70%
 - average Relay shutdowns per run: 2-7
-- average personal Merge count per human: 4-8
+- average ScriptedHuman Merge count: 4-8
 
 Merge expectation:
 
-| team Supply count | expected merge opportunities | expected completed merges |
+| combined successful Supplies | expected merge opportunities | expected completed merges |
 |---:|---:|---:|
 | 10 | 0-1 | 0-1 |
 | 20 | 2-4 | 1-3 |
 | 30 | 5-8 | 3-6 |
 | 40 | 9-13 | 6-10 |
+
+## 9.2 Sim Harness Player Model
+
+The 50-seed automated sim uses one `ScriptedHuman` and one `CasualBot`. It is not bot+bot and not a perfect solver.
+
+Seed contract:
+
+- seeds: `1000..1049`
+- simulation tick: 20Hz
+- snapshot/export tick: 10Hz
+- scripted human reaction interval: 0.8s
+- Casual bot reaction interval: values from Bot Policy Spec
+
+ScriptedHuman policy:
+
+1. If partner heat max >= 92 and Link Pulse ready, cast Link Pulse.
+2. If own board has exact merge with score >= 45, Merge.
+3. If board has <= 2 empty slots and Swap score >= 35, Swap.
+4. If team Charge >= canonical Supply cost + 15 and board has an empty slot, Supply.
+5. If boss active, own avg heat < 62, and Overclock ready, Overclock.
+6. Otherwise wait.
+
+Sim metrics:
+
+- team DPS uses `sum(finalDamage / effectiveCycle)` for damage Relays.
+- Repair, Amp, Sink, and Support value are reported separately as `supportPower`.
+- heat average excludes empty sockets.
+- clear time is measured from wave start to last wave enemy removed.
+- boss timer is measured from boss entry, not wave start.
 
 ## 10. Tuning Rules
 
