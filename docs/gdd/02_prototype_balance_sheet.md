@@ -8,11 +8,11 @@
 |---|---:|
 | Signal Integrity | 100 |
 | Noise Saturation | 0 |
-| 시작 Charge | 90 |
-| 시작 Link Energy | 40 |
-| 시작 Swap Charge | 2 |
+| 시작 team Charge | 90 |
+| 시작 team Link Energy | 40 |
+| 시작 개인 Swap Charge | 2 |
 | Supply 기본 비용 | 20 |
-| Supply 비용 증가 | 팀 Supply 5회마다 +3 |
+| Supply 비용 증가 | 개인 Supply 5회마다 +3 |
 | Link Pulse 비용 | 40 |
 | Link Pulse 팀 쿨다운 | 12초 |
 | Overclock 쿨다운 | 18초 |
@@ -35,6 +35,18 @@ Pity:
 - 7회 연속 Basic이면 다음 Supply는 Tuned 이상
 - 18회 동안 Prime 이상이 없으면 다음 Supply는 Prime 이상
 - Pity는 플레이어별로 관리한다
+
+## 2.1 Supply Cost Curve
+
+| personalSupplyCount | cost |
+|---:|---:|
+| 0-4 | 20 |
+| 5-9 | 23 |
+| 10-14 | 26 |
+| 15-19 | 29 |
+| 20-24 | 32 |
+| 25-29 | 35 |
+| 30+ | 38 |
 
 ## 3. Relay Roster v0
 
@@ -109,6 +121,17 @@ Pity:
 | 9 | 62s | 40 Crawler, 20 Splitter, 16 Bulwark | - | Charge 95, Link 22 |
 | 10 | 85s | 20 Null, 24 Bulwark, Origin Null | 55s | Win |
 
+Spawn interval:
+
+| enemy | interval |
+|---|---:|
+| Flicker | 0.45s |
+| Crawler | 0.70s |
+| Bulwark | 1.20s |
+| Splitter | 0.90s |
+| Null | 1.00s |
+| Boss | wave start +8.0s |
+
 ## 8. Heat Model
 
 Heat is the main originality axis. It makes “strong board” and “safe board” different decisions.
@@ -142,6 +165,41 @@ By minute:
 | 5 | 25-30 | 6-8 | 2 | board full |
 | 6 | 32-38 | 8-11 | 2-3 | final prep |
 | 7 | 40+ | 10+ | 3 | final boss |
+
+## 9.1 Closed-model Simulation Targets
+
+These targets are the first acceptance band for a 50-seed automated sim.
+
+| wave | expected team DPS at start | expected active links/team | expected avg heat | expected team Charge spent | target clear time |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 35-55 | 1-3 | 20-35 | 80-120 | 30-42s |
+| 2 | 65-95 | 3-5 | 28-45 | 130-180 | 35-48s |
+| 3 | 120-170 | 5-8 | 40-62 | 190-260 | 48-65s |
+| 4 | 160-220 | 7-10 | 42-66 | 250-330 | 40-56s |
+| 5 | 210-290 | 8-12 | 48-72 | 320-420 | 45-62s |
+| 6 | 300-420 | 10-15 | 55-78 | 410-540 | 58-78s |
+| 7 | 360-500 | 12-17 | 55-82 | 500-640 | 48-66s |
+| 8 | 430-590 | 14-19 | 58-84 | 600-760 | 55-72s |
+| 9 | 520-720 | 16-22 | 60-86 | 720-900 | 58-76s |
+| 10 | 700-980 | 18-26 | 65-90 | 880-1100 | 75-105s |
+
+50-seed pass band:
+
+- win rate with Casual bot: 35-65%
+- loss before wave 3: <= 8%
+- final boss reached: >= 45%
+- Link Pulse used at least once: >= 70%
+- average Relay shutdowns per run: 2-7
+- average personal Merge count per human: 4-8
+
+Merge expectation:
+
+| team Supply count | expected merge opportunities | expected completed merges |
+|---:|---:|---:|
+| 10 | 0-1 | 0-1 |
+| 20 | 2-4 | 1-3 |
+| 30 | 5-8 | 3-6 |
+| 40 | 9-13 | 6-10 |
 
 ## 10. Tuning Rules
 

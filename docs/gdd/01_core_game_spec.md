@@ -46,6 +46,7 @@ Relay는 전투 유닛이자 회로 부품이다.
 - `heat`: 과부하 수치
 - `tags`: Beam, Pulse, Field, Repair, Amp, Sink
 - `linkShape`: N, E, S, W 방향 연결 정보
+- `range`: 중앙 루프상 공격 가능 거리. 프로토타입 기본 0.34 loop.
 
 ### Noise
 
@@ -68,9 +69,31 @@ Signal은 팀 생명력이다.
 - `saturation`: 0에서 시작, 100 도달 시 패배
 - `stability`: 웨이브 종료 시 회복/보너스에 사용
 
+### Team Economy
+
+자원 소유권은 구현 충돌을 막기 위해 아래처럼 고정한다.
+
+| resource | owner | use |
+|---|---|---|
+| Charge | team shared | Supply |
+| Link Energy | team shared | Link Pulse |
+| Signal Integrity | team shared | loss/win pressure |
+| Noise Saturation | team shared | loss pressure |
+| Swap Charge | individual | Swap |
+| Supply count | individual | personal cost scaling and pity |
+| Pity counters | individual | grade guarantees |
+
 ## 5. Board Rules
 
 각 플레이어는 3x4 보드를 가진다.
+
+Board index:
+
+```text
+0  1  2  3
+4  5  6  7
+8  9 10 11
+```
 
 칸 속성:
 
@@ -80,9 +103,26 @@ Signal은 팀 생명력이다.
 
 Anchor 칸:
 
-- 초기 위치는 중앙 열 2행
+- 초기 위치는 index 5
 - Anchor 주변 4방향에 Relay를 연결하면 Link Bonus 발생
 - Anchor가 과열되면 내 보드의 모든 Relay cycle이 15% 느려진다
+
+Link activation:
+
+- 두 Relay가 상하좌우로 인접해야 한다.
+- A의 `linkShape`에 B 방향이 있고, B의 `linkShape`에 A 방향이 있으면 active link 1개다.
+- `All`은 N/E/S/W 모든 방향으로 취급한다.
+- active link는 Relay별 최대 4개, damage formula에서는 최대 4개까지만 계산한다.
+- Anchor와 active link가 연결된 Relay는 `anchorLinked = true`.
+
+Anchor bonus:
+
+```text
+anchorBonus = anchorLinked ? 1.12 : 1.0
+boardAnchorBonus = activeLinksToAnchor >= 3 ? 1.08 : 1.0
+```
+
+위 보너스는 `linkMultiplier`에 곱한다.
 
 배치 규칙:
 
@@ -108,10 +148,12 @@ Anchor 칸:
 
 랜덤 Relay 1개를 공급한다.
 
-- 비용: Charge 20 + 전체 Supply 횟수 5회마다 +3
+- 비용: team Charge를 사용한다.
+- 비용식: `20 + floor(personalSupplyCount / 5) * 3`
 - 빈 칸이 없으면 실패
 - 7회 연속 Basic만 나오면 다음 공급은 Tuned 이상 보장
 - 보스 웨이브 중 Supply 비용 +20%
+- `personalSupplyCount`와 pity는 플레이어별로 증가한다.
 
 ### Merge
 
@@ -161,7 +203,7 @@ Relay는 중앙 루프의 Noise를 자동으로 타겟팅한다.
 Damage formula:
 
 ```text
-damage = voltage * tierMultiplier * gradeMultiplier * linkMultiplier * heatPenalty
+damage = voltage * tierMultiplier * gradeMultiplier * linkMultiplier * anchorBonus * heatPenalty
 ```
 
 | 값 | 수식 |
@@ -169,7 +211,39 @@ damage = voltage * tierMultiplier * gradeMultiplier * linkMultiplier * heatPenal
 | tierMultiplier | 1 + (tier - 1) * 0.62 |
 | gradeMultiplier | Basic 1.0, Tuned 1.35, Prime 1.85, Core 2.55, Origin 3.6 |
 | linkMultiplier | 1 + activeLinks * 0.08, 최대 1.32 |
+| anchorBonus | anchorBonus * boardAnchorBonus, 최대 1.21 |
 | heatPenalty | heat 70 이상 0.8, heat 90 이상 0.55 |
+
+Attack tick:
+
+- 서버 시뮬레이션 tick은 20Hz다.
+- 각 Relay는 `cooldown`을 갖고, `cooldown <= 0`이면 공격/수리/증폭 효과를 실행한다.
+- 실행 후 `cooldown = cycle`.
+- 클라이언트 snapshot은 10Hz로 받지만 전투 판정은 서버 20Hz 기준이다.
+- 공격 사거리는 중앙 루프 progress 기준 거리다. `abs(relayLaneFocus - noise.progress) <= relay.range`.
+- Relay의 기본 `laneFocus`는 보드 index에 따라 고정된다.
+
+Lane focus:
+
+| row | indexes | laneFocus |
+|---:|---|---:|
+| 0 | 0-3 | 0.20 |
+| 1 | 4-7 | 0.50 |
+| 2 | 8-11 | 0.80 |
+
+중앙 루프는 1.0 progress를 한 바퀴로 본다. 거리 계산은 원형 거리로 한다.
+
+```text
+loopDistance(a, b) = min(abs(a - b), 1 - abs(a - b))
+```
+
+Spawn cadence:
+
+- 웨이브 시작 후 1.0초 대기.
+- 기본 spawn interval은 0.75초.
+- Flicker는 0.45초, Crawler는 0.7초, Bulwark는 1.2초, Splitter는 0.9초, Null은 1.0초.
+- 보스는 해당 웨이브 시작 8초 후 1회 스폰한다.
+- 동일 웨이브 내 남은 큐가 비면 spawn 종료.
 
 Heat gain:
 
@@ -210,13 +284,14 @@ Signal 회복 조건:
 
 - 중앙 Signal
 - Noise Saturation
+- Charge
 - 보스 타이머
 - Link Energy
 
 개별인 것:
 
 - 보드
-- Supply 횟수
+- Supply 횟수와 pity
 - Swap Charge
 - Heat 상태
 - Merge 선택

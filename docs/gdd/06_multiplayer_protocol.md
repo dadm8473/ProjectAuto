@@ -30,7 +30,8 @@ Server sends snapshots:
 | spectators | optional later |
 | createdAt | timestamp |
 | status | waiting, playing, ended |
-| tickRate | 10 snapshots/sec prototype |
+| simulationTickRate | 20Hz |
+| snapshotRate | 10Hz |
 
 Room starts when:
 
@@ -59,7 +60,11 @@ Server response:
   "type": "joined",
   "playerId": "p1",
   "roomId": "R7K2",
-  "snapshot": {}
+  "reconnectToken": "rt_opaque_128bit",
+  "snapshot": {
+    "tick": 0,
+    "state": {}
+  }
 }
 ```
 
@@ -78,7 +83,7 @@ Validation:
 - player is in room
 - room status is playing
 - board has empty slot
-- team Charge enough
+- team Charge enough using `20 + floor(personalSupplyCount / 5) * 3`
 - player command cooldown ok
 
 ### swap
@@ -160,15 +165,86 @@ Validation:
   "serverTime": 1714200000.123,
   "tick": 523,
   "state": {
-    "signal": {},
-    "players": [],
-    "boards": {},
-    "noise": [],
-    "wave": {},
-    "events": []
+    "signal": {
+      "integrity": 92,
+      "saturation": 34,
+      "linkEnergy": 58,
+      "teamCharge": 126
+    },
+    "players": [
+      {
+        "playerId": "p1",
+        "name": "Player",
+        "connected": true,
+        "swapCharge": 2,
+        "personalSupplyCount": 8,
+        "pityBasic": 2,
+        "pityPrime": 8
+      }
+    ],
+    "boards": {
+      "p1": {
+        "anchorIndex": 5,
+        "overclockCooldown": 0,
+        "relays": [
+          {
+            "unitId": "u_1",
+            "socket": 0,
+            "type": "needle_beam",
+            "tier": 1,
+            "grade": "Basic",
+            "heat": 24,
+            "cooldown": 0.35,
+            "linkShape": ["E", "W"],
+            "activeLinks": [1],
+            "anchorLinked": false,
+            "shutdownUntilTick": 0
+          }
+        ]
+      }
+    },
+    "noise": [
+      {
+        "noiseId": "n_1",
+        "type": "crawler",
+        "hp": 42,
+        "maxHp": 55,
+        "progress": 0.42,
+        "speed": 38,
+        "lane": 0
+      }
+    ],
+    "wave": {
+      "index": 3,
+      "active": true,
+      "spawnQueueRemaining": 18,
+      "nextSpawnIn": 0.42,
+      "bossTimer": 31.5
+    },
+    "cooldowns": {
+      "linkPulseUntilTick": 590
+    },
+    "events": [
+      {
+        "eventId": "ev_22",
+        "kind": "damage",
+        "tick": 523,
+        "source": "u_1",
+        "target": "n_1",
+        "amount": 18
+      }
+    ]
   }
 }
 ```
+
+Snapshot schema rules:
+
+- `teamCharge` and `linkEnergy` live under `signal` because they are team shared.
+- `swapCharge`, `personalSupplyCount`, and pity counters live under each player.
+- `boards.<playerId>.relays` contains only occupied sockets; empty sockets are implied.
+- `activeLinks` stores adjacent socket indexes, not directions.
+- All server times are derived from `tick`; clients do not submit combat results.
 
 ### commandRejected
 
@@ -205,6 +281,7 @@ Reconnect command:
 {
   "type": "reconnect",
   "clientId": "c_abc",
+  "reconnectToken": "rt_opaque_128bit",
   "roomId": "R7K2",
   "lastSeenTick": 501
 }
@@ -226,6 +303,10 @@ Prototype:
 - server rejection rolls UI back
 - snapshots at 10Hz
 - input commands timestamped
+- commands are processed in server receive order within the next simulation tick
+- duplicate `requestId` from the same `clientId` returns the original result and does not execute twice
+- commands older than `currentTick - 40` are rejected with `STALE_COMMAND`
+- bot commands are generated server-side and use `clientId: "server_bot"`
 
 Later:
 
@@ -264,3 +345,6 @@ Server owns:
 | COOLDOWN | action cooldown active |
 | MERGE_NOT_MATCHING | invalid merge |
 | GAME_ALREADY_ENDED | command after result |
+| STALE_COMMAND | command arrived too late |
+| DUPLICATE_REQUEST | requestId already processed |
+| INVALID_RECONNECT_TOKEN | reconnect token mismatch |

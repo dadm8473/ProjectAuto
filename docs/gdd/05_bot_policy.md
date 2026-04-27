@@ -68,6 +68,20 @@ or SignalIntegrity <= 35 and playerHasRepairTag
 then Link Pulse
 ```
 
+Variable definitions:
+
+```text
+playerHeatMax = max(partnerBoard.relays.map(heat))
+playerRelayShutdownSoon = count(relay.heat >= 92 and relay.cooldown <= 1.5s) >= 1
+playerBoardDpsShare = partnerBoard.estimatedDps / max(1, teamEstimatedDps)
+playerHasRepairTag = count(partnerBoard.relays where tag includes Repair) >= 1
+teamEstimatedDps = sum(estimatedDps for both boards)
+estimatedDps(relay) = voltage * tierMultiplier * gradeMultiplier * linkMultiplier * heatPenalty / cycle
+nextSupplyCost = 20 + floor(botPersonalSupplyCount / 5) * 3
+```
+
+`player` in these names means the human partner when the bot evaluates rescue actions.
+
 봇이 Link Pulse를 쓰면 짧은 말풍선:
 
 - “Cooling your hot Relay.”

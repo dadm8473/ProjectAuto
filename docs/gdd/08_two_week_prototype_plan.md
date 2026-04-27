@@ -110,20 +110,20 @@ Exit criteria:
 
 ## Week 2
 
-### Day 6: Multiplayer protocol
+### Day 6: Local playable loop and first playtest
 
 Deliver:
 
-- WebSocket room
-- join/reconnect
-- authoritative commands
-- snapshot state
+- complete local bot run
+- basic telemetry log
+- 2-person observer playtest
+- loss reason validation
 
 Exit criteria:
 
-- two browser tabs share one run
-- wrong-board command rejected
-- reconnect returns snapshot
+- two testers can play the local bot build
+- at least one tester reaches wave 3
+- loss reason matches telemetry
 
 ### Day 7: Feedback and readability
 
@@ -156,20 +156,32 @@ Exit criteria:
 - no early unavoidable loss before wave 3
 - final boss lasts 25-55 seconds
 
-### Day 9: BM shell and missions
+### Day 9: Multiplayer thin slice
 
 Deliver:
 
-- cosmetics-only store data
-- daily mission tracker
-- pass progress UI
-- no purchase flow
+- WebSocket room
+- join
+- authoritative commands
+- snapshot state
+- no reconnect yet
 
 Exit criteria:
 
-- BM hidden during combat
-- missions reward co-op actions
-- gameplay works if BM disabled
+- two browser tabs share one run
+- wrong-board command rejected
+- duplicate requestId does not double-execute
+
+### Cut Scope for 2-week Build
+
+These are intentionally cut unless the core fun is already validated:
+
+- reconnect
+- BM shell UI
+- season pass UI
+- account persistence
+- native app packaging
+- full cosmetics preview
 
 ### Day 10: Playtest build
 

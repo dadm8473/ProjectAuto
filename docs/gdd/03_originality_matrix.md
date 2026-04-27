@@ -130,3 +130,53 @@ Before implementation milestone:
 - 스토어 설명 첫 문장이 “운”만 내세우지 않는가
 - 스크린샷이 참고작과 같은 정보 배치를 하지 않는가
 - 유닛 명칭과 아트가 고유 세계관을 갖는가
+
+## 9. Mechanical Similarity Risk Register
+
+표면 요소가 달라도 핵심 행동 루프가 같으면 플레이어는 “비슷한 게임”으로 인식한다. 아래 항목은 프로토타입 구현 전후에 반드시 확인한다.
+
+| risk area | similarity risk if copied | Relay Garden differentiator | prototype proof |
+|---|---|---|---|
+| random unit supply | summon button spam becomes the main fun | team Charge is shared, but Supply cost and pity are personal; Supply creates heat-management risk | run telemetry shows Supply is not the only high-frequency action |
+| merge loop | three identical units merge into pure power climb | circuit fusion rerolls link shape and can break or improve network topology | merge result screen shows link impact before confirmation |
+| board value | strongest unit is always best | heat, Sink, Repair, and Anchor links make low-DPS support pieces valuable | win logs include at least 20% support Relay retention past wave 6 |
+| co-op help | partner support is just a generic buff | Link Pulse targets partner heat, saturation, and board failures | at least one saved run has Link Pulse preventing shutdown or signal collapse |
+| boss pressure | boss is only a large HP enemy with timer | bosses corrupt board rules, link behavior, or heat state | each boss has one named board-level disruption in combat log |
+| economy | paid or random power is the long-term chase | BM remains cosmetic/meta-expression only for v0 | combat sim works with all store data disabled |
+| UX rhythm | player repeatedly taps summon/merge without reading board | Swap and Link decisions must be visible in first 60 seconds | tutorial telemetry records Swap or Link evaluation before first boss |
+| two-player layout | two mirrored boards around a path | partner board is compact status surface, central element is Signal loop, help appears as Pulse beacon | screenshot review passes silhouette checklist below |
+
+Acceptance rule:
+
+- If a mechanic can be described as “same as a popular co-op TD, renamed,” it must be cut or reworked.
+- If a mechanic creates a new tradeoff between power, heat, link geometry, and partner rescue, it can stay.
+- If a mechanic is common genre grammar but necessary, its presentation and surrounding decision must be distinct.
+
+## 10. UX Silhouette Test Plan
+
+This must be verified with screenshot and short gameplay-video review before art lock. The current document defines the test; it does not claim the future build has already passed.
+
+Test set:
+
+- 390x844 gameplay screenshot at wave 1, wave 5, final boss
+- 360x800 small-device screenshot at wave 5
+- 10-second video of Supply to placement
+- 10-second video of Link Pulse rescue
+- 10-second video of Merge decision
+
+Fail conditions:
+
+- Main screen reads as dice/guardian/random-summon UI at a glance.
+- Central combat reads as a straight lane instead of a Signal loop.
+- The largest button or animation implies the whole game is summon spam.
+- Partner interaction is visually indistinguishable from a normal buff button.
+- Merge animation hides heat/link consequences.
+- Store, mission, or pass UI suggests paid combat strength.
+
+Pass targets:
+
+- A new viewer can identify heat as a core pressure within 5 seconds.
+- A new viewer can tell which board belongs to the partner within 5 seconds.
+- The most memorable visual is Signal/Relay/heat language, not luck/dice/monster language.
+- The first 60 seconds show at least two distinct verbs besides Supply.
+- Combat screenshots remain readable without copying a two-board-plus-path silhouette from reference games.

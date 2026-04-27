@@ -2,22 +2,22 @@
 
 ## 1. Portrait Layout
 
-세로 화면 기준 390x844 안전 영역을 목표로 한다.
+세로 화면 기준 390x844 안전 영역을 기본 목표로 하고, 360x800을 최소 대응 목표로 한다.
 
 ```text
 ┌──────────────────────────────┐
-│ Top HUD: Signal / Wave / Link│ 56
+│ Top HUD: Signal / Wave / Link│ 52
 ├──────────────────────────────┤
-│ Partner Board 3x4            │ 190
+│ Partner Board 3x4            │ 176
 │ heat beacons + request edge  │
 ├──────────────────────────────┤
-│ Central Signal Loop          │ 220
+│ Central Signal Loop          │ 196
 │ Noise, Boss, Saturation      │
 ├──────────────────────────────┤
-│ My Board 3x4                 │ 190
+│ My Board 3x4                 │ 176
 │ selected sockets + heat      │
 ├──────────────────────────────┤
-│ Action Bar                   │ 156
+│ Action Bar                   │ 144
 │ Supply Swap Merge Link       │
 └──────────────────────────────┘
 ```
@@ -30,7 +30,7 @@
 - Noise Saturation
 - Current Wave
 - Boss timer when active
-- 내 Charge
+- 팀 Charge
 - 팀 Link Energy
 - 내 Swap Charge
 - 파트너 위험 상태
@@ -51,7 +51,7 @@
 | Swap | Relay 선택 2개 + Swap Charge 있음 | 선택 부족, Swap Charge 없음 |
 | Merge | 같은 type/tier 3개 선택 | 조건 불일치 |
 | Link Pulse | Link Energy 충분 + 쿨다운 없음 | 에너지 부족, 쿨다운 |
-| Overclock | 쿨다운 없음 | heat 평균 80 이상이면 경고 후 실행 |
+| Overclock | 보조 액션, 길게 누르기 또는 확장 버튼 | heat 평균 80 이상이면 경고 후 실행 |
 
 버튼은 텍스트만 쓰지 않고 아이콘 형태를 병행한다.
 
@@ -60,6 +60,15 @@
 - Merge: 세 점이 하나로 모이는 아이콘
 - Link: 파트너 보드로 향하는 전파
 - Overclock: 경고 삼각형 + 번개
+
+Action Bar layout:
+
+```text
+390x844: [Supply] [Swap] [Merge] [Link Pulse] + Overclock as hold on Signal Loop
+360x800: [Supply] [Merge] [Link] on first row, [Swap] [Overclock] as compact second row
+```
+
+Overclock은 항상 노출 버튼이 아니라 중앙 Signal Loop를 0.45초 길게 눌러도 발동된다. 따라서 4버튼 레이아웃과 5액션 규칙이 충돌하지 않는다.
 
 ## 4. First 30 Seconds
 
