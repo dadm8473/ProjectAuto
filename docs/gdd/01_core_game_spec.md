@@ -144,7 +144,7 @@ boardAnchorBonus = activeLinksOnAnchorRelay >= 3 ? 1.08 : 1.0
 - Supply placement priority: `[5, 4, 6, 1, 9, 0, 2, 8, 10, 3, 7, 11]`
 - 플레이어는 Relay 두 개의 위치를 바꿀 수 있다.
 - 위치 교환에는 `Swap Charge` 1개가 필요하다.
-- Swap Charge는 웨이브 시작 시 1개, 보스 처치 시 2개 지급된다.
+- 각 플레이어는 웨이브 시작 시 Swap Charge +1, 보스 처치 시 Swap Charge +2를 받는다.
 - 따라서 v0의 공간 판단은 Supply 직후 수동 배치가 아니라 Swap, Merge, Link shape 복구에서 나온다.
 
 ## 6. Core Loop
@@ -199,10 +199,17 @@ supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
 - grade rank: Basic 0, Tuned 1, Prime 2, Core 3, Origin 4.
 - `minimumResultGradeRank = floor((rankA + rankB + rankC) / 3)`.
 - 서버는 결과 grade를 추가 upgrade할 수 있지만 `minimumResultGradeRank`보다 낮게 만들 수 없다.
-- 결과 type은 70% 같은 type, 30% 같은 tag 내 다른 type
-- result type 후보는 최종 result grade에서 사용 가능한 grade pool을 가진 type으로 제한한다.
-- 다른 type 후보가 현재 result grade보다 높은 minimum grade를 요구하면 result grade를 그 minimum grade까지 승격한 뒤 후보에 포함할 수 있다.
-- 같은 tag 내 다른 type 후보가 없으면 결과 type은 100% 같은 type이다.
+Merge RNG order:
+
+1. Compute `minimumResultGradeRank`.
+2. Roll base result grade from merge upgrade odds, never below `minimumResultGradeRank`.
+3. Roll branch: 70% same type, 30% same tag different type.
+4. If same-tag branch has no different-type candidates, switch to same-type branch.
+5. For same-tag branch, candidate types are all different type Relays sharing at least one tag.
+6. Roll candidate type uniformly from that candidate list.
+7. If chosen type requires a higher minimum grade than current result grade, raise result grade to that type's minimum grade.
+8. Final result is `chosenType`, `resultGrade`, `tier + 1`.
+
 - 결과 `linkShape`는 결과 type의 shape pool에서 새로 roll한다. 재료의 linkShape를 상속하지 않는다.
 - v0 shape pool은 roster의 base `linkShape`를 90도씩 회전한 unique variants다. `All`은 회전하지 않고 그대로 사용한다.
 - 결과 heat는 `min(40, floor(averageIngredientHeat * 0.45))`다.
@@ -223,7 +230,8 @@ supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
 파트너 보드에 지원 펄스를 보낸다.
 
 - 비용: Link Energy 40
-- 효과: 파트너 보드에서 heat가 가장 높은 Relay 2개의 heat -35, 6초 동안 `cycleMultiplier = 0.80`
+- 기본 효과: 파트너 보드에서 heat가 가장 높은 Relay 2개의 heat -35, 120 ticks 동안 `cycleMultiplier = 0.80`
+- caster board에 active Twin Gate link가 있으면 heat reduction은 -53, duration은 180 ticks로 증가한다.
 - Signal 회복은 `linkPulseSignalGain` formula 결과만큼 적용한다.
 - 남발 방지를 위해 팀 쿨다운 12초
 - 같은 Relay에 Link Pulse가 다시 적용되면 배율은 중첩되지 않고 지속시간만 6초로 갱신된다.

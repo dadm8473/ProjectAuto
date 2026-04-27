@@ -139,10 +139,10 @@ Final damage and cycle math come from Core Game Spec. Repair effects cannot rais
 | tier | multiplier | merge requirement |
 |---:|---:|---|
 | 1 | 1.00 | Supply |
-| 2 | 1.62 | 3x same type/tier |
-| 3 | 2.24 | 3x same type/tier |
-| 4 | 2.86 | 3x same type/tier |
-| 5 | 3.48 | 3x same type/tier |
+| 2 | 1.62 | created by merging tier 1 |
+| 3 | 2.24 | created by merging tier 2 |
+| 4 | 2.86 | created by merging tier 3 |
+| 5 | 3.48 | max tier, cannot merge |
 
 ## 5. Grade Multipliers
 
@@ -181,16 +181,23 @@ Reward contract:
 
 | wave | duration target | spawnEnd | enemies | boss timer after entry | clear reward |
 |---:|---:|---:|---|---:|---|
-| 1 | 26-32s | 20s | 16 Flicker, 8 Crawler | - | Charge 35, Link 10, Swap 1 |
+| 1 | 26-32s | 20s | 16 Flicker, 8 Crawler | - | Charge 35, Link 10 |
 | 2 | 29-35s | 23s | 18 Crawler, 4 Bulwark | - | Charge 45, Link 12 |
-| 3 | 39-47s | 33s | 20 Crawler, 8 Splitter, Boss Orchid | 36s | Charge 65, Link 22, Swap 2, Chance +1 |
+| 3 | 39-47s | 33s | 20 Crawler, 8 Splitter, Boss Orchid | 36s | Charge 65, Link 22, Chance +1 |
 | 4 | 32-39s | 26s | 24 Flicker, 16 Crawler, 5 Bulwark | - | Charge 55, Link 14 |
 | 5 | 36-44s | 30s | 12 Splitter, 8 Bulwark, 6 Null | - | Charge 65, Link 16 |
-| 6 | 45-53s | 38s | 22 Crawler, 12 Null, Boss Mirror | 42s | Charge 85, Link 28, Swap 2, Chance +1 |
+| 6 | 45-53s | 38s | 22 Crawler, 12 Null, Boss Mirror | 42s | Charge 85, Link 28, Chance +1 |
 | 7 | 38-44s | 31s | 48 Flicker, 10 Bulwark | - | Charge 75, Link 16 |
 | 8 | 40-48s | 34s | 24 Splitter, 16 Null, 10 Bulwark | - | Charge 85, Link 18, Chance +1 if Saturation < 70 |
 | 9 | 44-52s | 38s | 40 Crawler, 20 Splitter, 16 Bulwark | - | Charge 95, Link 22, Chance catch-up if < 3 |
 | 10 | 71-78s incl. 20s hold | 43s | 20 Null, 24 Bulwark, Origin Null | 55s | Win |
+
+Swap Charge contract:
+
+- Swap Charge is not part of wave clear rewards.
+- Each player gains +1 Swap Charge at every wave start.
+- Each player gains +2 Swap Charge immediately when a boss dies.
+- The reward table omits Swap to avoid double counting.
 
 Spawn lane offsets:
 
@@ -309,6 +316,29 @@ ScriptedHuman policy:
 4. If team Charge >= canonical Supply cost + 15 and board has an empty slot, Supply.
 5. If boss active, own avg heat < 62, and Overclock ready, Overclock.
 6. Otherwise wait.
+
+ScriptedHuman scoring:
+
+```text
+scriptedMergeScore =
+  tierGain * 35
+  + freesSlots * 10
+  + preservesUtilityTags * 15
+  + predictedEffectiveLinksDelta * 12
+  - averageIngredientHeat / 5
+
+scriptedSwapScore =
+  predictedEffectiveLinksDelta * 22
+  + movesHotRelayOffRiskSocket * 18
+  + movesSinkNextToHotRelay * 24
+  + restoresAnchorLink * 18
+```
+
+- `tierGain` is always 1 for legal Merge.
+- `freesSlots` is 2 for a normal 3-to-1 Merge.
+- `preservesUtilityTags` is 1 if the board keeps at least one Repair, Amp, Sink, or Field after Merge; otherwise 0.
+- `predictedEffectiveLinksDelta` compares current effective active links to the previewed result.
+- ScriptedHuman thresholds intentionally differ from CasualBot thresholds because the sim is a human-like baseline, not the partner AI.
 
 Sim metrics:
 

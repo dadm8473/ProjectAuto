@@ -174,9 +174,8 @@ Deliver:
 
 Exit criteria:
 
-- ScriptedHuman + CasualBot simulation win rate 35-65%
-- no early unavoidable loss before wave 3
-- final boss lasts 25-55 seconds
+- Balance Sheet 50-seed pass band passes in full
+- final boss lasts 25-55 seconds in passing seeds
 
 ### Day 9: Branch Work
 
@@ -242,7 +241,7 @@ Exit criteria:
 
 ### Originality Gate
 
-Required artifacts before showing the build:
+Core-loop pass branch required artifacts before showing the build:
 
 - 390x844 screenshots: wave 1, wave 5, final boss.
 - 360x800 screenshot: wave 5.
@@ -252,6 +251,15 @@ Required artifacts before showing the build:
 - bot-only fallback branch may use a scripted/dev-seeded win log for this artifact, but the seed and script must be listed in known issues.
 - log: at least one Link Pulse rescue prevents shutdown or Signal collapse.
 - visual review: screen does not read as dice/guardian/random-summon UI at a glance.
+
+Bot-only fallback branch originality subset:
+
+- 390x844 screenshots: wave 1, wave 5, highest reached boss.
+- 360x800 screenshot: wave 5.
+- 10-second clips: Supply to first Swap/link decision, Link Pulse rescue, Merge decision.
+- telemetry: at least two non-Supply verbs occur in first 60 seconds.
+- log: at least one Link Pulse rescue prevents shutdown or Signal collapse.
+- known issues must state that final boss screenshot and win-log retention proof are deferred until core-loop pass branch.
 
 ## QA Checklist
 
