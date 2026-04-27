@@ -1,0 +1,11 @@
+{
+  "name": "project-auto",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "dev": "node server/server.js",
+    "start": "node server/server.js"
+  }
+}

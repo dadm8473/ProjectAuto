@@ -1,0 +1,10 @@
+{
+  "name": "ProjectAuto Relay Defense",
+  "short_name": "RelayDefense",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#101820",
+  "theme_color": "#101820",
+  "icons": []
+}
