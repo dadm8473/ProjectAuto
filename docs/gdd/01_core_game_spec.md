@@ -533,6 +533,9 @@ Null spore:
 - Origin Null이 disruption을 실행할 때 2개를 생성한다.
 - spawn progress는 `wrap(boss.progress - 0.06)`와 `wrap(boss.progress + 0.06)`이다.
 - stats는 Balance Sheet의 `null_spore` row를 사용한다.
+- Spore A and B use the room `nextSpawnSequenceId` counter in A then B order.
+- Spore lane is `Null` laneOffset lane for targeting/log grouping; lane does not affect progress.
+- `boss_origin_spore` event payload includes `waveIndex`, `bossId`, `spawnedSpores: [{ noiseId, spawnSequenceId, progress, lane }]`, and `sourceProgress`.
 - `null_spore`는 Null로 취급되어 `null_cage`의 우선 타겟이 된다.
 - `null_spore`가 루프를 완료하면 Signal integrity -4, `anchorSlowedUntilTick = currentTick + 120`을 적용하고 제거된다.
 - `null_spore`는 일반 Null의 Signal -8 감염 규칙을 사용하지 않는다.
@@ -546,7 +549,7 @@ Reward Charge:
 - Splitter children spawn in the same tick after parent death resolves and after the parent reward is granted.
 - Child A progress is `max(0, parent.progress - 0.015)`.
 - Child B progress is `min(0.995, parent.progress + 0.015)`.
-- Both children inherit `lane` from the parent, use Flicker hp/speed/range stats, and receive `spawnSequenceId` in A then B order.
+- Both children inherit `lane` from the parent, use Flicker hp/speed/saturation stats, and receive `spawnSequenceId` in A then B order.
 - Boss가 사망하면 Boss rewardCharge를 즉시 지급한다.
 - Wave clear reward는 모든 spawn lane이 완료되고, 해당 wave의 살아있는 Noise가 모두 제거된 뒤 별도로 1회 지급한다.
 - Boss rewardCharge와 wave clear reward는 중복 지급된다. 밸런스 표는 이 중복을 포함한 경제 목표다.
@@ -621,13 +624,13 @@ Null Anchor infection:
 - `null_cage` 효과를 받고 있는 Null은 감염하지 못한다.
 - 감염 대상은 `anchorHeat`가 더 높은 보드다. 동률이면 canonical target selection을 따른다.
 - `anchorHeat`는 Anchor socket Relay의 heat이며, Anchor socket이 비어 있으면 0이다.
-- 감염 시 Signal integrity -8, 대상 Anchor socket Relay heat +20, `anchorSlowedUntilTick = currentTick + 160`.
+- 감염 시 Signal integrity -8, 대상 Anchor socket에 Relay가 있으면 heat +20, `anchorSlowedUntilTick = currentTick + 160`.
 - 로그 이벤트는 `null_anchor_infected`를 기록한다.
 
 Canonical target selection:
 
 - `anchorHeat` compares current heat of the Relay in anchor socket 5; empty anchor socket counts as 0.
-- Tie-break after equal `anchorHeat`: higher current board heat average, then lower boardOwner order `p1`, then `p2`.
+- Tie-break after equal `anchorHeat`: higher current board heat average, then lower boardOwner order `p1`, then `p2`. Empty board heat average is 0.
 - If the selected anchor socket is empty, apply Signal integrity -8 and `anchorSlowedUntilTick = currentTick + 160`, but skip the heat +20 delta.
 - Event payload includes `boardOwner`, `anchorSocketOccupied`, `anchorUnitId` or null, `anchorHeatBefore`, `heatDeltaApplied`, `signalDamage: 8`, and `anchorSlowedUntilTick`.
 

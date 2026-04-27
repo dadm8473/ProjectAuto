@@ -419,11 +419,19 @@ Duplicate handling:
 
 ### event
 
+All event feed messages and snapshot `events` entries use the same envelope:
+
+- `eventId`: unique room-scoped id.
+- `kind`: event type.
+- `tick`: authoritative server tick when the event resolved.
+
 ```json
 {
   "type": "event",
   "event": {
+    "eventId": "ev_31",
     "kind": "link_pulse_save",
+    "tick": 548,
     "playerId": "p2",
     "targetPlayerId": "p1",
     "preSignalIntegrity": 32,
@@ -438,6 +446,7 @@ Duplicate handling:
 {
   "type": "event",
   "event": {
+    "eventId": "ev_44",
     "kind": "saturation_pressure_damage",
     "tick": 1240,
     "saturation": 84,

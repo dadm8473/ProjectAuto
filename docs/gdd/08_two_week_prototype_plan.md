@@ -42,7 +42,7 @@ Minimum Day 10 content:
 - Day 8 50-seed sim always uses the full v0 roster from the Balance Sheet.
 - Playable roster may cut visual polish and tutorial emphasis to 10 core Relays: Needle Beam, Prism Lance, Coolant Moss, Rain Pump, Pulse Drum, Thunder Bowl, Amber Field, Null Cage, Signal Amp, Sink Stone.
 - The non-highlighted roster may use placeholder art/UI in Day 10, but remains enabled in sim and combat.
-- Full roster means all Relay Effect Rules v0 rows are executable by Day 8: 19 Relay ids, 3 boss disruptions, Supply/Merge/Swap/Link Pulse/Overclock, and bot-visible logs.
+- Full roster means all Relay Effect Rules v0 rows are executable by Day 8: 20 Relay ids, 3 boss disruptions, Supply/Merge/Swap/Link Pulse/Overclock, and bot-visible logs.
 - In cut scope, `utility Relay` means Repair, Amp, Sink, or Field tags. It does not require the Support tag.
 - Boss Orchid, Boss Mirror, and Origin Null disruptions remain required in both branches. Cut boss visual polish before cutting named board-level disruption logs.
 - Core-loop pass branch only: multiplayer scope is local two-tab WebSocket.
@@ -123,7 +123,7 @@ Exit criteria:
 - one-hand portrait layout readable at 390x844
 - Supply/Merge/Link visible without scrolling
 - heat states clear in screenshot
-- all 19 Relay ids have readable placeholder icon/name/state in portrait UI
+- all 20 Relay ids have readable placeholder icon/name/state in portrait UI
 
 ### Day 5: Bot partner
 
@@ -178,7 +178,7 @@ Exit criteria:
 - tester can identify who used Link Pulse
 - loss reason matches log
 - Prime+ Merge feels visually distinct
-- all 19 Relay effect fixtures pass before Day 8 balance tuning starts
+- all 20 Relay effect fixtures pass before Day 8 balance tuning starts, including `origin_seed` boss execute
 
 ### Day 8: Balance pass 1
 
@@ -189,6 +189,7 @@ Deliver:
 - tune Supply cost
 - run 50-seed simulations with ScriptedHuman + CasualBot
 - verify full roster and all boss disruptions are enabled in the 50-seed sim
+- verify `origin_seed` execute appears in at least one targeted fixture and is not required to appear naturally in random 50-seed runs
 
 Exit criteria:
 
