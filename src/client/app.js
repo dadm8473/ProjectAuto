@@ -41,6 +41,7 @@ let online = false;
 let socket = null;
 let last = performance.now();
 let selected = [];
+let localBoardId = 'p1';
 
 const boardRects = {
   p2: { x: 18, y: 74, w: 354, h: 108 },
@@ -66,17 +67,17 @@ function send(action) {
 
 function localAction(action) {
   let result = { ok: false, reason: 'Unknown action.' };
-  if (action.type === 'supply') result = supplyRelay(game, { playerId: 'p1' });
-  if (action.type === 'merge') result = mergeRelays(game, { playerId: 'p1', slotIds: selected });
+  if (action.type === 'supply') result = supplyRelay(game, { playerId: localBoardId });
+  if (action.type === 'merge') result = mergeRelays(game, { playerId: localBoardId, slotIds: selected });
   if (action.type === 'swap') {
     if (selected.length < 2) result = { ok: false, reason: 'Select two sockets.' };
-    else result = swapRelays(game, { playerId: 'p1', from: selected[0], to: selected[1] });
+    else result = swapRelays(game, { playerId: localBoardId, from: selected[0], to: selected[1] });
   }
-  if (action.type === 'focus') result = upgradeSupplyFocus(game, { playerId: 'p1' });
-  if (action.type === 'pulse') result = castLinkPulse(game, { playerId: 'p1' });
+  if (action.type === 'focus') result = upgradeSupplyFocus(game, { playerId: localBoardId });
+  if (action.type === 'pulse') result = castLinkPulse(game, { playerId: localBoardId });
   if (action.type === 'overclock') {
     const slot = selected.at(-1);
-    result = slot === undefined ? { ok: false, reason: 'Select one Relay.' } : overclockRelay(game, { playerId: 'p1', slot });
+    result = slot === undefined ? { ok: false, reason: 'Select one Relay.' } : overclockRelay(game, { playerId: localBoardId, slot });
   }
   if (action.type === 'buy') result = tryBuyShopItem(game, { itemId: action.itemId });
   if (!result.ok) showToast(result.reason);
@@ -107,13 +108,25 @@ function canvasPoint(event) {
 }
 
 function slotAt(point) {
-  for (const [playerId, rect] of Object.entries(boardRects)) {
+  const entries = [
+    [partnerId(localBoardId), boardRects.p2],
+    [localBoardId, boardRects.p1]
+  ];
+  for (const [playerId, rect] of entries) {
     if (point.x < rect.x || point.x > rect.x + rect.w || point.y < rect.y || point.y > rect.y + rect.h) continue;
     const col = Math.floor((point.x - rect.x) / (rect.w / 4));
     const row = Math.floor((point.y - rect.y) / (rect.h / 3));
     return { playerId, index: row * 4 + col };
   }
   return null;
+}
+
+function partnerId(playerId) {
+  return playerId === 'p1' ? 'p2' : 'p1';
+}
+
+function displayRectForBoard(playerId) {
+  return playerId === localBoardId ? boardRects.p1 : boardRects.p2;
 }
 
 function boardSlotRect(rect, index) {
@@ -324,9 +337,9 @@ function drawLinks(board, rect, now) {
 }
 
 function drawBoard(state, playerId) {
-  const rect = boardRects[playerId];
+  const rect = displayRectForBoard(playerId);
   const board = state.boards[playerId];
-  const isMine = playerId === 'p1';
+  const isMine = playerId === localBoardId;
   const heatPeak = board.heatPeak ?? 0;
   const border = heatPeak >= 90 ? '#ff6f59' : isMine ? '#58d7ff' : '#95d5b2';
 
@@ -416,10 +429,10 @@ function render() {
   const state = serializeState(game);
   drawBackground(state);
   drawCanvasHud(state);
-  drawBoard(state, 'p2');
+  drawBoard(state, partnerId(localBoardId));
   drawTrack(state);
   drawNoise(state);
-  drawBoard(state, 'p1');
+  drawBoard(state, localBoardId);
   drawEffects(state);
 
   if (state.over) {
@@ -488,11 +501,16 @@ function connectOnline() {
   });
   socket.addEventListener('message', (event) => {
     const message = JSON.parse(event.data);
-    if (message.type === 'state') game = message.state;
+    if (message.type === 'state') {
+      if (message.boardPlayer && message.boardPlayer !== localBoardId) selected = [];
+      localBoardId = message.boardPlayer ?? localBoardId;
+      game = message.state;
+    }
     if (message.type === 'error') showToast(message.reason);
   });
   socket.addEventListener('close', () => {
     online = false;
+    localBoardId = 'p1';
     netStatus.textContent = 'BOT CO-OP';
     showToast('Bot co-op resumed.');
     game = createGame({ mode: 'bot', seed: Date.now() % 100000 });
@@ -501,12 +519,12 @@ function connectOnline() {
 
 canvas.addEventListener('pointerdown', (event) => {
   const hit = slotAt(canvasPoint(event));
-  if (!hit || hit.playerId !== 'p1') return;
-  const relay = game.boards.p1.slots[hit.index];
+  if (!hit || hit.playerId !== localBoardId) return;
+  const relay = game.boards[localBoardId].slots[hit.index];
   if (!relay) return;
   if (selected.includes(hit.index)) selected = selected.filter((index) => index !== hit.index);
   else selected = [...selected, hit.index].slice(-3);
-  const names = selected.map((index) => RELAY_TYPES[game.boards.p1.slots[index]?.relayId]?.name).filter(Boolean);
+  const names = selected.map((index) => RELAY_TYPES[game.boards[localBoardId].slots[index]?.relayId]?.name).filter(Boolean);
   if (names.length > 0) showToast(names.join(' + '));
 });
 
@@ -520,6 +538,7 @@ document.querySelector('#botButton').addEventListener('click', () => {
   online = false;
   socket?.close();
   selected = [];
+  localBoardId = 'p1';
   game = createGame({ mode: 'bot', seed: Date.now() % 100000 });
   netStatus.textContent = 'BOT CO-OP';
 });

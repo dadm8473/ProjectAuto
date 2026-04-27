@@ -68,7 +68,10 @@ function send(client, message) {
 }
 
 function broadcast(message) {
-  for (const client of room.clients.keys()) send(client, message);
+  for (const [client, meta] of room.clients.entries()) {
+    const boardPlayer = meta.playerId === room.game.players[1]?.id ? 'p2' : 'p1';
+    send(client, { ...message, playerId: meta.playerId, boardPlayer });
+  }
 }
 
 function assignPlayers() {
@@ -90,7 +93,8 @@ function handleAction(socket, action) {
     client.playerId = action.playerId || client.playerId;
     client.name = String(action.name || 'Player').slice(0, 18);
     assignPlayers();
-    send(socket, { type: 'state', state: serializeState(room.game) });
+    const boardPlayer = client.playerId === room.game.players[1]?.id ? 'p2' : 'p1';
+    send(socket, { type: 'state', state: serializeState(room.game), playerId: client.playerId, boardPlayer });
     return;
   }
   const playerId = client?.playerId ?? 'guest';
@@ -144,7 +148,8 @@ function upgrade(req, socket) {
     room.clients.delete(socket);
     assignPlayers();
   });
-  send(socket, { type: 'state', state: serializeState(room.game) });
+  const boardPlayer = id === room.game.players[1]?.id ? 'p2' : 'p1';
+  send(socket, { type: 'state', state: serializeState(room.game), playerId: id, boardPlayer });
 }
 
 function tickRoom() {
