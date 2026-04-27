@@ -39,7 +39,9 @@ Branches:
 Minimum Day 10 content:
 
 - 10-wave deterministic sim remains required.
-- Playable roster may cut to 10 core Relays: Needle Beam, Prism Lance, Coolant Moss, Rain Pump, Pulse Drum, Thunder Bowl, Amber Field, Null Cage, Signal Amp, Sink Stone.
+- Day 8 50-seed sim always uses the full v0 roster from the Balance Sheet.
+- Playable roster may cut visual polish and tutorial emphasis to 10 core Relays: Needle Beam, Prism Lance, Coolant Moss, Rain Pump, Pulse Drum, Thunder Bowl, Amber Field, Null Cage, Signal Amp, Sink Stone.
+- The non-highlighted roster may use placeholder art/UI in Day 10, but remains enabled in sim and combat.
 - In cut scope, `utility Relay` means Repair, Amp, Sink, or Field tags. It does not require the Support tag.
 - Boss implementation may cut Boss Mirror disruption first; Boss Orchid and Origin Null remain required.
 - Core-loop pass branch only: multiplayer scope is local two-tab WebSocket.
@@ -248,7 +250,6 @@ Core-loop pass branch required artifacts before showing the build:
 - 10-second clips: Supply to first Swap/link decision, Link Pulse rescue, Merge decision.
 - telemetry: Supply is not the only high-frequency action; at least two non-Supply verbs occur in first 60 seconds.
 - telemetry: utility Relay retention is >= 20% of kept Relays after wave 6 in at least one win log.
-- bot-only fallback branch may use a scripted/dev-seeded win log for this artifact, but the seed and script must be listed in known issues.
 - log: at least one Link Pulse rescue prevents shutdown or Signal collapse.
 - visual review: screen does not read as dice/guardian/random-summon UI at a glance.
 

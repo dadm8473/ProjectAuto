@@ -198,16 +198,15 @@ supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
 - grade는 합성 재료 평균 rank보다 낮아지지 않는다.
 - grade rank: Basic 0, Tuned 1, Prime 2, Core 3, Origin 4.
 - `minimumResultGradeRank = floor((rankA + rankB + rankC) / 3)`.
-- 서버는 결과 grade를 추가 upgrade할 수 있지만 `minimumResultGradeRank`보다 낮게 만들 수 없다.
 Merge RNG order:
 
 1. Compute `minimumResultGradeRank`.
-2. Roll base result grade from merge upgrade odds, never below `minimumResultGradeRank`.
+2. Set `resultGradeRank = minimumResultGradeRank`. v0 has no extra merge grade-up roll.
 3. Roll branch: 70% same type, 30% same tag different type.
 4. If same-tag branch has no different-type candidates, switch to same-type branch.
 5. For same-tag branch, candidate types are all different type Relays sharing at least one tag.
 6. Roll candidate type uniformly from that candidate list.
-7. If chosen type requires a higher minimum grade than current result grade, raise result grade to that type's minimum grade.
+7. If chosen type requires a higher minimum grade than current `resultGradeRank`, raise `resultGradeRank` to that type's minimum grade.
 8. Final result is `chosenType`, `resultGrade`, `tier + 1`.
 
 - 결과 `linkShape`는 결과 type의 shape pool에서 새로 roll한다. 재료의 linkShape를 상속하지 않는다.
@@ -234,7 +233,7 @@ Merge RNG order:
 - caster board에 active Twin Gate link가 있으면 heat reduction은 -53, duration은 180 ticks로 증가한다.
 - Signal 회복은 `linkPulseSignalGain` formula 결과만큼 적용한다.
 - 남발 방지를 위해 팀 쿨다운 12초
-- 같은 Relay에 Link Pulse가 다시 적용되면 배율은 중첩되지 않고 지속시간만 6초로 갱신된다.
+- 같은 Relay에 Link Pulse가 다시 적용되면 배율은 중첩되지 않고, 현재 caster의 effective duration으로 갱신된다. base 120 ticks, Twin Gate 180 ticks.
 - Signal 회복은 아래 canonical formula로만 계산한다.
 
 ```text

@@ -125,7 +125,7 @@ Link Pulse 사용:
 1. 파트너 보드 가장자리에 “LINK?” beacon
 2. 내 Link Pulse 버튼이 파란색으로 점멸
 3. 누르면 에너지 파동이 내 보드에서 파트너 보드로 이동
-4. 파트너 Relay heat가 내려가고 effective cycle이 6초 동안 80%로 짧아짐
+4. 파트너 Relay heat가 내려가고 effective cycle이 120 ticks 동안 80%로 짧아짐
 5. 양쪽 화면에 “Saved by Link Pulse” 표시
 
 ## 7. Boss Flow
