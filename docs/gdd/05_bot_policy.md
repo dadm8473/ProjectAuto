@@ -110,6 +110,31 @@ score = tierGain * 40
 
 봇은 score >= 55일 때 합성한다.
 
+Merge score variable definitions:
+
+```text
+tierGain = 1 for every legal Merge
+
+gradeProtection =
+  1 if at least one ingredient is Prime+ or the Merge preview grade floor is Prime+
+  else 0
+
+boardSpacePressure =
+  clamp((occupiedSockets - 8) / 4, 0, 1)
+
+tagNeedBonus =
+  1 if any utility group in {Repair, Amp, Sink, Field} would be missing after removing the ingredients
+    and Merge preview possibleUtilityGroups includes at least one of those missing utility groups
+  0.5 if the board keeps all four utility tag groups but the preview max link count is greater than current effective links
+  else 0
+
+heatRisk =
+  clamp(averageIngredientHeat / 100, 0, 1)
+  + 0.5 if any ingredient is currently the only Relay cooling or linking a heat >= 80 Relay
+```
+
+`tagNeedBonus` and link comparisons use the canonical `computeMergePreview` range from the Core Game Spec. CasualBot cannot inspect final type or linkShape before server confirm.
+
 Merge를 보류하는 경우:
 
 - 합성하면 Repair tag가 0개가 됨

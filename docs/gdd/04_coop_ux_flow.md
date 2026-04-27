@@ -99,7 +99,7 @@ Overclock은 항상 노출 버튼이 아니라 중앙 Signal Loop를 0.45초 길
 1. 플레이어가 Relay 슬롯을 누른다.
 2. 같은 type/tier 후보가 노란 테두리로 표시된다.
 3. 3개 선택 시 Merge 버튼이 밝아진다.
-4. Merge preview가 destination socket, tier/grade floor, possible link count range, heat compression을 보여준다.
+4. Merge preview가 Core Game Spec `computeMergePreview` 결과로 destination socket, tier/grade floor, possible link count range, heat compression을 보여준다.
 5. Merge를 누르면 선택된 3칸에서 선이 중앙으로 모인다.
 6. 결과 Relay가 첫 선택 칸에 생성된다.
 7. 결과가 Prime 이상이면 파트너 화면에도 작은 알림이 뜬다.

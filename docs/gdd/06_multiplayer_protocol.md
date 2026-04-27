@@ -172,6 +172,12 @@ Validation:
 - same tier
 - player owns board
 
+Preview contract:
+
+- Merge preview is not a separate gameplay command in v0.
+- The client computes preview UI from the latest authoritative snapshot with Core Game Spec `computeMergePreview`.
+- The server recomputes the same helper before accepting `merge`; client-submitted preview values, if any, are ignored.
+
 ### linkPulse
 
 ```json

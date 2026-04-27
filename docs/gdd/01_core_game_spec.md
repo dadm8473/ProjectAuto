@@ -216,6 +216,53 @@ Merge RNG order:
 - 합성 후 1.2초 동안 해당 보드에 Spark Wave 이펙트 발생
 - Merge command의 destination socket은 `slots[0]`이다.
 
+Canonical Merge preview:
+
+```text
+computeMergePreview(slots, boardState, roster):
+  validate the same rules as a Merge command, except no RNG is consumed
+  destinationSocket = slots[0]
+  ingredientType = boardState.slots[slots[0]].type
+  ingredientTier = boardState.slots[slots[0]].tier
+  ingredientTags = union(tags of the three ingredients)
+  ingredientRanks = [rankA, rankB, rankC] from the three ingredients
+  ingredientHeats = [heatA, heatB, heatC] from the three ingredients
+  resultTier = ingredientTier + 1
+  minimumResultGradeRank = floor(sum(ingredientRanks) / 3)
+  resultHeat = min(40, floor(average(ingredientHeats) * 0.45))
+
+  sameTypeCandidates = [ingredientType]
+  sameTagCandidates = roster types where type != ingredientType and tags intersect ingredientTags
+  possibleTypes =
+    sameTypeCandidates if sameTagCandidates is empty
+    else sameTypeCandidates + sameTagCandidates
+
+  previewBoardBase = boardState with all three ingredient slots emptied
+
+  for each possibleType:
+    previewGradeRank = max(minimumResultGradeRank, possibleType.minimumGradeRank)
+    for each unique shape in possibleType.shapePool:
+      simulatedBoard = previewBoardBase with destinationSocket filled by possibleType/resultTier/previewGradeRank/resultHeat/shape
+      previewLinks.add(countEffectiveActiveLinks(simulatedBoard, boardState.disabledLinks))
+
+  return {
+    destinationSocket,
+    resultTier,
+    minimumResultGradeRank,
+    resultHeat,
+    minPreviewLinks: min(previewLinks),
+    maxPreviewLinks: max(previewLinks),
+    currentEffectiveLinks: countEffectiveActiveLinks(boardState, boardState.disabledLinks),
+    possibleUtilityGroups: intersection({Repair, Amp, Sink, Field}, union(tags of possibleTypes)),
+    possibleTypeCount: count(possibleTypes)
+  }
+```
+
+- `shapePool` uses the v0 unique rotation rule above. `All` contributes one shape.
+- `countEffectiveActiveLinks` is the same function used by combat and snapshots: compute legal adjacent links, then remove socket pairs in `disabledLinks` that still match the simulated board.
+- Merge preview is public deterministic state, not a gameplay command. Client UI, server validation helpers, ScriptedHuman, and CasualBot must call the same shared function from the latest authoritative snapshot.
+- The preview may expose `possibleUtilityGroups` and `possibleTypeCount`, but it must not expose the chosen type, chosen shape, final grade raise source, or branch RNG before server confirm.
+
 ### Swap
 
 내 보드 Relay 두 개의 위치를 교환한다.

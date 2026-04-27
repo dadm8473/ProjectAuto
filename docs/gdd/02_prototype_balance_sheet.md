@@ -337,7 +337,7 @@ scriptedSwapScore =
 - `tierGain` is always 1 for legal Merge.
 - `freesSlots` is 2 for a normal 3-to-1 Merge.
 - `preservesUtilityTags` is 1 if the board keeps at least one Repair, Amp, Sink, or Field after Merge; otherwise 0.
-- `predictedEffectiveLinksDelta` uses the expected value of the hidden Merge preview link-count range: `(minPreviewLinks + maxPreviewLinks) / 2 - currentEffectiveLinks`.
+- `predictedEffectiveLinksDelta` uses the expected value of the hidden Merge preview link-count range from Core Game Spec `computeMergePreview`: `(minPreviewLinks + maxPreviewLinks) / 2 - currentEffectiveLinks`.
 - ScriptedHuman cannot peek final type or linkShape before server confirm.
 - ScriptedHuman thresholds intentionally differ from CasualBot thresholds because the sim is a human-like baseline, not the partner AI.
 

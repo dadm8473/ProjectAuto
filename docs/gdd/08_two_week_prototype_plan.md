@@ -43,7 +43,7 @@ Minimum Day 10 content:
 - Playable roster may cut visual polish and tutorial emphasis to 10 core Relays: Needle Beam, Prism Lance, Coolant Moss, Rain Pump, Pulse Drum, Thunder Bowl, Amber Field, Null Cage, Signal Amp, Sink Stone.
 - The non-highlighted roster may use placeholder art/UI in Day 10, but remains enabled in sim and combat.
 - In cut scope, `utility Relay` means Repair, Amp, Sink, or Field tags. It does not require the Support tag.
-- Boss implementation may cut Boss Mirror disruption first; Boss Orchid and Origin Null remain required.
+- Boss Orchid, Boss Mirror, and Origin Null disruptions remain required in both branches. Cut boss visual polish before cutting named board-level disruption logs.
 - Core-loop pass branch only: multiplayer scope is local two-tab WebSocket.
 - Bot-only fallback branch: multiplayer is deferred and the show build must run fully with a local bot.
 - Reconnect, AWS deploy, accounts, and payments are outside the 2-week show build in both branches.
@@ -237,7 +237,7 @@ Exit criteria:
 
 - 5-person playtest possible
 - browser/mobile test checklist complete
-- originality gate complete
+- branch-specific originality gate complete: full artifacts for core-loop pass branch; fallback subset plus explicit known-issues deferrals for bot-only fallback branch
 - all unit tests pass
 - no console errors in 10-minute run
 
@@ -261,6 +261,7 @@ Bot-only fallback branch originality subset:
 - telemetry: at least two non-Supply verbs occur in first 60 seconds.
 - log: at least one Link Pulse rescue prevents shutdown or Signal collapse.
 - known issues must state that final boss screenshot and win-log retention proof are deferred until core-loop pass branch.
+- Boss disruption logs are still required for every boss reached in the fallback run; if a boss is not reached, the missing proof is listed as deferred rather than passed.
 
 ## QA Checklist
 
@@ -275,7 +276,8 @@ Bot-only fallback branch originality subset:
 - [ ] Core-loop pass branch only: online two-tab run syncs commands.
 - [ ] Core-loop pass branch only: refresh/disconnect during Day 9 shows reconnect unsupported notice and does not corrupt the room.
 - [ ] Bot-only fallback branch only: online QA is marked deferred in known issues.
-- [ ] Originality gate artifacts are present and pass.
+- [ ] Core-loop pass branch: full originality gate artifacts are present and pass.
+- [ ] Bot-only fallback branch: fallback originality subset is present and known-issues deferrals are explicit.
 
 ## Deliverable Definition
 
