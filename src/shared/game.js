@@ -215,7 +215,7 @@ function boardAmpMultiplier(board, now, slotIndex) {
   return strongest ?? 1;
 }
 
-function relayDamage(game, board, slotIndex, relay) {
+function relayDamage(game, board, slotIndex, relay, target) {
   const spec = RELAY_TYPES[relay.relayId];
   const links = computeActiveLinks(board, game.now);
   const activeLinks = activeLinkCountForSocket(links, slotIndex);
@@ -224,7 +224,8 @@ function relayDamage(game, board, slotIndex, relay) {
   const heatOutput = relay.heat >= 50 && relay.heat < 70 ? 1.05 : 1;
   const heatPenalty = relay.heat >= 90 ? 0.55 : relay.heat >= 70 ? 0.8 : 1;
   const overclock = board.overclockUntil > game.now ? 1.35 : 1;
-  return spec.voltage * tierMultiplier(relay.tier) * gradeMultiplier(relay.grade) * linkMultiplier * anchorBonus * heatOutput * heatPenalty * overclock * boardAmpMultiplier(board, game.now, slotIndex);
+  const dualOverclockBoss = target?.type === 'boss' && game.dualOverclockBossUntil > game.now ? 1.3 : 1;
+  return spec.voltage * tierMultiplier(relay.tier) * gradeMultiplier(relay.grade) * linkMultiplier * anchorBonus * heatOutput * heatPenalty * overclock * dualOverclockBoss * boardAmpMultiplier(board, game.now, slotIndex);
 }
 
 function applyHeat(game, relay, amount) {
@@ -272,7 +273,7 @@ function attackWithRelay(game, board, slotIndex, relay, dt) {
   const target = pickTarget(game, spec);
   if (!target) return;
 
-  let damage = relayDamage(game, board, slotIndex, relay);
+  let damage = relayDamage(game, board, slotIndex, relay, target);
   if (spec.crit && game.rng.next() < spec.crit) damage *= 2.4;
   if (spec.execute && target.type === 'boss' && target.hp / target.maxHp <= spec.execute) {
     damage = target.hp + 1;
@@ -392,9 +393,12 @@ function currentSupplyCost(game) {
 
 function currentSupplyCostForPlayer(game, playerId) {
   const personalSupplies = game.stats.supplies[playerId] ?? 0;
-  const uncapped = GAME_RULES.supplyBaseCost + Math.floor(personalSupplies / 6) * GAME_RULES.supplyCostStep;
+  const uncapped = GAME_RULES.supplyBaseCost + Math.floor(personalSupplies / GAME_RULES.supplyCostInterval) * GAME_RULES.supplyCostStep;
+  const baseSupplyCost = Math.min(uncapped, GAME_RULES.supplyCostCap);
+  const bossSupplyMultiplier = game.boss.active ? GAME_RULES.bossSupplyMultiplier : 1;
   const discountPct = game.pendingSupplyDiscountPct ?? 0;
-  return Math.max(1, Math.floor(uncapped * (1 - discountPct / 100)));
+  const discountMultiplier = discountPct > 0 ? 0.75 : 1;
+  return Math.max(1, Math.ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier));
 }
 
 export function computeActiveLinks(board, now = 0) {

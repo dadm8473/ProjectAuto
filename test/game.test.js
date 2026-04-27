@@ -97,6 +97,31 @@ test('Supply cost scales by personal supply count, not team total', () => {
   assert.equal(before - game.resources.charge, 20);
 });
 
+test('Supply cost uses canonical cap, boss multiplier, discount, and ceil', () => {
+  const normal = createGame({ mode: 'bot', seed: 11 });
+  normal.resources.charge = 1000;
+  normal.stats.supplies.p1 = 5;
+  const normalBefore = normal.resources.charge;
+  assert.equal(supplyRelay(normal, { playerId: 'p1' }).ok, true);
+  assert.equal(normalBefore - normal.resources.charge, 23);
+
+  const bossDiscounted = createGame({ mode: 'bot', seed: 12 });
+  bossDiscounted.resources.charge = 1000;
+  bossDiscounted.stats.supplies.p1 = 5;
+  bossDiscounted.boss.active = true;
+  bossDiscounted.pendingSupplyDiscountPct = 25;
+  const bossBefore = bossDiscounted.resources.charge;
+  assert.equal(supplyRelay(bossDiscounted, { playerId: 'p1' }).ok, true);
+  assert.equal(bossBefore - bossDiscounted.resources.charge, 21);
+
+  const capped = createGame({ mode: 'bot', seed: 13 });
+  capped.resources.charge = 1000;
+  capped.stats.supplies.p1 = 50;
+  const cappedBefore = capped.resources.charge;
+  assert.equal(supplyRelay(capped, { playerId: 'p1' }).ok, true);
+  assert.equal(cappedBefore - capped.resources.charge, 47);
+});
+
 test('Supply Focus shifts the table toward higher grades without paid power', () => {
   const game = createGame({ mode: 'bot', seed: 17 });
   game.resources.charge = 300;
@@ -194,6 +219,26 @@ test('Overclock buffs the whole board, adds heat to every Relay, and stalls hot 
   assert.equal(first.shutdownUntil > game.now, true);
   assert.equal(second.shutdownUntil > game.now, true);
   assert.equal(game.effects.some((effect) => effect.type === 'overclock_stall'), true);
+});
+
+test('Dual Overclock applies a boss-only damage multiplier while both boards are active', () => {
+  function runScenario(dual) {
+    const game = createGame({ mode: 'solo', seed: 77 });
+    game.boss.active = true;
+    installRelay(game, 'p1', 5, 'prism_lance', { heat: 0 });
+    installRelay(game, 'p2', 5, 'coolant_moss', { heat: 0 });
+    installNoise(game, { type: 'boss', hp: 1000, maxHp: 1000, speed: 0, progress: 0.2, rewardCharge: 0, rewardLink: 0 });
+    overclockRelay(game, { playerId: 'p1', slot: 5 });
+    if (dual) overclockRelay(game, { playerId: 'p2', slot: 5 });
+    tickGame(game, 0.1);
+    return game.effects.find((effect) => effect.type === 'hit')?.damage ?? 0;
+  }
+
+  const soloOverclockDamage = runScenario(false);
+  const dualOverclockDamage = runScenario(true);
+
+  assert.equal(dualOverclockDamage > soloOverclockDamage * 1.25, true);
+  assert.equal(dualOverclockDamage < soloOverclockDamage * 1.35, true);
 });
 
 test('bot partner waits for the player to start before spending shared Charge', () => {
