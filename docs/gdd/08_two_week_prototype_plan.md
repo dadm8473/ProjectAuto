@@ -25,6 +25,18 @@ Build a playable vertical co-op prototype that validates Relay supply, link-base
 | “one more run” response | 60% of testers |
 | browser console errors | 0 |
 
+## Show Build Hard Cutline
+
+If Day 8 50-seed pass band fails, Day 9 multiplayer is deferred and the show build stays local bot-only until the core loop passes.
+
+Minimum Day 10 content:
+
+- 10-wave deterministic sim remains required.
+- Playable roster may cut to 10 core Relays: Needle Beam, Prism Lance, Coolant Moss, Rain Pump, Pulse Drum, Thunder Bowl, Amber Field, Null Cage, Signal Amp, Sink Stone.
+- Boss implementation may cut Boss Mirror disruption first; Boss Orchid and Origin Null remain required.
+- Multiplayer scope is local two-tab WebSocket only; reconnect, AWS deploy, accounts, and payments are outside the 2-week show build.
+- Any cut content must be listed in `known issues` and must not break docs for the implemented subset.
+
 ## Week 1
 
 ### Day 1: Core state and deterministic sim
@@ -192,13 +204,27 @@ Deliver:
 - known issues
 - test logging
 - playable URL
+- originality gate artifacts
 
 Exit criteria:
 
 - 5-person playtest possible
 - browser/mobile test checklist complete
+- originality gate complete
 - all unit tests pass
 - no console errors in 10-minute run
+
+### Originality Gate
+
+Required artifacts before showing the build:
+
+- 390x844 screenshots: wave 1, wave 5, final boss.
+- 360x800 screenshot: wave 5.
+- 10-second clips: Supply to first Swap/link decision, Link Pulse rescue, Merge decision.
+- telemetry: Supply is not the only high-frequency action; at least two non-Supply verbs occur in first 60 seconds.
+- telemetry: support Relay retention is >= 20% of kept Relays after wave 6 in at least one win log.
+- log: at least one Link Pulse rescue prevents shutdown or Signal collapse.
+- visual review: screen does not read as dice/guardian/random-summon UI at a glance.
 
 ## QA Checklist
 
@@ -212,6 +238,7 @@ Exit criteria:
 - [ ] Result screen states one true cause.
 - [ ] Online two-tab run syncs commands.
 - [ ] Refresh/disconnect during Day 9 shows reconnect unsupported notice and does not corrupt the room.
+- [ ] Originality gate artifacts are present and pass.
 
 ## Deliverable Definition
 

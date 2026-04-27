@@ -179,30 +179,32 @@ Reward contract:
 
 ## 7. Wave Table v0
 
-| wave | duration target | enemies | boss timer after entry | clear reward |
-|---:|---:|---|---:|---|
-| 1 | 26-32s | 16 Flicker, 8 Crawler | - | Charge 35, Link 10, Swap 1 |
-| 2 | 29-35s | 18 Crawler, 4 Bulwark | - | Charge 45, Link 12 |
-| 3 | 39-47s | 20 Crawler, 8 Splitter, Boss Orchid | 36s | Charge 65, Link 22, Swap 2, Chance +1 |
-| 4 | 32-39s | 24 Flicker, 16 Crawler, 5 Bulwark | - | Charge 55, Link 14 |
-| 5 | 36-44s | 12 Splitter, 8 Bulwark, 6 Null | - | Charge 65, Link 16 |
-| 6 | 45-53s | 22 Crawler, 12 Null, Boss Mirror | 42s | Charge 85, Link 28, Swap 2, Chance +1 |
-| 7 | 38-44s | 48 Flicker, 10 Bulwark | - | Charge 75, Link 16 |
-| 8 | 40-48s | 24 Splitter, 16 Null, 10 Bulwark | - | Charge 85, Link 18, Chance +1 if Saturation < 70 |
-| 9 | 44-52s | 40 Crawler, 20 Splitter, 16 Bulwark | - | Charge 95, Link 22, Chance catch-up if < 3 |
-| 10 | 71-78s incl. 20s hold | 20 Null, 24 Bulwark, Origin Null | 55s | Win |
+| wave | duration target | spawnEnd | enemies | boss timer after entry | clear reward |
+|---:|---:|---:|---|---:|---|
+| 1 | 26-32s | 20s | 16 Flicker, 8 Crawler | - | Charge 35, Link 10, Swap 1 |
+| 2 | 29-35s | 23s | 18 Crawler, 4 Bulwark | - | Charge 45, Link 12 |
+| 3 | 39-47s | 33s | 20 Crawler, 8 Splitter, Boss Orchid | 36s | Charge 65, Link 22, Swap 2, Chance +1 |
+| 4 | 32-39s | 26s | 24 Flicker, 16 Crawler, 5 Bulwark | - | Charge 55, Link 14 |
+| 5 | 36-44s | 30s | 12 Splitter, 8 Bulwark, 6 Null | - | Charge 65, Link 16 |
+| 6 | 45-53s | 38s | 22 Crawler, 12 Null, Boss Mirror | 42s | Charge 85, Link 28, Swap 2, Chance +1 |
+| 7 | 38-44s | 31s | 48 Flicker, 10 Bulwark | - | Charge 75, Link 16 |
+| 8 | 40-48s | 34s | 24 Splitter, 16 Null, 10 Bulwark | - | Charge 85, Link 18, Chance +1 if Saturation < 70 |
+| 9 | 44-52s | 38s | 40 Crawler, 20 Splitter, 16 Bulwark | - | Charge 95, Link 22, Chance catch-up if < 3 |
+| 10 | 71-78s incl. 20s hold | 43s | 20 Null, 24 Bulwark, Origin Null | 55s | Win |
 
-Spawn interval:
+Spawn lane offsets:
 
-| enemy | interval |
+| enemy | laneOffset |
 |---|---:|
-| Flicker | 0.45s |
-| Crawler | 0.70s |
-| Bulwark | 1.20s |
-| Splitter | 0.90s |
-| Null | 1.00s |
+| Flicker | 0.0s |
+| Crawler | 0.2s |
+| Splitter | 0.4s |
+| Bulwark | 0.6s |
+| Null | 0.8s |
 | Boss warning | wave elapsed 0.0s on boss waves |
 | Boss entry | wave elapsed +8.0s |
+
+Each enemy type in a wave spawns on its own lane from `1.0s + laneOffset` through `spawnEnd`. This table is the canonical schedule for v0; do not serialize each wave as a single sequential queue.
 
 ## 8. Heat Model
 
@@ -306,7 +308,7 @@ ScriptedHuman policy:
 
 Sim metrics:
 
-- team DPS uses `sum(finalDamage / effectiveCycle)` for damage Relays.
+- team DPS uses `sum(finalDamage / effectiveCycle)` for damage Relays, where finalDamage includes overclock and dual-overclock boss multipliers.
 - Repair, Amp, Sink, and Support value are reported separately as `supportPower`.
 - heat average excludes empty sockets.
 - clear time is measured from wave start to last wave enemy removed.

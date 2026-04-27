@@ -204,8 +204,21 @@ supplyCost = ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier)
 - 보스 웨이브 중 사용하면 추가로 Signal integrity +4
 - 남발 방지를 위해 팀 쿨다운 12초
 - 같은 Relay에 Link Pulse가 다시 적용되면 배율은 중첩되지 않고 지속시간만 6초로 갱신된다.
-- Signal 회복은 Link Pulse 1회당 최대 +4다. 보스 중 위험 구조 조건을 동시에 만족해도 +8로 중첩되지 않는다.
-- Link Pulse로 얻는 Signal 회복은 wave당 최대 +8이다.
+- Signal 회복은 아래 canonical formula로만 계산한다.
+
+```text
+partnerDanger =
+  partnerHeatMax >= 90
+  or partnerRelayShutdownSoon
+  or SignalIntegrity <= 35
+
+linkPulseSignalGain =
+  (bossActive or partnerDanger) ? min(4, 8 - linkPulseSignalGainThisWave) : 0
+```
+
+- `partnerRelayShutdownSoon`은 partner board에서 heat >= 92이고 cooldown <= 1.5s인 Relay가 1개 이상인 상태다.
+- 보스 중 위험 구조 조건을 동시에 만족해도 Link Pulse 1회당 +4를 넘지 않는다.
+- `linkPulseSignalGainThisWave`는 wave 시작 시 0으로 초기화한다.
 
 ### Overclock
 
@@ -230,7 +243,14 @@ Relay는 중앙 루프의 Noise를 자동으로 타겟팅한다.
 Damage formula:
 
 ```text
-damage = voltage * tierMultiplier * gradeMultiplier * linkMultiplier * anchorBonus * heatPenalty
+damage = voltage
+       * tierMultiplier
+       * gradeMultiplier
+       * linkMultiplier
+       * anchorBonus
+       * heatPenalty
+       * overclockOutputMultiplier
+       * dualOverclockBossMultiplier
 ```
 
 | 값 | 수식 |
@@ -240,6 +260,16 @@ damage = voltage * tierMultiplier * gradeMultiplier * linkMultiplier * anchorBon
 | linkMultiplier | 1 + activeLinks * 0.08, 최대 1.32 |
 | anchorBonus | anchorBonus * boardAnchorBonus, 최대 1.21 |
 | heatPenalty | heat 70 이상 0.8, heat 90 이상 0.55 |
+| overclockOutputMultiplier | own board Overclock active면 1.35, 아니면 1.0 |
+| dualOverclockBossMultiplier | bossActive + both boards Overclock active + target Boss면 1.30, 아니면 1.0 |
+
+Repair formula:
+
+```text
+repair = baseRepair * repairAmpMultiplier * overclockOutputMultiplier
+```
+
+Overclock multiplier는 damage/repair 계산의 마지막 출력 계수로 곱한다. effectiveCycle에는 영향을 주지 않는다.
 
 Attack tick:
 
@@ -274,6 +304,7 @@ Lane focus:
 
 ```text
 loopDistance(a, b) = min(abs(a - b), 1 - abs(a - b))
+wrap(x) = ((x % 1) + 1) % 1
 ```
 
 Noise movement:
@@ -288,17 +319,21 @@ progress += (speed / loopLengthUnits) * deltaSeconds * speedMultiplier
 - 루프 완료 시 Saturation이 `saturationOnLoop`만큼 증가하고, `rewardCharge`는 지급하지 않는다.
 - slow/cage effects apply through `speedMultiplier`.
 
-Spawn cadence:
+Spawn schedule:
 
-- 웨이브 시작 후 1.0초 대기.
-- 기본 spawn interval은 0.75초.
-- Flicker는 0.45초, Crawler는 0.7초, Bulwark는 1.2초, Splitter는 0.9초, Null은 1.0초.
+- v0는 단일 순차 spawn queue를 사용하지 않는다.
+- 각 wave의 enemy group은 type별 병렬 spawn lane으로 생성한다.
+- 각 lane은 Balance Sheet의 `spawnEnd`까지 자기 count를 균등 분배한다.
+- lane spawn time: `spawnAt(i) = laneStart + i * ((spawnEnd - laneStart) / max(1, count - 1))`
+- `laneStart = 1.0s + laneOffset[type]`
+- laneOffset: Flicker 0.0s, Crawler 0.2s, Bulwark 0.6s, Splitter 0.4s, Null 0.8s.
+- count가 1이면 `spawnAt = laneStart`.
 - 보스 웨이브는 wave elapsed 0초부터 8초 경고를 표시한다.
 - 보스는 wave elapsed 8.0초에 1회 스폰한다.
 - boss timer는 보스 스폰 tick부터 시작하며, duration은 Balance Sheet의 `boss timer after entry`를 사용한다.
 - wave 3/6 boss timer가 0이 되면 `boss_surge`가 발생해 Signal integrity -15, 해당 보스 disruption 주기 -35%가 적용된다.
 - wave 10 boss timer가 0이 되면 즉시 패배한다.
-- 동일 웨이브 내 남은 큐가 비면 spawn 종료.
+- wave spawn은 모든 type lane이 spawnEnd에 도달하면 종료된다.
 
 Boss disruption:
 
@@ -367,7 +402,7 @@ Signal 회복 조건:
 
 - 보스 처치: +8
 - Repair tag Relay가 웨이브 중 누적 수리: 최대 +12
-- Link Pulse 사용: +4, bossActive 또는 partner danger 중 하나를 만족해야 하며 wave당 최대 +8
+- Link Pulse 사용: `linkPulseSignalGain` formula 결과만큼 회복, wave당 최대 +8
 
 ## 10. Co-op Rules
 

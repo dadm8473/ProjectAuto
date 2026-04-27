@@ -30,6 +30,7 @@ Server sends snapshots:
 | spectators | optional later |
 | createdAt | timestamp |
 | status | waiting, playing, ended |
+| mode | tutorial, normal, localTest |
 | simulationTickRate | 20Hz |
 | snapshotRate | 10Hz |
 
@@ -182,6 +183,7 @@ Validation:
 - Link Energy >= 40
 - team cooldown ready
 - partner has at least one Relay
+- server computes `partnerDanger` and `linkPulseSignalGain` using Core Game Spec
 
 ### overclock
 
@@ -228,6 +230,7 @@ Validation:
         "connected": true,
         "swapCharge": 2,
         "personalSupplyCount": 8,
+        "tutorialSupplyOverridesUsed": 2,
         "pityBasic": 2,
         "pityPrime": 8
       }
@@ -274,6 +277,9 @@ Validation:
     "cooldowns": {
       "linkPulseUntilTick": 590
     },
+    "room": {
+      "mode": "tutorial"
+    },
     "events": [
       {
         "eventId": "ev_22",
@@ -293,7 +299,9 @@ Snapshot schema rules:
 - `teamCharge` and `linkEnergy` live under `signal` because they are team shared.
 - `chanceLevel` and `pendingSupplyDiscountPct` also live under `signal` because they affect team-level Supply resolution.
 - `swapCharge`, `personalSupplyCount`, and pity counters live under each player.
+- `tutorialSupplyOverridesUsed` is per player and increments only when `room.mode = tutorial` grants the fixed first or second Supply.
 - `boards.<playerId>.relays` contains only occupied sockets; empty sockets are implied.
+- `room.mode` controls tutorial override behavior and local test behavior.
 - `activeLinks` stores adjacent socket indexes, not directions.
 - All server times are derived from `tick`; clients do not submit combat results.
 
@@ -314,7 +322,8 @@ Accepted example:
   "result": {
     "spentCharge": 23,
     "unitId": "u_44",
-    "socket": 6
+    "socket": 6,
+    "tutorialOverrideApplied": false
   }
 }
 ```
@@ -331,6 +340,25 @@ Rejected example:
   "serverTick": 524,
   "code": "MERGE_NOT_MATCHING",
   "message": "Select three matching Relays."
+}
+```
+
+Link Pulse result includes Signal recovery:
+
+```json
+{
+  "type": "commandResult",
+  "requestId": "cmd_104",
+  "clientId": "c_abc",
+  "accepted": true,
+  "duplicate": false,
+  "serverTick": 548,
+  "result": {
+    "heatReducedUnitIds": ["u_12", "u_18"],
+    "signalGain": 4,
+    "partnerDanger": true,
+    "waveSignalGainUsed": 4
+  }
 }
 ```
 
