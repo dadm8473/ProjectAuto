@@ -98,7 +98,7 @@ Canonical examples:
 | null_cage | Null Cage | Field | Core+ | 28 | 2.4 | 24 | All | Null Noise 봉쇄 |
 | signal_amp | Signal Amp | Amp | Basic+ | 0 | 1.0 | 9 | E-W | 연결 Relay voltage +12% |
 | bloom_amp | Bloom Amp | Amp | Tuned+ | 0 | 1.4 | 14 | N-E-S | Repair tag 효과 +18% |
-| aurora_amp | Aurora Amp | Amp | Origin | 0 | 2.8 | 30 | All | 보드 전체 linkMultiplier +0.25 |
+| aurora_amp | Aurora Amp | Amp | Origin | 0 | 2.8 | 30 | All | 보드 전체 linkMultiplier +0.25 after normal cap, final cap 1.57 |
 | sink_stone | Sink Stone | Sink | Basic+ | 4 | 1.6 | -16 | S | heat 흡수 |
 | dusk_sink | Dusk Sink | Sink | Prime+ | 8 | 2.0 | -28 | N-S | 과열 Relay 정지 방지 1회 |
 | mirror_port | Mirror Port | Support | Tuned+ | 0 | 2.0 | 10 | E-W | 파트너 같은 tag 출력 +8% |
@@ -125,7 +125,7 @@ All effects trigger on the Relay's `effectiveCycle` unless the row says passive.
 | null_cage | deals 100% finalDamage; if target is Null, speedMultiplier 0 for 1.2s and blocks Anchor infection | Null first, then normal priority | `null_caged` |
 | signal_amp | passive: linked adjacent Relays voltage *1.12 | active-linked neighbor Relays | `amp_applied`, non-stacking |
 | bloom_amp | passive: linked adjacent Repair effects *1.18 | active-linked Repair Relays | `repair_amp`, non-stacking |
-| aurora_amp | passive: board linkMultiplier bonus +0.25 after normal cap | all own-board Relays | `aurora_amp`, one per board |
+| aurora_amp | passive: board linkMultiplier bonus +0.25 after normal cap, final cap 1.57 | all own-board Relays | `aurora_amp`, one per board |
 | sink_stone | vents 16 heat from hottest adjacent Relay; self applies listed heat/cycle | adjacent Relay with highest heat | `heat_sink` |
 | dusk_sink | vents 28 heat from hottest adjacent Relay; once per wave prevents adjacent shutdown, sets target heat to 78 | adjacent Relay with highest heat | `shutdown_prevented` |
 | mirror_port | passive: partner Relays sharing any tag output *1.08 | partner board, same tag as any active-linked neighbor | `mirror_support`, one per partner Relay |
@@ -219,9 +219,10 @@ Heat is the main originality axis. It makes “strong board” and “safe board
 
 ```text
 heatAfterCycle = currentHeat + relayHeatPerCycle - cooling
+canonicalHeat = clamp(heatAfterCycle, 0, 100)
 ```
 
-If the Relay is on overload-risk socket index 3 or 8, add +2 to `relayHeatPerCycle` before applying cooling.
+If the Relay is on overload-risk socket index 3 or 8, add +2 to `relayHeatPerCycle` before applying cooling. All heat changes use the Core Game Spec canonical heat mutation order and `0..100` clamp.
 
 Overclock adds +20 heat to every Relay once on activation. It does not add per-cycle heat.
 
@@ -337,8 +338,8 @@ scriptedSwapScore =
 - `tierGain` is always 1 for legal Merge.
 - `freesSlots` is 2 for a normal 3-to-1 Merge.
 - `preservesUtilityTags` is 1 if the board keeps at least one Repair, Amp, Sink, or Field after Merge; otherwise 0.
-- `predictedEffectiveLinksDelta` uses the expected value of the hidden Merge preview link-count range from Core Game Spec `computeMergePreview`: `(minPreviewLinks + maxPreviewLinks) / 2 - currentEffectiveLinks`.
-- ScriptedHuman cannot peek final type or linkShape before server confirm.
+- `predictedEffectiveLinksDelta` uses the expected value of the public Merge preview link-count range from Core Game Spec `computeMergePreview`: `(minPreviewLinks + maxPreviewLinks) / 2 - currentEffectiveLinks`.
+- ScriptedHuman uses only public preview fields and cannot peek final type or linkShape before server confirm.
 - ScriptedHuman thresholds intentionally differ from CasualBot thresholds because the sim is a human-like baseline, not the partner AI.
 
 Sim metrics:

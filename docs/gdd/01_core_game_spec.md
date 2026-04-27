@@ -319,7 +319,16 @@ Relay는 중앙 루프의 Noise를 자동으로 타겟팅한다.
 1. Boss
 2. Signal에 가장 가까운 Noise
 3. hp가 낮은 Noise
-4. 무작위
+4. 낮은 `spawnSequenceId`
+
+Noise receives a monotonically increasing `spawnSequenceId` when spawned. Server, client display helpers, bots, and sim use this same tie-break order.
+
+Relay heat target tie-breaks:
+
+- "highest heat Relay" means higher heat, then more effective active links on that Relay, then lower socket index.
+- "highest-link Relay" means more effective active links on that Relay, then higher heat, then lower socket index.
+- "hottest adjacent Relay" uses the highest heat rule among occupied adjacent sockets.
+- Effects that target 2 Relays select the first target, remove it from candidates, then select the second with the same rule.
 
 Damage formula:
 
@@ -339,7 +348,8 @@ damage = voltage
 |---|---|
 | tierMultiplier | 1 + (tier - 1) * 0.62 |
 | gradeMultiplier | Basic 1.0, Tuned 1.35, Prime 1.85, Core 2.55, Origin 3.6 |
-| linkMultiplier | 1 + activeLinks * 0.08, 최대 1.32 |
+| baseLinkMultiplier | `min(1 + activeLinks * 0.08, 1.32)` |
+| linkMultiplier | `baseLinkMultiplier + auroraAmpBonus`, maximum 1.57 |
 | anchorBonus | anchorBonus * boardAnchorBonus, 최대 1.21 |
 | heatOutputMultiplier | heat 50-69면 1.05, 그 외 1.0 |
 | heatPenalty | heat 70 이상 0.8, heat 90 이상 0.55 |
@@ -358,6 +368,7 @@ Repair formula applies only to Signal integrity repair from `rain_pump` and `roo
 - Heat cooling, Sink venting, Null cage, Saturation reduction, and Amp effects are not Signal repair and do not receive Overclock output multiplier.
 - `remainingWaveRepairCap` is the per-wave +12 Signal repair cap after previous Repair effects.
 - Overclock multiplier는 damage와 Signal repair 계산의 마지막 출력 계수로 곱한다. effectiveCycle에는 영향을 주지 않는다.
+- `auroraAmpBonus` is 0.25 if this board has at least one active `aurora_amp`; otherwise 0. Multiple Aurora Amp Relays do not stack.
 
 Attack tick:
 
@@ -431,6 +442,23 @@ Boss disruption:
 | Boss Mirror | 양쪽 보드에서 active link 1개를 5초간 disable | spawn 후 12초마다 | `boss_mirror_linkbreak` |
 | Origin Null | Null spore 2개 생성 | spawn 후 9초마다 | `boss_origin_spore` |
 
+Boss Orchid target selection:
+
+- Select across both boards using the "highest-link Relay" tie-break from Combat Rules.
+- Target up to 2 occupied Relays.
+- If no Relay exists, record `boss_orchid_heatroot` with `targetUnitIds: []` and `noOp: true`.
+- Event payload includes `targetUnitIds`, `targetSockets`, `heatDelta: 12`, and `noOp`.
+
+Boss Mirror target selection:
+
+- Resolve each board independently from its current effective `activeLinks`.
+- Candidate link pair is `[minSocket, maxSocket]`.
+- Select the pair with highest `heat(socketA) + heat(socketB)`.
+- Tie break by lower `minSocket`, then lower `maxSocket`.
+- Add the selected pair to `disabledLinks` until `currentTick + 100`.
+- If a board has no effective active link, record `boss_mirror_linkbreak` with `disabledPair: null`, `noOp: true`, and do not add `disabledLinks`.
+- Event payload includes `boardOwner`, `disabledPair`, `expiresTick`, and `noOp`.
+
 Null spore:
 
 - Origin Null이 disruption을 실행할 때 2개를 생성한다.
@@ -457,6 +485,19 @@ heat += cycleHeat - coolingFromTags
 ```
 
 Overclock heat is not part of the per-cycle formula. It is applied once on activation as `heat += 20` to every Relay on that board.
+
+Canonical heat mutation order:
+
+1. Server processes commands/events in tick order.
+2. For each Relay action cycle, compute self heat first: `cycleHeat + overloadRiskSocketBonus`, then subtract direct cooling from tags/effects targeting that Relay during that action.
+3. Apply instant heat deltas in the event order that created them: Overclock activation, boss disruption, Null infection, Link Pulse, Sink vent, wave clear, and other Relay effects.
+4. After every atomic heat delta, clamp heat to `0..100`.
+5. After a positive heat delta is clamped, check `heat >= 100`.
+6. If `heat >= 100`, check adjacent `dusk_sink` once-per-wave prevention before recording shutdown.
+7. If prevented, set target heat to 78, record `shutdown_prevented`, and do not count a shutdown.
+8. If not prevented, set `shutdownUntilTick = currentTick + 80`, set heat to 60, record a shutdown event, and include it in Heat cascade.
+
+Negative heat deltas cannot trigger shutdown. Heat cannot be stored below 0 or above 100 in snapshots, bot state, sim metrics, or logs.
 
 Heat cascade:
 

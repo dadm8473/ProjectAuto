@@ -207,7 +207,8 @@ Bot-only fallback branch exit criteria:
 - fallback is internal diagnostic only unless the criteria below pass
 - showable fallback must reach wave 6 boss in at least one scripted/dev-seeded run
 - showable fallback must run at least 5 minutes without console errors
-- showable fallback must demonstrate Supply, Swap, Merge, Link Pulse, Overclock, heat shutdown, and one boss disruption
+- showable fallback must demonstrate Supply, Swap, Merge, Link Pulse, Overclock, heat shutdown, and named disruption logs for all reached bosses
+- because showable fallback must reach wave 6 boss, Boss Orchid and Boss Mirror disruption logs are minimum required proof
 - known issues name why Day 8 pass band failed
 - no online QA is required in this branch
 
