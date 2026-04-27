@@ -120,6 +120,23 @@ test('Supply cost uses canonical cap, boss multiplier, discount, and ceil', () =
   const cappedBefore = capped.resources.charge;
   assert.equal(supplyRelay(capped, { playerId: 'p1' }).ok, true);
   assert.equal(cappedBefore - capped.resources.charge, 47);
+
+  const cappedBoss = createGame({ mode: 'bot', seed: 14 });
+  cappedBoss.resources.charge = 1000;
+  cappedBoss.stats.supplies.p1 = 50;
+  cappedBoss.boss.active = true;
+  const cappedBossBefore = cappedBoss.resources.charge;
+  assert.equal(supplyRelay(cappedBoss, { playerId: 'p1' }).ok, true);
+  assert.equal(cappedBossBefore - cappedBoss.resources.charge, 57);
+
+  const cappedBossDiscounted = createGame({ mode: 'bot', seed: 15 });
+  cappedBossDiscounted.resources.charge = 1000;
+  cappedBossDiscounted.stats.supplies.p1 = 50;
+  cappedBossDiscounted.boss.active = true;
+  cappedBossDiscounted.pendingSupplyDiscountPct = 25;
+  const cappedBossDiscountedBefore = cappedBossDiscounted.resources.charge;
+  assert.equal(supplyRelay(cappedBossDiscounted, { playerId: 'p1' }).ok, true);
+  assert.equal(cappedBossDiscountedBefore - cappedBossDiscounted.resources.charge, 43);
 });
 
 test('Supply Focus shifts the table toward higher grades without paid power', () => {
@@ -269,13 +286,19 @@ test('Dual Overclock does not buff non-boss damage and expires after 4 seconds',
     installNoise(game, { type: targetType, hp: 1000, maxHp: 1000, speed: 0, progress: 0.2, rewardCharge: 0, rewardLink: 0 });
     overclockRelay(game, { playerId: 'p1', slot: 5 });
     if (dual) overclockRelay(game, { playerId: 'p2', slot: 5 });
-    if (elapsed > 0) game.now += elapsed;
+    if (elapsed > 0) {
+      game.now += elapsed;
+      for (const board of Object.values(game.boards)) {
+        board.overclockUntil += elapsed;
+      }
+    }
     tickGame(game, 0.1);
     return game.effects.find((effect) => effect.type === 'hit')?.damage ?? 0;
   }
 
   assert.equal(runScenario({ dual: true, targetType: 'crawler', elapsed: 0 }), runScenario({ dual: false, targetType: 'crawler', elapsed: 0 }));
-  assert.equal(runScenario({ dual: true, targetType: 'boss', elapsed: 4.2 }), runScenario({ dual: false, targetType: 'boss', elapsed: 4.2 }));
+  assert.equal(runScenario({ dual: true, targetType: 'boss', elapsed: 3.89 }) > runScenario({ dual: false, targetType: 'boss', elapsed: 3.89 }) * 1.25, true);
+  assert.equal(runScenario({ dual: true, targetType: 'boss', elapsed: 3.9 }), runScenario({ dual: false, targetType: 'boss', elapsed: 3.9 }));
 });
 
 
