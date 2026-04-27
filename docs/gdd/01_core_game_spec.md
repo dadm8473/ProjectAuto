@@ -476,11 +476,13 @@ Spawn schedule:
 - v0는 단일 순차 spawn list를 사용하지 않는다.
 - 각 wave의 enemy group은 type별 병렬 spawn lane으로 생성한다.
 - 각 lane은 Balance Sheet의 `spawnEnd`까지 자기 count를 균등 분배한다.
-- lane spawn time: `spawnAt(i) = laneStart + i * ((spawnEnd - laneStart) / max(1, count - 1))`
-- `spawnTick(i) = waveStartTick + ceil(spawnAt(i) * 20)`.
-- `laneStart = 1.0s + laneOffset[type]`
+- Use integer tick math for all spawns. Do not derive spawn ticks from floating-point seconds.
+- `laneStartTick = waveStartTick + 20 + laneOffsetTicks[type]`.
+- `laneEndTick = waveStartTick + spawnEnd * 20`. Balance Sheet `spawnEnd` values are integer seconds in v0.
+- `spawnTick(i) = laneStartTick` if `count == 1`.
+- Otherwise `spawnTick(i) = laneStartTick + ceil(i * (laneEndTick - laneStartTick) / (count - 1))`.
+- laneOffsetTicks: Flicker 0, Crawler 4, Bulwark 12, Splitter 8, Null 16.
 - laneOffset: Flicker 0.0s, Crawler 0.2s, Bulwark 0.6s, Splitter 0.4s, Null 0.8s.
-- count가 1이면 `spawnAt = laneStart`.
 - For the same `spawnTick`, create lane spawns in enemy type order: Flicker, Crawler, Bulwark, Splitter, Null.
 - Boss spawn at wave elapsed 8.0s resolves after lane spawns scheduled for the same tick.
 - Every Noise creation increments room `nextSpawnSequenceId`: wave lane spawns, boss spawns, Splitter children, and Null spores all use the same counter.

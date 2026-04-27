@@ -71,7 +71,6 @@ then Link Pulse
 Variable definitions:
 
 ```text
-playerHeatMax = max(partnerBoard.relays.map(heat))
 playerHeatMax = boardHeatMax(partnerBoard), where empty board returns 0
 playerRelayShutdownSoon = count(relay.heat >= 92 and relay.cooldown <= 1.5s) >= 1
 playerBoardDpsShare = partnerBoard.estimatedDps / max(1, teamEstimatedDps)

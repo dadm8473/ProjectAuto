@@ -66,6 +66,15 @@ Envelope rules:
 - If the same `clientId + requestId` arrives with the same `requestPayloadHash`, return the stored `commandResult` with `duplicate: true`.
 - If the same `clientId + requestId` arrives with a different `requestPayloadHash`, return a fresh rejection with `code: DUPLICATE_REQUEST`, `duplicate: false`, and do not overwrite the stored original result.
 
+`stableJsonHash(command without sentAt)`:
+
+- Remove only `sentAt`; keep `clientTick`, `requestId`, `clientId`, `playerId`, `roomId`, and all command payload fields.
+- Serialize as UTF-8 JSON with object keys sorted lexicographically at every depth.
+- Preserve array order exactly.
+- Numbers are serialized as base-10 JSON numbers with no trailing zeros; command payloads must not use NaN, Infinity, or -0.
+- Hash the serialized string with SHA-256 and store lowercase hex.
+- A retry must reuse the same `clientTick` to match the original hash.
+
 ### join
 
 ```json

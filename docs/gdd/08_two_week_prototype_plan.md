@@ -41,6 +41,7 @@ Minimum Day 10 content:
 - 10-wave deterministic sim remains required.
 - Day 8 random sim uses the 10 core Relays; Day 8 targeted fixtures must cover the full v0 roster from the Balance Sheet.
 - Playable roster may cut visual polish and tutorial emphasis to 10 core Relays: Needle Beam, Prism Lance, Coolant Moss, Rain Pump, Pulse Drum, Thunder Bowl, Amber Field, Null Cage, Signal Amp, Sink Stone.
+- `coreLoopRosterProfile` is exactly those 10 core Relays. Day 8 smoke sim passes this filtered roster to Supply, Merge candidate generation, `computeMergePreview`, ScriptedHuman, and CasualBot helpers.
 - The non-highlighted roster may use placeholder art/UI in Day 10, but remains enabled in sim and combat.
 - Full roster means all Relay Effect Rules v0 rows are executable by Day 8: 20 Relay ids, 3 boss disruptions, Supply/Merge/Swap/Link Pulse/Overclock, and bot-visible logs.
 - In cut scope, `utility Relay` means Repair, Amp, Sink, or Field tags. It does not require the Support tag.
@@ -187,14 +188,15 @@ Deliver:
 - tune wave hp/speed
 - tune heat costs
 - tune Supply cost
-- run 20-seed core-loop simulations with ScriptedHuman + CasualBot using the 10 core Relays
+- run 20-seed core-loop simulations with ScriptedHuman + CasualBot using `coreLoopRosterProfile`
 - run full-roster targeted fixture suite for all 20 Relay ids and 3 boss disruptions
 - record known issues for full-roster random 50-seed balance if not yet stable
 - verify `origin_seed` execute appears in at least one targeted fixture and is not required to appear naturally in random 50-seed runs
 
 Exit criteria:
 
-- core-loop 20-seed smoke band passes: no pre-wave-3 systemic failures, at least 40% reach wave 6 boss, and no deterministic crashes
+- core-loop smoke seed set is fixed: seeds `1000..1019`
+- core-loop 20-seed smoke band passes: `deterministicCrashCount = 0`, `preWave3LossCount <= 1`, `wave6BossReachedCount >= 8`
 - full-roster fixture checklist remains green before tuning numbers are trusted
 - full-roster fixture checklist remains green after tuning
 
