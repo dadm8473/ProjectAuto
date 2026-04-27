@@ -175,8 +175,8 @@ Validation:
 Preview contract:
 
 - Merge preview is not a separate gameplay command in v0.
-- The client computes preview UI from the latest authoritative snapshot with Core Game Spec `computeMergePreview`.
-- The server recomputes the same helper before accepting `merge`; client-submitted preview values, if any, are ignored.
+- The client computes preview UI from the latest authoritative snapshot with Core Game Spec `computeMergePreview(..., snapshot.tick)`.
+- The server recomputes the same helper with current server tick before accepting `merge`; client-submitted preview values, if any, are ignored.
 
 ### linkPulse
 
@@ -340,9 +340,10 @@ Snapshot schema rules:
 - `overclockActiveUntilTick`, `anchorSlowedUntilTick`, `disabledLinks`, `linkPulseUntilTick`, `dualOverclockBossUntilTick`, `shutdownUntilTick`, and Relay `debuffs` are authoritative display state for two-tab UI.
 - `dualOverclockBossUntilTick` lives under `cooldowns` because it is team-level.
 - `disabledLinks` stores socket pairs disabled by boss effects.
+- `disabledLinks.untilTick <= snapshot.tick` is expired and ignored by clients, combat, bot, sim, and Merge preview helpers even if it appears in a transitional snapshot.
 - `activeLinks` is the effective combat/display links list after disabled link filtering. Clients and combat code must not count disabled pairs from `disabledLinks`.
 - `activeLinks` stores adjacent socket indexes, not directions.
-- `noise.spawnSequenceId`, `speedMultiplier`, and `saturationMultiplier` are authoritative display/sim helper fields. Targeting tie-breaks use lower `spawnSequenceId`.
+- `noise.spawnSequenceId`, `speedMultiplier`, and `saturationMultiplier` are authoritative display/sim helper fields. Targeting tie-breaks use lower `spawnSequenceId`; `speedMultiplier` and `saturationMultiplier` are resolved from active modifiers at `snapshot.tick`.
 - All server times are derived from `tick`; clients do not submit combat results.
 
 ### commandResult

@@ -211,6 +211,10 @@ Merge RNG order:
 7. If chosen type requires a higher minimum grade than current `resultGradeRank`, raise `resultGradeRank` to that type's minimum grade.
 8. Final result is `chosenType`, `resultGrade`, `tier + 1`.
 
+- The step 7 type-minimum raise is intentional and is the only v0 Merge grade-up path.
+- It is not an extra grade-up roll: its chance is fully derived from the 30% same-tag branch, the same-tag candidate list, and each candidate type's minimum grade.
+- Example: three Basic `needle_beam` Relays have `minimumResultGradeRank = 0`; if the 30% branch selects a same-tag `prism_lance` candidate whose minimum grade is Tuned, the result grade becomes Tuned.
+
 - 결과 `linkShape`는 결과 type의 shape pool에서 새로 roll한다. 재료의 linkShape를 상속하지 않는다.
 - v0 shape pool은 roster의 base `linkShape`를 90도씩 회전한 unique variants다. `All`은 회전하지 않고 그대로 사용한다.
 - 결과 heat는 `min(40, floor(averageIngredientHeat * 0.45))`다.
@@ -221,7 +225,7 @@ Merge RNG order:
 Canonical Merge preview:
 
 ```text
-computeMergePreview(slots, boardState, roster):
+computeMergePreview(slots, boardState, roster, currentTick):
   validate the same rules as a Merge command, except no RNG is consumed
   destinationSocket = slots[0]
   ingredientType = boardState.slots[slots[0]].type
@@ -245,7 +249,7 @@ computeMergePreview(slots, boardState, roster):
     previewGradeRank = max(minimumResultGradeRank, possibleType.minimumGradeRank)
     for each unique shape in possibleType.shapePool:
       simulatedBoard = previewBoardBase with destinationSocket filled by possibleType/resultTier/previewGradeRank/resultHeat/shape
-      previewLinks.add(countEffectiveActiveLinks(simulatedBoard, boardState.disabledLinks))
+      previewLinks.add(countEffectiveActiveLinks(simulatedBoard, boardState.disabledLinks, currentTick))
 
   return {
     destinationSocket,
@@ -254,14 +258,16 @@ computeMergePreview(slots, boardState, roster):
     resultHeat,
     minPreviewLinks: min(previewLinks),
     maxPreviewLinks: max(previewLinks),
-    currentEffectiveLinks: countEffectiveActiveLinks(boardState, boardState.disabledLinks),
+    currentEffectiveLinks: countEffectiveActiveLinks(boardState, boardState.disabledLinks, currentTick),
     possibleUtilityGroups: intersection({Repair, Amp, Sink, Field}, union(tags of possibleTypes)),
     possibleTypeCount: count(possibleTypes)
   }
 ```
 
 - `shapePool` uses the v0 unique rotation rule above. `All` contributes one shape.
-- `countEffectiveActiveLinks` is the same function used by combat and snapshots: compute legal adjacent links, then remove socket pairs in `disabledLinks` that still match the simulated board.
+- `currentTick` is the authoritative snapshot `tick` used for preview, combat, server validation helpers, ScriptedHuman, and CasualBot.
+- `countEffectiveActiveLinks(board, disabledLinks, currentTick)` is the same function used by combat and snapshots: compute legal adjacent links among online Relays, then remove socket pairs in `disabledLinks` where `untilTick > currentTick` and the pair still matches the simulated board.
+- `disabledLinks` where `untilTick <= currentTick` are ignored by all link calculations and may be pruned from the next snapshot.
 - Merge preview is public deterministic state, not a gameplay command. Client UI, server validation helpers, ScriptedHuman, and CasualBot must call the same shared function from the latest authoritative snapshot.
 - The preview may expose `possibleUtilityGroups` and `possibleTypeCount`, but it must not expose the chosen type, chosen shape, final grade raise source, or branch RNG before server confirm.
 
@@ -454,8 +460,13 @@ progress += (speed / loopLengthUnits) * deltaSeconds * speedMultiplier
 - 루프 완료 시 Saturation이 `saturationOnLoop * activeSaturationMultiplier`만큼 증가하고, `rewardCharge`는 지급하지 않는다.
 - `activeSaturationMultiplier` is the lowest active saturation multiplier on that Noise, or 1.00 if none is active.
 - Saturation can be fractional; UI rounds down for display, but pressure rules use exact value.
-- slow/cage effects apply through `speedMultiplier`.
+- `activeSpeedMultiplier` is the lowest active speed modifier on that Noise, or 1.00 if none is active.
+- The snapshot `speedMultiplier` field is this resolved `activeSpeedMultiplier`.
+- Same-source speed or saturation effects refresh `untilTick`; different sources coexist and resolve by the lowest multiplier.
+- Expired speed/saturation modifiers where `untilTick <= currentTick` are ignored and may be pruned from the next snapshot.
 - `saturation_mark` duration refreshes instead of stacking and its event payload includes `noiseId`, `multiplier: 0.80`, and `untilTick`.
+- `slow_field` event payload includes `noiseIds`, `multiplier: 0.82`, `untilTick`, and `sourceUnitId`.
+- `null_caged` event payload includes `noiseId`, `multiplier: 0`, `untilTick`, `sourceUnitId`, and `blocksAnchorInfection: true`.
 
 Spawn schedule:
 

@@ -109,7 +109,7 @@ Canonical examples:
 
 ## 3.1 Relay Effect Rules v0
 
-All effects trigger on the Relay's `effectiveCycle` unless the row says passive. Only the highest applicable Amp modifier applies to the same target; slow and cage durations refresh instead of stacking.
+All effects trigger on the Relay's `effectiveCycle` unless the row says passive. Only the highest applicable Amp modifier applies to the same target. Same-source slow/cage/saturation durations refresh; different speed or saturation modifiers coexist and resolve by the Core Game Spec lowest-multiplier rule.
 
 | id | executable effect | target rule | stacking/log |
 |---|---|---|---|

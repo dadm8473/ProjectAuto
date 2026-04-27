@@ -42,6 +42,7 @@ Minimum Day 10 content:
 - Day 8 50-seed sim always uses the full v0 roster from the Balance Sheet.
 - Playable roster may cut visual polish and tutorial emphasis to 10 core Relays: Needle Beam, Prism Lance, Coolant Moss, Rain Pump, Pulse Drum, Thunder Bowl, Amber Field, Null Cage, Signal Amp, Sink Stone.
 - The non-highlighted roster may use placeholder art/UI in Day 10, but remains enabled in sim and combat.
+- Full roster means all Relay Effect Rules v0 rows are executable by Day 8: 19 Relay ids, 3 boss disruptions, Supply/Merge/Swap/Link Pulse/Overclock, and bot-visible logs.
 - In cut scope, `utility Relay` means Repair, Amp, Sink, or Field tags. It does not require the Support tag.
 - Boss Orchid, Boss Mirror, and Origin Null disruptions remain required in both branches. Cut boss visual polish before cutting named board-level disruption logs.
 - Core-loop pass branch only: multiplayer scope is local two-tab WebSocket.
@@ -59,6 +60,7 @@ Deliver:
 - seeded RNG
 - Supply command
 - Merge command
+- `computeMergePreview` and `countEffectiveActiveLinks(board, disabledLinks, currentTick)`
 - Heat tick
 - unit tests
 
@@ -67,6 +69,7 @@ Exit criteria:
 - same seed gives same first 20 Supply results
 - invalid Merge rejected
 - heat shutdown test passes
+- expired `disabledLinks` do not affect active link counts
 
 ### Day 2: Combat loop
 
@@ -77,12 +80,15 @@ Deliver:
 - Signal/Saturation rules
 - 10-wave table
 - boss timers
+- Beam/Pulse/Field damage effects: Needle Beam, Prism Lance, Split Ray, Pulse Drum, Thunder Bowl, Storm Heart, Amber Field, Gravity Loom, Null Cage
+- speed/saturation modifier resolver
 
 Exit criteria:
 
 - automated sim can win/lose
 - wave 3 boss triggers
 - Saturation 100 loss works
+- chain, slow, cage, and saturation mark tests pass
 
 ### Day 3: Co-op actions
 
@@ -93,12 +99,14 @@ Deliver:
 - Swap
 - shared Signal
 - partner board events
+- Repair/Amp/Sink/Support effects: Coolant Moss, Rain Pump, Root Clinic, Signal Amp, Bloom Amp, Aurora Amp, Sink Stone, Dusk Sink, Mirror Port, Twin Gate
 
 Exit criteria:
 
 - Link Pulse lowers partner heat
 - Overclock creates real risk
 - Swap changes linkMultiplier
+- Mirror Support, Twin Gate, Aurora Amp, and Dusk Sink tests pass
 
 ### Day 4: Vertical UI
 
@@ -115,6 +123,7 @@ Exit criteria:
 - one-hand portrait layout readable at 390x844
 - Supply/Merge/Link visible without scrolling
 - heat states clear in screenshot
+- all 19 Relay ids have readable placeholder icon/name/state in portrait UI
 
 ### Day 5: Bot partner
 
@@ -125,12 +134,14 @@ Deliver:
 - resource reserve
 - Link Pulse rescue
 - Merge behavior
+- bot uses full-roster public helpers for Merge preview, DPS, heat, and support estimates
 
 Exit criteria:
 
 - bot does not steal first action
 - bot rescues heat 90+ in 70% of test cases
 - solo run reaches wave 3 in most seeds
+- bot-only sim covers every Relay id at least once across seeded fixture cases
 
 ## Week 2
 
@@ -142,12 +153,14 @@ Deliver:
 - basic telemetry log
 - 2-person observer playtest
 - loss reason validation
+- Boss Orchid, Boss Mirror, and Origin Null disruption implementations
 
 Exit criteria:
 
 - two testers can play the local bot build
 - at least one tester reaches wave 3
 - loss reason matches telemetry
+- each boss disruption has at least one deterministic unit test or fixture replay
 
 ### Day 7: Feedback and readability
 
@@ -158,12 +171,14 @@ Deliver:
 - boss warning
 - result reason
 - damage/repair numbers
+- full-roster fixture checklist for all Relay effect rows
 
 Exit criteria:
 
 - tester can identify who used Link Pulse
 - loss reason matches log
 - Prime+ Merge feels visually distinct
+- all 19 Relay effect fixtures pass before Day 8 balance tuning starts
 
 ### Day 8: Balance pass 1
 
@@ -173,11 +188,13 @@ Deliver:
 - tune heat costs
 - tune Supply cost
 - run 50-seed simulations with ScriptedHuman + CasualBot
+- verify full roster and all boss disruptions are enabled in the 50-seed sim
 
 Exit criteria:
 
 - Balance Sheet 50-seed pass band passes in full
 - final boss lasts 25-55 seconds in passing seeds
+- full-roster fixture checklist remains green after tuning
 
 ### Day 9: Branch Work
 
@@ -261,6 +278,7 @@ Bot-only fallback branch originality subset:
 - 10-second clips: Supply to first Swap/link decision, Link Pulse rescue, Merge decision.
 - telemetry: at least two non-Supply verbs occur in first 60 seconds.
 - log: at least one Link Pulse rescue prevents shutdown or Signal collapse.
+- visual review: screen does not read as dice/guardian/random-summon UI at a glance.
 - known issues must state that final boss screenshot and win-log retention proof are deferred until core-loop pass branch.
 - Boss disruption logs are still required for every boss reached in the fallback run; if a boss is not reached, the missing proof is listed as deferred rather than passed.
 
