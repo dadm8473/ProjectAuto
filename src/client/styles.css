@@ -1,8 +1,10 @@
 :root {
   color-scheme: dark;
-  --bg: #101312;
-  --panel: #151b18;
-  --panel-2: #202620;
+  --hud-base: 54px;
+  --action-panel-base: 165px;
+  --bg: #080c0d;
+  --panel: rgba(13, 18, 17, 0.9);
+  --panel-2: #1b2421;
   --ink: #f5f0dc;
   --muted: #a8b4a7;
   --line: rgba(245, 240, 220, 0.16);
@@ -24,8 +26,9 @@ body {
   margin: 0;
   overflow: hidden;
   background:
-    radial-gradient(circle at 35% 0%, rgba(88, 215, 255, 0.18), transparent 32%),
-    linear-gradient(180deg, #101312, #181615 58%, #121614);
+    linear-gradient(90deg, rgba(2, 5, 6, 0.92), rgba(7, 12, 13, 0.64), rgba(2, 5, 6, 0.92)),
+    url("/src/client/assets/generated/signal-relay-playfield-frame.png") center / cover no-repeat,
+    #080c0d;
   color: var(--ink);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -33,13 +36,14 @@ body {
 button {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: linear-gradient(180deg, #263126, #171d19);
+  background: linear-gradient(180deg, rgba(45, 55, 47, 0.96), rgba(17, 22, 20, 0.96));
   color: var(--ink);
   font: inherit;
-  font-weight: 850;
+  font-size: 13px;
+  font-weight: 900;
   letter-spacing: 0;
-  min-height: 42px;
-  box-shadow: inset 0 1px rgba(245, 240, 220, 0.08), 0 7px 16px rgba(0, 0, 0, 0.24);
+  min-height: 35px;
+  box-shadow: inset 0 1px rgba(245, 240, 220, 0.12), 0 7px 16px rgba(0, 0, 0, 0.28);
 }
 
 .primary-actions button,
@@ -47,8 +51,8 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 0 5px;
+  gap: 6px;
+  padding: 0 6px;
   line-height: 1;
   white-space: nowrap;
 }
@@ -58,8 +62,8 @@ button {
 .meters span::before {
   content: "";
   flex: 0 0 auto;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 5px;
   background-image: url("/src/client/assets/generated/ui-icon-atlas.png");
   background-size: 400% 300%;
@@ -92,12 +96,16 @@ button:disabled:active {
 
 .shell {
   position: relative;
-  width: min(100vw, 430px);
+  width: min(100vw, 390px);
   height: 100dvh;
   margin: 0 auto;
   display: grid;
-  grid-template-rows: 56px minmax(0, 1fr) 190px;
-  background: rgba(10, 13, 12, 0.96);
+  grid-template-rows: calc(var(--hud-base) + env(safe-area-inset-top)) minmax(0, 1fr) calc(var(--action-panel-base) + env(safe-area-inset-bottom));
+  background:
+    linear-gradient(180deg, rgba(4, 8, 9, 0.62), rgba(5, 9, 9, 0.4)),
+    url("/src/client/assets/generated/signal-relay-playfield-frame.png") center / cover no-repeat,
+    rgba(7, 10, 11, 0.98);
+  box-shadow: 0 0 0 1px rgba(245, 240, 220, 0.08), 0 0 48px rgba(0, 0, 0, 0.72);
 }
 
 .hud {
@@ -105,14 +113,16 @@ button:disabled:active {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: max(8px, env(safe-area-inset-top)) 10px 8px;
+  min-height: calc(var(--hud-base) + env(safe-area-inset-top));
+  padding: calc(7px + env(safe-area-inset-top)) 8px 7px;
   border-bottom: 1px solid var(--line);
-  background: rgba(16, 19, 18, 0.98);
+  background: linear-gradient(180deg, rgba(11, 18, 18, 0.96), rgba(7, 11, 12, 0.86));
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
 }
 
 .brand strong {
   display: block;
-  font-size: 16px;
+  font-size: 15px;
   letter-spacing: 0;
 }
 
@@ -125,7 +135,7 @@ button:disabled:active {
 
 .meters {
   display: flex;
-  gap: 5px;
+  gap: 4px;
 }
 
 .meters span,
@@ -135,8 +145,8 @@ button:disabled:active {
   justify-content: center;
   gap: 4px;
   min-width: 50px;
-  height: 29px;
-  padding: 0 7px;
+  height: 28px;
+  padding: 0 6px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(245, 240, 220, 0.055);
@@ -172,14 +182,18 @@ button:disabled:active {
 .stage-wrap {
   position: relative;
   display: grid;
-  place-items: center;
+  align-items: start;
+  justify-items: center;
   min-height: 0;
   overflow: hidden;
-  background: #0a0d0c;
+  background:
+    linear-gradient(180deg, rgba(1, 4, 5, 0.18), rgba(2, 5, 6, 0.84)),
+    url("/src/client/assets/generated/signal-relay-playfield-frame.png") center bottom / cover no-repeat,
+    #0a0d0c;
 }
 
 #gameCanvas {
-  width: min(100%, calc((100dvh - 246px) * 390 / 500));
+  width: min(100%, 390px);
   height: auto;
   max-height: 100%;
   aspect-ratio: 390 / 500;
@@ -203,29 +217,33 @@ button:disabled:active {
 }
 
 .action-panel {
-  padding: 8px;
+  min-height: calc(var(--action-panel-base) + env(safe-area-inset-bottom));
+  padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
-  background: var(--panel);
+  background:
+    linear-gradient(180deg, rgba(10, 16, 15, 0.9), rgba(9, 12, 11, 0.98)),
+    url("/src/client/assets/generated/signal-relay-playfield-frame.png") bottom center / cover no-repeat;
+  box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.34);
 }
 
 .status-line {
   display: grid;
   grid-template-columns: 0.75fr 1.55fr 1fr;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 5px;
+  margin-bottom: 6px;
 }
 
 .primary-actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 7px;
+  gap: 5px;
 }
 
 .secondary-actions {
   display: grid;
   grid-template-columns: 0.72fr 0.86fr 1.36fr;
-  gap: 7px;
-  margin-top: 7px;
+  gap: 5px;
+  margin-top: 5px;
 }
 
 #supplyButton {

@@ -9,6 +9,7 @@ Every visible unit, board surface, loop effect, and premium UI accent should loo
 | asset | path | use |
 |---|---|---|
 | Art direction reference | `src/client/assets/generated/signal-relay-art-direction.png` | Renderer backdrop reference and visual consistency target |
+| Playfield frame | `src/client/assets/generated/signal-relay-playfield-frame.png` | Live canvas background for the top board, central loop, and lower board composition |
 | Relay icon atlas | `src/client/assets/generated/relay-unit-atlas.png` | 20 Relay icons in roster order |
 | Enemy/Noise atlas | `src/client/assets/generated/noise-enemy-atlas.png` | Track Noise and boss sprites in 4x2 order; normalized to 1776x888 |
 | Boss disruption atlas | `src/client/assets/generated/boss-disruption-atlas.png` | Boss Orchid, Boss Mirror, Origin Null event-feed cards; normalized to 2106x747 |
@@ -62,6 +63,23 @@ Palette: deep charcoal base with teal, amber, coral, emerald, ivory text accents
 Composition: portrait phone-safe, first viewport gameplay screen, central loop visible, partner/player co-op relationship obvious, controls implied at bottom, no marketing hero, no large explanatory text.
 Quality: polished production art, cohesive visual system, sharp edges, high detail, usable as art direction reference.
 Avoid: dice, casino icons, generic card game, copy of any existing game, chibi mascots, stock UI, giant hero character, empty MVP wireframe, unreadable tiny text, watermarks.
+```
+
+## Base Prompt: Playfield Frame
+
+```text
+Use case: stylized-concept
+Asset type: project-bound in-game playfield background for a vertical mobile cooperative tower-defense game canvas.
+Primary request: Create a polished playable 390:500 portrait game playfield background for Signal Relay. It must be usable behind live canvas UI, with no text and no labels.
+Scene/backdrop: compact vertical gameplay board: upper partner relay board area, central circular signal loop arena, lower player relay board area, dark mechanical stone/metal floor, teal signal cables, amber charge conduits, coral danger lane accents.
+Subject: two empty 4x3 relay socket boards with beveled square-ish socket plates, a central circular signal track with a crystal core, small mechanical pylons around the loop, subtle side machinery, premium mobile game frame edges.
+Style/medium: high-end Korean mobile game production background art, fantasy-tech, semi-realistic metal/glass devices, crisp readable mobile game surfaces, not a mockup.
+Composition/framing: exact portrait playfield composition, top 25% partner board, middle 35% circular loop arena, bottom 25% player board, safe empty spaces where live UI text and sprites can be rendered by code, no embedded buttons.
+Lighting/mood: luminous teal signal glow, amber energy highlights, restrained coral danger glow, deep charcoal base, ivory edge highlights.
+Color palette: charcoal/black ceramic, teal, amber, coral, emerald, ivory; avoid purple dominance, beige dominance, casino/dice/card language.
+Materials/textures: brushed metal trims, glass cores, cable sockets, stone-metal plates, beveled panel seams, subtle holographic glow.
+Constraints: no text, no words, no letters, no numbers, no watermark, no dice, no cards, no characters, no UI copy. The image must read as a game screen background and align with live overlay elements.
+Avoid: marketing hero art, giant characters, chibi, random summon circles, empty wireframe, blurry dark atmosphere, copied game UI.
 ```
 
 ## Base Prompt: Relay Icon Atlas

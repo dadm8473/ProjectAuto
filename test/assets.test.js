@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { NOISE_TYPES } from '../src/shared/content.js';
 
 const GENERATED_ASSETS = [
+  'src/client/assets/generated/signal-relay-playfield-frame.png',
   'src/client/assets/generated/noise-enemy-atlas.png',
   'src/client/assets/generated/boss-disruption-atlas.png',
   'src/client/assets/generated/ui-icon-atlas.png'
