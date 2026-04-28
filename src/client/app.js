@@ -398,6 +398,89 @@ function drawStageChrome(state) {
   ctx.restore();
 }
 
+function drawBoardConnectors(state) {
+  const { boardRects, loop } = sceneLayout;
+  const pressure = Math.max(
+    1 - Math.max(0, Math.min(1, state.signal.integrity / GAME_RULES.signalMax)),
+    Math.max(0, Math.min(1, state.saturation.count / state.saturation.limit))
+  );
+  const accent = state.boss.active || pressure > 0.55 ? '#ff6f59' : '#58d7ff';
+  const partner = boardRects.p2;
+  const player = boardRects.p1;
+
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.globalAlpha = 0.74;
+  ctx.shadowColor = accent;
+  ctx.shadowBlur = state.boss.active ? 14 : 8;
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = 2.5;
+
+  const lanes = [
+    [partner.x + 40, partner.y + partner.h, loop.cx - 86, loop.cy - loop.ry * 0.72, loop.cx - 58, loop.cy - 38],
+    [partner.x + partner.w - 40, partner.y + partner.h, loop.cx + 86, loop.cy - loop.ry * 0.72, loop.cx + 58, loop.cy - 38],
+    [player.x + 40, player.y, loop.cx - 86, loop.cy + loop.ry * 0.72, loop.cx - 58, loop.cy + 38],
+    [player.x + player.w - 40, player.y, loop.cx + 86, loop.cy + loop.ry * 0.72, loop.cx + 58, loop.cy + 38]
+  ];
+  for (const [sx, sy, cx, cy, ex, ey] of lanes) {
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.quadraticCurveTo(cx, cy, ex, ey);
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 0.22;
+  ctx.lineWidth = 7;
+  ctx.strokeStyle = 'rgba(245, 240, 220, 0.22)';
+  for (const [sx, sy, cx, cy, ex, ey] of lanes) {
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.quadraticCurveTo(cx, cy, ex, ey);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawRunSpine(state) {
+  const { boardRects, loop } = sceneLayout;
+  const top = boardRects.p2.y + boardRects.p2.h + 8;
+  const bottom = boardRects.p1.y - 8;
+  const x = loop.cx;
+  const pulse = (state.now * 0.7) % 1;
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(245, 240, 220, 0.12)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 10]);
+  ctx.beginPath();
+  ctx.moveTo(x, top);
+  ctx.lineTo(x, bottom);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  for (let i = 0; i < 7; i += 1) {
+    const t = (i / 7 + pulse) % 1;
+    const y = top + (bottom - top) * t;
+    const hot = t > 0.42 && t < 0.58;
+    ctx.globalAlpha = hot ? 0.72 : 0.32;
+    ctx.shadowColor = hot || state.boss.active ? '#f4c95d' : '#58d7ff';
+    ctx.shadowBlur = hot ? 11 : 5;
+    ctx.fillStyle = hot || state.boss.active ? '#f4c95d' : '#58d7ff';
+    ctx.beginPath();
+    ctx.arc(x, y, hot ? 3.5 : 2.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.globalAlpha = 0.9;
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+  ctx.shadowBlur = 5;
+  ctx.fillStyle = state.boss.active ? '#ff6f59' : '#8ee6d2';
+  ctx.font = '950 9px system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText(state.boss.active ? 'DUAL WINDOW' : 'SYNC LINK', x, Math.max(top + 12, loop.cy - loop.ry - 12));
+  ctx.restore();
+}
+
 function drawMetalPlate(x, y, w, h, radius, accent) {
   const gradient = ctx.createLinearGradient(x, y, x, y + h);
   gradient.addColorStop(0, 'rgba(34, 42, 39, 0.92)');
@@ -894,7 +977,8 @@ function drawAttackBeam(state, effect, alpha) {
   const from = relayCenterById(state, effect);
   if (!from) return false;
   const to = effectTargetPosition(state, effect);
-  const color = RELAY_TYPES[effect.relayId]?.palette ?? effect.targetColor ?? '#58d7ff';
+  const spec = RELAY_TYPES[effect.relayId];
+  const color = spec?.palette ?? effect.targetColor ?? '#58d7ff';
   const impactRadius = 8 + (1 - alpha) * 10;
 
   ctx.save();
@@ -927,6 +1011,8 @@ function drawAttackBeam(state, effect, alpha) {
   ctx.arc(to.x, to.y, impactRadius + 4, 0, Math.PI * 2);
   ctx.stroke();
 
+  drawProjectileSignature(state, effect, from, to, spec, alpha);
+
   ctx.shadowColor = 'rgba(0, 0, 0, 0.92)';
   ctx.shadowBlur = 6;
   ctx.fillStyle = '#f5f0dc';
@@ -937,8 +1023,96 @@ function drawAttackBeam(state, effect, alpha) {
   return true;
 }
 
+function drawProjectileSignature(state, effect, from, to, spec, alpha) {
+  if (!spec) return;
+  const color = spec.palette;
+  const tag = spec.tags?.[0] ?? 'Beam';
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.max(1, Math.hypot(dx, dy));
+  const nx = dx / length;
+  const ny = dy / length;
+  const travel = (state.now * 8 + (effect.damage ?? 0) * 0.017) % 1;
+
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, 0.36 + alpha * 0.42);
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 14;
+
+  if (tag === 'Pulse') {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.4;
+    for (let i = 0; i < 3; i += 1) {
+      ctx.globalAlpha = Math.max(0.08, alpha * (0.42 - i * 0.08));
+      ctx.beginPath();
+      ctx.arc(to.x, to.y, 10 + i * 9 + (1 - alpha) * 12, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  } else if (tag === 'Field') {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < 6; i += 1) {
+      const angle = Math.PI / 6 + i * Math.PI / 3 + state.now * 0.8;
+      const x = to.x + Math.cos(angle) * 18;
+      const y = to.y + Math.sin(angle) * 12;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  } else if (tag === 'Sink' || tag === 'Repair') {
+    ctx.strokeStyle = tag === 'Repair' ? '#95d5b2' : color;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([2, 6]);
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  } else {
+    ctx.fillStyle = color;
+    for (let i = 0; i < 4; i += 1) {
+      const t = (travel + i * 0.22) % 1;
+      const x = from.x + dx * t;
+      const y = from.y + dy * t;
+      ctx.globalAlpha = Math.max(0.12, alpha * (0.5 - i * 0.06));
+      ctx.beginPath();
+      ctx.moveTo(x + nx * 8, y + ny * 8);
+      ctx.lineTo(x - ny * 4, y + nx * 4);
+      ctx.lineTo(x - nx * 8, y - ny * 8);
+      ctx.lineTo(x + ny * 4, y - nx * 4);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawRewardFlyout(effect, to, alpha) {
+  const charge = effect.rewardCharge ?? 0;
+  const link = effect.rewardLink ?? 0;
+  if (charge <= 0 && link <= 0) return;
+  const lift = (1 - alpha) * 24;
+
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, alpha * 1.15);
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+  ctx.shadowBlur = 5;
+  ctx.fillStyle = '#f4c95d';
+  ctx.font = '950 10px system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText(`+${charge}C`, to.x - 11, to.y - 32 - lift);
+  if (link > 0) {
+    ctx.fillStyle = '#58d7ff';
+    ctx.fillText(`+${link}L`, to.x + 18, to.y - 32 - lift);
+  }
+  ctx.restore();
+}
+
 function drawDeathBurst(effect, alpha) {
-  const pos = effectTargetPosition({ noise: [] }, effect);
+  const to = effectTargetPosition({ noise: [] }, effect);
   const color = effect.targetColor ?? (effect.targetType === 'boss' ? '#ff6f59' : '#f4c95d');
   const radius = effect.targetType === 'boss' ? 34 : 18;
 
@@ -949,28 +1123,21 @@ function drawDeathBurst(effect, alpha) {
   ctx.strokeStyle = color;
   ctx.lineWidth = effect.targetType === 'boss' ? 4 : 2.5;
   ctx.beginPath();
-  ctx.arc(pos.x, pos.y, radius + (1 - alpha) * 24, 0, Math.PI * 2);
+  ctx.arc(to.x, to.y, radius + (1 - alpha) * 24, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.fillStyle = color;
   for (let i = 0; i < 9; i += 1) {
     const angle = (Math.PI * 2 * i) / 9 + (effect.targetProgress ?? 0) * Math.PI;
     const length = radius * 0.8 + (1 - alpha) * 26;
-    const x = pos.x + Math.cos(angle) * length;
-    const y = pos.y + Math.sin(angle) * length * 0.68;
+    const x = to.x + Math.cos(angle) * length;
+    const y = to.y + Math.sin(angle) * length * 0.68;
     ctx.beginPath();
     ctx.arc(x, y, effect.targetType === 'boss' ? 3.2 : 2.2, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  if ((effect.rewardCharge ?? 0) > 0 || (effect.rewardLink ?? 0) > 0) {
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-    ctx.shadowBlur = 5;
-    ctx.fillStyle = '#f4c95d';
-    ctx.font = '900 10px system-ui';
-    ctx.textAlign = 'center';
-    ctx.fillText(`+${effect.rewardCharge ?? 0}C`, pos.x, pos.y - radius - 16 - (1 - alpha) * 10);
-  }
+  drawRewardFlyout(effect, to, alpha);
   ctx.restore();
 }
 
@@ -1227,11 +1394,32 @@ function drawPressureFrame(state) {
   ctx.restore();
 }
 
+function screenShakeOffset(state) {
+  const power = state.effects.reduce((max, effect) => {
+    if (effect.type === 'death_burst' && effect.targetType === 'boss') return Math.max(max, 2.8 * Math.max(0, effect.ttl));
+    if (effect.type === 'boss_execute') return Math.max(max, 2.2 * Math.max(0, effect.ttl));
+    if (effect.type === 'link_pulse_save') return Math.max(max, 1.8 * Math.max(0, effect.ttl));
+    if (effect.type === 'loop_complete') return Math.max(max, 1.6 * Math.max(0, effect.ttl));
+    if (effect.type === 'death_burst') return Math.max(max, 0.85 * Math.max(0, effect.ttl));
+    return max;
+  }, 0);
+  if (power <= 0.01) return { x: 0, y: 0 };
+  return {
+    x: Math.sin(state.now * 71) * power,
+    y: Math.cos(state.now * 53) * power * 0.62
+  };
+}
+
 function render() {
   syncCanvasScale();
   const state = currentState();
   drawBackground(state);
+  const shake = screenShakeOffset(state);
+  ctx.save();
+  ctx.translate(shake.x, shake.y);
   drawStageChrome(state);
+  drawBoardConnectors(state);
+  drawRunSpine(state);
   drawBoard(state, partnerId(localBoardId));
   drawTrack(state);
   drawNoise(state);
@@ -1240,6 +1428,7 @@ function render() {
   drawBoard(state, localBoardId);
   drawEffects(state);
   drawPressureFrame(state);
+  ctx.restore();
 
   if (state.over) {
     ctx.fillStyle = 'rgba(2, 4, 5, 0.82)';
@@ -1311,25 +1500,33 @@ function loop(now) {
 }
 
 function buildShop() {
-  shopList.innerHTML = SHOP.items.map((item) => `
+  shopList.innerHTML = [
+    buildShopSection('UNLOCKS', SHOP.items.map((item) => `
     <div class="row">
       <div><strong>${item.name}</strong><span>${item.description}</span></div>
       <button data-buy="${item.id}">${item.price.gems} G</button>
     </div>
-  `).join('') + SHOP.dailyMissions.map((mission) => `
-    <div class="row">
+    `).join('')),
+    buildShopSection('MISSIONS', SHOP.dailyMissions.map((mission) => `
+    <div class="mission-row">
       <div><strong>${mission.text}</strong><span>Reward ${mission.reward.gems} G</span></div>
       <span>Daily</span>
     </div>
-  `).join('') + SHOP.pass.tiers.map((tier, index) => `
-    <div class="row">
+    `).join('')),
+    buildShopSection('SEASON TRACK', SHOP.pass.tiers.map((tier, index) => `
+    <div class="track-row">
       <div><strong>${SHOP.pass.name} ${index + 1}</strong><span>${tier.xp} XP reward track</span></div>
       <span>${tier.grant.gems ? `${tier.grant.gems} G` : 'Skin'}</span>
     </div>
-  `).join('');
+    `).join(''))
+  ].join('');
   shopList.querySelectorAll('button').forEach((button) => {
     button.addEventListener('click', () => command({ type: 'buy', itemId: button.dataset.buy }));
   });
+}
+
+function buildShopSection(title, body) {
+  return `<section class="shop-section"><strong>${title}</strong>${body}</section>`;
 }
 
 function connectOnline() {

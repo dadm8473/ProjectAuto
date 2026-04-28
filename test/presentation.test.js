@@ -48,6 +48,81 @@ test('mobile shell uses integrated app chrome and tactile controls', async () =>
   }
 });
 
+test('vertical mobile playfield is framed as one app surface', async () => {
+  const js = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '.shell::before',
+    '.shell::after',
+    '.action-panel::after',
+    '@media (max-height: 720px)',
+    'height: 100%;',
+    'max-height: none;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+  for (const marker of [
+    'function drawBoardConnectors',
+    'function drawRunSpine',
+    'drawBoardConnectors(state);',
+    'drawRunSpine(state);'
+  ]) {
+    assert.equal(js.includes(marker), true, marker);
+  }
+});
+
+test('combat renderer adds projectile signatures and tactile impact layers', async () => {
+  const source = await readFile('src/client/app.js', 'utf8');
+  for (const marker of [
+    'function screenShakeOffset',
+    'function drawProjectileSignature',
+    'function drawRewardFlyout',
+    'ctx.translate(shake.x, shake.y);',
+    'drawProjectileSignature(state, effect, from, to, spec, alpha);',
+    'drawRewardFlyout(effect, to, alpha);'
+  ]) {
+    assert.equal(source.includes(marker), true, marker);
+  }
+});
+
+test('service shell has launch loadout art and sectioned BM flow', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const js = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    'class="launch-loadout"',
+    'class="launch-chip"',
+    'class="launch-map-preview"'
+  ]) {
+    assert.equal(html.includes(marker), true, marker);
+  }
+  for (const marker of [
+    'function buildShopSection',
+    'class="shop-section"',
+    'class="track-row"',
+    'class="mission-row"'
+  ]) {
+    assert.equal(js.includes(marker), true, marker);
+  }
+  for (const marker of [
+    '.launch-map-preview',
+    '.launch-loadout',
+    '.shop-section',
+    '.track-row',
+    'signal-relay-playfield-frame.png'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
+test('browser chrome has a committed icon to avoid favicon noise in smoke tests', async () => {
+  const html = await readFile('index.html', 'utf8');
+  assert.equal(html.includes('rel="icon"'), true);
+  assert.equal(html.includes('ui-icon-atlas.png'), true);
+});
+
 test('canvas presentation avoids duplicating the shell resource HUD', async () => {
   const source = await readFile('src/client/app.js', 'utf8');
   assert.equal(source.includes('drawCanvasHud(state);'), false);

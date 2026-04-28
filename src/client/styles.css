@@ -132,6 +132,33 @@ button:disabled:active {
   box-shadow: 0 0 0 1px rgba(245, 240, 220, 0.08), 0 0 48px rgba(0, 0, 0, 0.72);
 }
 
+.shell::before,
+.shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.shell::before {
+  z-index: 1;
+  box-shadow:
+    inset 0 0 0 1px rgba(245, 240, 220, 0.12),
+    inset 9px 0 20px rgba(0, 0, 0, 0.32),
+    inset -9px 0 20px rgba(0, 0, 0, 0.32),
+    inset 0 18px 30px rgba(88, 215, 255, 0.045),
+    inset 0 -18px 30px rgba(244, 201, 93, 0.045);
+}
+
+.shell::after {
+  z-index: 1;
+  opacity: 0.17;
+  background:
+    repeating-linear-gradient(180deg, rgba(245, 240, 220, 0.08) 0 1px, transparent 1px 7px),
+    linear-gradient(90deg, rgba(88, 215, 255, 0.09), transparent 18%, transparent 82%, rgba(244, 201, 93, 0.09));
+  mix-blend-mode: screen;
+}
+
 .hud {
   position: relative;
   z-index: 2;
@@ -209,8 +236,8 @@ button:disabled:active {
 .stage-wrap {
   position: relative;
   display: grid;
-  align-items: center;
-  justify-items: center;
+  align-items: stretch;
+  justify-items: stretch;
   min-height: 0;
   overflow: hidden;
   isolation: isolate;
@@ -250,9 +277,9 @@ button:disabled:active {
   position: relative;
   z-index: 0;
   display: block;
-  width: min(100%, 390px);
-  height: auto;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  max-height: none;
   touch-action: none;
   filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.36));
 }
@@ -329,6 +356,41 @@ button:disabled:active {
   color: var(--muted);
   font-size: 12px;
   font-weight: 850;
+}
+
+.launch-map-preview {
+  height: 92px;
+  margin: 12px 0 10px;
+  border: 1px solid rgba(245, 240, 220, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(4, 7, 8, 0.08), rgba(4, 7, 8, 0.72)),
+    url("/src/client/assets/generated/signal-relay-playfield-frame.png") center 49% / cover;
+  box-shadow:
+    inset 0 0 0 1px rgba(88, 215, 255, 0.08),
+    inset 0 -22px 30px rgba(0, 0, 0, 0.34);
+}
+
+.launch-loadout {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.launch-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0 5px;
+  border: 1px solid rgba(245, 240, 220, 0.13);
+  border-radius: 7px;
+  background: rgba(245, 240, 220, 0.055);
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 950;
+  text-align: center;
 }
 
 .launch-contract {
@@ -506,6 +568,19 @@ button:disabled:active {
   pointer-events: none;
 }
 
+.action-panel::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 8px;
+  right: 8px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(88, 215, 255, 0.3), rgba(244, 201, 93, 0.5), rgba(88, 215, 255, 0.3));
+  box-shadow: 0 0 14px rgba(244, 201, 93, 0.2);
+  pointer-events: none;
+}
+
 .status-line {
   position: relative;
   z-index: 2;
@@ -530,8 +605,8 @@ button:disabled:active {
   right: 8px;
   width: auto;
   transform: none;
-  top: 112px;
-  bottom: auto;
+  top: auto;
+  bottom: calc(8px + env(safe-area-inset-bottom));
   display: grid;
   grid-template-columns: 0.72fr 0.86fr 1.36fr;
   gap: 5px;
@@ -650,7 +725,20 @@ button:disabled:active {
   max-height: calc(min(64dvh, 440px) - 60px);
 }
 
-.row {
+.shop-section {
+  display: grid;
+  gap: 7px;
+}
+
+.shop-section > strong {
+  color: var(--charge);
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.row,
+.mission-row,
+.track-row {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
@@ -661,13 +749,66 @@ button:disabled:active {
   background: rgba(245, 240, 220, 0.055);
 }
 
-.row strong {
+.mission-row {
+  border-color: rgba(149, 213, 178, 0.2);
+  background: rgba(149, 213, 178, 0.06);
+}
+
+.track-row {
+  border-color: rgba(244, 201, 93, 0.2);
+  background:
+    linear-gradient(90deg, rgba(244, 201, 93, 0.1), rgba(88, 215, 255, 0.035)),
+    rgba(245, 240, 220, 0.045);
+}
+
+.row strong,
+.mission-row strong,
+.track-row strong {
   display: block;
   font-size: 13px;
 }
 
-.row span {
+.row span,
+.mission-row span,
+.track-row span {
   display: block;
   color: var(--muted);
   font-size: 11px;
+}
+
+@media (max-height: 720px) {
+  :root {
+    --hud-base: 48px;
+    --action-panel-base: 180px;
+  }
+
+  .hud {
+    padding-top: calc(5px + env(safe-area-inset-top));
+    padding-bottom: 5px;
+  }
+
+  .brand strong {
+    font-size: 13px;
+  }
+
+  .meters span,
+  .status-line span {
+    height: 25px;
+    font-size: 11px;
+  }
+
+  .action-panel {
+    padding-top: 6px;
+  }
+
+  .primary-actions button,
+  .secondary-actions button {
+    min-height: 31px;
+    font-size: 11px;
+  }
+
+  .secondary-actions {
+    top: auto;
+    bottom: calc(7px + env(safe-area-inset-bottom));
+  }
 }
