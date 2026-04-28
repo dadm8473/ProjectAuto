@@ -212,16 +212,68 @@ function drawBackground(state) {
   ctx.fillStyle = vignette;
   ctx.fillRect(0, 0, VIEW_WIDTH, viewport.viewHeight);
 
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
-  ctx.shadowBlur = 10;
-  ctx.fillStyle = '#f5f0dc';
-  ctx.font = '900 18px system-ui';
-  ctx.textAlign = 'left';
-  ctx.fillText(state.title.toUpperCase(), 18, 35);
-  ctx.font = '800 10px system-ui';
-  ctx.fillStyle = '#8ee6d2';
-  ctx.fillText(state.mode === 'bot' ? 'BOT CO-OP' : 'ONLINE CO-OP', 20, 52);
+  ctx.fillStyle = 'rgba(245, 240, 220, 0.05)';
+  ctx.fillRect(18, 59, 354, 1);
+}
+
+function drawStageChrome(state) {
+  const pressure = Math.max(
+    1 - Math.max(0, Math.min(1, state.signal.integrity / GAME_RULES.signalMax)),
+    Math.max(0, Math.min(1, state.saturation.count / state.saturation.limit))
+  );
+  const accent = state.boss.active ? '#f4c95d' : pressure > 0.48 ? '#ff6f59' : '#58d7ff';
+  ctx.save();
+
+  const leftRail = ctx.createLinearGradient(0, 0, 32, 0);
+  leftRail.addColorStop(0, 'rgba(0, 0, 0, 0.46)');
+  leftRail.addColorStop(0.42, 'rgba(88, 215, 255, 0.08)');
+  leftRail.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = leftRail;
+  ctx.fillRect(0, 56, 38, viewport.viewHeight - 74);
+  const rightRail = ctx.createLinearGradient(VIEW_WIDTH, 0, VIEW_WIDTH - 32, 0);
+  rightRail.addColorStop(0, 'rgba(0, 0, 0, 0.46)');
+  rightRail.addColorStop(0.42, 'rgba(244, 201, 93, 0.08)');
+  rightRail.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = rightRail;
+  ctx.fillRect(VIEW_WIDTH - 38, 56, 38, viewport.viewHeight - 74);
+
+  ctx.globalAlpha = 0.7;
+  ctx.strokeStyle = 'rgba(245, 240, 220, 0.11)';
+  ctx.lineWidth = 1;
+  for (let y = 78; y < viewport.viewHeight - 42; y += 38) {
+    ctx.beginPath();
+    ctx.moveTo(10, y);
+    ctx.lineTo(22, y + 8);
+    ctx.moveTo(VIEW_WIDTH - 10, y);
+    ctx.lineTo(VIEW_WIDTH - 22, y + 8);
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 1;
+  ctx.shadowColor = accent;
+  ctx.shadowBlur = 9;
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = 2;
+  const brackets = [
+    [14, 62, 28, 0, 0, 28],
+    [VIEW_WIDTH - 14, 62, -28, 0, 0, 28],
+    [14, viewport.viewHeight - 16, 28, 0, 0, -28],
+    [VIEW_WIDTH - 14, viewport.viewHeight - 16, -28, 0, 0, -28]
+  ];
+  for (const [x, y, dx, dy, vx, vy] of brackets) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + dx, y + dy);
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + vx, y + vy);
+    ctx.stroke();
+  }
+
   ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(245, 240, 220, 0.05)';
+  ctx.fillRect(18, 59, 354, 1);
+  ctx.fillRect(18, viewport.viewHeight - 19, 354, 1);
+  ctx.restore();
 }
 
 function drawMetalPlate(x, y, w, h, radius, accent) {
@@ -259,29 +311,6 @@ function syncCanvasScale() {
     canvas.height = nextHeight;
   }
   ctx.setTransform(canvas.width / viewport.viewWidth, 0, 0, canvas.height / viewport.viewHeight, 0, 0);
-}
-
-function drawPill(x, y, w, label, value, color) {
-  ctx.fillStyle = 'rgba(245, 240, 220, 0.06)';
-  ctx.strokeStyle = 'rgba(245, 240, 220, 0.16)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.roundRect(x, y, w, 28, 8);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = color;
-  ctx.font = '900 9px system-ui';
-  ctx.textAlign = 'left';
-  ctx.fillText(label, x + 8, y + 11);
-  ctx.fillStyle = '#f5f0dc';
-  ctx.font = '900 12px system-ui';
-  ctx.fillText(String(value), x + 8, y + 23);
-}
-
-function drawCanvasHud(state) {
-  drawPill(195, 18, 54, 'CHG', Math.floor(state.resources.charge), '#f4c95d');
-  drawPill(253, 18, 54, 'LINK', Math.floor(state.resources.linkEnergy), '#58d7ff');
-  drawPill(311, 18, 61, 'GEM', Math.floor(state.resources.gems), '#95d5b2');
 }
 
 function eventArtIndex(event) {
@@ -330,6 +359,53 @@ function drawEventFeed(state) {
   ctx.font = hasBossArt ? '900 11px system-ui' : '850 10px system-ui';
   ctx.textAlign = 'left';
   ctx.fillText(label.toUpperCase(), banner.x + 9, banner.y + banner.h - (hasBossArt ? 6 : 5));
+  ctx.restore();
+}
+
+function drawTrackLaneMarkers(state) {
+  const { track, loop } = sceneLayout;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(245, 240, 220, 0.09)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 4; i += 1) {
+    const inset = 14 + i * 8;
+    ctx.beginPath();
+    ctx.ellipse(loop.cx, loop.cy, loop.rx - inset, Math.max(24, loop.ry - inset * 0.42), 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  for (let i = 0; i < 18; i += 1) {
+    const progress = (i / 18 + state.now * 0.018) % 1;
+    const pos = noisePosition({ progress, lane: i % 2 });
+    const next = noisePosition({ progress: (progress + 0.01) % 1, lane: i % 2 });
+    const angle = Math.atan2(next.y - pos.y, next.x - pos.x);
+    const hot = progress > 0.68 || state.boss.active;
+    ctx.save();
+    ctx.translate(pos.x, pos.y);
+    ctx.rotate(angle);
+    ctx.globalAlpha = hot ? 0.64 : 0.38;
+    ctx.fillStyle = hot ? 'rgba(255, 111, 89, 0.72)' : 'rgba(88, 215, 255, 0.6)';
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = hot ? 8 : 4;
+    ctx.beginPath();
+    ctx.roundRect(-5, -2, 10, 4, 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  ctx.shadowColor = 'rgba(88, 215, 255, 0.24)';
+  ctx.shadowBlur = 10;
+  ctx.fillStyle = 'rgba(5, 7, 8, 0.52)';
+  ctx.strokeStyle = 'rgba(88, 215, 255, 0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(track.x + 16, track.y + track.h - 29, 64, 17, 7);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#8ee6d2';
+  ctx.font = '850 9px system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText('LIVE LOOP', track.x + 48, track.y + track.h - 17);
   ctx.restore();
 }
 
@@ -393,6 +469,8 @@ function drawTrack(state) {
   ctx.ellipse(loop.cx, loop.cy, loop.rx, loop.ry, 0, 0, Math.PI * 2);
   ctx.stroke();
   ctx.setLineDash([]);
+
+  drawTrackLaneMarkers(state);
 
   drawAtlasCell(relayWorldSprites.complete && relayWorldSprites.naturalWidth > 0 ? relayWorldSprites : relayAtlas, 4, 5, 19, loop.cx - 30, loop.cy - 33, 60, 60, 0.86);
 
@@ -482,6 +560,32 @@ function drawNoiseFallback(noise, pos, spec, iconSize) {
   ctx.restore();
 }
 
+function drawNoiseWake(noise, pos, spec, iconSize) {
+  ctx.save();
+  const wakeColor = noise.type === 'boss' ? '#ff6f59' : spec.color;
+  for (let i = 1; i <= 5; i += 1) {
+    const progress = (noise.progress - i * 0.014 + 1) % 1;
+    const trail = noisePosition({ progress, lane: noise.lane });
+    ctx.globalAlpha = Math.max(0.04, 0.22 - i * 0.032);
+    ctx.fillStyle = wakeColor;
+    ctx.shadowColor = wakeColor;
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.ellipse(trail.x, trail.y + iconSize * 0.18, iconSize * (0.22 - i * 0.014), iconSize * 0.055, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.globalAlpha = noise.type === 'boss' ? 0.44 : 0.3;
+  ctx.shadowColor = wakeColor;
+  ctx.shadowBlur = noise.type === 'boss' ? 15 : 8;
+  ctx.strokeStyle = wakeColor;
+  ctx.lineWidth = noise.type === 'boss' ? 3 : 2;
+  ctx.beginPath();
+  ctx.ellipse(pos.x, pos.y + iconSize * 0.24, iconSize * 0.44, iconSize * 0.15, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
 function drawNoise(state) {
   drawAmbientNoise(state);
   for (const noise of state.noise) {
@@ -490,6 +594,7 @@ function drawNoise(state) {
     const iconSize = noise.type === 'boss' ? 78 : Math.max(38, noise.radius * 5);
     const atlas = noiseWorldSprites.complete && noiseWorldSprites.naturalWidth > 0 ? noiseWorldSprites : null;
     const threat = Math.max(0, noise.progress - 0.72) / 0.28;
+    drawNoiseWake(noise, pos, spec, iconSize);
     ctx.save();
     ctx.globalAlpha = 0.32 + threat * 0.18;
     ctx.fillStyle = noise.type === 'boss' ? 'rgba(255, 111, 89, 0.48)' : 'rgba(0, 0, 0, 0.46)';
@@ -856,6 +961,53 @@ function drawEffects(state) {
   }
 }
 
+function drawThreatTelemetry(state) {
+  const leading = [...state.noise].sort((a, b) => b.progress - a.progress)[0] ?? null;
+  const { track } = sceneLayout;
+  const danger = leading ? Math.max(0, leading.progress - 0.58) / 0.42 : 0;
+  const x = VIEW_WIDTH - 126;
+  const y = track.y + 42;
+  const panelAlpha = state.noise.length > 0 ? 0.78 : 0.5;
+
+  ctx.save();
+  ctx.globalAlpha = panelAlpha;
+  ctx.shadowColor = danger > 0.55 || state.boss.active ? 'rgba(255, 111, 89, 0.45)' : 'rgba(88, 215, 255, 0.28)';
+  ctx.shadowBlur = 14;
+  ctx.fillStyle = 'rgba(4, 7, 8, 0.74)';
+  ctx.strokeStyle = danger > 0.55 || state.boss.active ? 'rgba(255, 111, 89, 0.52)' : 'rgba(88, 215, 255, 0.28)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(x, y, 104, 44, 10);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = danger > 0.55 || state.boss.active ? '#ff6f59' : '#8ee6d2';
+  ctx.font = '950 9px system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText(state.boss.active ? 'BOSS THREAT' : 'THREAT', x + 10, y + 14);
+  ctx.fillStyle = '#f5f0dc';
+  ctx.font = '950 15px system-ui';
+  ctx.fillText(String(state.noise.length).padStart(2, '0'), x + 10, y + 33);
+  ctx.fillStyle = '#a8b4a7';
+  ctx.font = '850 9px system-ui';
+  ctx.textAlign = 'right';
+  ctx.fillText(leading ? `${Math.round(leading.progress * 100)}%` : 'CLEAR', x + 94, y + 33);
+
+  if (leading) {
+    const pos = noisePosition(leading);
+    ctx.globalAlpha = 0.64;
+    ctx.strokeStyle = danger > 0.55 ? '#ff6f59' : '#58d7ff';
+    ctx.setLineDash([3, 5]);
+    ctx.beginPath();
+    ctx.moveTo(x + 8, y + 42);
+    ctx.lineTo(pos.x, pos.y - 12);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  ctx.restore();
+}
+
 function drawPressureFrame(state) {
   const signalPressure = 1 - Math.max(0, Math.min(1, state.signal.integrity / GAME_RULES.signalMax));
   const saturationPressure = Math.max(0, Math.min(1, state.saturation.count / state.saturation.limit));
@@ -887,11 +1039,12 @@ function render() {
   syncCanvasScale();
   const state = currentState();
   drawBackground(state);
-  drawCanvasHud(state);
+  drawStageChrome(state);
   drawBoard(state, partnerId(localBoardId));
   drawTrack(state);
   drawNoise(state);
   drawEventFeed(state);
+  drawThreatTelemetry(state);
   drawBoard(state, localBoardId);
   drawEffects(state);
   drawPressureFrame(state);
