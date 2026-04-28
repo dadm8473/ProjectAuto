@@ -17,7 +17,9 @@ export function eventLabel(event) {
   if (event.type === 'loop_complete') return `${noiseName(event.noiseType)} breached the loop`;
   if (event.type === 'overclock') return event.dualBossWindow ? 'Dual Overclock boss window' : 'Overclock armed';
   if (event.type === 'boss_defeated') return `Wave ${event.wave} boss defeated`;
-  if (event.type === 'wave_cleared') return `Wave ${event.wave} cleared`;
+  if (event.type === 'boss_wave_started') return `${event.waveName ?? `Wave ${event.wave} boss`} incoming`;
+  if (event.type === 'wave_started') return `${event.waveName ?? `Wave ${event.wave}`} started`;
+  if (event.type === 'wave_cleared') return `${event.waveName ?? `Wave ${event.wave}`} cleared`;
   if (event.type === 'run_finished') return event.text;
   return '';
 }

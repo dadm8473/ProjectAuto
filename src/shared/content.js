@@ -222,17 +222,18 @@ export const RELAY_TYPES = {
     name: 'Bloom Amp',
     grade: 'Tuned',
     tags: ['Amp', 'Repair'],
-    voltage: 5,
+    voltage: 0,
     repair: 1.2,
     cycle: 1.05,
     range: 0.16,
     heatPerAction: 1.6,
-    target: 'front',
+    target: 'repair',
     amp: 1.16,
+    repairAmp: 1.18,
     linkShape: ['N', 'S'],
     palette: '#ff8fab',
     atlasIndex: 13,
-    skill: 'Hybrid support relay for linked carries.'
+    skill: 'Hybrid support relay that amplifies linked repair lines.'
   },
   aurora_amp: {
     id: 'aurora_amp',
@@ -369,6 +370,7 @@ export const GAME_RULES = {
   maxWave: 10,
   mergeCount: 3,
   pityThreshold: 7,
+  waveClearHeatDrop: 20,
   tickRate: 20
 };
 
@@ -382,18 +384,73 @@ export const NOISE_TYPES = {
   boss: { name: 'Boss', hp: 650, speed: 18, rewardCharge: 65, rewardLink: 22, saturation: 12, color: '#f72585', radius: 19, atlasIndex: 6 }
 };
 
-export const WAVES = [
-  { flicker: 18 },
-  { flicker: 14, crawler: 12 },
-  { crawler: 18, splitter: 5, boss: 1 },
-  { flicker: 22, bulwark: 6 },
-  { splitter: 12, bulwark: 8, null: 4 },
-  { crawler: 24, null: 8, boss: 1 },
-  { flicker: 30, splitter: 16, bulwark: 10 },
-  { splitter: 24, null: 16, bulwark: 10 },
-  { crawler: 40, splitter: 20, bulwark: 16 },
-  { bulwark: 26, null: 20, boss: 1 }
+export const WAVE_PLAN = [
+  {
+    name: 'Calibration Drift',
+    intent: 'Teach Supply rhythm with a light two-type opener.',
+    spawns: { flicker: 16, crawler: 8 },
+    clearReward: { charge: 35, linkEnergy: 10, gems: 0 }
+  },
+  {
+    name: 'Armor Check',
+    intent: 'Introduce Bulwark pressure so Beam and Pulse roles feel different.',
+    spawns: { crawler: 18, bulwark: 4 },
+    clearReward: { charge: 45, linkEnergy: 12, gems: 0 }
+  },
+  {
+    name: 'Boss Orchid',
+    intent: 'First co-op heat crisis: Link Pulse and Overclock become meaningful.',
+    spawns: { crawler: 20, splitter: 8, boss: 1 },
+    clearReward: { charge: 65, linkEnergy: 22, gems: 8 },
+    bossTimer: 36
+  },
+  {
+    name: 'Wide Signal',
+    intent: 'Reward area damage and linked board geometry after the first boss.',
+    spawns: { flicker: 24, crawler: 16, bulwark: 5 },
+    clearReward: { charge: 55, linkEnergy: 14, gems: 0 }
+  },
+  {
+    name: 'Null Lesson',
+    intent: 'Force Null targeting and slowdown choices before the second boss.',
+    spawns: { splitter: 12, bulwark: 8, null: 6 },
+    clearReward: { charge: 65, linkEnergy: 16, gems: 0 }
+  },
+  {
+    name: 'Boss Mirror',
+    intent: 'Second co-op crisis: broken links test partner rescue timing.',
+    spawns: { crawler: 22, null: 12, boss: 1 },
+    clearReward: { charge: 85, linkEnergy: 28, gems: 8 },
+    bossTimer: 42
+  },
+  {
+    name: 'Flicker Flood',
+    intent: 'Give high-tempo satisfaction to chain, splash, and field boards.',
+    spawns: { flicker: 48, bulwark: 10 },
+    clearReward: { charge: 75, linkEnergy: 16, gems: 0 }
+  },
+  {
+    name: 'Pressure Weave',
+    intent: 'Mix Null and Bulwark so pure damage needs support decisions.',
+    spawns: { splitter: 24, null: 16, bulwark: 10 },
+    clearReward: { charge: 85, linkEnergy: 18, gems: 8 }
+  },
+  {
+    name: 'Last Supply Window',
+    intent: 'Create a final economy burst and merge check before the finale.',
+    spawns: { crawler: 40, splitter: 20, bulwark: 16 },
+    clearReward: { charge: 95, linkEnergy: 22, gems: 0 }
+  },
+  {
+    name: 'Origin Null',
+    intent: 'Final boss asks for Null control, dual Overclock, and partner saves.',
+    spawns: { null: 20, bulwark: 24, boss: 1 },
+    clearReward: { charge: 0, linkEnergy: 0, gems: 0 },
+    bossTimer: 55
+  }
 ];
+
+export const WAVES = WAVE_PLAN.map((wave) => wave.spawns);
 
 export const SHOP = {
   currencies: {

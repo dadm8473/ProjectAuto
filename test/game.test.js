@@ -14,7 +14,7 @@ import {
   tryBuyShopItem,
   upgradeSupplyFocus
 } from '../src/shared/game.js';
-import { GAME_RULES, RELAY_TYPES, SHOP } from '../src/shared/content.js';
+import { GAME_RULES, RELAY_TYPES, SHOP, WAVE_PLAN } from '../src/shared/content.js';
 
 function installRelay(game, playerId, slot, relayId, overrides = {}) {
   game.boards[playerId].slots[slot] = {
@@ -306,7 +306,7 @@ test('combat hit effects carry source and target anchors for readable beams', ()
   installRelay(game, 'p1', 5, 'needle_beam', { cooldown: 0 });
   installNoise(game, { id: 'noise-anchor', type: 'flicker', hp: 100, maxHp: 100, progress: 0.37, lane: 1 });
 
-  tickGame(game, 0.1);
+  tickGame(game, 0);
 
   const hit = game.effects.find((effect) => effect.type === 'hit');
   assert.equal(hit.playerId, 'p1');
@@ -324,7 +324,7 @@ test('defeated Noise emits a persistent death burst after leaving the live roste
   installRelay(game, 'p1', 5, 'needle_beam', { cooldown: 0 });
   installNoise(game, { id: 'noise-pop', type: 'flicker', hp: 1, maxHp: 1, progress: 0.42, lane: 0 });
 
-  tickGame(game, 0.1);
+  tickGame(game, 0);
 
   assert.equal(game.noise.some((noise) => noise.id === 'noise-pop'), false);
   const burst = game.effects.find((effect) => effect.type === 'death_burst');
@@ -381,7 +381,7 @@ test('terminal states emit a run result and event log entry with one readable ca
   const game = createGame({ mode: 'solo', seed: 87 });
   game.signal.integrity = 0;
 
-  tickGame(game, 0.1);
+  tickGame(game, 0);
   const snapshot = serializeState(game);
 
   assert.equal(snapshot.over, true);
@@ -408,7 +408,7 @@ test('boss waves fire named disruption logs with actual board pressure', () => {
   installRelay(game, 'p2', 6, 'rain_pump', { linkShape: ['W'], heat: 10 });
   installNoise(game, { type: 'boss', hp: 1000, maxHp: 1000, speed: 0, progress: 0.1 });
 
-  tickGame(game, 0.1);
+  tickGame(game, 0);
 
   const heatroot = game.eventLog.find((event) => event.type === 'boss_orchid_heatroot');
   assert.equal(Boolean(heatroot), true);
@@ -559,6 +559,94 @@ test('combat rewards kills, starts boss timers, and loses on Signal collapse', (
   tickGame(game, 0.1);
   assert.equal(game.over, true);
   assert.equal(game.won, false);
+});
+
+test('wave plan exposes named difficulty beats and canonical rewards', () => {
+  assert.equal(WAVE_PLAN.length, GAME_RULES.maxWave);
+  assert.deepEqual(WAVE_PLAN.map((wave) => wave.clearReward.charge), [35, 45, 65, 55, 65, 85, 75, 85, 95, 0]);
+  assert.deepEqual(WAVE_PLAN.filter((wave) => wave.bossTimer).map((wave) => wave.bossTimer), [36, 42, 55]);
+  assert.equal(WAVE_PLAN.every((wave) => wave.name && wave.intent && wave.spawns), true);
+});
+
+test('wave clear pays the authored reward and cools board heat', () => {
+  const game = createGame({ mode: 'solo', seed: 101 });
+  game.wave.active = true;
+  game.wave.index = 0;
+  game.wave.queue = [];
+  game.wave.clearReward = WAVE_PLAN[0].clearReward;
+  game.wave.name = WAVE_PLAN[0].name;
+  game.noise = [];
+  game.resources.charge = 0;
+  game.resources.linkEnergy = 0;
+  installRelay(game, 'p1', 5, 'needle_beam', { heat: 50 });
+  installRelay(game, 'p2', 5, 'coolant_moss', { heat: 15 });
+
+  tickGame(game, 0);
+
+  assert.equal(game.wave.index, 1);
+  assert.equal(game.resources.charge, 35);
+  assert.equal(game.resources.linkEnergy, 10);
+  assert.equal(game.boards.p1.slots[5].heat, 30);
+  assert.equal(game.boards.p2.slots[5].heat, 0);
+  assert.equal(game.wave.name, WAVE_PLAN[1].name);
+  const clear = game.eventLog.find((event) => event.type === 'wave_cleared');
+  assert.equal(clear.waveName, WAVE_PLAN[0].name);
+  assert.equal(clear.chargeReward, 35);
+});
+
+test('boss wave starts with authored timer and readable wave intent', () => {
+  const game = createGame({ mode: 'solo', seed: 102 });
+  game.wave.index = 2;
+  game.wave.active = false;
+  game.wave.restTimer = 0;
+
+  tickGame(game, 0);
+
+  assert.equal(game.boss.active, true);
+  assert.equal(game.boss.timer, WAVE_PLAN[2].bossTimer);
+  assert.equal(game.wave.name, WAVE_PLAN[2].name);
+  assert.equal(game.eventLog.at(-1).intent, WAVE_PLAN[2].intent);
+});
+
+test('Mirror Port supports partner damage through a matching linked tag', () => {
+  function p1NeedleDamage(withSupport) {
+    const game = createGame({ mode: 'solo', seed: 103 });
+    installRelay(game, 'p1', 5, 'needle_beam', { cooldown: 0 });
+    if (withSupport) {
+      installRelay(game, 'p2', 5, 'mirror_port', { cooldown: 99, linkShape: ['E'] });
+      installRelay(game, 'p2', 6, 'needle_beam', { cooldown: 99, linkShape: ['W'] });
+    }
+    installNoise(game, { id: 'mirror-target', type: 'crawler', hp: 1000, maxHp: 1000, speed: 0, progress: 0.42, rewardCharge: 0, rewardLink: 0 });
+    tickGame(game, 0.1);
+    return game.effects.find((effect) => effect.type === 'hit' && effect.playerId === 'p1')?.damage ?? 0;
+  }
+
+  const baseDamage = p1NeedleDamage(false);
+  const supportedDamage = p1NeedleDamage(true);
+
+  assert.equal(baseDamage > 0, true);
+  assert.equal(supportedDamage > baseDamage * 1.07, true);
+});
+
+test('Bloom Amp increases linked Signal repair output without becoming a damage unit', () => {
+  function repairedSignal(withAmp) {
+    const game = createGame({ mode: 'solo', seed: 104 });
+    game.signal.integrity = 50;
+    installRelay(game, 'p1', 5, 'root_clinic', { cooldown: 0, linkShape: ['E'] });
+    if (withAmp) {
+      installRelay(game, 'p1', 6, 'bloom_amp', { cooldown: 0, linkShape: ['W'] });
+      installNoise(game, { id: 'bloom-decoy', type: 'crawler', hp: 1000, maxHp: 1000, speed: 0, progress: 0.42, rewardCharge: 0, rewardLink: 0 });
+    }
+    tickGame(game, 0.1);
+    assert.equal(game.effects.some((effect) => effect.type === 'hit' && effect.relayId === 'bloom_amp'), false);
+    return game.signal.integrity;
+  }
+
+  const baseRepair = repairedSignal(false);
+  const ampedRepair = repairedSignal(true);
+
+  assert.equal(baseRepair > 50, true);
+  assert.equal(ampedRepair > baseRepair + 0.5, true);
 });
 
 test('shop purchases use earned gems and unlock cosmetic-only rewards', () => {

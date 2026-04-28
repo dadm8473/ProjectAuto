@@ -694,6 +694,13 @@ function drawTrack(state) {
   ctx.fillStyle = '#f5f0dc';
   ctx.font = '950 19px system-ui';
   ctx.textAlign = 'center';
+  if (state.wave.name) {
+    ctx.font = '900 9px system-ui';
+    ctx.fillStyle = '#f4c95d';
+    ctx.fillText(state.wave.name.toUpperCase(), loop.cx, loop.cy - 25);
+  }
+  ctx.fillStyle = '#f5f0dc';
+  ctx.font = '950 19px system-ui';
   ctx.fillText(`WAVE ${Math.min(state.wave.index + 1, GAME_RULES.maxWave)}`, loop.cx, loop.cy - 4);
   ctx.font = '850 11px system-ui';
   ctx.fillStyle = state.boss.active ? '#ff6f59' : '#8ee6d2';

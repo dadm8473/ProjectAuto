@@ -7,6 +7,7 @@ import {
   RELAY_TYPES,
   SHOP,
   SUPPLY_TABLE,
+  WAVE_PLAN,
   WAVES
 } from './content.js';
 
@@ -156,8 +157,12 @@ function expandWave(wave) {
 }
 
 function startWave(game) {
+  const plan = WAVE_PLAN[Math.min(game.wave.index, WAVE_PLAN.length - 1)];
   const wave = WAVES[Math.min(game.wave.index, WAVES.length - 1)];
   game.wave.queue = expandWave(wave);
+  game.wave.name = plan.name;
+  game.wave.intent = plan.intent;
+  game.wave.clearReward = clone(plan.clearReward);
   game.wave.spawnTimer = 0;
   game.wave.active = true;
   game.wave.startedAt = game.now;
@@ -167,12 +172,16 @@ function startWave(game) {
   game.resources.swapCharges.p2 += 1;
   if (game.wave.queue.includes('boss')) {
     game.boss.active = true;
-    game.boss.timer = GAME_RULES.bossTimer;
-    game.boss.limit = GAME_RULES.bossTimer;
+    game.boss.timer = plan.bossTimer ?? GAME_RULES.bossTimer;
+    game.boss.limit = plan.bossTimer ?? GAME_RULES.bossTimer;
   }
   pushEvent(game, {
     type: game.wave.queue.includes('boss') ? 'boss_wave_started' : 'wave_started',
     wave: game.wave.index + 1,
+    waveName: plan.name,
+    intent: plan.intent,
+    clearReward: clone(plan.clearReward),
+    bossTimer: plan.bossTimer ?? null,
     bossActive: game.wave.queue.includes('boss')
   });
 }
@@ -251,6 +260,46 @@ function boardAmpMultiplier(board, now, slotIndex) {
   return strongest ?? 1;
 }
 
+function relayTags(relay) {
+  return RELAY_TYPES[relay.relayId]?.tags ?? [];
+}
+
+function tagsIntersect(a, b) {
+  return a.some((tag) => b.includes(tag));
+}
+
+function linkedNeighborRelays(board, now, slotIndex) {
+  return computeActiveLinks(board, now)
+    .filter((link) => link.a === slotIndex || link.b === slotIndex)
+    .map((link) => board.slots[link.a === slotIndex ? link.b : link.a])
+    .filter(Boolean);
+}
+
+function repairOutputMultiplier(game, board, slotIndex, relay) {
+  const spec = RELAY_TYPES[relay.relayId];
+  if (!spec?.tags?.includes('Repair')) return 1;
+  const bloomAmp = linkedNeighborRelays(board, game.now, slotIndex)
+    .find((neighbor) => neighbor.relayId === 'bloom_amp' && relayOnline(neighbor, game.now));
+  const bloomMultiplier = bloomAmp ? RELAY_TYPES.bloom_amp.repairAmp ?? 1.18 : 1;
+  return bloomMultiplier * mirrorSupportMultiplier(game, relay);
+}
+
+function mirrorSupportMultiplier(game, relay) {
+  const partnerBoard = findBoard(game, partnerId(relay.owner));
+  const targetTags = relayTags(relay);
+  const links = computeActiveLinks(partnerBoard, game.now);
+  for (const link of links) {
+    const a = partnerBoard.slots[link.a];
+    const b = partnerBoard.slots[link.b];
+    if (!relayOnline(a, game.now) || !relayOnline(b, game.now)) continue;
+    const mirror = a?.relayId === 'mirror_port' ? a : b?.relayId === 'mirror_port' ? b : null;
+    const neighbor = mirror === a ? b : mirror === b ? a : null;
+    if (!mirror || !neighbor) continue;
+    if (tagsIntersect(relayTags(neighbor), targetTags)) return RELAY_TYPES.mirror_port.supportPower ?? 1.08;
+  }
+  return 1;
+}
+
 function relayDamage(game, board, slotIndex, relay, target) {
   const spec = RELAY_TYPES[relay.relayId];
   const links = computeActiveLinks(board, game.now);
@@ -261,7 +310,8 @@ function relayDamage(game, board, slotIndex, relay, target) {
   const heatPenalty = relay.heat >= 90 ? 0.55 : relay.heat >= 70 ? 0.8 : 1;
   const overclock = board.overclockUntil > game.now ? 1.35 : 1;
   const dualOverclockBoss = target?.type === 'boss' && game.dualOverclockBossUntil > game.now ? 1.3 : 1;
-  return spec.voltage * tierMultiplier(relay.tier) * gradeMultiplier(relay.grade) * linkMultiplier * anchorBonus * heatOutput * heatPenalty * overclock * dualOverclockBoss * boardAmpMultiplier(board, game.now, slotIndex);
+  const mirrorSupport = mirrorSupportMultiplier(game, relay);
+  return spec.voltage * tierMultiplier(relay.tier) * gradeMultiplier(relay.grade) * linkMultiplier * anchorBonus * heatOutput * heatPenalty * overclock * dualOverclockBoss * boardAmpMultiplier(board, game.now, slotIndex) * mirrorSupport;
 }
 
 function applyHeat(game, relay, amount) {
@@ -272,12 +322,13 @@ function applyHeat(game, relay, amount) {
   }
 }
 
-function repairBoard(game, board, relay, spec) {
+function repairBoard(game, board, relay, spec, slotIndex) {
   const relays = board.slots.filter(Boolean).sort((a, b) => b.heat - a.heat);
   const amount = Math.abs(spec.heatPerAction) * (1 + (relay.tier - 1) * 0.25);
   if (relays[0]) applyHeat(game, relays[0], -amount);
-  if (spec.repair) game.signal.integrity = Math.min(GAME_RULES.signalMax, game.signal.integrity + spec.repair * relay.tier);
-  game.effects.push({ id: `fx${nextId++}`, type: 'repair', playerId: relay.owner, unitId: relay.id, ttl: 0.75 });
+  const multiplier = repairOutputMultiplier(game, board, slotIndex, relay);
+  if (spec.repair) game.signal.integrity = Math.min(GAME_RULES.signalMax, game.signal.integrity + spec.repair * relay.tier * multiplier);
+  game.effects.push({ id: `fx${nextId++}`, type: 'repair', playerId: relay.owner, unitId: relay.id, repairAmp: multiplier > 1, ttl: 0.75 });
 }
 
 function effectNoiseAnchor(noise) {
@@ -300,6 +351,7 @@ function dealDamage(game, relay, source, target, amount) {
     playerId: source.playerId,
     slot: source.slotIndex,
     relayId: relay.relayId,
+    mirrorSupport: source.mirrorSupport,
     ...effectNoiseAnchor(target),
     damage: Math.round(markedAmount),
     ttl: 0.62
@@ -314,7 +366,7 @@ function attackWithRelay(game, board, slotIndex, relay, dt) {
   if (relay.cooldown > 0) return;
 
   if (spec.target === 'repair') {
-    repairBoard(game, board, relay, spec);
+    repairBoard(game, board, relay, spec, slotIndex);
     relay.cooldown = spec.cycle * (relay.linkPulseUntil > game.now ? 0.8 : 1);
     return;
   }
@@ -328,7 +380,7 @@ function attackWithRelay(game, board, slotIndex, relay, dt) {
     damage = target.hp + 1;
     game.effects.push({ id: `fx${nextId++}`, type: 'boss_execute', relayId: relay.relayId, targetId: target.id, ttl: 1.1 });
   }
-  const source = { playerId: relay.owner, slotIndex };
+  const source = { playerId: relay.owner, slotIndex, mirrorSupport: mirrorSupportMultiplier(game, relay) > 1 };
   dealDamage(game, relay, source, target, damage);
 
   if (spec.splash) {
@@ -916,12 +968,12 @@ export function tickGame(game, dt) {
   }
 
   for (const [playerId, board] of Object.entries(game.boards)) {
+    board.owner = playerId;
     for (const [slotIndex, relay] of board.slots.entries()) {
       if (relay) attackWithRelay(game, board, slotIndex, relay, dt);
     }
     board.activeLinks = computeActiveLinks(board, game.now).length;
     board.heatPeak = Math.max(0, ...board.slots.filter(Boolean).map((relay) => relay.heat));
-    board.owner = playerId;
   }
   resolveNoise(game, dt);
 
@@ -944,15 +996,35 @@ export function tickGame(game, dt) {
   if (!game.over) game.saturation.count = Math.max(0, game.saturation.count - dt * 0.42);
 
   if (game.wave.active && game.wave.queue.length === 0 && game.noise.length === 0) {
+    const completedWave = game.wave.index + 1;
+    const completedName = game.wave.name ?? WAVE_PLAN[Math.min(game.wave.index, WAVE_PLAN.length - 1)]?.name ?? `Wave ${completedWave}`;
+    const reward = game.wave.clearReward ?? { charge: 45 + completedWave * 8, linkEnergy: 12, gems: completedWave % 3 === 0 ? 8 : 0 };
     game.wave.index += 1;
     game.wave.active = false;
     game.wave.restTimer = 3.0;
-    game.resources.charge += 45 + game.wave.index * 8;
-    game.resources.linkEnergy += 12;
-    game.resources.gems += game.wave.index % 3 === 0 ? 8 : 0;
+    const nextPlan = WAVE_PLAN[Math.min(game.wave.index, WAVE_PLAN.length - 1)] ?? null;
+    game.wave.name = game.wave.index < GAME_RULES.maxWave ? nextPlan?.name ?? '' : '';
+    game.wave.intent = game.wave.index < GAME_RULES.maxWave ? nextPlan?.intent ?? '' : '';
+    game.wave.clearReward = game.wave.index < GAME_RULES.maxWave && nextPlan ? clone(nextPlan.clearReward) : null;
+    game.resources.charge += reward.charge ?? 0;
+    game.resources.linkEnergy += reward.linkEnergy ?? 0;
+    game.resources.gems += reward.gems ?? 0;
     game.signal.integrity = Math.min(GAME_RULES.signalMax, game.signal.integrity + 5);
     game.saturation.count = Math.max(0, game.saturation.count - 18);
-    pushEvent(game, { type: 'wave_cleared', wave: game.wave.index, chargeReward: 45 + game.wave.index * 8, linkReward: 12 });
+    for (const board of Object.values(game.boards)) {
+      for (const relay of board.slots) {
+        if (relay) applyHeat(game, relay, -GAME_RULES.waveClearHeatDrop);
+      }
+    }
+    pushEvent(game, {
+      type: 'wave_cleared',
+      wave: completedWave,
+      waveName: completedName,
+      chargeReward: reward.charge ?? 0,
+      linkReward: reward.linkEnergy ?? 0,
+      gemReward: reward.gems ?? 0,
+      heatDrop: GAME_RULES.waveClearHeatDrop
+    });
     if (game.wave.index >= GAME_RULES.maxWave) {
       game.resources.gems += 120;
       finishGame(game, { won: true, code: 'win_signal_lock', text: 'Signal loop stabilized.' });
