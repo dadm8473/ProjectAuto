@@ -42,6 +42,37 @@ button {
   box-shadow: inset 0 1px rgba(245, 240, 220, 0.08), 0 7px 16px rgba(0, 0, 0, 0.24);
 }
 
+.primary-actions button,
+.secondary-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 5px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.primary-actions button::before,
+.secondary-actions button::before,
+.meters span::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background-image: url("/src/client/assets/generated/ui-icon-atlas.png");
+  background-size: 400% 300%;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(245, 240, 220, 0.12);
+}
+
+.meters span::before {
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+}
+
 button:active {
   transform: translateY(1px);
   filter: brightness(1.12);
@@ -99,8 +130,10 @@ button:disabled:active {
 
 .meters span,
 .status-line span {
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   min-width: 50px;
   height: 29px;
   padding: 0 7px;
@@ -116,12 +149,24 @@ button:disabled:active {
   color: var(--charge);
 }
 
+#chargeMeter::before {
+  background-position: 0% 0%;
+}
+
 #linkMeter {
   color: var(--link);
 }
 
+#linkMeter::before {
+  background-position: 33.333% 0%;
+}
+
 #gemMeter {
   color: var(--gem);
+}
+
+#gemMeter::before {
+  background-position: 66.667% 0%;
 }
 
 .stage-wrap {
@@ -188,9 +233,17 @@ button:disabled:active {
   background: linear-gradient(180deg, #6d531f, #2d2517);
 }
 
+#supplyButton::before {
+  background-position: 100% 0%;
+}
+
 #mergeButton {
   border-color: rgba(255, 111, 89, 0.6);
   background: linear-gradient(180deg, #65332b, #261c1a);
+}
+
+#mergeButton::before {
+  background-position: 0% 50%;
 }
 
 #swapButton {
@@ -198,9 +251,21 @@ button:disabled:active {
   background: linear-gradient(180deg, #244950, #142123);
 }
 
+#swapButton::before {
+  background-position: 33.333% 50%;
+}
+
+#focusButton::before {
+  background-position: 66.667% 50%;
+}
+
 #pulseButton {
   border-color: rgba(88, 215, 255, 0.74);
   background: linear-gradient(180deg, #1d6072, #14272b);
+}
+
+#pulseButton::before {
+  background-position: 100% 50%;
 }
 
 #pulseButton[data-ready="true"] {
@@ -210,6 +275,22 @@ button:disabled:active {
 #overclockButton {
   border-color: rgba(255, 111, 89, 0.72);
   background: linear-gradient(180deg, #743d2a, #261817);
+}
+
+#overclockButton::before {
+  background-position: 0% 100%;
+}
+
+#botButton::before {
+  background-position: 33.333% 100%;
+}
+
+#onlineButton::before {
+  background-position: 66.667% 100%;
+}
+
+#shopButton::before {
+  background-position: 100% 100%;
 }
 
 .drawer {

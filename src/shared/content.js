@@ -373,13 +373,13 @@ export const GAME_RULES = {
 };
 
 export const NOISE_TYPES = {
-  flicker: { name: 'Flicker', hp: 34, speed: 38, rewardCharge: 4, rewardLink: 1, saturation: 1, color: '#ff6b6b', radius: 7 },
-  crawler: { name: 'Crawler', hp: 52, speed: 31, rewardCharge: 5, rewardLink: 1, saturation: 2, color: '#ffd166', radius: 8 },
-  bulwark: { name: 'Bulwark', hp: 132, speed: 22, rewardCharge: 11, rewardLink: 2, saturation: 4, color: '#7bdff2', radius: 12 },
-  splitter: { name: 'Splitter', hp: 88, speed: 29, rewardCharge: 8, rewardLink: 2, saturation: 3, color: '#f4a261', radius: 10, children: 2 },
-  null: { name: 'Null', hp: 95, speed: 26, rewardCharge: 10, rewardLink: 3, saturation: 8, color: '#e76f51', radius: 11 },
-  null_spore: { name: 'Null Spore', hp: 70, speed: 44, rewardCharge: 0, rewardLink: 0, saturation: 2, color: '#b44cff', radius: 9 },
-  boss: { name: 'Boss', hp: 650, speed: 18, rewardCharge: 65, rewardLink: 22, saturation: 12, color: '#f72585', radius: 19 }
+  flicker: { name: 'Flicker', hp: 34, speed: 38, rewardCharge: 4, rewardLink: 1, saturation: 1, color: '#ff6b6b', radius: 7, atlasIndex: 0 },
+  crawler: { name: 'Crawler', hp: 52, speed: 31, rewardCharge: 5, rewardLink: 1, saturation: 2, color: '#ffd166', radius: 8, atlasIndex: 1 },
+  bulwark: { name: 'Bulwark', hp: 132, speed: 22, rewardCharge: 11, rewardLink: 2, saturation: 4, color: '#7bdff2', radius: 12, atlasIndex: 2 },
+  splitter: { name: 'Splitter', hp: 88, speed: 29, rewardCharge: 8, rewardLink: 2, saturation: 3, color: '#f4a261', radius: 10, children: 2, atlasIndex: 3 },
+  null: { name: 'Null', hp: 95, speed: 26, rewardCharge: 10, rewardLink: 3, saturation: 8, color: '#e76f51', radius: 11, atlasIndex: 4 },
+  null_spore: { name: 'Null Spore', hp: 70, speed: 44, rewardCharge: 0, rewardLink: 0, saturation: 2, color: '#b44cff', radius: 9, atlasIndex: 5 },
+  boss: { name: 'Boss', hp: 650, speed: 18, rewardCharge: 65, rewardLink: 22, saturation: 12, color: '#f72585', radius: 19, atlasIndex: 6 }
 };
 
 export const WAVES = [

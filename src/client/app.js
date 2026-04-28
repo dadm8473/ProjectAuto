@@ -43,6 +43,10 @@ const artDirectionImage = new Image();
 artDirectionImage.src = '/src/client/assets/generated/signal-relay-art-direction.png';
 const relayAtlas = new Image();
 relayAtlas.src = '/src/client/assets/generated/relay-unit-atlas.png';
+const noiseEnemyAtlas = new Image();
+noiseEnemyAtlas.src = '/src/client/assets/generated/noise-enemy-atlas.png';
+const bossDisruptionAtlas = new Image();
+bossDisruptionAtlas.src = '/src/client/assets/generated/boss-disruption-atlas.png';
 
 const localPlayerId = `p${Math.floor(Math.random() * 9000) + 1000}`;
 let game = createGame({ mode: 'bot', seed: Date.now() % 100000 });
@@ -219,10 +223,18 @@ function drawCanvasHud(state) {
   drawPill(311, 18, 61, 'GEM', Math.floor(state.resources.gems), '#95d5b2');
 }
 
+function eventArtIndex(event) {
+  if (event.type === 'boss_orchid_heatroot') return 0;
+  if (event.type === 'boss_mirror_linkbreak') return 1;
+  if (event.type === 'boss_origin_spore') return 2;
+  return -1;
+}
+
 function drawEventFeed(state) {
   const event = [...(state.eventLog ?? [])].reverse().find((item) => eventLabel(item));
   if (!event) return;
   const label = eventLabel(event);
+  const artIndex = eventArtIndex(event);
   ctx.save();
   ctx.fillStyle = 'rgba(5, 7, 8, 0.76)';
   ctx.strokeStyle = 'rgba(244, 201, 93, 0.22)';
@@ -231,6 +243,24 @@ function drawEventFeed(state) {
   ctx.roundRect(18, 185, 354, 18, 8);
   ctx.fill();
   ctx.stroke();
+  if (artIndex >= 0 && bossDisruptionAtlas.complete && bossDisruptionAtlas.naturalWidth > 0) {
+    const cellW = bossDisruptionAtlas.naturalWidth / 3;
+    const cellH = bossDisruptionAtlas.naturalHeight;
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(19, 186, 352, 16, 7);
+    ctx.clip();
+    const banner = { x: 19, y: 186, w: 352, h: 16 };
+    const scale = Math.max(banner.w / cellW, banner.h / cellH);
+    const drawW = cellW * scale;
+    const drawH = cellH * scale;
+    ctx.globalAlpha = 0.5;
+    ctx.drawImage(bossDisruptionAtlas, artIndex * cellW, 0, cellW, cellH, banner.x + (banner.w - drawW) / 2, banner.y + (banner.h - drawH) / 2, drawW, drawH);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(5, 7, 8, 0.52)';
+    ctx.fillRect(19, 186, 352, 16);
+    ctx.restore();
+  }
   ctx.fillStyle = event.type.startsWith('boss') ? '#f4c95d' : event.type === 'run_finished' ? '#ff6f59' : '#8ee6d2';
   ctx.font = '850 10px system-ui';
   ctx.textAlign = 'left';
@@ -296,21 +326,31 @@ function drawNoise(state) {
   for (const noise of state.noise) {
     const pos = noisePosition(noise);
     const spec = NOISE_TYPES[noise.type];
-    ctx.fillStyle = spec.color;
-    ctx.beginPath();
-    ctx.arc(pos.x, pos.y, noise.radius, 0, Math.PI * 2);
-    ctx.fill();
+    const iconSize = noise.type === 'boss' ? 54 : Math.max(24, noise.radius * 3.2);
+    if (noiseEnemyAtlas.complete && noiseEnemyAtlas.naturalWidth > 0) {
+      const atlasIndex = spec.atlasIndex ?? 0;
+      const cellW = noiseEnemyAtlas.naturalWidth / 4;
+      const cellH = noiseEnemyAtlas.naturalHeight / 2;
+      const col = atlasIndex % 4;
+      const row = Math.floor(atlasIndex / 4);
+      ctx.drawImage(noiseEnemyAtlas, col * cellW, row * cellH, cellW, cellH, pos.x - iconSize / 2, pos.y - iconSize / 2, iconSize, iconSize);
+    } else {
+      ctx.fillStyle = spec.color;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, noise.radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
     if (noise.type === 'boss') {
       ctx.strokeStyle = '#f4c95d';
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(pos.x, pos.y, noise.radius + 6, 0, Math.PI * 2);
+      ctx.arc(pos.x, pos.y, 31, 0, Math.PI * 2);
       ctx.stroke();
     }
     ctx.fillStyle = 'rgba(5, 7, 8, 0.7)';
-    ctx.fillRect(pos.x - 20, pos.y - noise.radius - 12, 40, 5);
+    ctx.fillRect(pos.x - 20, pos.y - iconSize / 2 - 8, 40, 5);
     ctx.fillStyle = noise.type === 'boss' ? '#ff6f59' : '#f5f0dc';
-    ctx.fillRect(pos.x - 20, pos.y - noise.radius - 12, 40 * Math.max(0, noise.hp / noise.maxHp), 5);
+    ctx.fillRect(pos.x - 20, pos.y - iconSize / 2 - 8, 40 * Math.max(0, noise.hp / noise.maxHp), 5);
   }
 }
 
