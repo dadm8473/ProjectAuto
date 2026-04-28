@@ -63,6 +63,11 @@ function findBoard(game, playerId) {
   return game.boards[playerId] ?? game.boards.p1;
 }
 
+function boardIdForPlayer(game, playerId) {
+  if (game.boards[playerId]) return playerId;
+  return playerId === game.players[1]?.id ? 'p2' : 'p1';
+}
+
 function partnerId(playerId) {
   return playerId === 'p1' ? 'p2' : 'p1';
 }
@@ -420,32 +425,33 @@ function findMerge(board) {
 function botThink(game) {
   const bot = game.players.find((player) => player.bot);
   if (!bot) return;
+  const botBoardId = boardIdForPlayer(game, bot.id);
   const playerBoardHasRelay = game.boards.p1.slots.some(Boolean);
   if (!playerBoardHasRelay && game.wave.index === 0) return;
   if (game.firstPlayerSupplyAt === null || game.now - game.firstPlayerSupplyAt < 20) return;
   if (bot.nextThink === undefined) bot.nextThink = game.now + 1.0;
   if (game.now < bot.nextThink) return;
   bot.nextThink = game.now + 1.9;
-  const board = findBoard(game, bot.id);
+  const board = findBoard(game, botBoardId);
   const merge = findMerge(board);
   if (merge) {
-    mergeRelays(game, { playerId: bot.id, slotIds: merge });
+    mergeRelays(game, { playerId: botBoardId, slotIds: merge });
     return;
   }
   const partnerDanger = game.boards.p1.slots.some((relay) => relay && relay.heat >= 82) || game.signal.integrity <= 38;
   if (partnerDanger && game.resources.linkEnergy >= GAME_RULES.linkPulseCost) {
-    castLinkPulse(game, { playerId: bot.id });
+    castLinkPulse(game, { playerId: botBoardId });
     return;
   }
   if (game.boss.active) {
     const strongestSlot = board.slots.findIndex((relay) => relay && relay.heat < 78);
     if (strongestSlot >= 0) {
-      overclockRelay(game, { playerId: bot.id, slot: strongestSlot });
+      overclockRelay(game, { playerId: botBoardId, slot: strongestSlot });
       return;
     }
   }
-  if (emptySlotIndex(board) >= 0 && game.resources.charge >= currentSupplyCostForPlayer(game, bot.id) + 18) {
-    supplyRelay(game, { playerId: bot.id });
+  if (emptySlotIndex(board) >= 0 && game.resources.charge >= currentSupplyCostForPlayer(game, botBoardId) + 18) {
+    supplyRelay(game, { playerId: botBoardId });
   }
 }
 

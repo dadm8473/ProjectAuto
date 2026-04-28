@@ -646,6 +646,12 @@ function noisePosition(noise) {
   return { x: loop.cx + Math.cos(angle) * rx, y: loop.cy + Math.sin(angle) * ry };
 }
 
+function noiseHeading(noise) {
+  const current = noisePosition(noise);
+  const next = noisePosition({ ...noise, progress: (noise.progress + 0.006) % 1 });
+  return Math.atan2(next.y - current.y, next.x - current.x);
+}
+
 function drawAmbientNoise(state) {
   const atlas = noiseWorldSprites.complete && noiseWorldSprites.naturalWidth > 0 ? noiseWorldSprites : null;
   if (state.noise.length > 0 || !atlas) return;
@@ -708,36 +714,71 @@ function drawNoiseWake(noise, pos, spec, iconSize) {
   ctx.restore();
 }
 
+function drawNoiseGrounding(noise, pos, spec, iconSize, threat) {
+  ctx.save();
+  const wakeColor = noise.type === 'boss' ? '#ff6f59' : spec.color;
+  const heading = noiseHeading(noise);
+  ctx.translate(pos.x, pos.y + iconSize * 0.27);
+  ctx.rotate(heading);
+  ctx.globalAlpha = noise.type === 'boss' ? 0.52 : 0.36 + threat * 0.16;
+  ctx.fillStyle = noise.type === 'boss' ? 'rgba(255, 111, 89, 0.52)' : 'rgba(0, 0, 0, 0.5)';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, iconSize * 0.42, iconSize * 0.13, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = noise.type === 'boss' ? 0.38 : 0.2 + threat * 0.16;
+  ctx.strokeStyle = wakeColor;
+  ctx.shadowColor = wakeColor;
+  ctx.shadowBlur = noise.type === 'boss' ? 16 : 9;
+  ctx.lineWidth = noise.type === 'boss' ? 3 : 2;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, iconSize * 0.5, iconSize * 0.17, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawNoiseSprite(noise, pos, spec, iconSize) {
+  const atlas = noiseWorldSprites.complete && noiseWorldSprites.naturalWidth > 0 ? noiseWorldSprites : null;
+  if (!atlas) {
+    drawNoiseFallback(noise, pos, spec, iconSize);
+    return;
+  }
+
+  const atlasIndex = spec.atlasIndex ?? 0;
+  const cellW = atlas.naturalWidth / 4;
+  const cellH = atlas.naturalHeight / 2;
+  const col = atlasIndex % 4;
+  const row = Math.floor(atlasIndex / 4);
+  const heading = noiseHeading(noise);
+  const pulse = Math.sin(game.now * (noise.type === 'boss' ? 5 : 8) + noise.progress * 18);
+  const hover = pulse * (noise.type === 'boss' ? 1.4 : 2.2);
+  const squash = 1 + pulse * (noise.type === 'boss' ? 0.018 : 0.035);
+
+  ctx.save();
+  ctx.translate(pos.x, pos.y + hover);
+  ctx.rotate(heading);
+  ctx.scale(1 + (squash - 1) * 0.4, 1 / squash);
+  ctx.shadowColor = spec.color;
+  ctx.shadowBlur = noise.type === 'boss' ? 20 : 10;
+  ctx.drawImage(atlas, col * cellW, row * cellH, cellW, cellH, -iconSize / 2, -iconSize / 2, iconSize, iconSize);
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = noise.type === 'boss' ? 0.28 : 0.16;
+  ctx.fillStyle = spec.color;
+  ctx.beginPath();
+  ctx.ellipse(iconSize * 0.12, 0, iconSize * 0.16, iconSize * 0.08, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
 function drawNoise(state) {
   drawAmbientNoise(state);
   for (const noise of state.noise) {
     const pos = noisePosition(noise);
     const spec = NOISE_TYPES[noise.type];
     const iconSize = noise.type === 'boss' ? 78 : Math.max(38, noise.radius * 5);
-    const atlas = noiseWorldSprites.complete && noiseWorldSprites.naturalWidth > 0 ? noiseWorldSprites : null;
     const threat = Math.max(0, noise.progress - 0.72) / 0.28;
     drawNoiseWake(noise, pos, spec, iconSize);
-    ctx.save();
-    ctx.globalAlpha = 0.32 + threat * 0.18;
-    ctx.fillStyle = noise.type === 'boss' ? 'rgba(255, 111, 89, 0.48)' : 'rgba(0, 0, 0, 0.46)';
-    ctx.beginPath();
-    ctx.ellipse(pos.x, pos.y + iconSize * 0.24, iconSize * 0.38, iconSize * 0.13, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-    if (atlas?.complete && atlas.naturalWidth > 0) {
-      const atlasIndex = spec.atlasIndex ?? 0;
-      const cellW = atlas.naturalWidth / 4;
-      const cellH = atlas.naturalHeight / 2;
-      const col = atlasIndex % 4;
-      const row = Math.floor(atlasIndex / 4);
-      ctx.save();
-      ctx.shadowColor = spec.color;
-      ctx.shadowBlur = noise.type === 'boss' ? 18 : 9;
-      ctx.drawImage(atlas, col * cellW, row * cellH, cellW, cellH, pos.x - iconSize / 2, pos.y - iconSize / 2, iconSize, iconSize);
-      ctx.restore();
-    } else {
-      drawNoiseFallback(noise, pos, spec, iconSize);
-    }
+    drawNoiseGrounding(noise, pos, spec, iconSize, threat);
+    drawNoiseSprite(noise, pos, spec, iconSize);
     if (threat > 0) {
       ctx.save();
       ctx.globalAlpha = Math.min(0.4, threat * 0.5);
@@ -765,6 +806,34 @@ function drawNoise(state) {
       ctx.fillRect(pos.x - 16, pos.y - iconSize / 2 - 7, 32 * hpRatio, 4);
     }
   }
+}
+
+function drawRelayTierHalo(relay, x, y, size) {
+  const spec = RELAY_TYPES[relay.relayId];
+  const tierBoost = Math.max(0, relay.tier - 1);
+  const gradeOrder = Object.keys(GRADES);
+  const gradeBoost = gradeOrder.indexOf(relay.grade) / Math.max(1, gradeOrder.length - 1);
+  const glow = Math.min(1, 0.18 + tierBoost * 0.16 + gradeBoost * 0.22);
+
+  ctx.save();
+  ctx.globalAlpha = glow;
+  ctx.shadowColor = spec.palette;
+  ctx.shadowBlur = 12 + tierBoost * 5;
+  ctx.strokeStyle = relay.tier > 1 ? spec.palette : 'rgba(245, 240, 220, 0.24)';
+  ctx.lineWidth = relay.tier > 1 ? 2.8 : 1.3;
+  ctx.beginPath();
+  ctx.arc(x + size / 2, y + size / 2, size * (0.39 + tierBoost * 0.035), 0, Math.PI * 2);
+  ctx.stroke();
+  if (relay.tier > 1) {
+    for (let i = 0; i < Math.min(4, relay.tier); i += 1) {
+      const angle = game.now * 1.7 + i * (Math.PI * 2 / Math.min(4, relay.tier));
+      ctx.fillStyle = spec.palette;
+      ctx.beginPath();
+      ctx.arc(x + size / 2 + Math.cos(angle) * size * 0.42, y + size / 2 + Math.sin(angle) * size * 0.42, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
 }
 
 function drawRelayIcon(relay, x, y, size) {
@@ -1008,6 +1077,7 @@ function drawBoard(state, playerId) {
     if (relay) {
       const spec = RELAY_TYPES[relay.relayId];
       const iconSize = 48;
+      drawRelayTierHalo(relay, slot.x + slot.w / 2 - iconSize / 2, slot.y + slot.h / 2 - iconSize / 2 - 3, iconSize);
       drawRelayIcon(relay, slot.x + slot.w / 2 - iconSize / 2, slot.y + slot.h / 2 - iconSize / 2 - 3, iconSize);
       ctx.fillStyle = 'rgba(2, 4, 5, 0.62)';
       ctx.beginPath();

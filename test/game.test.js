@@ -508,6 +508,25 @@ test('bot partner waits for the player to start before spending shared Charge', 
   assert.ok(game.boards.p2.slots.filter(Boolean).length >= 1);
 });
 
+test('bot partner acts on the partner board when player ids are socket ids', () => {
+  const game = createGame({ mode: 'online', seed: 45 });
+  game.players = [
+    { id: 'socket-human', name: 'Player', bot: false, ready: true },
+    { id: 'socket-bot', name: 'AUTO PARTNER', bot: true, ready: true }
+  ];
+  installRelay(game, 'p1', 0, 'needle_beam');
+  game.firstPlayerSupplyAt = 0;
+  game.now = 25;
+  game.resources.charge = 220;
+
+  for (let i = 0; i < 10; i += 1) tickGame(game, 0.25);
+
+  assert.equal(game.boards.p1.slots.filter(Boolean).length, 1);
+  assert.ok(game.boards.p2.slots.filter(Boolean).length >= 1);
+  assert.equal(Number.isFinite(game.rng.pity.p2), true);
+  assert.equal(Object.hasOwn(game.rng.pity, 'socket-bot'), false);
+});
+
 test('Noise that completes the loop is removed with no reward', () => {
   const game = createGame({ mode: 'solo', seed: 88 });
   game.wave.active = true;

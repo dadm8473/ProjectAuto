@@ -17,6 +17,23 @@ test('battle renderer includes commercial battlefield depth layers', async () =>
   }
 });
 
+test('combat renderer gives enemies direction and relays tier feedback', async () => {
+  const source = await readFile('src/client/app.js', 'utf8');
+  for (const marker of [
+    'function noiseHeading',
+    'function drawNoiseSprite',
+    'function drawNoiseGrounding',
+    'function drawRelayTierHalo',
+    'ctx.rotate(heading);',
+    'drawNoiseSprite(noise, pos, spec, iconSize);',
+    'drawRelayTierHalo(relay,',
+    'relay.tier > 1'
+  ]) {
+    assert.equal(source.includes(marker), true, marker);
+  }
+  assert.equal(source.includes('GRADE_ORDER.indexOf'), false);
+});
+
 test('mobile shell uses integrated app chrome and tactile controls', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   for (const marker of [
