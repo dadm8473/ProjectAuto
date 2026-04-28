@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 
 import { decodeClientFrame, encodeServerFrame } from '../server/ws.js';
-import { boardForPlayer } from '../server/room.js';
+import { boardForPlayer, createOnlineRoom, resetFinishedRoomForJoin } from '../server/room.js';
 
 test('server frames encode a readable text websocket payload', () => {
   const frame = encodeServerFrame(JSON.stringify({ type: 'state', ok: true }));
@@ -32,4 +33,30 @@ test('room player mapping gives the second online socket board p2', () => {
   assert.equal(boardForPlayer(players, 'socket-a'), 'p1');
   assert.equal(boardForPlayer(players, 'socket-b'), 'p2');
   assert.equal(boardForPlayer(players, 'late-joiner'), 'p1');
+});
+
+test('finished online rooms reset before a new socket joins', () => {
+  const room = createOnlineRoom(1);
+  const finishedId = room.game.id;
+  room.game.over = true;
+  room.game.result = { code: 'loss_signal_collapse' };
+  room.resetAt = Date.now() + 6000;
+
+  resetFinishedRoomForJoin(room, 2);
+
+  assert.notEqual(room.game.id, finishedId);
+  assert.equal(room.game.mode, 'online');
+  assert.equal(room.game.over, false);
+  assert.equal(room.game.result, null);
+  assert.equal(room.resetAt, null);
+});
+
+test('server does not advance empty online rooms', async () => {
+  const source = await readFile('server/server.js', 'utf8');
+  const tickStart = source.indexOf('function tickRoom()');
+  assert.notEqual(tickStart, -1);
+  const tickBody = source.slice(tickStart, source.indexOf('const server =', tickStart));
+
+  assert.equal(tickBody.includes('if (room.clients.size === 0) return;'), true);
+  assert.equal(tickBody.indexOf('if (room.clients.size === 0) return;') < tickBody.indexOf('tickGame(room.game, dt);'), true);
 });

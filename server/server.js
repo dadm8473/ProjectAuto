@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url';
 
 import {
   castLinkPulse,
-  createGame,
   mergeRelays,
   overclockRelay,
   serializeState,
@@ -15,7 +14,7 @@ import {
   tryBuyShopItem,
   upgradeSupplyFocus
 } from '../src/shared/game.js';
-import { boardForPlayer } from './room.js';
+import { boardForPlayer, createOnlineRoom, resetFinishedRoomForJoin, resetRoomGame } from './room.js';
 import { acceptKey, decodeClientFrame, encodeServerFrame } from './ws.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -32,12 +31,7 @@ const mime = {
   '.png': 'image/png'
 };
 
-const room = {
-  game: createGame({ mode: 'online', seed: Date.now() % 100000 }),
-  clients: new Map(),
-  lastTick: Date.now(),
-  resetAt: null
-};
+const room = createOnlineRoom();
 
 function safePath(url) {
   const parsed = new URL(url, 'http://localhost');
@@ -124,6 +118,7 @@ function upgrade(req, socket) {
     '',
     ''
   ].join('\r\n'));
+  resetFinishedRoomForJoin(room);
   const id = `p${room.clients.size + 1}`;
   room.clients.set(socket, { playerId: id, name: `Player ${room.clients.size + 1}` });
   assignPlayers();
@@ -143,10 +138,12 @@ function upgrade(req, socket) {
   });
   socket.on('close', () => {
     room.clients.delete(socket);
+    if (room.clients.size === 0) resetRoomGame(room);
     assignPlayers();
   });
   socket.on('error', () => {
     room.clients.delete(socket);
+    if (room.clients.size === 0) resetRoomGame(room);
     assignPlayers();
   });
   const boardPlayer = boardForPlayer(room.game.players, id);
@@ -157,11 +154,11 @@ function tickRoom() {
   const now = Date.now();
   const dt = Math.min(0.1, (now - room.lastTick) / 1000);
   room.lastTick = now;
+  if (room.clients.size === 0) return;
   tickGame(room.game, dt);
   if (room.game.over && room.resetAt === null) room.resetAt = now + 6000;
   if (room.resetAt !== null && now >= room.resetAt) {
-    room.game = createGame({ mode: 'online', seed: Date.now() % 100000 });
-    room.resetAt = null;
+    resetRoomGame(room);
   }
   assignPlayers();
   broadcast({ type: 'state', state: serializeState(room.game) });

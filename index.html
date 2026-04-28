@@ -27,6 +27,41 @@
         <div id="toast" class="toast" hidden></div>
       </section>
 
+      <section id="launchOverlay" class="launch-overlay">
+        <div class="launch-panel">
+          <span class="launch-kicker">SEASON 01</span>
+          <strong>Signal Relay</strong>
+          <p>Co-op loop defense</p>
+          <div class="launch-contract">
+            <span>DAILY CONTRACT</span>
+            <strong>Clear Wave 3</strong>
+            <em>Reward 8 G</em>
+          </div>
+          <div class="launch-actions">
+            <button id="launchBotButton">Start Bot Co-op</button>
+            <button id="launchOnlineButton">Online Match</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="resultOverlay" class="result-overlay" hidden>
+        <div class="result-panel">
+          <span id="resultCode" class="result-code">RUN COMPLETE</span>
+          <strong id="resultTitle">Signal Lock</strong>
+          <p id="resultReason" class="result-reason">Loop stabilized.</p>
+          <div id="resultStats" class="result-stats">
+            <span>Wave --</span>
+            <span>Time --</span>
+            <span>Kills --</span>
+          </div>
+          <div id="resultReward" class="result-reward">Mission rewards secured</div>
+          <div class="result-actions">
+            <button id="resultRetryButton">Run Again</button>
+            <button id="resultLobbyButton">Ready Room</button>
+          </div>
+        </div>
+      </section>
+
       <section class="action-panel">
         <div class="status-line">
           <span id="waveMeter">Wave 1</span>

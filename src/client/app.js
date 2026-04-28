@@ -32,6 +32,20 @@ const signalMeter = document.querySelector('#signalMeter');
 const bossMeter = document.querySelector('#bossMeter');
 const shopList = document.querySelector('#shopList');
 const drawer = document.querySelector('#drawer');
+const launchOverlay = document.querySelector('#launchOverlay');
+const launchBotButton = document.querySelector('#launchBotButton');
+const launchOnlineButton = document.querySelector('#launchOnlineButton');
+const resultOverlay = document.querySelector('#resultOverlay');
+const resultCode = document.querySelector('#resultCode');
+const resultTitle = document.querySelector('#resultTitle');
+const resultReason = document.querySelector('#resultReason');
+const resultStats = document.querySelector('#resultStats');
+const resultReward = document.querySelector('#resultReward');
+const resultRetryButton = document.querySelector('#resultRetryButton');
+const resultLobbyButton = document.querySelector('#resultLobbyButton');
+const botButton = document.querySelector('#botButton');
+const onlineButton = document.querySelector('#onlineButton');
+const shopButton = document.querySelector('#shopButton');
 const actionButtons = {
   supply: document.querySelector('#supplyButton'),
   merge: document.querySelector('#mergeButton'),
@@ -61,6 +75,8 @@ let socket = null;
 let last = performance.now();
 let selected = [];
 let localBoardId = 'p1';
+let runStarted = false;
+let resultView = null;
 let viewport = computeCanvasViewport();
 let sceneLayout = buildSceneLayout(viewport.viewHeight);
 
@@ -83,6 +99,57 @@ function send(action) {
     return true;
   }
   return false;
+}
+
+function closeSocket() {
+  const activeSocket = socket;
+  socket = null;
+  activeSocket?.close();
+}
+
+function clearResultOverlay() {
+  resultView = null;
+  resultOverlay.hidden = true;
+}
+
+function setLaunchConnecting(connecting) {
+  launchOverlay.dataset.state = connecting ? 'connecting' : 'idle';
+  launchBotButton.disabled = connecting;
+  launchOnlineButton.disabled = connecting;
+  launchOnlineButton.textContent = connecting ? 'Matching...' : 'Online Match';
+}
+
+function resultCopyFor(code, won) {
+  const copy = {
+    win_signal_lock: ['MISSION CLEAR', 'Signal Lock', 'Signal loop stabilized.'],
+    loss_signal_collapse: ['SIGNAL BROKEN', 'Signal Lost', 'The relay signal collapsed.'],
+    loss_saturation: ['SATURATION LIMIT', 'Signal Lost', 'Noise saturation reached the limit.'],
+    loss_boss_timer: ['BOSS BREACH', 'Signal Lost', 'Boss window expired.']
+  };
+  return copy[code] ?? [won ? 'MISSION CLEAR' : 'MISSION FAILED', won ? 'Signal Lock' : 'Signal Lost', 'Run complete.'];
+}
+
+function buildResultView(state) {
+  const [code, title, reason] = resultCopyFor(state.result.code, state.won);
+  return {
+    code,
+    title,
+    reason,
+    reward: state.won ? 'Season XP and mission rewards secured' : 'Wave rewards saved. Rebuild and retry.',
+    stats: [
+      ['Wave', state.result.wave],
+      ['Time', `${Math.floor(state.result.time)}s`],
+      ['Kills', state.result.stats.kills]
+    ]
+  };
+}
+
+function syncModeButtons() {
+  const modeLocked = runStarted;
+  botButton.disabled = modeLocked;
+  onlineButton.disabled = modeLocked || socket?.readyState === WebSocket.CONNECTING;
+  botButton.title = modeLocked ? 'Finish the current run first.' : '';
+  onlineButton.title = modeLocked ? 'Finish the current run first.' : '';
 }
 
 function localAction(action) {
@@ -115,8 +182,63 @@ function localAction(action) {
 }
 
 function command(action) {
+  if (!runStarted || resultView) return;
   if (send({ ...action, slotIds: selected, from: selected[0], to: selected[1], slot: selected.at(-1) })) return;
   localAction(action);
+}
+
+function hideLaunchOverlay() {
+  setLaunchConnecting(false);
+  clearResultOverlay();
+  launchOverlay.hidden = true;
+  runStarted = true;
+  last = performance.now();
+}
+
+function showLaunchOverlay() {
+  runStarted = false;
+  online = false;
+  closeSocket();
+  setLaunchConnecting(false);
+  clearResultOverlay();
+  selected = [];
+  localBoardId = 'p1';
+  game = createGame({ mode: 'bot', seed: Date.now() % 100000 });
+  netStatus.textContent = 'BOT CO-OP';
+  launchOverlay.hidden = false;
+}
+
+function startBotRun() {
+  online = false;
+  closeSocket();
+  setLaunchConnecting(false);
+  clearResultOverlay();
+  selected = [];
+  localBoardId = 'p1';
+  game = createGame({ mode: 'bot', seed: Date.now() % 100000 });
+  netStatus.textContent = 'BOT CO-OP';
+  hideLaunchOverlay();
+}
+
+function syncResultOverlay(state) {
+  if (runStarted && state.over && state.result) resultView = buildResultView(state);
+  if (!resultView) {
+    resultOverlay.hidden = true;
+    return;
+  }
+  resultOverlay.hidden = false;
+  resultCode.textContent = resultView.code;
+  resultTitle.textContent = resultView.title;
+  resultReason.textContent = resultView.reason;
+  resultReward.textContent = resultView.reward;
+  const statNodes = resultView.stats.map(([label, value]) => {
+    const item = document.createElement('span');
+    const valueNode = document.createElement('strong');
+    item.append(label, valueNode);
+    valueNode.textContent = value;
+    return item;
+  });
+  resultStats.replaceChildren(...statNodes);
 }
 
 function canvasPoint(event) {
@@ -1050,54 +1172,8 @@ function render() {
   drawPressureFrame(state);
 
   if (state.over) {
-    const panelY = viewport.viewHeight * 0.34;
     ctx.fillStyle = 'rgba(2, 4, 5, 0.82)';
     ctx.fillRect(0, 0, VIEW_WIDTH, viewport.viewHeight);
-    ctx.save();
-    ctx.shadowColor = state.won ? 'rgba(149, 213, 178, 0.42)' : 'rgba(255, 111, 89, 0.48)';
-    ctx.shadowBlur = 28;
-    ctx.fillStyle = 'rgba(13, 18, 17, 0.94)';
-    ctx.strokeStyle = state.won ? '#95d5b2' : '#ff6f59';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(34, panelY, 322, 166, 14);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = state.won ? 'rgba(149, 213, 178, 0.12)' : 'rgba(255, 111, 89, 0.13)';
-    ctx.beginPath();
-    ctx.roundRect(46, panelY + 14, 298, 34, 10);
-    ctx.fill();
-    ctx.fillStyle = state.won ? '#95d5b2' : '#ff6f59';
-    ctx.font = '950 30px system-ui';
-    ctx.textAlign = 'center';
-    ctx.fillText(state.won ? 'SIGNAL LOCK' : 'SIGNAL LOST', 195, panelY + 41);
-    ctx.fillStyle = '#f5f0dc';
-    ctx.font = '850 13px system-ui';
-    ctx.fillText(state.resultReason ?? '', 195, panelY + 72);
-    if (state.result) {
-      const chips = [
-        ['WAVE', state.result.wave],
-        ['TIME', `${Math.floor(state.result.time)}s`],
-        ['KILLS', state.result.stats.kills]
-      ];
-      chips.forEach((chip, index) => {
-        const x = 54 + index * 94;
-        ctx.fillStyle = 'rgba(245, 240, 220, 0.07)';
-        ctx.strokeStyle = 'rgba(245, 240, 220, 0.16)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(x, panelY + 94, 82, 44, 8);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = '#8ee6d2';
-        ctx.font = '900 9px system-ui';
-        ctx.fillText(chip[0], x + 41, panelY + 110);
-        ctx.fillStyle = '#f5f0dc';
-        ctx.font = '950 16px system-ui';
-        ctx.fillText(String(chip[1]), x + 41, panelY + 130);
-      });
-    }
-    ctx.restore();
   }
 }
 
@@ -1151,12 +1227,14 @@ function updateHud() {
   signalMeter.textContent = `Signal ${Math.ceil(state.signal.integrity)} / Sat ${Math.floor(state.saturation.count)}`;
   bossMeter.textContent = state.boss.active ? `Boss ${Math.ceil(state.boss.timer)}s` : 'Boss --';
   updateActionButtons(state);
+  syncResultOverlay(state);
+  syncModeButtons();
 }
 
 function loop(now) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
-  if (!online) tickGame(game, dt);
+  if (runStarted && !online) tickGame(game, dt);
   render();
   updateHud();
   requestAnimationFrame(loop);
@@ -1185,17 +1263,26 @@ function buildShop() {
 }
 
 function connectOnline() {
-  if (socket?.readyState === WebSocket.OPEN) return;
+  if (socket?.readyState === WebSocket.OPEN) {
+    hideLaunchOverlay();
+    return;
+  }
+  if (socket?.readyState === WebSocket.CONNECTING) return;
+  setLaunchConnecting(true);
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  socket = new WebSocket(`${protocol}//${location.host}/ws`);
+  const activeSocket = new WebSocket(`${protocol}//${location.host}/ws`);
+  socket = activeSocket;
   netStatus.textContent = 'CONNECTING';
-  socket.addEventListener('open', () => {
+  activeSocket.addEventListener('open', () => {
+    if (socket !== activeSocket) return;
     online = true;
     selected = [];
     netStatus.textContent = 'ONLINE CO-OP';
-    socket.send(JSON.stringify({ type: 'join', playerId: localPlayerId, name: 'Player' }));
+    hideLaunchOverlay();
+    activeSocket.send(JSON.stringify({ type: 'join', playerId: localPlayerId, name: 'Player' }));
   });
-  socket.addEventListener('message', (event) => {
+  activeSocket.addEventListener('message', (event) => {
+    if (socket !== activeSocket) return;
     const message = JSON.parse(event.data);
     if (message.type === 'state') {
       if (message.boardPlayer && message.boardPlayer !== localBoardId) selected = [];
@@ -1204,16 +1291,27 @@ function connectOnline() {
     }
     if (message.type === 'error') showToast(message.reason);
   });
-  socket.addEventListener('close', () => {
+  activeSocket.addEventListener('close', () => {
+    if (socket !== activeSocket) return;
+    socket = null;
     online = false;
+    setLaunchConnecting(false);
+    if (!runStarted) {
+      netStatus.textContent = 'BOT CO-OP';
+      showToast('Online unavailable.');
+      return;
+    }
+    if (resultView) return;
     localBoardId = 'p1';
     netStatus.textContent = 'BOT CO-OP';
     showToast('Bot co-op resumed.');
     game = createGame({ mode: 'bot', seed: Date.now() % 100000 });
+    runStarted = true;
   });
 }
 
 canvas.addEventListener('pointerdown', (event) => {
+  if (!runStarted || resultView) return;
   const hit = slotAt(canvasPoint(event));
   if (!hit || hit.playerId !== localBoardId) return;
   const relay = game.boards[localBoardId].slots[hit.index];
@@ -1230,16 +1328,19 @@ actionButtons.swap.addEventListener('click', () => command({ type: 'swap' }));
 actionButtons.focus.addEventListener('click', () => command({ type: 'focus' }));
 actionButtons.pulse.addEventListener('click', () => command({ type: 'pulse' }));
 actionButtons.overclock.addEventListener('click', () => command({ type: 'overclock' }));
-document.querySelector('#botButton').addEventListener('click', () => {
-  online = false;
-  socket?.close();
-  selected = [];
-  localBoardId = 'p1';
-  game = createGame({ mode: 'bot', seed: Date.now() % 100000 });
-  netStatus.textContent = 'BOT CO-OP';
+botButton.addEventListener('click', () => {
+  if (runStarted) return;
+  startBotRun();
 });
-document.querySelector('#onlineButton').addEventListener('click', connectOnline);
-document.querySelector('#shopButton').addEventListener('click', () => {
+onlineButton.addEventListener('click', () => {
+  if (runStarted) return;
+  connectOnline();
+});
+launchBotButton.addEventListener('click', startBotRun);
+launchOnlineButton.addEventListener('click', connectOnline);
+resultRetryButton.addEventListener('click', startBotRun);
+resultLobbyButton.addEventListener('click', showLaunchOverlay);
+shopButton.addEventListener('click', () => {
   drawer.hidden = false;
 });
 document.querySelector('#closeDrawer').addEventListener('click', () => {
