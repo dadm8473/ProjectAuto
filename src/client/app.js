@@ -235,36 +235,39 @@ function drawEventFeed(state) {
   if (!event) return;
   const label = eventLabel(event);
   const artIndex = eventArtIndex(event);
+  const hasBossArt = artIndex >= 0 && bossDisruptionAtlas.complete && bossDisruptionAtlas.naturalWidth > 0;
+  const banner = hasBossArt ? { x: 18, y: 181, w: 354, h: 54, r: 10 } : { x: 18, y: 185, w: 354, h: 18, r: 8 };
   ctx.save();
   ctx.fillStyle = 'rgba(5, 7, 8, 0.76)';
   ctx.strokeStyle = 'rgba(244, 201, 93, 0.22)';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.roundRect(18, 185, 354, 18, 8);
+  ctx.roundRect(banner.x, banner.y, banner.w, banner.h, banner.r);
   ctx.fill();
   ctx.stroke();
-  if (artIndex >= 0 && bossDisruptionAtlas.complete && bossDisruptionAtlas.naturalWidth > 0) {
+  if (hasBossArt) {
     const cellW = bossDisruptionAtlas.naturalWidth / 3;
     const cellH = bossDisruptionAtlas.naturalHeight;
     ctx.save();
     ctx.beginPath();
-    ctx.roundRect(19, 186, 352, 16, 7);
+    ctx.roundRect(banner.x + 1, banner.y + 1, banner.w - 2, banner.h - 2, banner.r - 1);
     ctx.clip();
-    const banner = { x: 19, y: 186, w: 352, h: 16 };
-    const scale = Math.max(banner.w / cellW, banner.h / cellH);
+    const scale = Math.max((banner.w - 2) / cellW, (banner.h - 2) / cellH);
     const drawW = cellW * scale;
     const drawH = cellH * scale;
-    ctx.globalAlpha = 0.5;
-    ctx.drawImage(bossDisruptionAtlas, artIndex * cellW, 0, cellW, cellH, banner.x + (banner.w - drawW) / 2, banner.y + (banner.h - drawH) / 2, drawW, drawH);
+    ctx.globalAlpha = 0.78;
+    ctx.drawImage(bossDisruptionAtlas, artIndex * cellW, 0, cellW, cellH, banner.x + 1 + (banner.w - 2 - drawW) / 2, banner.y + 1 + (banner.h - 2 - drawH) / 2, drawW, drawH);
     ctx.globalAlpha = 1;
-    ctx.fillStyle = 'rgba(5, 7, 8, 0.52)';
-    ctx.fillRect(19, 186, 352, 16);
+    ctx.fillStyle = 'rgba(5, 7, 8, 0.42)';
+    ctx.fillRect(banner.x + 1, banner.y + 1, banner.w - 2, banner.h - 2);
+    ctx.fillStyle = 'rgba(5, 7, 8, 0.58)';
+    ctx.fillRect(banner.x + 1, banner.y + banner.h - 19, banner.w - 2, 18);
     ctx.restore();
   }
   ctx.fillStyle = event.type.startsWith('boss') ? '#f4c95d' : event.type === 'run_finished' ? '#ff6f59' : '#8ee6d2';
-  ctx.font = '850 10px system-ui';
+  ctx.font = hasBossArt ? '900 11px system-ui' : '850 10px system-ui';
   ctx.textAlign = 'left';
-  ctx.fillText(label.toUpperCase(), 27, 198);
+  ctx.fillText(label.toUpperCase(), banner.x + 9, banner.y + banner.h - (hasBossArt ? 6 : 5));
   ctx.restore();
 }
 

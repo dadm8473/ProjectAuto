@@ -10,9 +10,9 @@ Every visible unit, board surface, loop effect, and premium UI accent should loo
 |---|---|---|
 | Art direction reference | `src/client/assets/generated/signal-relay-art-direction.png` | Renderer backdrop reference and visual consistency target |
 | Relay icon atlas | `src/client/assets/generated/relay-unit-atlas.png` | 20 Relay icons in roster order |
-| Enemy/Noise atlas | `src/client/assets/generated/noise-enemy-atlas.png` | Track Noise and boss sprites in 4x2 order |
-| Boss disruption atlas | `src/client/assets/generated/boss-disruption-atlas.png` | Boss Orchid, Boss Mirror, Origin Null event-feed cards |
-| UI icon atlas | `src/client/assets/generated/ui-icon-atlas.png` | Resource and action button icons in 4x3 order |
+| Enemy/Noise atlas | `src/client/assets/generated/noise-enemy-atlas.png` | Track Noise and boss sprites in 4x2 order; normalized to 1776x888 |
+| Boss disruption atlas | `src/client/assets/generated/boss-disruption-atlas.png` | Boss Orchid, Boss Mirror, Origin Null event-feed cards; normalized to 2106x747 |
+| UI icon atlas | `src/client/assets/generated/ui-icon-atlas.png` | Resource and action button icons in 4x3 order; normalized to 1256x1254 |
 
 ## Visual Rules
 
@@ -82,6 +82,7 @@ Avoid: words, letters, numbers, dice pips, random summon icons, chibi units, fan
 ## Enemy/Noise Atlas Order
 
 The generated atlas is a 4 columns by 2 rows image. Code slices it by `NOISE_TYPES[id].atlasIndex` in this order:
+The committed file must have dimensions divisible by 4 and 2. The current normalized target is 1776x888.
 
 1. Flicker
 2. Crawler
@@ -95,6 +96,7 @@ The generated atlas is a 4 columns by 2 rows image. Code slices it by `NOISE_TYP
 ## UI Icon Atlas Order
 
 The generated atlas is a 4 columns by 3 rows image. CSS slices it with `background-position` in this order:
+The committed file must have dimensions divisible by 4 and 3. The current normalized target is 1256x1254.
 
 1. Charge
 2. Link Energy
@@ -112,6 +114,7 @@ The generated atlas is a 4 columns by 3 rows image. CSS slices it with `backgrou
 ## Boss Disruption Atlas Order
 
 The generated atlas is a 3 columns by 1 row image. Code slices it in this order:
+The committed file must have dimensions divisible by 3 and 1. The current normalized target is 2106x747.
 
 1. Boss Orchid Heatroot
 2. Boss Mirror Linkbreak
