@@ -455,6 +455,7 @@ function computeActionStateForPlayer(game, playerId) {
   const linkPulseCooldownRemaining = roundedSeconds((game.linkPulseCooldownUntil ?? 0) - game.now);
   const swapCharges = game.resources.swapCharges[playerId] ?? 0;
   const overclockActiveRemaining = roundedSeconds((board.overclockUntil ?? 0) - game.now);
+  const mergeSlots = findMerge(board);
 
   let supply = availability(!game.over && prioritySlotIndex(board) >= 0 && game.resources.charge >= supplyCost);
   if (!supply.available) {
@@ -488,7 +489,12 @@ function computeActionStateForPlayer(game, playerId) {
 
   return {
     supply: { ...supply, cost: supplyCost },
-    merge: { available: !game.over && relayCount >= GAME_RULES.mergeCount, reason: game.over ? 'Run finished.' : relayCount < GAME_RULES.mergeCount ? 'Need three Relays.' : '', selectedRequired: GAME_RULES.mergeCount },
+    merge: {
+      available: !game.over && Boolean(mergeSlots),
+      reason: game.over ? 'Run finished.' : relayCount < GAME_RULES.mergeCount ? 'Need three Relays.' : mergeSlots ? '' : 'No matching trio.',
+      selectedRequired: GAME_RULES.mergeCount,
+      slots: mergeSlots ?? []
+    },
     swap: { ...swap, charges: swapCharges },
     focus: { ...focus, cost: focusCost },
     linkPulse: { ...linkPulse, cost: GAME_RULES.linkPulseCost, cooldownRemaining: linkPulseCooldownRemaining, partnerTargets: partnerRelayCount },
@@ -820,6 +826,7 @@ function applyOriginSpore(game) {
 
 function resolveBossDisruption(game) {
   if (!game.boss.active || game.wave.disruptionFired || game.boss.timer >= game.boss.limit - 8) return;
+  if (!game.noise.some((noise) => noise.type === 'boss' && noise.hp > 0)) return;
   game.wave.disruptionFired = true;
   const type = bossDisruptionTypeForWave(game.wave.index + 1);
   if (type === 'boss_orchid_heatroot') applyOrchidHeatroot(game);

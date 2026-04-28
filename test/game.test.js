@@ -325,6 +325,24 @@ test('serialized action state exposes exact costs, cooldowns, and availability',
   assert.equal(actions.overclock.available, true);
 });
 
+test('serialized merge availability requires an actual matching trio', () => {
+  const game = createGame({ mode: 'bot', seed: 89 });
+  installRelay(game, 'p1', 0, 'needle_beam');
+  installRelay(game, 'p1', 1, 'pulse_drum');
+  installRelay(game, 'p1', 2, 'coolant_moss');
+
+  const unavailable = serializeState(game).actionState.p1.merge;
+  assert.equal(unavailable.available, false);
+  assert.equal(unavailable.reason, 'No matching trio.');
+
+  installRelay(game, 'p1', 3, 'needle_beam');
+  installRelay(game, 'p1', 4, 'needle_beam');
+
+  const available = serializeState(game).actionState.p1.merge;
+  assert.equal(available.available, true);
+  assert.deepEqual(available.slots, [0, 3, 4]);
+});
+
 test('terminal states emit a run result and event log entry with one readable cause', () => {
   const game = createGame({ mode: 'solo', seed: 87 });
   game.signal.integrity = 0;
@@ -417,6 +435,23 @@ test('origin boss disruption spawns two Null spores around the boss position', (
   assert.equal(spores.length, 2);
   assert.deepEqual(spores.map((noise) => Number(noise.progress.toFixed(2))), [0.44, 0.56]);
   assert.deepEqual(spores.map((noise) => noise.lane), [1, 1]);
+});
+
+test('origin boss disruption waits until a live boss is on the loop', () => {
+  const game = createGame({ mode: 'solo', seed: 94 });
+  game.wave.index = 9;
+  game.wave.active = true;
+  game.wave.queue = ['bulwark', 'null', 'boss'];
+  game.wave.disruptionFired = false;
+  game.boss.active = true;
+  game.boss.timer = GAME_RULES.bossTimer - 9;
+  game.boss.limit = GAME_RULES.bossTimer;
+
+  tickGame(game, 0.1);
+
+  assert.equal(game.eventLog.some((event) => event.type === 'boss_origin_spore'), false);
+  assert.equal(game.noise.some((noise) => noise.type === 'null_spore'), false);
+  assert.equal(game.wave.disruptionFired, false);
 });
 
 
