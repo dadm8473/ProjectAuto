@@ -186,7 +186,9 @@ function drawAtlasCell(image, columns, rows, index, x, y, w, h, alpha = 1) {
 }
 
 function drawBackground(state) {
-  const usedImage = coverImage(playfieldImage, 0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0.88) || coverImage(artDirectionImage, 0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0.66);
+  ctx.fillStyle = '#061010';
+  ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+  const usedImage = coverImage(playfieldImage, 0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0.18) || coverImage(artDirectionImage, 0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0.14);
   if (!usedImage) {
     const gradient = ctx.createLinearGradient(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
     gradient.addColorStop(0, '#101312');
@@ -195,12 +197,19 @@ function drawBackground(state) {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
   }
-  ctx.fillStyle = 'rgba(2, 5, 6, 0.24)';
+  ctx.fillStyle = 'rgba(2, 5, 6, 0.62)';
+  ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+
+  const boardGlow = ctx.createLinearGradient(0, 56, 0, 484);
+  boardGlow.addColorStop(0, 'rgba(88, 215, 255, 0.06)');
+  boardGlow.addColorStop(0.5, 'rgba(244, 201, 93, 0.04)');
+  boardGlow.addColorStop(1, 'rgba(88, 215, 255, 0.08)');
+  ctx.fillStyle = boardGlow;
   ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
 
   const vignette = ctx.createRadialGradient(195, 250, 74, 195, 250, 310);
   vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
-  vignette.addColorStop(0.7, 'rgba(0, 0, 0, 0.1)');
+  vignette.addColorStop(0.7, 'rgba(0, 0, 0, 0.16)');
   vignette.addColorStop(1, 'rgba(0, 0, 0, 0.5)');
   ctx.fillStyle = vignette;
   ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
@@ -215,6 +224,25 @@ function drawBackground(state) {
   ctx.fillStyle = '#8ee6d2';
   ctx.fillText(state.mode === 'bot' ? 'BOT CO-OP' : 'ONLINE CO-OP', 20, 52);
   ctx.shadowBlur = 0;
+}
+
+function drawMetalPlate(x, y, w, h, radius, accent) {
+  const gradient = ctx.createLinearGradient(x, y, x, y + h);
+  gradient.addColorStop(0, 'rgba(34, 42, 39, 0.92)');
+  gradient.addColorStop(0.48, 'rgba(12, 18, 18, 0.88)');
+  gradient.addColorStop(1, 'rgba(5, 8, 9, 0.94)');
+  ctx.fillStyle = gradient;
+  ctx.strokeStyle = 'rgba(245, 240, 220, 0.13)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, radius);
+  ctx.fill();
+  ctx.stroke();
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(x + 3, y + 3, w - 6, h - 6, Math.max(3, radius - 3));
+  ctx.stroke();
 }
 
 function syncCanvasScale() {
@@ -309,36 +337,40 @@ function drawEventFeed(state) {
 
 function drawTrack(state) {
   ctx.save();
-  ctx.fillStyle = 'rgba(4, 8, 9, 0.08)';
-  ctx.strokeStyle = 'rgba(244, 201, 93, 0.24)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.roundRect(20, 203, 350, 128, 22);
-  ctx.fill();
-  ctx.stroke();
+  drawMetalPlate(20, 203, 350, 128, 22, 'rgba(244, 201, 93, 0.2)');
 
   const cx = 195;
   const cy = 265;
   const rx = 132;
   const ry = 57;
-  ctx.strokeStyle = 'rgba(8, 12, 13, 0.32)';
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.56)';
+  ctx.lineWidth = 26;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(245, 240, 220, 0.12)';
   ctx.lineWidth = 18;
   ctx.beginPath();
   ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
   ctx.stroke();
 
-  ctx.lineWidth = 11;
+  ctx.lineWidth = 12;
   ctx.lineCap = 'round';
-  ctx.strokeStyle = 'rgba(255, 111, 89, 0.54)';
+  ctx.shadowColor = 'rgba(255, 111, 89, 0.42)';
+  ctx.shadowBlur = 10;
+  ctx.strokeStyle = 'rgba(255, 111, 89, 0.72)';
   ctx.beginPath();
   ctx.ellipse(cx, cy, rx, ry, 0, Math.PI * 0.72, Math.PI * 1.38);
   ctx.stroke();
-  ctx.strokeStyle = 'rgba(88, 215, 255, 0.6)';
+  ctx.shadowColor = 'rgba(88, 215, 255, 0.5)';
+  ctx.strokeStyle = 'rgba(88, 215, 255, 0.78)';
   ctx.beginPath();
   ctx.ellipse(cx, cy, rx, ry, 0, Math.PI * 1.38, Math.PI * 2.72);
   ctx.stroke();
+  ctx.shadowBlur = 0;
 
-  ctx.strokeStyle = 'rgba(245, 240, 220, 0.2)';
+  ctx.strokeStyle = 'rgba(245, 240, 220, 0.22)';
   ctx.lineWidth = 1.4;
   ctx.setLineDash([7, 11]);
   ctx.beginPath();
@@ -513,15 +545,11 @@ function drawBoard(state, playerId) {
   const heatPeak = board.heatPeak ?? 0;
   const border = heatPeak >= 90 ? '#ff6f59' : isMine ? '#58d7ff' : '#95d5b2';
 
-  const panelGradient = ctx.createLinearGradient(rect.x, rect.y, rect.x, rect.y + rect.h);
-  panelGradient.addColorStop(0, isMine ? 'rgba(21, 56, 54, 0.54)' : 'rgba(44, 36, 31, 0.52)');
-  panelGradient.addColorStop(1, 'rgba(6, 10, 11, 0.64)');
-  ctx.fillStyle = panelGradient;
+  drawMetalPlate(rect.x, rect.y, rect.w, rect.h, 10, heatPeak >= 90 ? 'rgba(255, 111, 89, 0.7)' : isMine ? 'rgba(88, 215, 255, 0.72)' : 'rgba(149, 213, 178, 0.62)');
   ctx.strokeStyle = border;
   ctx.lineWidth = heatPeak >= 90 ? 3 : 2;
   ctx.beginPath();
   ctx.roundRect(rect.x, rect.y, rect.w, rect.h, 10);
-  ctx.fill();
   ctx.stroke();
 
   ctx.strokeStyle = isMine ? 'rgba(88, 215, 255, 0.22)' : 'rgba(149, 213, 178, 0.22)';

@@ -9,7 +9,7 @@ Every visible unit, board surface, loop effect, and premium UI accent should loo
 | asset | path | use |
 |---|---|---|
 | Art direction reference | `src/client/assets/generated/signal-relay-art-direction.png` | Renderer backdrop reference and visual consistency target |
-| Playfield frame | `src/client/assets/generated/signal-relay-playfield-frame.png` | Live canvas background for the top board, central loop, and lower board composition |
+| Playfield frame | `src/client/assets/generated/signal-relay-playfield-frame.png` | Low-opacity texture/reference layer; gameplay boards and loop are rendered from the code coordinate map |
 | Relay icon atlas | `src/client/assets/generated/relay-unit-atlas.png` | 20 Relay icons in roster order |
 | Enemy/Noise atlas | `src/client/assets/generated/noise-enemy-atlas.png` | Track Noise and boss sprites in 4x2 order; normalized to 1776x888 |
 | Boss disruption atlas | `src/client/assets/generated/boss-disruption-atlas.png` | Boss Orchid, Boss Mirror, Origin Null event-feed cards; normalized to 2106x747 |
