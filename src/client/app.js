@@ -505,9 +505,9 @@ function render() {
   drawBackground(state);
   drawCanvasHud(state);
   drawBoard(state, partnerId(localBoardId));
-  drawEventFeed(state);
   drawTrack(state);
   drawNoise(state);
+  drawEventFeed(state);
   drawBoard(state, localBoardId);
   drawEffects(state);
 
