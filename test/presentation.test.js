@@ -192,13 +192,24 @@ test('canvas presentation avoids duplicating the shell resource HUD', async () =
 
 test('result presentation is owned by the app shell overlay', async () => {
   const source = await readFile('src/client/app.js', 'utf8');
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
   assert.equal(source.includes("ctx.fillText(state.won ? 'SIGNAL LOCK' : 'SIGNAL LOST'"), false);
   assert.equal(source.includes('syncResultOverlay(state);'), true);
   assert.equal(source.includes('let resultView = null;'), true);
   assert.equal(source.includes('function buildResultView'), true);
+  assert.equal(source.includes('function renderResultHighlights'), true);
+  assert.equal(source.includes('function renderResultProgress'), true);
+  assert.equal(source.includes('buildRunHighlights(settledState, summary)'), true);
+  assert.equal(source.includes('resultHighlights.replaceChildren'), true);
+  assert.equal(source.includes('resultProgress.replaceChildren'), true);
   assert.equal(source.includes('reason: state.result.text || state.resultReason'), false);
   assert.equal(source.includes('reason,'), true);
   assert.equal(source.includes('if (resultView) return;'), true);
+  assert.equal(html.includes('id="resultHighlights"'), true);
+  assert.equal(html.includes('id="resultProgress"'), true);
+  assert.equal(css.includes('.result-highlights'), true);
+  assert.equal(css.includes('.result-progress'), true);
 });
 
 test('mobile shell keeps dynamic viewport height for browser chrome changes', async () => {

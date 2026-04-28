@@ -18,6 +18,7 @@ import {
 } from '../shared/game.js';
 import { eventLabel } from '../shared/event_text.js';
 import { applyRunToProfile, normalizeMetaProfile } from '../shared/meta.js';
+import { buildRunHighlights, buildRunProgress } from '../shared/run_highlights.js';
 import { VIEW_WIDTH, MIN_VIEW_HEIGHT, buildSceneLayout, computeCanvasViewport } from './render_layout.js';
 
 const canvas = document.querySelector('#gameCanvas');
@@ -41,6 +42,8 @@ const resultCode = document.querySelector('#resultCode');
 const resultTitle = document.querySelector('#resultTitle');
 const resultReason = document.querySelector('#resultReason');
 const resultStats = document.querySelector('#resultStats');
+const resultHighlights = document.querySelector('#resultHighlights');
+const resultProgress = document.querySelector('#resultProgress');
 const resultReward = document.querySelector('#resultReward');
 const resultRetryButton = document.querySelector('#resultRetryButton');
 const resultLobbyButton = document.querySelector('#resultLobbyButton');
@@ -189,13 +192,15 @@ function rewardSummaryText(summary) {
   return parts.join(' · ');
 }
 
-function buildResultView(state, summary) {
+function buildResultView(state, summary, highlights, progress) {
   const [code, title, reason] = resultCopyFor(state.result.code, state.won);
   return {
     code,
     title,
     reason,
     reward: rewardSummaryText(summary),
+    highlights,
+    progress,
     stats: [
       ['Wave', state.result.wave],
       ['Time', `${Math.floor(state.result.time)}s`],
@@ -203,6 +208,41 @@ function buildResultView(state, summary) {
       ['Profile', `${metaProfile.gems}G`]
     ]
   };
+}
+
+function resultToneClass(tone) {
+  return ['charge', 'link', 'danger', 'gem'].includes(tone) ? `result-tone-${tone}` : 'result-tone-neutral';
+}
+
+function renderResultHighlights(items) {
+  const nodes = items.map((item) => {
+    const node = document.createElement('span');
+    node.className = `result-highlight ${resultToneClass(item.tone)}`;
+    const value = document.createElement('strong');
+    const label = document.createElement('em');
+    const detail = document.createElement('small');
+    value.textContent = item.value;
+    label.textContent = item.label;
+    detail.textContent = item.detail;
+    node.append(value, label, detail);
+    return node;
+  });
+  resultHighlights.replaceChildren(...nodes);
+}
+
+function renderResultProgress(items) {
+  const nodes = items.map((item) => {
+    const node = document.createElement('span');
+    const label = document.createElement('em');
+    const value = document.createElement('strong');
+    const detail = document.createElement('small');
+    label.textContent = item.label;
+    value.textContent = item.value;
+    detail.textContent = item.detail;
+    node.append(label, value, detail);
+    return node;
+  });
+  resultProgress.replaceChildren(...nodes);
 }
 
 function localAction(action) {
@@ -312,7 +352,9 @@ function syncResultOverlay(state) {
     saveMetaProfile();
     applyProfileToGame(game);
     buildShop();
-    resultView = buildResultView(settledState, summary);
+    const highlights = buildRunHighlights(settledState, summary);
+    const progress = buildRunProgress(summary, metaProfile);
+    resultView = buildResultView(settledState, summary, highlights, progress);
   }
   if (!resultView) {
     resultOverlay.hidden = true;
@@ -323,6 +365,8 @@ function syncResultOverlay(state) {
   resultTitle.textContent = resultView.title;
   resultReason.textContent = resultView.reason;
   resultReward.textContent = resultView.reward;
+  renderResultHighlights(resultView.highlights);
+  renderResultProgress(resultView.progress);
   const statNodes = resultView.stats.map(([label, value]) => {
     const item = document.createElement('span');
     const valueNode = document.createElement('strong');
