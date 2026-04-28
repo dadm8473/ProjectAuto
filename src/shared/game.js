@@ -498,15 +498,21 @@ function resolveNoise(game, dt) {
 }
 
 function findMerge(board) {
+  const progress = findMergeProgress(board);
+  return progress.slots.length >= GAME_RULES.mergeCount ? progress.slots.slice(0, GAME_RULES.mergeCount) : null;
+}
+
+function findMergeProgress(board) {
   const buckets = new Map();
   board.slots.forEach((slot, index) => {
     if (!slot) return;
     const key = `${slot.relayId}:${slot.tier}`;
-    const items = buckets.get(key) ?? [];
-    items.push(index);
-    buckets.set(key, items);
+    const entry = buckets.get(key) ?? { relayId: slot.relayId, tier: slot.tier, slots: [] };
+    entry.slots.push(index);
+    buckets.set(key, entry);
   });
-  return [...buckets.values()].find((items) => items.length >= GAME_RULES.mergeCount)?.slice(0, GAME_RULES.mergeCount) ?? null;
+  const best = [...buckets.values()].sort((a, b) => b.slots.length - a.slots.length || a.slots[0] - b.slots[0])[0];
+  return best ?? { relayId: '', tier: 0, slots: [] };
 }
 
 function botThink(game) {
@@ -567,7 +573,8 @@ function computeActionStateForPlayer(game, playerId) {
   const focusCost = GAME_RULES.supplyFocusCost + (game.stats.focusUps[playerId] ?? 0) * 25;
   const linkPulseCooldownRemaining = roundedSeconds((game.linkPulseCooldownUntil ?? 0) - game.now);
   const swapCharges = game.resources.swapCharges[playerId] ?? 0;
-  const mergeSlots = findMerge(board);
+  const mergeProgress = findMergeProgress(board);
+  const mergeSlots = mergeProgress.slots.length >= GAME_RULES.mergeCount ? mergeProgress.slots.slice(0, GAME_RULES.mergeCount) : null;
 
   let supply = availability(!game.over && prioritySlotIndex(board) >= 0 && game.resources.charge >= supplyCost);
   if (!supply.available) {
@@ -602,7 +609,11 @@ function computeActionStateForPlayer(game, playerId) {
       available: !game.over && Boolean(mergeSlots),
       reason: game.over ? 'Run finished.' : relayCount < GAME_RULES.mergeCount ? 'Need three Relays.' : mergeSlots ? '' : 'No matching trio.',
       selectedRequired: GAME_RULES.mergeCount,
-      slots: mergeSlots ?? []
+      slots: mergeSlots ?? [],
+      progress: Math.min(GAME_RULES.mergeCount, mergeProgress.slots.length),
+      previewSlots: mergeProgress.slots.slice(0, GAME_RULES.mergeCount),
+      relayId: mergeProgress.relayId,
+      tier: mergeProgress.tier
     },
     swap: { ...swap, charges: swapCharges },
     focus: { ...focus, cost: focusCost },

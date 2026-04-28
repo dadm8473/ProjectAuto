@@ -169,8 +169,14 @@ test('combat surface previews merge readiness and Pulse clutch without extra con
 
   for (const marker of [
     'function autoMergeSlots',
+    'function mergeCueSlots',
     'function drawMergeReadyCue',
+    'function drawPulseCoolingWave',
+    'function drawOverdriveBurst',
     'drawMergeReadyCue(state, playerId, rect);',
+    'drawPulseCoolingWave(state, effect, alpha);',
+    'drawOverdriveBurst(state, effect, alpha);',
+    'state.actionState?.[playerId]?.merge.previewSlots',
     'actions.linkPulse.clutch',
     'actionButtons.pulse.dataset.clutch'
   ]) {

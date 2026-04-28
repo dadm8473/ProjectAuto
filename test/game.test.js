@@ -439,6 +439,21 @@ test('serialized merge availability requires an actual matching trio', () => {
   assert.deepEqual(available.slots, [0, 3, 4]);
 });
 
+test('serialized merge state previews a two-of-three merge setup', () => {
+  const game = createGame({ mode: 'bot', seed: 90 });
+  installRelay(game, 'p1', 0, 'needle_beam');
+  installRelay(game, 'p1', 1, 'pulse_drum');
+  installRelay(game, 'p1', 3, 'needle_beam');
+
+  const merge = serializeState(game).actionState.p1.merge;
+
+  assert.equal(merge.available, false);
+  assert.equal(merge.progress, 2);
+  assert.deepEqual(merge.previewSlots, [0, 3]);
+  assert.equal(merge.relayId, 'needle_beam');
+  assert.equal(merge.tier, 1);
+});
+
 test('terminal states emit a run result and event log entry with one readable cause', () => {
   const game = createGame({ mode: 'solo', seed: 87 });
   game.metaEarned.gems = 12;

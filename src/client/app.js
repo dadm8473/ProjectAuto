@@ -296,6 +296,12 @@ function autoMergeSlots(state, playerId = localBoardId) {
   return state.actionState?.[playerId]?.merge.slots ?? [];
 }
 
+function mergeCueSlots(state, playerId = localBoardId) {
+  const merge = state.actionState?.[playerId]?.merge;
+  const slots = merge?.available ? autoMergeSlots(state, playerId) : state.actionState?.[playerId]?.merge.previewSlots ?? [];
+  return slots.length >= GAME_RULES.mergeCount - 1 ? slots : [];
+}
+
 function command(action) {
   if (!runStarted || resultView) return;
   const prepared = prepareAction(action);
@@ -1300,6 +1306,46 @@ function drawSlotPulse(state, effect, alpha, color) {
   return true;
 }
 
+function drawPulseCoolingWave(state, effect, alpha) {
+  const rect = displayRectForBoard(effect.targetPlayerId ?? partnerId(effect.playerId ?? localBoardId));
+  const color = effect.type === 'link_pulse_save' ? '#f4c95d' : '#58d7ff';
+  ctx.save();
+  ctx.globalAlpha = Math.min(0.88, alpha * 1.15);
+  ctx.shadowColor = color;
+  ctx.shadowBlur = effect.type === 'link_pulse_save' ? 22 : 14;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = effect.type === 'link_pulse_save' ? 3.2 : 2.2;
+  ctx.beginPath();
+  ctx.roundRect(rect.x + 4, rect.y + 4, rect.w - 8, rect.h - 8, 10);
+  ctx.stroke();
+  ctx.globalAlpha = Math.min(0.32, alpha * 0.42);
+  const waveY = rect.y + rect.h * (0.18 + (1 - alpha) * 0.64);
+  ctx.fillStyle = color;
+  ctx.fillRect(rect.x + 10, waveY, rect.w - 20, 3);
+  ctx.restore();
+}
+
+function drawOverdriveBurst(state, effect, alpha) {
+  const rect = displayRectForBoard(effect.playerId ?? localBoardId);
+  const center = Number.isInteger(effect.slot) ? slotCenter(rect, effect.slot) : { x: rect.x + rect.w / 2, y: rect.y + rect.h / 2 };
+  const color = effect.source === 'link_pulse' ? '#58d7ff' : '#f4c95d';
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, alpha * 1.28);
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 24;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, 22 + (1 - alpha) * 48, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.globalAlpha = Math.min(0.32, alpha * 0.52);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.roundRect(rect.x + 5, rect.y + 5, rect.w - 10, rect.h - 10, 10);
+  ctx.fill();
+  ctx.restore();
+}
+
 function drawLinks(board, rect, now) {
   const links = computeActiveLinks(board, now);
   ctx.lineWidth = 5;
@@ -1320,34 +1366,43 @@ function drawLinks(board, rect, now) {
 }
 
 function drawMergeReadyCue(state, playerId, rect) {
-  const slots = autoMergeSlots(state, playerId);
-  if (playerId !== localBoardId || slots.length < GAME_RULES.mergeCount) return;
+  const slots = mergeCueSlots(state, playerId);
+  if (playerId !== localBoardId || slots.length < GAME_RULES.mergeCount - 1) return;
+  const complete = slots.length >= GAME_RULES.mergeCount;
   const centers = slots.map((index) => slotCenter(rect, index));
-  const pulse = 0.72 + Math.sin(state.now * 7.5) * 0.2;
+  const pulse = (complete ? 0.72 : 0.42) + Math.sin(state.now * (complete ? 7.5 : 5.5)) * (complete ? 0.2 : 0.12);
 
   ctx.save();
   ctx.globalAlpha = pulse;
   ctx.shadowColor = '#f4c95d';
-  ctx.shadowBlur = 18;
-  ctx.strokeStyle = 'rgba(244, 201, 93, 0.86)';
-  ctx.lineWidth = 3;
+  ctx.shadowBlur = complete ? 18 : 10;
+  ctx.strokeStyle = complete ? 'rgba(244, 201, 93, 0.86)' : 'rgba(244, 201, 93, 0.48)';
+  ctx.lineWidth = complete ? 3 : 2;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  ctx.beginPath();
-  centers.forEach((center, index) => {
-    if (index === 0) ctx.moveTo(center.x, center.y);
-    else ctx.lineTo(center.x, center.y);
-  });
-  ctx.closePath();
-  ctx.stroke();
+  if (complete) {
+    ctx.beginPath();
+    centers.forEach((center, index) => {
+      if (index === 0) ctx.moveTo(center.x, center.y);
+      else ctx.lineTo(center.x, center.y);
+    });
+    ctx.closePath();
+    ctx.stroke();
+  }
 
   for (const index of slots) {
     const slot = boardSlotRect(rect, index);
-    ctx.lineWidth = 2.4;
-    ctx.strokeStyle = '#f4c95d';
+    ctx.lineWidth = complete ? 2.4 : 1.8;
+    ctx.strokeStyle = complete ? '#f4c95d' : 'rgba(244, 201, 93, 0.66)';
     ctx.beginPath();
     ctx.roundRect(slot.x + 2, slot.y + 2, slot.w - 4, slot.h - 4, 8);
     ctx.stroke();
+    if (!complete) {
+      const center = slotCenter(rect, index);
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, 17 + Math.sin(state.now * 4.5 + index) * 2, 0, Math.PI * 2);
+      ctx.stroke();
+    }
   }
   ctx.restore();
 }
@@ -1378,7 +1433,7 @@ function drawBoard(state, playerId) {
   const isMine = playerId === localBoardId;
   const heatPeak = board.heatPeak ?? 0;
   const border = heatPeak >= 90 ? '#ff6f59' : isMine ? '#58d7ff' : '#95d5b2';
-  const readySlots = autoMergeSlots(state, playerId);
+  const readySlots = mergeCueSlots(state, playerId);
 
   drawMetalPlate(rect.x, rect.y, rect.w, rect.h, 10, heatPeak >= 90 ? 'rgba(255, 111, 89, 0.7)' : isMine ? 'rgba(88, 215, 255, 0.72)' : 'rgba(149, 213, 178, 0.62)');
   ctx.strokeStyle = border;
@@ -1462,6 +1517,7 @@ function drawEffects(state) {
       drawDeathBurst(effect, alpha);
     } else if (effect.type === 'link_pulse' || effect.type === 'link_pulse_save') {
       const { loop } = sceneLayout;
+      drawPulseCoolingWave(state, effect, alpha);
       ctx.save();
       ctx.globalAlpha = Math.min(1, alpha * 1.35);
       ctx.shadowColor = effect.type === 'link_pulse_save' ? '#f4c95d' : '#58d7ff';
@@ -1484,6 +1540,8 @@ function drawEffects(state) {
       if (effect.type === 'merge' && center) drawRewardFlyout(effect, center, alpha);
     } else if (effect.type === 'repair') {
       drawSlotPulse(state, effect, alpha, '#95d5b2');
+    } else if (effect.type === 'overclock') {
+      drawOverdriveBurst(state, effect, alpha);
     } else {
       const { loop } = sceneLayout;
       const color = effect.type === 'merge' ? '#f4c95d' : effect.type === 'overclock' || effect.type === 'shutdown' ? '#ff6f59' : '#8ee6d2';
@@ -1579,6 +1637,7 @@ function screenShakeOffset(state) {
   const power = state.effects.reduce((max, effect) => {
     if (effect.type === 'death_burst' && effect.targetType === 'boss') return Math.max(max, 2.8 * Math.max(0, effect.ttl));
     if (effect.type === 'boss_execute') return Math.max(max, 2.2 * Math.max(0, effect.ttl));
+    if (effect.type === 'overclock') return Math.max(max, 1.9 * Math.max(0, effect.ttl));
     if (effect.type === 'link_pulse_save') return Math.max(max, 1.8 * Math.max(0, effect.ttl));
     if (effect.type === 'loop_complete') return Math.max(max, 1.6 * Math.max(0, effect.ttl));
     if (effect.type === 'death_burst') return Math.max(max, 0.85 * Math.max(0, effect.ttl));
