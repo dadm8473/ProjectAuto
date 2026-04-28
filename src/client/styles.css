@@ -761,6 +761,14 @@ button:disabled:active {
     rgba(245, 240, 220, 0.045);
 }
 
+.mission-row[data-claimed="true"],
+.track-row[data-claimed="true"],
+.row[data-claimed="true"] {
+  border-color: rgba(88, 215, 255, 0.18);
+  background: rgba(88, 215, 255, 0.045);
+  opacity: 0.82;
+}
+
 .row strong,
 .mission-row strong,
 .track-row strong {

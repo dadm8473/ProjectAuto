@@ -12,6 +12,7 @@ import {
 } from './content.js';
 
 let nextId = 1;
+let nextRunId = 1;
 const EVENT_LOG_LIMIT = 24;
 
 function clone(value) {
@@ -20,6 +21,11 @@ function clone(value) {
 
 function roundedSeconds(value) {
   return Number(Math.max(0, value).toFixed(2));
+}
+
+function uniqueRunId(seed) {
+  const nonce = globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${nextRunId++}`;
+  return `signal-${seed}-${nonce}`;
 }
 
 function pushEvent(game, event) {
@@ -415,7 +421,9 @@ function resolveNoise(game, dt) {
       game.stats.kills += 1;
       game.resources.charge += noise.rewardCharge;
       game.resources.linkEnergy += noise.rewardLink;
-      game.resources.xp += noise.type === 'boss' ? 30 : 3;
+      const xpGain = noise.type === 'boss' ? 30 : 3;
+      game.resources.xp += xpGain;
+      game.metaEarned.xp += xpGain;
       game.effects.push({
         id: `fx${nextId++}`,
         type: 'death_burst',
@@ -428,6 +436,7 @@ function resolveNoise(game, dt) {
         game.boss.active = false;
         game.boss.lastKillWave = game.wave.index + 1;
         game.resources.gems += 10;
+        game.metaEarned.gems += 10;
         game.resources.swapCharges.p1 += 2;
         game.resources.swapCharges.p2 += 2;
         pushEvent(game, { type: 'boss_defeated', wave: game.wave.index + 1, bossId: noise.id, rewardCharge: noise.rewardCharge, rewardLink: noise.rewardLink });
@@ -609,7 +618,7 @@ export function createGame({ mode = 'bot', seed = Date.now() } = {}) {
   nextId = 1;
   return {
     title: 'Signal Relay',
-    id: `signal-${seed}`,
+    id: uniqueRunId(seed),
     privateSeed: seed,
     now: 0,
     mode,
@@ -626,6 +635,9 @@ export function createGame({ mode = 'bot', seed = Date.now() } = {}) {
       p2: { id: 'p2', name: 'Partner Relay Board', anchorIndex: 5, slots: Array(GAME_RULES.boardSlots).fill(null), comboText: '', overclockUntil: 0, overclockResolvedUntil: 0, disabledLinks: [] }
     },
     resources: { charge: 110, linkEnergy: 50, swapCharges: { p1: 1, p2: 1 }, gems: 30, xp: 0 },
+    metaEarned: { gems: 0, xp: 0 },
+    metaSpent: { gems: 0 },
+    metaProfile: { startingGems: 0 },
     supplyOdds: { ...SUPPLY_TABLE },
     wave: { index: 0, queue: [], spawnTimer: 0, restTimer: 2.0, active: false, startedAt: 0, disruptionFired: false },
     boss: { active: false, timer: GAME_RULES.bossTimer, limit: GAME_RULES.bossTimer, lastKillWave: 0 },
@@ -785,6 +797,7 @@ export function castLinkPulse(game, { playerId }) {
     targetPlayerId,
     targetCount: affectedTargets.length,
     signalGain,
+    bossActive: game.boss.active,
     savedUnitIds,
     cooldown: GAME_RULES.linkPulseCooldown
   });
@@ -807,18 +820,20 @@ export function overclockRelay(game, { playerId, slot }) {
   return { ok: true, boardId: playerId };
 }
 
-export function tryBuyShopItem(game, { itemId }) {
+export function tryBuyShopItem(game, { itemId, ownedUnlocks = game.unlocks } = {}) {
   const item = SHOP.items.find((entry) => entry.id === itemId);
   if (!item) return { ok: false, reason: 'Shop item not found.' };
+  if (item.grant.cosmetic && ownedUnlocks.includes(item.grant.cosmetic)) return { ok: false, reason: 'Already unlocked.' };
   for (const [currency, amount] of Object.entries(item.price)) {
     if ((game.resources[currency] ?? 0) < amount) return { ok: false, reason: `Not enough ${currency}.` };
   }
   for (const [currency, amount] of Object.entries(item.price)) game.resources[currency] -= amount;
+  if (item.price.gems) game.metaSpent.gems += item.price.gems;
   if (item.grant.charge) game.resources.charge += item.grant.charge;
   if (item.grant.linkEnergy) game.resources.linkEnergy += item.grant.linkEnergy;
   if (item.grant.gems) game.resources.gems += item.grant.gems;
   if (item.grant.cosmetic && !game.unlocks.includes(item.grant.cosmetic)) game.unlocks.push(item.grant.cosmetic);
-  return { ok: true, itemId };
+  return { ok: true, itemId, spent: { gems: item.price.gems ?? 0 }, unlock: item.grant.cosmetic ?? '' };
 }
 
 function bossDisruptionTypeForWave(waveNumber) {
@@ -937,6 +952,10 @@ function finishGame(game, { won, code, text }) {
     won,
     code,
     text,
+    runId: game.id,
+    earned: clone(game.metaEarned ?? { gems: 0, xp: 0 }),
+    spent: clone(game.metaSpent ?? { gems: 0 }),
+    startingProfileGems: Math.max(0, Math.floor(game.metaProfile?.startingGems ?? 0)),
     wave: Math.min(game.wave.index + 1, GAME_RULES.maxWave),
     time: roundedSeconds(game.now),
     stats: clone(game.stats)
@@ -999,6 +1018,7 @@ export function tickGame(game, dt) {
     const completedWave = game.wave.index + 1;
     const completedName = game.wave.name ?? WAVE_PLAN[Math.min(game.wave.index, WAVE_PLAN.length - 1)]?.name ?? `Wave ${completedWave}`;
     const reward = game.wave.clearReward ?? { charge: 45 + completedWave * 8, linkEnergy: 12, gems: completedWave % 3 === 0 ? 8 : 0 };
+    const signalBeforeClearRecovery = Math.ceil(game.signal.integrity);
     game.wave.index += 1;
     game.wave.active = false;
     game.wave.restTimer = 3.0;
@@ -1009,6 +1029,7 @@ export function tickGame(game, dt) {
     game.resources.charge += reward.charge ?? 0;
     game.resources.linkEnergy += reward.linkEnergy ?? 0;
     game.resources.gems += reward.gems ?? 0;
+    game.metaEarned.gems += reward.gems ?? 0;
     game.signal.integrity = Math.min(GAME_RULES.signalMax, game.signal.integrity + 5);
     game.saturation.count = Math.max(0, game.saturation.count - 18);
     for (const board of Object.values(game.boards)) {
@@ -1023,10 +1044,12 @@ export function tickGame(game, dt) {
       chargeReward: reward.charge ?? 0,
       linkReward: reward.linkEnergy ?? 0,
       gemReward: reward.gems ?? 0,
-      heatDrop: GAME_RULES.waveClearHeatDrop
+      heatDrop: GAME_RULES.waveClearHeatDrop,
+      signalIntegrity: signalBeforeClearRecovery
     });
     if (game.wave.index >= GAME_RULES.maxWave) {
       game.resources.gems += 120;
+      game.metaEarned.gems += 120;
       finishGame(game, { won: true, code: 'win_signal_lock', text: 'Signal loop stabilized.' });
     }
   }

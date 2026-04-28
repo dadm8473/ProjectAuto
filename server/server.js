@@ -15,6 +15,7 @@ import {
   upgradeSupplyFocus
 } from '../src/shared/game.js';
 import { boardForPlayer, createOnlineRoom, resetFinishedRoomForJoin, resetRoomGame } from './room.js';
+import { approveClientPurchase, safeProfile } from './profile_purchase.js';
 import { acceptKey, decodeClientFrame, encodeServerFrame } from './ws.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -82,12 +83,21 @@ function assignPlayers() {
   }
 }
 
+function applyProfileToRoomGame(profile) {
+  const safe = safeProfile(profile);
+  room.game.resources.gems = Math.max(room.game.resources.gems ?? 0, safe.gems);
+  room.game.metaProfile.startingGems = Math.max(room.game.metaProfile.startingGems ?? 0, safe.gems);
+  room.game.unlocks = [...new Set([...(room.game.unlocks ?? []), ...safe.unlocks])];
+}
+
 function handleAction(socket, action) {
   const client = room.clients.get(socket);
   if (action.type === 'join') {
     client.playerId = action.playerId || client.playerId;
     client.name = String(action.name || 'Player').slice(0, 18);
+    client.profile = safeProfile(action.profile);
     assignPlayers();
+    applyProfileToRoomGame(client.profile);
     const boardPlayer = boardForPlayer(room.game.players, client.playerId);
     send(socket, { type: 'state', state: serializeState(room.game), playerId: client.playerId, boardPlayer });
     return;
@@ -101,7 +111,15 @@ function handleAction(socket, action) {
   if (action.type === 'focus' || action.type === 'chance') result = upgradeSupplyFocus(room.game, { playerId: boardPlayer });
   if (action.type === 'pulse' || action.type === 'boost') result = castLinkPulse(room.game, { playerId: boardPlayer });
   if (action.type === 'overclock') result = overclockRelay(room.game, { playerId: boardPlayer, slot: action.slot });
-  if (action.type === 'buy') result = tryBuyShopItem(room.game, { playerId, itemId: action.itemId });
+  if (action.type === 'buy') {
+    const approval = approveClientPurchase(client, action);
+    if (!approval.ok) result = { ok: false, reason: approval.reason };
+    else {
+      room.game.resources.gems = Math.max(room.game.resources.gems ?? 0, approval.profile.gems + (approval.item.price.gems ?? 0));
+      result = tryBuyShopItem(room.game, { playerId, itemId: action.itemId, ownedUnlocks: approval.profile.unlocks.filter((unlock) => unlock !== approval.item.grant.cosmetic) });
+    }
+  }
+  if (result.ok) send(socket, { type: 'action_result', actionType: action.type, result, state: serializeState(room.game) });
   if (!result.ok) send(socket, { type: 'error', reason: result.reason });
 }
 

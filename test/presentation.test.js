@@ -117,6 +117,29 @@ test('service shell has launch loadout art and sectioned BM flow', async () => {
   }
 });
 
+test('client stores meta progression and shows earned run rewards', async () => {
+  const js = await readFile('src/client/app.js', 'utf8');
+  for (const marker of [
+    'PROFILE_STORAGE_KEY',
+    'function loadMetaProfile',
+    'function saveMetaProfile',
+    'function applyProfileToGame',
+    'function syncProfileAfterPurchase',
+    'applyRunToProfile(metaProfile, settledState)',
+    'startingProfileGems',
+    'online ? activeRunProfileGems',
+    'onlineProfileSpentGems',
+    'online ? metaProfile.gems',
+    "action.type === 'buy' ? { profile: { gems: metaProfile.gems, unlocks: metaProfile.unlocks } }",
+    "message.type === 'action_result'",
+    'summary.totalGems',
+    'data-claimed="true"',
+    'data-claimed="false"'
+  ]) {
+    assert.equal(js.includes(marker), true, marker);
+  }
+});
+
 test('browser chrome has a committed icon to avoid favicon noise in smoke tests', async () => {
   const html = await readFile('index.html', 'utf8');
   assert.equal(html.includes('rel="icon"'), true);

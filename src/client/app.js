@@ -17,6 +17,7 @@ import {
   SHOP
 } from '../shared/game.js';
 import { eventLabel } from '../shared/event_text.js';
+import { applyRunToProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { VIEW_WIDTH, MIN_VIEW_HEIGHT, buildSceneLayout, computeCanvasViewport } from './render_layout.js';
 
 const canvas = document.querySelector('#gameCanvas');
@@ -68,8 +69,12 @@ noiseWorldSprites.src = '/src/client/assets/generated/noise-world-sprites.png';
 const bossDisruptionAtlas = new Image();
 bossDisruptionAtlas.src = '/src/client/assets/generated/boss-disruption-atlas.png';
 
+const PROFILE_STORAGE_KEY = 'signal-relay-profile-v1';
 const localPlayerId = `p${Math.floor(Math.random() * 9000) + 1000}`;
-let game = createGame({ mode: 'bot', seed: Date.now() % 100000 });
+let metaProfile = loadMetaProfile();
+let activeRunProfileGems = metaProfile.gems;
+let onlineProfileSpentGems = 0;
+let game = createProfiledGame({ mode: 'bot', seed: Date.now() % 100000 });
 let online = false;
 let socket = null;
 let last = performance.now();
@@ -79,6 +84,57 @@ let runStarted = false;
 let resultView = null;
 let viewport = computeCanvasViewport();
 let sceneLayout = buildSceneLayout(viewport.viewHeight);
+
+function loadMetaProfile() {
+  try {
+    return normalizeMetaProfile(JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY) ?? 'null'));
+  } catch {
+    return normalizeMetaProfile(null);
+  }
+}
+
+function saveMetaProfile() {
+  try {
+    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(metaProfile));
+  } catch {
+    // Local profile storage is best-effort; gameplay must still work in private browsing.
+  }
+}
+
+function applyProfileToGame(targetGame = game) {
+  targetGame.resources.gems = Math.max(targetGame.resources.gems ?? 0, metaProfile.gems);
+  targetGame.unlocks = [...new Set([...(targetGame.unlocks ?? []), ...metaProfile.unlocks])];
+  targetGame.metaProfile = { ...(targetGame.metaProfile ?? {}), startingGems: metaProfile.gems };
+  return targetGame;
+}
+
+function createProfiledGame(options) {
+  return applyProfileToGame(createGame(options));
+}
+
+function syncProfileAfterPurchase(result) {
+  const spentGems = Math.max(0, Math.floor(result?.spent?.gems ?? 0));
+  const unlocks = result?.unlock ? [...metaProfile.unlocks, result.unlock] : metaProfile.unlocks;
+  metaProfile = normalizeMetaProfile({
+    ...metaProfile,
+    gems: Math.max(0, metaProfile.gems - spentGems),
+    unlocks
+  });
+  saveMetaProfile();
+  buildShop();
+}
+
+function resultStateForProfile(state) {
+  const result = {
+    ...state.result,
+    startingProfileGems: online ? activeRunProfileGems : (state.result.startingProfileGems ?? activeRunProfileGems),
+    spent: {
+      ...(state.result.spent ?? {}),
+      gems: online ? onlineProfileSpentGems : (state.result.spent?.gems ?? 0)
+    }
+  };
+  return { ...state, result };
+}
 
 function showToast(message) {
   toast.textContent = message;
@@ -129,17 +185,27 @@ function resultCopyFor(code, won) {
   return copy[code] ?? [won ? 'MISSION CLEAR' : 'MISSION FAILED', won ? 'Signal Lock' : 'Signal Lost', 'Run complete.'];
 }
 
-function buildResultView(state) {
+function rewardSummaryText(summary) {
+  if (!summary) return 'Wave rewards saved. Rebuild and retry.';
+  const gemText = summary.totalGems >= 0 ? `+${summary.totalGems} G` : `${summary.totalGems} G`;
+  const parts = [`+${summary.run.xp} XP`, gemText];
+  if (summary.missions.length > 0) parts.push(`${summary.missions.length} missions`);
+  if (summary.passRewards.length > 0) parts.push(`${summary.passRewards.length} pass rewards`);
+  return parts.join(' · ');
+}
+
+function buildResultView(state, summary) {
   const [code, title, reason] = resultCopyFor(state.result.code, state.won);
   return {
     code,
     title,
     reason,
-    reward: state.won ? 'Season XP and mission rewards secured' : 'Wave rewards saved. Rebuild and retry.',
+    reward: rewardSummaryText(summary),
     stats: [
       ['Wave', state.result.wave],
       ['Time', `${Math.floor(state.result.time)}s`],
-      ['Kills', state.result.stats.kills]
+      ['Kills', state.result.stats.kills],
+      ['Profile', `${metaProfile.gems}G`]
     ]
   };
 }
@@ -178,12 +244,23 @@ function localAction(action) {
     showToast(saved ? 'Saved by Link Pulse' : 'Link Pulse');
   }
   if (result.ok && action.type === 'overclock') showToast('Overclock armed.');
-  if (result.ok && action.type === 'buy') showToast('Unlocked.');
+  if (result.ok && action.type === 'buy') {
+    syncProfileAfterPurchase(result);
+    showToast('Unlocked.');
+  }
 }
 
 function command(action) {
   if (!runStarted || resultView) return;
-  if (send({ ...action, slotIds: selected, from: selected[0], to: selected[1], slot: selected.at(-1) })) return;
+  const onlineAction = {
+    ...action,
+    slotIds: selected,
+    from: selected[0],
+    to: selected[1],
+    slot: selected.at(-1),
+    ...(action.type === 'buy' ? { profile: { gems: metaProfile.gems, unlocks: metaProfile.unlocks } } : {})
+  };
+  if (send(onlineAction)) return;
   localAction(action);
 }
 
@@ -203,7 +280,9 @@ function showLaunchOverlay() {
   clearResultOverlay();
   selected = [];
   localBoardId = 'p1';
-  game = createGame({ mode: 'bot', seed: Date.now() % 100000 });
+  activeRunProfileGems = metaProfile.gems;
+  onlineProfileSpentGems = 0;
+  game = createProfiledGame({ mode: 'bot', seed: Date.now() % 100000 });
   netStatus.textContent = 'BOT CO-OP';
   launchOverlay.hidden = false;
 }
@@ -215,13 +294,23 @@ function startBotRun() {
   clearResultOverlay();
   selected = [];
   localBoardId = 'p1';
-  game = createGame({ mode: 'bot', seed: Date.now() % 100000 });
+  activeRunProfileGems = metaProfile.gems;
+  onlineProfileSpentGems = 0;
+  game = createProfiledGame({ mode: 'bot', seed: Date.now() % 100000 });
   netStatus.textContent = 'BOT CO-OP';
   hideLaunchOverlay();
 }
 
 function syncResultOverlay(state) {
-  if (runStarted && state.over && state.result) resultView = buildResultView(state);
+  if (runStarted && state.over && state.result && !resultView) {
+    const settledState = resultStateForProfile(state);
+    const { profile, summary } = applyRunToProfile(metaProfile, settledState);
+    metaProfile = profile;
+    saveMetaProfile();
+    applyProfileToGame(game);
+    buildShop();
+    resultView = buildResultView(settledState, summary);
+  }
   if (!resultView) {
     resultOverlay.hidden = true;
     return;
@@ -1488,7 +1577,7 @@ function updateHud() {
   const state = currentState();
   chargeMeter.textContent = `C ${Math.floor(state.resources.charge)}`;
   linkMeter.textContent = `L ${Math.floor(state.resources.linkEnergy)}`;
-  gemMeter.textContent = `G ${Math.floor(state.resources.gems)}`;
+  gemMeter.textContent = `G ${online ? metaProfile.gems : Math.floor(state.resources.gems)}`;
   waveMeter.textContent = `Wave ${Math.min(state.wave.index + 1, GAME_RULES.maxWave)}`;
   signalMeter.textContent = `Signal ${Math.ceil(state.signal.integrity)} / Sat ${Math.floor(state.saturation.count)}`;
   bossMeter.textContent = state.boss.active ? `Boss ${Math.ceil(state.boss.timer)}s` : 'Boss --';
@@ -1508,22 +1597,25 @@ function loop(now) {
 
 function buildShop() {
   shopList.innerHTML = [
-    buildShopSection('UNLOCKS', SHOP.items.map((item) => `
-    <div class="row">
+    buildShopSection('UNLOCKS', SHOP.items.map((item) => {
+      const owned = item.grant.cosmetic ? metaProfile.unlocks.includes(item.grant.cosmetic) : false;
+      return `
+    <div class="row" ${owned ? 'data-claimed="true"' : 'data-claimed="false"'}>
       <div><strong>${item.name}</strong><span>${item.description}</span></div>
-      <button data-buy="${item.id}">${item.price.gems} G</button>
+      <button data-buy="${item.id}" ${owned ? 'disabled' : ''}>${owned ? 'Owned' : `${item.price.gems} G`}</button>
     </div>
-    `).join('')),
+    `;
+    }).join('')),
     buildShopSection('MISSIONS', SHOP.dailyMissions.map((mission) => `
-    <div class="mission-row">
-      <div><strong>${mission.text}</strong><span>Reward ${mission.reward.gems} G</span></div>
-      <span>Daily</span>
+    <div class="mission-row" ${metaProfile.claimedMissions.includes(mission.id) ? 'data-claimed="true"' : 'data-claimed="false"'}>
+      <div><strong>${mission.text}</strong><span>${metaProfile.claimedMissions.includes(mission.id) ? 'Reward claimed' : `Reward ${mission.reward.gems} G`}</span></div>
+      <span>${metaProfile.claimedMissions.includes(mission.id) ? 'Done' : 'Daily'}</span>
     </div>
     `).join('')),
     buildShopSection('SEASON TRACK', SHOP.pass.tiers.map((tier, index) => `
-    <div class="track-row">
+    <div class="track-row" ${metaProfile.claimedPassTiers.includes(index) ? 'data-claimed="true"' : 'data-claimed="false"'}>
       <div><strong>${SHOP.pass.name} ${index + 1}</strong><span>${tier.xp} XP reward track</span></div>
-      <span>${tier.grant.gems ? `${tier.grant.gems} G` : 'Skin'}</span>
+      <span>${metaProfile.claimedPassTiers.includes(index) ? 'Claimed' : tier.grant.gems ? `${tier.grant.gems} G` : 'Skin'}</span>
     </div>
     `).join(''))
   ].join('');
@@ -1551,9 +1643,11 @@ function connectOnline() {
     if (socket !== activeSocket) return;
     online = true;
     selected = [];
+    activeRunProfileGems = metaProfile.gems;
+    onlineProfileSpentGems = 0;
     netStatus.textContent = 'ONLINE CO-OP';
     hideLaunchOverlay();
-    activeSocket.send(JSON.stringify({ type: 'join', playerId: localPlayerId, name: 'Player' }));
+    activeSocket.send(JSON.stringify({ type: 'join', playerId: localPlayerId, name: 'Player', profile: { gems: metaProfile.gems, unlocks: metaProfile.unlocks } }));
   });
   activeSocket.addEventListener('message', (event) => {
     if (socket !== activeSocket) return;
@@ -1562,6 +1656,10 @@ function connectOnline() {
       if (message.boardPlayer && message.boardPlayer !== localBoardId) selected = [];
       localBoardId = message.boardPlayer ?? localBoardId;
       game = message.state;
+    }
+    if (message.type === 'action_result' && message.actionType === 'buy' && message.result?.ok) {
+      onlineProfileSpentGems += Math.max(0, Math.floor(message.result.spent?.gems ?? 0));
+      syncProfileAfterPurchase(message.result);
     }
     if (message.type === 'error') showToast(message.reason);
   });
@@ -1579,7 +1677,7 @@ function connectOnline() {
     localBoardId = 'p1';
     netStatus.textContent = 'BOT CO-OP';
     showToast('Bot co-op resumed.');
-    game = createGame({ mode: 'bot', seed: Date.now() % 100000 });
+    game = createProfiledGame({ mode: 'bot', seed: Date.now() % 100000 });
     runStarted = true;
   });
 }

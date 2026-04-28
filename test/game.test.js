@@ -70,6 +70,13 @@ test('a new run is a two-board Signal Relay defense with earned-only BM scaffold
   assert.equal(SHOP.items.every((item) => item.realMoney === false), true);
 });
 
+test('run ids stay unique when a deterministic seed is reused', () => {
+  const first = createGame({ mode: 'bot', seed: 42 });
+  const second = createGame({ mode: 'bot', seed: 42 });
+
+  assert.notEqual(first.id, second.id);
+});
+
 test('Supply spends Charge, uses socket priority, and advances pity', () => {
   const game = createGame({ mode: 'bot', seed: 9 });
   const before = game.resources.charge;
@@ -379,6 +386,10 @@ test('serialized merge availability requires an actual matching trio', () => {
 
 test('terminal states emit a run result and event log entry with one readable cause', () => {
   const game = createGame({ mode: 'solo', seed: 87 });
+  game.metaEarned.gems = 12;
+  game.metaEarned.xp = 27;
+  game.metaSpent.gems = 5;
+  game.metaProfile.startingGems = 80;
   game.signal.integrity = 0;
 
   tickGame(game, 0);
@@ -388,6 +399,9 @@ test('terminal states emit a run result and event log entry with one readable ca
   assert.equal(snapshot.result.code, 'loss_signal_collapse');
   assert.equal(snapshot.result.text, 'Signal collapsed.');
   assert.equal(snapshot.result.won, false);
+  assert.deepEqual(snapshot.result.earned, { gems: 12, xp: 27 });
+  assert.deepEqual(snapshot.result.spent, { gems: 5 });
+  assert.equal(snapshot.result.startingProfileGems, 80);
   assert.equal(snapshot.eventLog.at(-1).type, 'run_finished');
   assert.equal(snapshot.eventLog.at(-1).code, 'loss_signal_collapse');
 });
@@ -656,6 +670,13 @@ test('shop purchases use earned gems and unlock cosmetic-only rewards', () => {
   const purchase = tryBuyShopItem(game, { itemId: 'mythic-aura' });
 
   assert.equal(purchase.ok, true);
+  assert.equal(game.resources.gems, 60);
+  assert.deepEqual(game.unlocks, ['mythic-aura']);
+
+  const duplicate = tryBuyShopItem(game, { itemId: 'mythic-aura' });
+
+  assert.equal(duplicate.ok, false);
+  assert.equal(duplicate.reason, 'Already unlocked.');
   assert.equal(game.resources.gems, 60);
   assert.deepEqual(game.unlocks, ['mythic-aura']);
 });
