@@ -11,7 +11,9 @@ Every visible unit, board surface, loop effect, and premium UI accent should loo
 | Art direction reference | `src/client/assets/generated/signal-relay-art-direction.png` | Renderer backdrop reference and visual consistency target |
 | Playfield frame | `src/client/assets/generated/signal-relay-playfield-frame.png` | Low-opacity texture/reference layer; gameplay boards and loop are rendered from the code coordinate map |
 | Relay icon atlas | `src/client/assets/generated/relay-unit-atlas.png` | 20 Relay icons in roster order |
+| Relay world sprites | `src/client/assets/generated/relay-world-sprites.png` | RGBA post-processed 4x5 Relay atlas with square 250px cells, used by the live board with card backgrounds removed |
 | Enemy/Noise atlas | `src/client/assets/generated/noise-enemy-atlas.png` | Track Noise and boss sprites in 4x2 order; normalized to 1776x888 |
+| Noise world sprites | `src/client/assets/generated/noise-world-sprites.png` | RGBA post-processed 4x2 Noise atlas used on the signal loop, with card backgrounds removed |
 | Boss disruption atlas | `src/client/assets/generated/boss-disruption-atlas.png` | Boss Orchid, Boss Mirror, Origin Null event-feed cards; normalized to 2106x747 |
 | UI icon atlas | `src/client/assets/generated/ui-icon-atlas.png` | Resource and action button icons in 4x3 order; normalized to 1256x1254 |
 
@@ -28,6 +30,7 @@ Every visible unit, board surface, loop effect, and premium UI accent should loo
 ## Relay Atlas Order
 
 The generated atlas is a 4 columns by 5 rows image. Code slices it by `atlasIndex` in this order:
+The live board renders the RGBA `relay-world-sprites.png` derivative so Relay devices sit inside sockets without their source card frame.
 
 1. Needle Beam
 2. Prism Lance
@@ -101,6 +104,7 @@ Avoid: words, letters, numbers, dice pips, random summon icons, chibi units, fan
 
 The generated atlas is a 4 columns by 2 rows image. Code slices it by `NOISE_TYPES[id].atlasIndex` in this order:
 The committed file must have dimensions divisible by 4 and 2. The current normalized target is 1776x888.
+The live loop renders the RGBA `noise-world-sprites.png` derivative so enemies read as in-world threats instead of square UI cards.
 
 1. Flicker
 2. Crawler

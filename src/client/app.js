@@ -17,6 +17,7 @@ import {
   SHOP
 } from '../shared/game.js';
 import { eventLabel } from '../shared/event_text.js';
+import { VIEW_WIDTH, MIN_VIEW_HEIGHT, buildSceneLayout, computeCanvasViewport } from './render_layout.js';
 
 const canvas = document.querySelector('#gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -46,25 +47,24 @@ const playfieldImage = new Image();
 playfieldImage.src = '/src/client/assets/generated/signal-relay-playfield-frame.png';
 const relayAtlas = new Image();
 relayAtlas.src = '/src/client/assets/generated/relay-unit-atlas.png';
+const relayWorldSprites = new Image();
+relayWorldSprites.src = '/src/client/assets/generated/relay-world-sprites.png';
 const noiseEnemyAtlas = new Image();
 noiseEnemyAtlas.src = '/src/client/assets/generated/noise-enemy-atlas.png';
+const noiseWorldSprites = new Image();
+noiseWorldSprites.src = '/src/client/assets/generated/noise-world-sprites.png';
 const bossDisruptionAtlas = new Image();
 bossDisruptionAtlas.src = '/src/client/assets/generated/boss-disruption-atlas.png';
 
 const localPlayerId = `p${Math.floor(Math.random() * 9000) + 1000}`;
-const VIEW_WIDTH = 390;
-const VIEW_HEIGHT = 500;
 let game = createGame({ mode: 'bot', seed: Date.now() % 100000 });
 let online = false;
 let socket = null;
 let last = performance.now();
 let selected = [];
 let localBoardId = 'p1';
-
-const boardRects = {
-  p2: { x: 18, y: 64, w: 354, h: 126 },
-  p1: { x: 18, y: 354, w: 354, h: 126 }
-};
+let viewport = computeCanvasViewport();
+let sceneLayout = buildSceneLayout(viewport.viewHeight);
 
 function showToast(message) {
   toast.textContent = message;
@@ -124,15 +124,15 @@ function command(action) {
 function canvasPoint(event) {
   const rect = canvas.getBoundingClientRect();
   return {
-    x: ((event.clientX - rect.left) / rect.width) * VIEW_WIDTH,
-    y: ((event.clientY - rect.top) / rect.height) * VIEW_HEIGHT
+    x: ((event.clientX - rect.left) / rect.width) * viewport.viewWidth,
+    y: ((event.clientY - rect.top) / rect.height) * viewport.viewHeight
   };
 }
 
 function slotAt(point) {
   const entries = [
-    [partnerId(localBoardId), boardRects.p2],
-    [localBoardId, boardRects.p1]
+    [partnerId(localBoardId), sceneLayout.boardRects.p2],
+    [localBoardId, sceneLayout.boardRects.p1]
   ];
   for (const [playerId, rect] of entries) {
     if (point.x < rect.x || point.x > rect.x + rect.w || point.y < rect.y || point.y > rect.y + rect.h) continue;
@@ -148,7 +148,7 @@ function partnerId(playerId) {
 }
 
 function displayRectForBoard(playerId) {
-  return playerId === localBoardId ? boardRects.p1 : boardRects.p2;
+  return playerId === localBoardId ? sceneLayout.boardRects.p1 : sceneLayout.boardRects.p2;
 }
 
 function boardSlotRect(rect, index) {
@@ -187,32 +187,32 @@ function drawAtlasCell(image, columns, rows, index, x, y, w, h, alpha = 1) {
 
 function drawBackground(state) {
   ctx.fillStyle = '#061010';
-  ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
-  const usedImage = coverImage(playfieldImage, 0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0.18) || coverImage(artDirectionImage, 0, 0, VIEW_WIDTH, VIEW_HEIGHT, 0.14);
+  ctx.fillRect(0, 0, VIEW_WIDTH, viewport.viewHeight);
+  const usedImage = coverImage(playfieldImage, 0, 0, VIEW_WIDTH, viewport.viewHeight, 0.18) || coverImage(artDirectionImage, 0, 0, VIEW_WIDTH, viewport.viewHeight, 0.14);
   if (!usedImage) {
-    const gradient = ctx.createLinearGradient(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+    const gradient = ctx.createLinearGradient(0, 0, VIEW_WIDTH, viewport.viewHeight);
     gradient.addColorStop(0, '#101312');
     gradient.addColorStop(0.46, '#17251f');
     gradient.addColorStop(1, '#231619');
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+    ctx.fillRect(0, 0, VIEW_WIDTH, viewport.viewHeight);
   }
   ctx.fillStyle = 'rgba(2, 5, 6, 0.62)';
-  ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+  ctx.fillRect(0, 0, VIEW_WIDTH, viewport.viewHeight);
 
-  const boardGlow = ctx.createLinearGradient(0, 56, 0, 484);
+  const boardGlow = ctx.createLinearGradient(0, 56, 0, viewport.viewHeight - 16);
   boardGlow.addColorStop(0, 'rgba(88, 215, 255, 0.06)');
   boardGlow.addColorStop(0.5, 'rgba(244, 201, 93, 0.04)');
   boardGlow.addColorStop(1, 'rgba(88, 215, 255, 0.08)');
   ctx.fillStyle = boardGlow;
-  ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+  ctx.fillRect(0, 0, VIEW_WIDTH, viewport.viewHeight);
 
-  const vignette = ctx.createRadialGradient(195, 250, 74, 195, 250, 310);
+  const vignette = ctx.createRadialGradient(195, viewport.viewHeight * 0.5, 74, 195, viewport.viewHeight * 0.5, 330);
   vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
   vignette.addColorStop(0.7, 'rgba(0, 0, 0, 0.16)');
   vignette.addColorStop(1, 'rgba(0, 0, 0, 0.5)');
   ctx.fillStyle = vignette;
-  ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+  ctx.fillRect(0, 0, VIEW_WIDTH, viewport.viewHeight);
 
   ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
   ctx.shadowBlur = 10;
@@ -247,21 +247,20 @@ function drawMetalPlate(x, y, w, h, radius, accent) {
 
 function syncCanvasScale() {
   const stageRect = stageWrap.getBoundingClientRect();
-  const displayScale = Math.min((stageRect.width || VIEW_WIDTH) / VIEW_WIDTH, (stageRect.height || VIEW_HEIGHT) / VIEW_HEIGHT);
-  const displayWidth = Math.max(1, Math.floor(VIEW_WIDTH * displayScale));
-  const displayHeight = Math.max(1, Math.floor(VIEW_HEIGHT * displayScale));
-  const nextStyleWidth = `${displayWidth}px`;
-  const nextStyleHeight = `${displayHeight}px`;
+  viewport = computeCanvasViewport({ stageWidth: stageRect.width || VIEW_WIDTH, stageHeight: stageRect.height || MIN_VIEW_HEIGHT });
+  sceneLayout = buildSceneLayout(viewport.viewHeight);
+  const nextStyleWidth = `${viewport.displayWidth}px`;
+  const nextStyleHeight = `${viewport.displayHeight}px`;
   if (canvas.style.width !== nextStyleWidth) canvas.style.width = nextStyleWidth;
   if (canvas.style.height !== nextStyleHeight) canvas.style.height = nextStyleHeight;
   const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
-  const nextWidth = Math.max(1, Math.round(displayWidth * pixelRatio));
-  const nextHeight = Math.max(1, Math.round(displayHeight * pixelRatio));
+  const nextWidth = Math.max(1, Math.round(viewport.displayWidth * pixelRatio));
+  const nextHeight = Math.max(1, Math.round(viewport.displayHeight * pixelRatio));
   if (canvas.width !== nextWidth || canvas.height !== nextHeight) {
     canvas.width = nextWidth;
     canvas.height = nextHeight;
   }
-  ctx.setTransform(canvas.width / VIEW_WIDTH, 0, 0, canvas.height / VIEW_HEIGHT, 0, 0);
+  ctx.setTransform(canvas.width / viewport.viewWidth, 0, 0, canvas.height / viewport.viewHeight, 0, 0);
 }
 
 function drawPill(x, y, w, label, value, color) {
@@ -300,7 +299,8 @@ function drawEventFeed(state) {
   const label = eventLabel(event);
   const artIndex = eventArtIndex(event);
   const hasBossArt = artIndex >= 0 && bossDisruptionAtlas.complete && bossDisruptionAtlas.naturalWidth > 0;
-  const banner = hasBossArt ? { x: 18, y: 189, w: 354, h: 48, r: 10 } : { x: 18, y: 193, w: 354, h: 18, r: 8 };
+  const y = sceneLayout.eventBanner.y;
+  const banner = hasBossArt ? { x: 18, y, w: 354, h: 48, r: 10 } : { x: 18, y: y + 4, w: 354, h: 18, r: 8 };
   ctx.save();
   ctx.fillStyle = 'rgba(5, 7, 8, 0.76)';
   ctx.strokeStyle = 'rgba(244, 201, 93, 0.22)';
@@ -337,22 +337,19 @@ function drawEventFeed(state) {
 
 function drawTrack(state) {
   ctx.save();
-  drawMetalPlate(20, 203, 350, 128, 22, 'rgba(244, 201, 93, 0.2)');
+  const { track, loop } = sceneLayout;
+  drawMetalPlate(track.x, track.y, track.w, track.h, 22, 'rgba(244, 201, 93, 0.2)');
 
-  const cx = 195;
-  const cy = 265;
-  const rx = 132;
-  const ry = 57;
   ctx.strokeStyle = 'rgba(0, 0, 0, 0.56)';
   ctx.lineWidth = 26;
   ctx.beginPath();
-  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  ctx.ellipse(loop.cx, loop.cy, loop.rx, loop.ry, 0, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.strokeStyle = 'rgba(245, 240, 220, 0.12)';
   ctx.lineWidth = 18;
   ctx.beginPath();
-  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  ctx.ellipse(loop.cx, loop.cy, loop.rx, loop.ry, 0, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.lineWidth = 12;
@@ -361,12 +358,12 @@ function drawTrack(state) {
   ctx.shadowBlur = 10;
   ctx.strokeStyle = 'rgba(255, 111, 89, 0.72)';
   ctx.beginPath();
-  ctx.ellipse(cx, cy, rx, ry, 0, Math.PI * 0.72, Math.PI * 1.38);
+  ctx.ellipse(loop.cx, loop.cy, loop.rx, loop.ry, 0, Math.PI * 0.72, Math.PI * 1.38);
   ctx.stroke();
   ctx.shadowColor = 'rgba(88, 215, 255, 0.5)';
   ctx.strokeStyle = 'rgba(88, 215, 255, 0.78)';
   ctx.beginPath();
-  ctx.ellipse(cx, cy, rx, ry, 0, Math.PI * 1.38, Math.PI * 2.72);
+  ctx.ellipse(loop.cx, loop.cy, loop.rx, loop.ry, 0, Math.PI * 1.38, Math.PI * 2.72);
   ctx.stroke();
   ctx.shadowBlur = 0;
 
@@ -374,20 +371,20 @@ function drawTrack(state) {
   ctx.lineWidth = 1.4;
   ctx.setLineDash([7, 11]);
   ctx.beginPath();
-  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  ctx.ellipse(loop.cx, loop.cy, loop.rx, loop.ry, 0, 0, Math.PI * 2);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  drawAtlasCell(relayAtlas, 4, 5, 19, 165, 232, 60, 60, 0.86);
+  drawAtlasCell(relayWorldSprites.complete && relayWorldSprites.naturalWidth > 0 ? relayWorldSprites : relayAtlas, 4, 5, 19, loop.cx - 30, loop.cy - 33, 60, 60, 0.86);
 
   ctx.fillStyle = 'rgba(88, 215, 255, 0.12)';
   ctx.beginPath();
-  ctx.arc(cx, cy, 43 + Math.sin(state.now * 3) * 2, 0, Math.PI * 2);
+  ctx.arc(loop.cx, loop.cy, 43 + Math.sin(state.now * 3) * 2, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = 'rgba(244, 201, 93, 0.72)';
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.arc(cx, cy, 35, 0, Math.PI * 2);
+  ctx.arc(loop.cx, loop.cy, 35, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
@@ -395,10 +392,10 @@ function drawTrack(state) {
   ctx.fillStyle = '#f5f0dc';
   ctx.font = '950 19px system-ui';
   ctx.textAlign = 'center';
-  ctx.fillText(`WAVE ${Math.min(state.wave.index + 1, GAME_RULES.maxWave)}`, cx, cy - 4);
+  ctx.fillText(`WAVE ${Math.min(state.wave.index + 1, GAME_RULES.maxWave)}`, loop.cx, loop.cy - 4);
   ctx.font = '850 11px system-ui';
   ctx.fillStyle = state.boss.active ? '#ff6f59' : '#8ee6d2';
-  ctx.fillText(state.boss.active ? `BOSS ${Math.ceil(state.boss.timer)}s` : `SIGNAL ${Math.ceil(state.signal.integrity)}`, cx, cy + 15);
+  ctx.fillText(state.boss.active ? `BOSS ${Math.ceil(state.boss.timer)}s` : `SIGNAL ${Math.ceil(state.signal.integrity)}`, loop.cx, loop.cy + 15);
   ctx.shadowBlur = 0;
   ctx.restore();
 }
@@ -407,13 +404,15 @@ function noisePosition(noise) {
   const p = noise.progress % 1;
   const angle = Math.PI * 0.96 + p * Math.PI * 2;
   const laneOffset = noise.lane === 0 ? -7 : 7;
-  const rx = 132 + laneOffset;
-  const ry = 57 + laneOffset * 0.32;
-  return { x: 195 + Math.cos(angle) * rx, y: 265 + Math.sin(angle) * ry };
+  const { loop } = sceneLayout;
+  const rx = loop.rx + laneOffset;
+  const ry = loop.ry + laneOffset * 0.32;
+  return { x: loop.cx + Math.cos(angle) * rx, y: loop.cy + Math.sin(angle) * ry };
 }
 
 function drawAmbientNoise(state) {
-  if (state.noise.length > 0 || !noiseEnemyAtlas.complete || noiseEnemyAtlas.naturalWidth === 0) return;
+  const atlas = noiseWorldSprites.complete && noiseWorldSprites.naturalWidth > 0 ? noiseWorldSprites : noiseEnemyAtlas;
+  if (state.noise.length > 0 || !atlas.complete || atlas.naturalWidth === 0) return;
   const previews = [
     { type: 'flicker', progress: (state.now * 0.022) % 1, lane: 0 },
     { type: 'crawler', progress: (0.08 + state.now * 0.018) % 1, lane: 1 },
@@ -423,7 +422,7 @@ function drawAmbientNoise(state) {
   for (const item of previews) {
     const spec = NOISE_TYPES[item.type];
     const pos = noisePosition(item);
-    drawAtlasCell(noiseEnemyAtlas, 4, 2, spec.atlasIndex ?? 0, pos.x - 14, pos.y - 14, 28, 28, 0.38);
+    drawAtlasCell(atlas, 4, 2, spec.atlasIndex ?? 0, pos.x - 17, pos.y - 17, 34, 34, 0.46);
   }
   ctx.restore();
 }
@@ -433,14 +432,19 @@ function drawNoise(state) {
   for (const noise of state.noise) {
     const pos = noisePosition(noise);
     const spec = NOISE_TYPES[noise.type];
-    const iconSize = noise.type === 'boss' ? 66 : Math.max(32, noise.radius * 4);
-    if (noiseEnemyAtlas.complete && noiseEnemyAtlas.naturalWidth > 0) {
+    const iconSize = noise.type === 'boss' ? 78 : Math.max(38, noise.radius * 5);
+    const atlas = noiseWorldSprites.complete && noiseWorldSprites.naturalWidth > 0 ? noiseWorldSprites : noiseEnemyAtlas;
+    if (atlas.complete && atlas.naturalWidth > 0) {
       const atlasIndex = spec.atlasIndex ?? 0;
-      const cellW = noiseEnemyAtlas.naturalWidth / 4;
-      const cellH = noiseEnemyAtlas.naturalHeight / 2;
+      const cellW = atlas.naturalWidth / 4;
+      const cellH = atlas.naturalHeight / 2;
       const col = atlasIndex % 4;
       const row = Math.floor(atlasIndex / 4);
-      ctx.drawImage(noiseEnemyAtlas, col * cellW, row * cellH, cellW, cellH, pos.x - iconSize / 2, pos.y - iconSize / 2, iconSize, iconSize);
+      ctx.save();
+      ctx.shadowColor = spec.color;
+      ctx.shadowBlur = noise.type === 'boss' ? 18 : 9;
+      ctx.drawImage(atlas, col * cellW, row * cellH, cellW, cellH, pos.x - iconSize / 2, pos.y - iconSize / 2, iconSize, iconSize);
+      ctx.restore();
     } else {
       ctx.fillStyle = spec.color;
       ctx.beginPath();
@@ -466,12 +470,13 @@ function drawNoise(state) {
 
 function drawRelayIcon(relay, x, y, size) {
   const spec = RELAY_TYPES[relay.relayId];
-  const cellW = relayAtlas.naturalWidth / 4;
-  const cellH = relayAtlas.naturalHeight / 5;
+  const atlas = relayWorldSprites.complete && relayWorldSprites.naturalWidth > 0 ? relayWorldSprites : relayAtlas;
+  const cellW = atlas.naturalWidth / 4;
+  const cellH = atlas.naturalHeight / 5;
   const col = spec.atlasIndex % 4;
   const row = Math.floor(spec.atlasIndex / 4);
-  if (relayAtlas.complete && relayAtlas.naturalWidth > 0) {
-    ctx.drawImage(relayAtlas, col * cellW, row * cellH, cellW, cellH, x, y, size, size);
+  if (atlas.complete && atlas.naturalWidth > 0) {
+    ctx.drawImage(atlas, col * cellW, row * cellH, cellW, cellH, x, y, size, size);
   } else {
     ctx.fillStyle = spec.palette;
     ctx.beginPath();
@@ -585,7 +590,7 @@ function drawBoard(state, playerId) {
     ctx.stroke();
     if (relay) {
       const spec = RELAY_TYPES[relay.relayId];
-      const iconSize = 43;
+      const iconSize = 48;
       drawRelayIcon(relay, slot.x + slot.w / 2 - iconSize / 2, slot.y + slot.h / 2 - iconSize / 2 - 3, iconSize);
       ctx.fillStyle = 'rgba(2, 4, 5, 0.62)';
       ctx.beginPath();
@@ -629,23 +634,25 @@ function drawEffects(state) {
         ctx.fillText(String(effect.damage), pos.x, pos.y - 22 - alpha * 12);
       }
     } else if (effect.type === 'link_pulse' || effect.type === 'link_pulse_save') {
+      const { loop } = sceneLayout;
       ctx.strokeStyle = effect.type === 'link_pulse_save' ? '#f4c95d' : '#58d7ff';
       ctx.lineWidth = effect.type === 'link_pulse_save' ? 5 : 3;
       ctx.beginPath();
-      ctx.arc(195, 342, 24 + (1 - alpha) * 96, 0, Math.PI * 2);
+      ctx.arc(loop.cx, loop.cy, 24 + (1 - alpha) * 96, 0, Math.PI * 2);
       ctx.stroke();
       if (effect.type === 'link_pulse_save') {
         ctx.fillStyle = '#f4c95d';
         ctx.font = '900 17px system-ui';
         ctx.textAlign = 'center';
-        ctx.fillText('SAVED BY LINK PULSE', 195, 343);
+        ctx.fillText('SAVED BY LINK PULSE', loop.cx, loop.cy + 4);
       }
     } else {
+      const { loop } = sceneLayout;
       const color = effect.type === 'merge' ? '#f4c95d' : effect.type === 'overclock' || effect.type === 'shutdown' ? '#ff6f59' : '#8ee6d2';
       ctx.strokeStyle = color;
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.arc(195, 260, 36 + (1 - alpha) * 54, 0, Math.PI * 2);
+      ctx.arc(loop.cx, loop.cy, 36 + (1 - alpha) * 54, 0, Math.PI * 2);
       ctx.stroke();
     }
     ctx.globalAlpha = 1;
@@ -666,18 +673,18 @@ function render() {
 
   if (state.over) {
     ctx.fillStyle = 'rgba(5, 7, 8, 0.78)';
-    ctx.fillRect(0, 0, 390, 500);
+    ctx.fillRect(0, 0, VIEW_WIDTH, viewport.viewHeight);
     ctx.fillStyle = state.won ? '#95d5b2' : '#ff6f59';
     ctx.font = '950 34px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText(state.won ? 'SIGNAL LOCK' : 'SIGNAL LOST', 195, 242);
+    ctx.fillText(state.won ? 'SIGNAL LOCK' : 'SIGNAL LOST', 195, viewport.viewHeight * 0.48);
     ctx.fillStyle = '#f5f0dc';
     ctx.font = '850 13px system-ui';
-    ctx.fillText(state.resultReason ?? '', 195, 270);
+    ctx.fillText(state.resultReason ?? '', 195, viewport.viewHeight * 0.48 + 28);
     if (state.result) {
       ctx.fillStyle = '#8ee6d2';
       ctx.font = '850 11px system-ui';
-      ctx.fillText(`WAVE ${state.result.wave}  ${Math.floor(state.result.time)}s`, 195, 292);
+      ctx.fillText(`WAVE ${state.result.wave}  ${Math.floor(state.result.time)}s`, 195, viewport.viewHeight * 0.48 + 50);
     }
   }
 }
