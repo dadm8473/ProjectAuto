@@ -60,3 +60,13 @@ test('server does not advance empty online rooms', async () => {
   assert.equal(tickBody.includes('if (room.clients.size === 0) return;'), true);
   assert.equal(tickBody.indexOf('if (room.clients.size === 0) return;') < tickBody.indexOf('tickGame(room.game, dt);'), true);
 });
+
+test('online server rejects hidden manual overclock actions', async () => {
+  const source = await readFile('server/server.js', 'utf8');
+  const handleStart = source.indexOf('function handleAction');
+  assert.notEqual(handleStart, -1);
+  const handleBody = source.slice(handleStart, source.indexOf('function upgrade', handleStart));
+
+  assert.equal(handleBody.includes("if (action.type === 'overclock')"), false);
+  assert.equal(source.includes('overclockRelay'), false);
+});

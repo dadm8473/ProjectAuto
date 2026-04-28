@@ -15,7 +15,7 @@ export function eventLabel(event) {
   if (event.type === 'swap') return 'Signal geometry shifted';
   if (event.type === 'focus') return `Supply focus raised to ${event.focusLevel}`;
   if (event.type === 'loop_complete') return `${noiseName(event.noiseType)} breached the loop`;
-  if (event.type === 'overclock') return event.dualBossWindow ? 'Dual Overclock boss window' : 'Overclock armed';
+  if (event.type === 'overclock') return event.dualBossWindow ? 'Dual Overdrive boss window' : 'Overdrive armed';
   if (event.type === 'boss_defeated') return `Wave ${event.wave} boss defeated`;
   if (event.type === 'boss_wave_started') return `${event.waveName ?? `Wave ${event.wave} boss`} incoming`;
   if (event.type === 'wave_started') return `${event.waveName ?? `Wave ${event.wave}`} started`;

@@ -230,7 +230,7 @@ function localAction(action) {
     const saved = game.effects.some((effect) => effect.type === 'link_pulse_save');
     showToast(saved ? 'Saved by Link Pulse' : 'Link Pulse');
   }
-  if (result.ok && action.type === 'overclock') showToast('Overclock armed.');
+  if (result.ok && action.type === 'overclock') showToast('Overdrive armed.');
   if (result.ok && action.type === 'buy') {
     syncProfileAfterPurchase(result);
     showToast('Unlocked.');
@@ -248,8 +248,12 @@ function prepareAction(action) {
       slot: selected.at(-1)
     };
   }
-  const mergeSlots = state.actionState?.[localBoardId]?.merge.slots ?? [];
+  const mergeSlots = state.actionState?.[localBoardId]?.merge.slots ?? autoMergeSlots(state, localBoardId);
   return { ...action, slotIds: mergeSlots };
+}
+
+function autoMergeSlots(state, playerId = localBoardId) {
+  return state.actionState?.[playerId]?.merge.slots ?? [];
 }
 
 function command(action) {
@@ -1271,6 +1275,39 @@ function drawLinks(board, rect, now) {
   }
 }
 
+function drawMergeReadyCue(state, playerId, rect) {
+  const slots = autoMergeSlots(state, playerId);
+  if (playerId !== localBoardId || slots.length < GAME_RULES.mergeCount) return;
+  const centers = slots.map((index) => slotCenter(rect, index));
+  const pulse = 0.72 + Math.sin(state.now * 7.5) * 0.2;
+
+  ctx.save();
+  ctx.globalAlpha = pulse;
+  ctx.shadowColor = '#f4c95d';
+  ctx.shadowBlur = 18;
+  ctx.strokeStyle = 'rgba(244, 201, 93, 0.86)';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  centers.forEach((center, index) => {
+    if (index === 0) ctx.moveTo(center.x, center.y);
+    else ctx.lineTo(center.x, center.y);
+  });
+  ctx.closePath();
+  ctx.stroke();
+
+  for (const index of slots) {
+    const slot = boardSlotRect(rect, index);
+    ctx.lineWidth = 2.4;
+    ctx.strokeStyle = '#f4c95d';
+    ctx.beginPath();
+    ctx.roundRect(slot.x + 2, slot.y + 2, slot.w - 4, slot.h - 4, 8);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function drawSocketGlyph(slot, index, color, alpha = 1) {
   const cx = slot.x + slot.w / 2;
   const cy = slot.y + slot.h / 2;
@@ -1297,6 +1334,7 @@ function drawBoard(state, playerId) {
   const isMine = playerId === localBoardId;
   const heatPeak = board.heatPeak ?? 0;
   const border = heatPeak >= 90 ? '#ff6f59' : isMine ? '#58d7ff' : '#95d5b2';
+  const readySlots = autoMergeSlots(state, playerId);
 
   drawMetalPlate(rect.x, rect.y, rect.w, rect.h, 10, heatPeak >= 90 ? 'rgba(255, 111, 89, 0.7)' : isMine ? 'rgba(88, 215, 255, 0.72)' : 'rgba(149, 213, 178, 0.62)');
   ctx.strokeStyle = border;
@@ -1321,17 +1359,19 @@ function drawBoard(state, playerId) {
   ctx.shadowBlur = 0;
 
   drawLinks(board, rect, state.now);
+  drawMergeReadyCue(state, playerId, rect);
 
   board.slots.forEach((relay, index) => {
     const slot = boardSlotRect(rect, index);
     const selectedSlot = isMine && selected.includes(index);
+    const mergeReadySlot = isMine && readySlots.includes(index);
     const anchor = index === board.anchorIndex;
     const tileGradient = ctx.createLinearGradient(slot.x, slot.y, slot.x, slot.y + slot.h);
-    tileGradient.addColorStop(0, selectedSlot ? 'rgba(244, 201, 93, 0.26)' : anchor ? 'rgba(244, 201, 93, 0.15)' : 'rgba(245, 240, 220, 0.09)');
+    tileGradient.addColorStop(0, selectedSlot || mergeReadySlot ? 'rgba(244, 201, 93, 0.26)' : anchor ? 'rgba(244, 201, 93, 0.15)' : 'rgba(245, 240, 220, 0.09)');
     tileGradient.addColorStop(1, 'rgba(4, 6, 7, 0.44)');
     ctx.fillStyle = tileGradient;
-    ctx.strokeStyle = selectedSlot ? '#f4c95d' : anchor ? 'rgba(244, 201, 93, 0.5)' : 'rgba(245, 240, 220, 0.13)';
-    ctx.lineWidth = selectedSlot ? 3 : 1;
+    ctx.strokeStyle = selectedSlot || mergeReadySlot ? '#f4c95d' : anchor ? 'rgba(244, 201, 93, 0.5)' : 'rgba(245, 240, 220, 0.13)';
+    ctx.lineWidth = selectedSlot ? 3 : mergeReadySlot ? 2 : 1;
     ctx.beginPath();
     ctx.roundRect(slot.x, slot.y, slot.w, slot.h, 7);
     ctx.fill();
@@ -1554,6 +1594,7 @@ function updateActionButtons(state) {
   const pulseLabel = actions.linkPulse.cooldownRemaining > 0 ? `${Math.ceil(actions.linkPulse.cooldownRemaining)}s` : 'Pulse';
   setActionButton(actionButtons.pulse, pulseLabel, actions.linkPulse.available, actions.linkPulse.reason);
   actionButtons.pulse.dataset.ready = String(actions.linkPulse.available);
+  actionButtons.pulse.dataset.clutch = String(actions.linkPulse.clutch);
 }
 
 function updateHud() {

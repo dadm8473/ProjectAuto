@@ -6,7 +6,6 @@ import { fileURLToPath } from 'node:url';
 import {
   castLinkPulse,
   mergeRelays,
-  overclockRelay,
   serializeState,
   supplyRelay,
   swapRelays,
@@ -110,7 +109,6 @@ function handleAction(socket, action) {
   if (action.type === 'swap') result = swapRelays(room.game, { playerId: boardPlayer, from: action.from, to: action.to });
   if (action.type === 'focus' || action.type === 'chance') result = upgradeSupplyFocus(room.game, { playerId: boardPlayer });
   if (action.type === 'pulse' || action.type === 'boost') result = castLinkPulse(room.game, { playerId: boardPlayer });
-  if (action.type === 'overclock') result = overclockRelay(room.game, { playerId: boardPlayer, slot: action.slot });
   if (action.type === 'buy') {
     const approval = approveClientPurchase(client, action);
     if (!approval.ok) result = { ok: false, reason: approval.reason };

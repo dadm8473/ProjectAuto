@@ -188,6 +188,57 @@ test('three matching relays merge into a hotter higher-tier relay and clear sock
   assert.equal(game.effects.some((effect) => effect.type === 'merge' && effect.rewardCharge === GAME_RULES.mergeSurgeCharge && effect.rewardLink === GAME_RULES.mergeSurgeLink), true);
 });
 
+test('boss Merge Surge arms board overdrive without a separate Overclock button', () => {
+  const game = createGame({ mode: 'bot', seed: 303 });
+  game.boss.active = true;
+  installRelay(game, 'p1', 0, 'needle_beam', { heat: 12 });
+  installRelay(game, 'p1', 1, 'needle_beam', { heat: 18 });
+  installRelay(game, 'p1', 2, 'needle_beam', { heat: 9 });
+
+  const result = mergeRelays(game, { playerId: 'p1', slotIds: [0, 1, 2] });
+
+  assert.equal(result.ok, true);
+  assert.equal(game.boards.p1.overclockUntil > game.now, true);
+  assert.equal(game.boards.p1.slots[0].overclockUntil, game.boards.p1.overclockUntil);
+  assert.equal(game.effects.some((effect) => effect.type === 'overclock' && effect.source === 'merge'), true);
+});
+
+test('boss Link Pulse creates the accessible partner-save overdrive window', () => {
+  const game = createGame({ mode: 'bot', seed: 304 });
+  game.boss.active = true;
+  game.resources.linkEnergy = 100;
+  installRelay(game, 'p1', 5, 'signal_amp');
+  installRelay(game, 'p2', 5, 'coolant_moss', { heat: 96 });
+  installRelay(game, 'p2', 0, 'needle_beam');
+  installRelay(game, 'p2', 1, 'needle_beam');
+  installRelay(game, 'p2', 2, 'needle_beam');
+
+  const pulse = castLinkPulse(game, { playerId: 'p1' });
+  const merge = mergeRelays(game, { playerId: 'p2', slotIds: [0, 1, 2] });
+
+  assert.equal(pulse.ok, true);
+  assert.equal(merge.ok, true);
+  assert.equal(game.boards.p1.overclockUntil > game.now, true);
+  assert.equal(game.boards.p2.overclockUntil > game.now, true);
+  assert.equal(game.dualOverclockBossUntil > game.now, true);
+  assert.equal(game.effects.some((effect) => effect.type === 'overclock' && effect.source === 'link_pulse'), true);
+});
+
+test('boss Link Pulse overdrive requires a real clutch target', () => {
+  const game = createGame({ mode: 'bot', seed: 305 });
+  game.boss.active = true;
+  game.resources.linkEnergy = 100;
+  installRelay(game, 'p1', 5, 'signal_amp');
+  installRelay(game, 'p2', 5, 'coolant_moss', { heat: 20 });
+
+  const pulse = castLinkPulse(game, { playerId: 'p1' });
+
+  assert.equal(pulse.ok, true);
+  assert.equal(pulse.overdrive, false);
+  assert.equal(game.boards.p1.overclockUntil, 0);
+  assert.equal(game.effects.some((effect) => effect.type === 'overclock' && effect.source === 'link_pulse'), false);
+});
+
 test('Merge and Swap reject malformed slot payloads without corrupting the board', () => {
   const game = createGame({ mode: 'bot', seed: 33 });
   installRelay(game, 'p1', 0, 'needle_beam');
@@ -367,7 +418,7 @@ test('serialized action state exposes exact costs, cooldowns, and availability',
   assert.equal(actions.linkPulse.cost, 40);
   assert.equal(actions.linkPulse.cooldownRemaining, 3.42);
   assert.equal(actions.linkPulse.available, false);
-  assert.equal(actions.overclock.available, true);
+  assert.equal(Object.hasOwn(actions, 'overclock'), false);
 });
 
 test('serialized merge availability requires an actual matching trio', () => {
@@ -584,6 +635,7 @@ test('wave plan exposes named difficulty beats and canonical rewards', () => {
   assert.deepEqual(WAVE_PLAN.map((wave) => wave.clearReward.charge), [35, 45, 65, 55, 65, 85, 75, 85, 95, 0]);
   assert.deepEqual(WAVE_PLAN.filter((wave) => wave.bossTimer).map((wave) => wave.bossTimer), [36, 42, 55]);
   assert.equal(WAVE_PLAN.every((wave) => wave.name && wave.intent && wave.spawns), true);
+  assert.equal(WAVE_PLAN.some((wave) => /overclock/i.test(wave.intent)), false);
 });
 
 test('wave clear pays the authored reward and cools board heat', () => {

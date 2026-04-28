@@ -163,6 +163,22 @@ test('mobile combat controls collapse to three core actions', async () => {
   assert.equal(css.includes('--action-panel-base: 126px;'), true);
 });
 
+test('combat surface previews merge readiness and Pulse clutch without extra controls', async () => {
+  const js = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    'function autoMergeSlots',
+    'function drawMergeReadyCue',
+    'drawMergeReadyCue(state, playerId, rect);',
+    'actions.linkPulse.clutch',
+    'actionButtons.pulse.dataset.clutch'
+  ]) {
+    assert.equal(js.includes(marker), true, marker);
+  }
+  assert.equal(css.includes('#pulseButton[data-clutch="true"]'), true);
+});
+
 test('browser chrome has a committed icon to avoid favicon noise in smoke tests', async () => {
   const html = await readFile('index.html', 'utf8');
   assert.equal(html.includes('rel="icon"'), true);

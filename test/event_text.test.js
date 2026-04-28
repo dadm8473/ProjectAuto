@@ -10,4 +10,6 @@ test('event labels cover recorded player actions and loop pressure', () => {
   assert.equal(eventLabel({ type: 'wave_started', wave: 1, waveName: 'Calibration Drift' }), 'Calibration Drift started');
   assert.equal(eventLabel({ type: 'boss_wave_started', wave: 3, waveName: 'Boss Orchid' }), 'Boss Orchid incoming');
   assert.equal(eventLabel({ type: 'wave_cleared', wave: 1, waveName: 'Calibration Drift' }), 'Calibration Drift cleared');
+  assert.equal(eventLabel({ type: 'overclock', dualBossWindow: false }), 'Overdrive armed');
+  assert.equal(eventLabel({ type: 'overclock', dualBossWindow: true }), 'Dual Overdrive boss window');
 });

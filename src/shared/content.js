@@ -199,7 +199,7 @@ export const RELAY_TYPES = {
     linkShape: ['N', 'S', 'E'],
     palette: '#95d5b2',
     atlasIndex: 11,
-    skill: 'Repairs Signal after risky Overclock play.'
+    skill: 'Repairs Signal after risky Overdrive play.'
   },
   signal_amp: {
     id: 'signal_amp',
@@ -357,6 +357,11 @@ export const GAME_RULES = {
   linkPulseCooldown: 12,
   overclockHeat: 20,
   overclockDuration: 5,
+  mergeOverdriveHeat: 8,
+  mergeOverdriveDuration: 4,
+  linkPulseOverdriveHeat: 6,
+  linkPulseOverdriveDuration: 3.5,
+  dualOverclockBossDuration: 4,
   overclockStallDuration: 3,
   linkPulseHeatDrop: 35,
   linkPulseTwinGateHeatDrop: 53,
@@ -401,7 +406,7 @@ export const WAVE_PLAN = [
   },
   {
     name: 'Boss Orchid',
-    intent: 'First co-op heat crisis: Link Pulse and Overclock become meaningful.',
+    intent: 'First co-op heat crisis: Link Pulse saves and Merge timing become meaningful.',
     spawns: { crawler: 20, splitter: 8, boss: 1 },
     clearReward: { charge: 65, linkEnergy: 22, gems: 8 },
     bossTimer: 36
@@ -445,7 +450,7 @@ export const WAVE_PLAN = [
   },
   {
     name: 'Origin Null',
-    intent: 'Final boss asks for Null control, dual Overclock, and partner saves.',
+    intent: 'Final boss asks for Null control, Merge/Pulse overdrive, and partner saves.',
     spawns: { null: 20, bulwark: 24, boss: 1 },
     clearReward: { charge: 0, linkEnergy: 0, gems: 0 },
     bossTimer: 55
