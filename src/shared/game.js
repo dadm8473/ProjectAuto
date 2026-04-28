@@ -701,11 +701,33 @@ export function mergeRelays(game, { playerId, slotIds }) {
   merged.heat = Math.min(40, Math.floor(averageHeat * 0.45));
   board.slots[slotIds[0]] = merged;
   for (const index of slotIds.slice(1)) board.slots[index] = null;
+  game.resources.charge += GAME_RULES.mergeSurgeCharge;
+  game.resources.linkEnergy += GAME_RULES.mergeSurgeLink;
   game.stats.merges[playerId] = (game.stats.merges[playerId] ?? 0) + 1;
   board.comboText = `${RELAY_TYPES[merged.relayId].name} T${merged.tier}`;
-  game.effects.push({ id: `fx${nextId++}`, type: 'merge', playerId, slot: slotIds[0], relayId: merged.relayId, grade: merged.grade, ttl: 1.0 });
-  pushEvent(game, { type: 'merge', playerId, slot: slotIds[0], relayId: merged.relayId, relayName: RELAY_TYPES[merged.relayId].name, tier: merged.tier, consumedSlots: slotIds });
-  return { ok: true, relay: merged };
+  game.effects.push({
+    id: `fx${nextId++}`,
+    type: 'merge',
+    playerId,
+    slot: slotIds[0],
+    relayId: merged.relayId,
+    grade: merged.grade,
+    rewardCharge: GAME_RULES.mergeSurgeCharge,
+    rewardLink: GAME_RULES.mergeSurgeLink,
+    ttl: 1.0
+  });
+  pushEvent(game, {
+    type: 'merge',
+    playerId,
+    slot: slotIds[0],
+    relayId: merged.relayId,
+    relayName: RELAY_TYPES[merged.relayId].name,
+    tier: merged.tier,
+    rewardCharge: GAME_RULES.mergeSurgeCharge,
+    rewardLink: GAME_RULES.mergeSurgeLink,
+    consumedSlots: slotIds
+  });
+  return { ok: true, relay: merged, rewardCharge: GAME_RULES.mergeSurgeCharge, rewardLink: GAME_RULES.mergeSurgeLink };
 }
 
 export function swapRelays(game, { playerId, from, to }) {

@@ -369,6 +369,8 @@ export const GAME_RULES = {
   bossTimer: 34,
   maxWave: 10,
   mergeCount: 3,
+  mergeSurgeCharge: 12,
+  mergeSurgeLink: 6,
   pityThreshold: 7,
   waveClearHeatDrop: 20,
   tickRate: 20

@@ -1396,6 +1396,8 @@ function drawEffects(state) {
       ctx.restore();
     } else if (effect.type === 'supply' || effect.type === 'merge') {
       drawSlotPulse(state, effect, alpha, effect.type === 'merge' ? '#f4c95d' : '#58d7ff');
+      const center = relayCenterById(state, effect);
+      if (effect.type === 'merge' && center) drawRewardFlyout(effect, center, alpha);
     } else if (effect.type === 'repair') {
       drawSlotPulse(state, effect, alpha, '#95d5b2');
     } else {

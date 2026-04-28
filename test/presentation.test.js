@@ -159,6 +159,7 @@ test('mobile combat controls collapse to three core actions', async () => {
   assert.equal(js.includes('function prepareAction'), true);
   assert.equal(js.includes('state.actionState?.[localBoardId]?.merge.slots'), true);
   assert.equal(js.includes('selected.length === 3 ? selected : state.actionState?.[localBoardId]?.merge.slots'), false);
+  assert.equal(js.includes('drawRewardFlyout(effect, center, alpha);'), true);
   assert.equal(css.includes('--action-panel-base: 126px;'), true);
 });
 

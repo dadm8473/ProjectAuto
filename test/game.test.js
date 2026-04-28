@@ -173,6 +173,8 @@ test('three matching relays merge into a hotter higher-tier relay and clear sock
   installRelay(game, 'p1', 0, 'needle_beam', { heat: 60 });
   installRelay(game, 'p1', 1, 'needle_beam', { heat: 30 });
   installRelay(game, 'p1', 2, 'needle_beam', { heat: 45 });
+  const beforeCharge = game.resources.charge;
+  const beforeLink = game.resources.linkEnergy;
 
   const result = mergeRelays(game, { playerId: 'p1', slotIds: [0, 1, 2] });
 
@@ -181,7 +183,9 @@ test('three matching relays merge into a hotter higher-tier relay and clear sock
   assert.equal(game.boards.p1.slots[0].heat, 20);
   assert.equal(game.boards.p1.slots[1], null);
   assert.equal(game.boards.p1.slots[2], null);
-  assert.equal(game.effects.some((effect) => effect.type === 'merge'), true);
+  assert.equal(game.resources.charge, beforeCharge + GAME_RULES.mergeSurgeCharge);
+  assert.equal(game.resources.linkEnergy, beforeLink + GAME_RULES.mergeSurgeLink);
+  assert.equal(game.effects.some((effect) => effect.type === 'merge' && effect.rewardCharge === GAME_RULES.mergeSurgeCharge && effect.rewardLink === GAME_RULES.mergeSurgeLink), true);
 });
 
 test('Merge and Swap reject malformed slot payloads without corrupting the board', () => {
