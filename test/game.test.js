@@ -14,7 +14,7 @@ import {
   tryBuyShopItem,
   upgradeSupplyFocus
 } from '../src/shared/game.js';
-import { GAME_RULES, RELAY_TYPES, SHOP, WAVE_PLAN } from '../src/shared/content.js';
+import { GAME_RULES, NOISE_TYPES, RELAY_TYPES, SHOP, WAVE_PLAN } from '../src/shared/content.js';
 
 function installRelay(game, playerId, slot, relayId, overrides = {}) {
   game.boards[playerId].slots[slot] = {
@@ -636,6 +636,31 @@ test('wave plan exposes named difficulty beats and canonical rewards', () => {
   assert.deepEqual(WAVE_PLAN.filter((wave) => wave.bossTimer).map((wave) => wave.bossTimer), [36, 42, 55]);
   assert.equal(WAVE_PLAN.every((wave) => wave.name && wave.intent && wave.spawns), true);
   assert.equal(WAVE_PLAN.some((wave) => /overclock/i.test(wave.intent)), false);
+});
+
+test('late wave plan favors readable heavy threats over mobile screen floods', () => {
+  const lateWaves = WAVE_PLAN.slice(6);
+  const spawnTotals = lateWaves.map((wave) => Object.values(wave.spawns).reduce((sum, count) => sum + count, 0));
+  const largestSingleStacks = lateWaves.map((wave) => Math.max(...Object.values(wave.spawns)));
+
+  assert.deepEqual(spawnTotals, [36, 34, 46, 27]);
+  assert.equal(Math.max(...largestSingleStacks) <= 28, true);
+  assert.deepEqual(lateWaves.map((wave) => wave.threatScale), [1.2, 1.55, 1.65, 1.45]);
+  assert.equal(WAVE_PLAN[8].intent.includes('Merge'), true);
+  assert.equal(WAVE_PLAN[9].intent.includes('Pulse'), true);
+});
+
+test('late wave threat scale makes fewer enemies matter', () => {
+  const game = createGame({ mode: 'solo', seed: 141 });
+  game.wave.index = 6;
+  game.wave.active = false;
+  game.wave.restTimer = 0;
+
+  tickGame(game, 0);
+
+  const firstNoise = game.noise[0];
+  assert.equal(firstNoise.type, 'flicker');
+  assert.equal(firstNoise.maxHp, Math.round(NOISE_TYPES.flicker.hp * (1 + 6 * 0.18) * WAVE_PLAN[6].threatScale));
 });
 
 test('wave clear pays the authored reward and cools board heat', () => {

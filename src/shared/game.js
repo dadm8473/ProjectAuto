@@ -194,9 +194,11 @@ function startWave(game) {
 
 function makeNoise(game, type, overrides = {}) {
   const spec = NOISE_TYPES[type];
+  const plan = WAVE_PLAN[Math.min(game.wave.index, WAVE_PLAN.length - 1)] ?? {};
   const waveScale = 1 + game.wave.index * 0.18;
   const bossScale = type === 'boss' ? 1 + Math.floor(game.wave.index / 3) * 0.45 : 1;
-  const maxHp = Math.round((overrides.maxHp ?? spec.hp) * waveScale * bossScale);
+  const threatScale = overrides.threatScale ?? plan.threatScale ?? 1;
+  const maxHp = Math.round((overrides.maxHp ?? spec.hp) * waveScale * bossScale * threatScale);
   return {
     id: `n${nextId++}`,
     type,

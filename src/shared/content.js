@@ -432,26 +432,30 @@ export const WAVE_PLAN = [
   },
   {
     name: 'Flicker Flood',
-    intent: 'Give high-tempo satisfaction to chain, splash, and field boards.',
-    spawns: { flicker: 48, bulwark: 10 },
+    intent: 'Give a short high-tempo pocket with readable splash payoffs.',
+    spawns: { flicker: 24, bulwark: 12 },
+    threatScale: 1.2,
     clearReward: { charge: 75, linkEnergy: 16, gems: 0 }
   },
   {
     name: 'Pressure Weave',
-    intent: 'Mix Null and Bulwark so pure damage needs support decisions.',
-    spawns: { splitter: 24, null: 16, bulwark: 10 },
+    intent: 'Mix fewer Null and Bulwark threats so support timing stays readable.',
+    spawns: { splitter: 10, null: 12, bulwark: 12 },
+    threatScale: 1.55,
     clearReward: { charge: 85, linkEnergy: 18, gems: 8 }
   },
   {
     name: 'Last Supply Window',
-    intent: 'Create a final economy burst and merge check before the finale.',
-    spawns: { crawler: 40, splitter: 20, bulwark: 16 },
+    intent: 'Create a final economy burst and Merge check before the finale.',
+    spawns: { crawler: 20, splitter: 12, bulwark: 14 },
+    threatScale: 1.65,
     clearReward: { charge: 95, linkEnergy: 22, gems: 0 }
   },
   {
     name: 'Origin Null',
     intent: 'Final boss asks for Null control, Merge/Pulse overdrive, and partner saves.',
-    spawns: { null: 20, bulwark: 24, boss: 1 },
+    spawns: { null: 12, bulwark: 14, boss: 1 },
+    threatScale: 1.45,
     clearReward: { charge: 0, linkEnergy: 0, gems: 0 },
     bossTimer: 55
   }
