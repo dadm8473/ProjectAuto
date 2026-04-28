@@ -29,6 +29,14 @@ const signalMeter = document.querySelector('#signalMeter');
 const bossMeter = document.querySelector('#bossMeter');
 const shopList = document.querySelector('#shopList');
 const drawer = document.querySelector('#drawer');
+const actionButtons = {
+  supply: document.querySelector('#supplyButton'),
+  merge: document.querySelector('#mergeButton'),
+  swap: document.querySelector('#swapButton'),
+  focus: document.querySelector('#focusButton'),
+  pulse: document.querySelector('#pulseButton'),
+  overclock: document.querySelector('#overclockButton')
+};
 
 const artDirectionImage = new Image();
 artDirectionImage.src = '/src/client/assets/generated/signal-relay-art-direction.png';
@@ -55,6 +63,10 @@ function showToast(message) {
   showToast.timer = setTimeout(() => {
     toast.hidden = true;
   }, 1600);
+}
+
+function currentState() {
+  return game?.rng?.next ? serializeState(game) : game;
 }
 
 function send(action) {
@@ -204,6 +216,40 @@ function drawCanvasHud(state) {
   drawPill(195, 18, 54, 'CHG', Math.floor(state.resources.charge), '#f4c95d');
   drawPill(253, 18, 54, 'LINK', Math.floor(state.resources.linkEnergy), '#58d7ff');
   drawPill(311, 18, 61, 'GEM', Math.floor(state.resources.gems), '#95d5b2');
+}
+
+function eventLabel(event) {
+  if (event.type === 'boss_orchid_heatroot') return `Boss Orchid heated ${event.targets?.length ?? 0} Relays`;
+  if (event.type === 'boss_mirror_linkbreak') return 'Boss Mirror broke team links';
+  if (event.type === 'boss_origin_spore') return `Origin Null spawned ${event.spawnedSpores?.length ?? 0} spores`;
+  if (event.type === 'link_pulse_save') return 'Link Pulse saved the partner board';
+  if (event.type === 'link_pulse') return 'Link Pulse cooled partner Relays';
+  if (event.type === 'supply') return `${event.relayName} supplied`;
+  if (event.type === 'merge') return `${event.relayName} reached T${event.tier}`;
+  if (event.type === 'overclock') return event.dualBossWindow ? 'Dual Overclock boss window' : 'Overclock armed';
+  if (event.type === 'boss_defeated') return `Wave ${event.wave} boss defeated`;
+  if (event.type === 'wave_cleared') return `Wave ${event.wave} cleared`;
+  if (event.type === 'run_finished') return event.text;
+  return '';
+}
+
+function drawEventFeed(state) {
+  const event = [...(state.eventLog ?? [])].reverse().find((item) => eventLabel(item));
+  if (!event) return;
+  const label = eventLabel(event);
+  ctx.save();
+  ctx.fillStyle = 'rgba(5, 7, 8, 0.76)';
+  ctx.strokeStyle = 'rgba(244, 201, 93, 0.22)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(18, 185, 354, 18, 8);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = event.type.startsWith('boss') ? '#f4c95d' : event.type === 'run_finished' ? '#ff6f59' : '#8ee6d2';
+  ctx.font = '850 10px system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText(label.toUpperCase(), 27, 198);
+  ctx.restore();
 }
 
 function drawTrack(state) {
@@ -426,10 +472,11 @@ function drawEffects(state) {
 }
 
 function render() {
-  const state = serializeState(game);
+  const state = currentState();
   drawBackground(state);
   drawCanvasHud(state);
   drawBoard(state, partnerId(localBoardId));
+  drawEventFeed(state);
   drawTrack(state);
   drawNoise(state);
   drawBoard(state, localBoardId);
@@ -445,16 +492,59 @@ function render() {
     ctx.fillStyle = '#f5f0dc';
     ctx.font = '850 13px system-ui';
     ctx.fillText(state.resultReason ?? '', 195, 270);
+    if (state.result) {
+      ctx.fillStyle = '#8ee6d2';
+      ctx.font = '850 11px system-ui';
+      ctx.fillText(`WAVE ${state.result.wave}  ${Math.floor(state.result.time)}s`, 195, 292);
+    }
   }
 }
 
+function setActionButton(button, label, enabled, reason = '') {
+  button.textContent = label;
+  button.disabled = !enabled;
+  button.title = reason;
+}
+
+function updateActionButtons(state) {
+  const actions = state.actionState?.[localBoardId];
+  if (!actions) return;
+  const selectedCount = selected.length;
+  setActionButton(actionButtons.supply, `Supply ${actions.supply.cost}C`, actions.supply.available, actions.supply.reason);
+  setActionButton(
+    actionButtons.merge,
+    `Merge ${selectedCount}/3`,
+    actions.merge.available && selectedCount === 3,
+    selectedCount < 3 ? 'Select three matching Relays.' : actions.merge.reason
+  );
+  setActionButton(
+    actionButtons.swap,
+    `Swap ${actions.swap.charges}S`,
+    actions.swap.available && selectedCount >= 2,
+    selectedCount < 2 ? 'Select two Relays.' : actions.swap.reason
+  );
+  setActionButton(actionButtons.focus, `Focus ${actions.focus.cost}C`, actions.focus.available, actions.focus.reason);
+  const pulseLabel = actions.linkPulse.cooldownRemaining > 0 ? `Pulse ${Math.ceil(actions.linkPulse.cooldownRemaining)}s` : `Pulse ${actions.linkPulse.cost}L`;
+  setActionButton(actionButtons.pulse, pulseLabel, actions.linkPulse.available, actions.linkPulse.reason);
+  actionButtons.pulse.dataset.ready = String(actions.linkPulse.available);
+  const overclockLabel = actions.overclock.activeRemaining > 0 ? `OC ${Math.ceil(actions.overclock.activeRemaining)}s` : 'Overclock';
+  setActionButton(
+    actionButtons.overclock,
+    overclockLabel,
+    actions.overclock.available && selectedCount >= 1,
+    selectedCount < 1 ? 'Select one Relay.' : actions.overclock.reason
+  );
+}
+
 function updateHud() {
-  chargeMeter.textContent = `C ${Math.floor(game.resources.charge)}`;
-  linkMeter.textContent = `L ${Math.floor(game.resources.linkEnergy)}`;
-  gemMeter.textContent = `G ${Math.floor(game.resources.gems)}`;
-  waveMeter.textContent = `Wave ${Math.min(game.wave.index + 1, GAME_RULES.maxWave)}`;
-  signalMeter.textContent = `Signal ${Math.ceil(game.signal.integrity)} / Sat ${Math.floor(game.saturation.count)}`;
-  bossMeter.textContent = game.boss.active ? `Boss ${Math.ceil(game.boss.timer)}s` : 'Boss --';
+  const state = currentState();
+  chargeMeter.textContent = `C ${Math.floor(state.resources.charge)}`;
+  linkMeter.textContent = `L ${Math.floor(state.resources.linkEnergy)}`;
+  gemMeter.textContent = `G ${Math.floor(state.resources.gems)}`;
+  waveMeter.textContent = `Wave ${Math.min(state.wave.index + 1, GAME_RULES.maxWave)}`;
+  signalMeter.textContent = `Signal ${Math.ceil(state.signal.integrity)} / Sat ${Math.floor(state.saturation.count)}`;
+  bossMeter.textContent = state.boss.active ? `Boss ${Math.ceil(state.boss.timer)}s` : 'Boss --';
+  updateActionButtons(state);
 }
 
 function loop(now) {
@@ -528,12 +618,12 @@ canvas.addEventListener('pointerdown', (event) => {
   if (names.length > 0) showToast(names.join(' + '));
 });
 
-document.querySelector('#supplyButton').addEventListener('click', () => command({ type: 'supply' }));
-document.querySelector('#mergeButton').addEventListener('click', () => command({ type: 'merge' }));
-document.querySelector('#swapButton').addEventListener('click', () => command({ type: 'swap' }));
-document.querySelector('#focusButton').addEventListener('click', () => command({ type: 'focus' }));
-document.querySelector('#pulseButton').addEventListener('click', () => command({ type: 'pulse' }));
-document.querySelector('#overclockButton').addEventListener('click', () => command({ type: 'overclock' }));
+actionButtons.supply.addEventListener('click', () => command({ type: 'supply' }));
+actionButtons.merge.addEventListener('click', () => command({ type: 'merge' }));
+actionButtons.swap.addEventListener('click', () => command({ type: 'swap' }));
+actionButtons.focus.addEventListener('click', () => command({ type: 'focus' }));
+actionButtons.pulse.addEventListener('click', () => command({ type: 'pulse' }));
+actionButtons.overclock.addEventListener('click', () => command({ type: 'overclock' }));
 document.querySelector('#botButton').addEventListener('click', () => {
   online = false;
   socket?.close();

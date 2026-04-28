@@ -14,7 +14,7 @@ import {
   tryBuyShopItem,
   upgradeSupplyFocus
 } from '../src/shared/game.js';
-import { RELAY_TYPES, SHOP } from '../src/shared/content.js';
+import { GAME_RULES, RELAY_TYPES, SHOP } from '../src/shared/content.js';
 
 function installRelay(game, playerId, slot, relayId, overrides = {}) {
   game.boards[playerId].slots[slot] = {
@@ -299,6 +299,124 @@ test('Dual Overclock does not buff non-boss damage and expires after 4 seconds',
   assert.equal(runScenario({ dual: true, targetType: 'crawler', elapsed: 0 }), runScenario({ dual: false, targetType: 'crawler', elapsed: 0 }));
   assert.equal(runScenario({ dual: true, targetType: 'boss', elapsed: 3.89 }) > runScenario({ dual: false, targetType: 'boss', elapsed: 3.89 }) * 1.25, true);
   assert.equal(runScenario({ dual: true, targetType: 'boss', elapsed: 3.9 }), runScenario({ dual: false, targetType: 'boss', elapsed: 3.9 }));
+});
+
+test('serialized action state exposes exact costs, cooldowns, and availability', () => {
+  const game = createGame({ mode: 'bot', seed: 86 });
+  game.resources.charge = 22;
+  game.resources.linkEnergy = 80;
+  game.stats.supplies.p1 = 5;
+  game.resources.swapCharges.p1 = 0;
+  game.linkPulseCooldownUntil = game.now + 3.42;
+  installRelay(game, 'p1', 0, 'needle_beam');
+  installRelay(game, 'p2', 5, 'coolant_moss', { heat: 80 });
+
+  const snapshot = serializeState(game);
+  const actions = snapshot.actionState.p1;
+
+  assert.equal(actions.supply.cost, 23);
+  assert.equal(actions.supply.available, false);
+  assert.equal(actions.supply.reason, 'Need 23 Charge.');
+  assert.equal(actions.swap.charges, 0);
+  assert.equal(actions.swap.available, false);
+  assert.equal(actions.linkPulse.cost, 40);
+  assert.equal(actions.linkPulse.cooldownRemaining, 3.42);
+  assert.equal(actions.linkPulse.available, false);
+  assert.equal(actions.overclock.available, true);
+});
+
+test('terminal states emit a run result and event log entry with one readable cause', () => {
+  const game = createGame({ mode: 'solo', seed: 87 });
+  game.signal.integrity = 0;
+
+  tickGame(game, 0.1);
+  const snapshot = serializeState(game);
+
+  assert.equal(snapshot.over, true);
+  assert.equal(snapshot.result.code, 'loss_signal_collapse');
+  assert.equal(snapshot.result.text, 'Signal collapsed.');
+  assert.equal(snapshot.result.won, false);
+  assert.equal(snapshot.eventLog.at(-1).type, 'run_finished');
+  assert.equal(snapshot.eventLog.at(-1).code, 'loss_signal_collapse');
+});
+
+test('boss waves fire named disruption logs with actual board pressure', () => {
+  const game = createGame({ mode: 'solo', seed: 90 });
+  game.wave.index = 2;
+  game.wave.active = true;
+  game.wave.startedAt = 0;
+  game.wave.queue = [];
+  game.wave.disruptionFired = false;
+  game.boss.active = true;
+  game.boss.timer = GAME_RULES.bossTimer - 9;
+  game.boss.limit = GAME_RULES.bossTimer;
+  installRelay(game, 'p1', 5, 'twin_gate', { linkShape: ['E'], heat: 20 });
+  installRelay(game, 'p1', 6, 'signal_amp', { linkShape: ['W'], heat: 30 });
+  installRelay(game, 'p2', 5, 'coolant_moss', { linkShape: ['E'], heat: 40 });
+  installRelay(game, 'p2', 6, 'rain_pump', { linkShape: ['W'], heat: 10 });
+  installNoise(game, { type: 'boss', hp: 1000, maxHp: 1000, speed: 0, progress: 0.1 });
+
+  tickGame(game, 0.1);
+
+  const heatroot = game.eventLog.find((event) => event.type === 'boss_orchid_heatroot');
+  assert.equal(Boolean(heatroot), true);
+  assert.equal(game.effects.some((effect) => effect.type === 'boss_orchid_heatroot'), true);
+  assert.deepEqual(heatroot.targets.map((target) => [target.playerId, target.slot, target.heatAfter]), [
+    ['p2', 5, 52],
+    ['p1', 6, 42]
+  ]);
+  assert.equal(game.boards.p2.slots[5].heat > 40, true);
+  assert.equal(game.boards.p1.slots[6].heat > 30, true);
+});
+
+test('mirror boss disruption temporarily disables one active link per board', () => {
+  const game = createGame({ mode: 'solo', seed: 92 });
+  game.wave.index = 5;
+  game.wave.active = true;
+  game.wave.queue = [];
+  game.wave.disruptionFired = false;
+  game.boss.active = true;
+  game.boss.timer = GAME_RULES.bossTimer - 9;
+  game.boss.limit = GAME_RULES.bossTimer;
+  installRelay(game, 'p1', 5, 'twin_gate', { linkShape: ['E'] });
+  installRelay(game, 'p1', 6, 'signal_amp', { linkShape: ['W'] });
+  installRelay(game, 'p2', 5, 'coolant_moss', { linkShape: ['E'] });
+  installRelay(game, 'p2', 6, 'rain_pump', { linkShape: ['W'] });
+  installNoise(game, { type: 'boss', hp: 1000, maxHp: 1000, speed: 0, progress: 0.1 });
+
+  assert.equal(computeActiveLinks(game.boards.p1, game.now).length, 1);
+  assert.equal(computeActiveLinks(game.boards.p2, game.now).length, 1);
+
+  tickGame(game, 0.1);
+
+  assert.equal(game.eventLog.some((event) => event.type === 'boss_mirror_linkbreak'), true);
+  assert.equal(computeActiveLinks(game.boards.p1, game.now).length, 0);
+  assert.equal(computeActiveLinks(game.boards.p2, game.now).length, 0);
+
+  tickGame(game, 5.1);
+
+  assert.equal(computeActiveLinks(game.boards.p1, game.now).length, 1);
+  assert.equal(computeActiveLinks(game.boards.p2, game.now).length, 1);
+});
+
+test('origin boss disruption spawns two Null spores around the boss position', () => {
+  const game = createGame({ mode: 'solo', seed: 93 });
+  game.wave.index = 9;
+  game.wave.active = true;
+  game.wave.queue = [];
+  game.wave.disruptionFired = false;
+  game.boss.active = true;
+  game.boss.timer = GAME_RULES.bossTimer - 9;
+  game.boss.limit = GAME_RULES.bossTimer;
+  installNoise(game, { id: 'boss-origin', type: 'boss', hp: 1000, maxHp: 1000, speed: 0, progress: 0.5, lane: 1 });
+
+  tickGame(game, 0.1);
+
+  const spores = game.noise.filter((noise) => noise.type === 'null_spore');
+  assert.equal(game.eventLog.some((event) => event.type === 'boss_origin_spore'), true);
+  assert.equal(spores.length, 2);
+  assert.deepEqual(spores.map((noise) => Number(noise.progress.toFixed(2))), [0.44, 0.56]);
+  assert.deepEqual(spores.map((noise) => noise.lane), [1, 1]);
 });
 
 

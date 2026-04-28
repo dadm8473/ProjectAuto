@@ -11,9 +11,26 @@ import {
 } from './content.js';
 
 let nextId = 1;
+const EVENT_LOG_LIMIT = 24;
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function roundedSeconds(value) {
+  return Number(Math.max(0, value).toFixed(2));
+}
+
+function pushEvent(game, event) {
+  if (!game.eventLog) game.eventLog = [];
+  const entry = {
+    id: `ev${nextId++}`,
+    at: roundedSeconds(game.now),
+    ...event
+  };
+  game.eventLog.push(entry);
+  if (game.eventLog.length > EVENT_LOG_LIMIT) game.eventLog = game.eventLog.slice(-EVENT_LOG_LIMIT);
+  return entry;
 }
 
 function makeRng(seed) {
@@ -83,6 +100,15 @@ function relayOnline(relay, now) {
   return relay && relay.shutdownUntil <= now;
 }
 
+function linkKey(a, b) {
+  return `${Math.min(a, b)}:${Math.max(a, b)}`;
+}
+
+function linkDisabled(board, a, b, now) {
+  const key = linkKey(a, b);
+  return (board.disabledLinks ?? []).some((link) => link.until > now && link.key === key);
+}
+
 function makeRelay(game, playerId, relayId, tier = 1, grade = RELAY_TYPES[relayId].grade) {
   const spec = RELAY_TYPES[relayId];
   return {
@@ -139,6 +165,11 @@ function startWave(game) {
     game.boss.timer = GAME_RULES.bossTimer;
     game.boss.limit = GAME_RULES.bossTimer;
   }
+  pushEvent(game, {
+    type: game.wave.queue.includes('boss') ? 'boss_wave_started' : 'wave_started',
+    wave: game.wave.index + 1,
+    bossActive: game.wave.queue.includes('boss')
+  });
 }
 
 function makeNoise(game, type, overrides = {}) {
@@ -320,6 +351,9 @@ function resolveNoise(game, dt) {
         game.resources.gems += 10;
         game.resources.swapCharges.p1 += 2;
         game.resources.swapCharges.p2 += 2;
+        pushEvent(game, { type: 'boss_defeated', wave: game.wave.index + 1, bossId: noise.id, rewardCharge: noise.rewardCharge, rewardLink: noise.rewardLink });
+      } else {
+        pushEvent(game, { type: 'noise_defeated', noiseType: noise.type, rewardCharge: noise.rewardCharge, rewardLink: noise.rewardLink });
       }
       if (noise.type === 'splitter') {
         children.push(makeNoise(game, 'flicker', { progress: Math.max(0, noise.progress - 0.015), lane: noise.lane, rewardCharge: 0, rewardLink: 0, saturation: 1 }));
@@ -329,12 +363,18 @@ function resolveNoise(game, dt) {
     }
     if (noise.hp <= 0) continue;
 
+    if (noise.spawnedAt === game.now) {
+      survivors.push(noise);
+      continue;
+    }
+
     const speed = noise.speed * (game.now < noise.slowUntil ? 1 - noise.slow : 1);
     noise.progress += (speed * dt) / 250;
     if (noise.progress >= 1) {
       game.saturation.count += noise.saturation;
       game.signal.integrity = Math.max(0, game.signal.integrity - (noise.type === 'null' ? 8 : noise.saturation));
       game.effects.push({ id: `fx${nextId++}`, type: 'loop_complete', noiseType: noise.type, signalDamage: noise.type === 'null' ? 8 : noise.saturation, ttl: 0.9 });
+      pushEvent(game, { type: 'loop_complete', noiseType: noise.type, saturation: noise.saturation, signalDamage: noise.type === 'null' ? 8 : noise.saturation });
       if (noise.type === 'boss') game.boss.active = false;
       continue;
     }
@@ -401,6 +441,68 @@ function currentSupplyCostForPlayer(game, playerId) {
   return Math.max(1, Math.ceil(baseSupplyCost * bossSupplyMultiplier * discountMultiplier));
 }
 
+function availability(available, reason = '') {
+  return available ? { available: true, reason: '' } : { available: false, reason };
+}
+
+function computeActionStateForPlayer(game, playerId) {
+  const board = findBoard(game, playerId);
+  const partnerBoard = findBoard(game, partnerId(playerId));
+  const relayCount = board.slots.filter(Boolean).length;
+  const partnerRelayCount = partnerBoard.slots.filter(Boolean).length;
+  const supplyCost = currentSupplyCostForPlayer(game, playerId);
+  const focusCost = GAME_RULES.supplyFocusCost + (game.stats.focusUps[playerId] ?? 0) * 25;
+  const linkPulseCooldownRemaining = roundedSeconds((game.linkPulseCooldownUntil ?? 0) - game.now);
+  const swapCharges = game.resources.swapCharges[playerId] ?? 0;
+  const overclockActiveRemaining = roundedSeconds((board.overclockUntil ?? 0) - game.now);
+
+  let supply = availability(!game.over && prioritySlotIndex(board) >= 0 && game.resources.charge >= supplyCost);
+  if (!supply.available) {
+    supply = availability(false, game.over ? 'Run finished.' : prioritySlotIndex(board) < 0 ? 'Board full.' : `Need ${supplyCost} Charge.`);
+  }
+
+  let focus = availability(!game.over && game.resources.charge >= focusCost);
+  if (!focus.available) focus = availability(false, game.over ? 'Run finished.' : `Need ${focusCost} Charge.`);
+
+  let swap = availability(!game.over && swapCharges > 0 && relayCount >= 2);
+  if (!swap.available) {
+    swap = availability(false, game.over ? 'Run finished.' : swapCharges <= 0 ? 'No Swap Charge.' : 'Need two Relays.');
+  }
+
+  let linkPulse = availability(!game.over && game.resources.linkEnergy >= GAME_RULES.linkPulseCost && linkPulseCooldownRemaining <= 0 && partnerRelayCount > 0);
+  if (!linkPulse.available) {
+    linkPulse = availability(
+      false,
+      game.over
+        ? 'Run finished.'
+        : game.resources.linkEnergy < GAME_RULES.linkPulseCost
+          ? `Need ${GAME_RULES.linkPulseCost} Link.`
+          : linkPulseCooldownRemaining > 0
+            ? `Ready in ${linkPulseCooldownRemaining}s.`
+            : 'Partner has no Relay.'
+    );
+  }
+
+  let overclock = availability(!game.over && relayCount > 0);
+  if (!overclock.available) overclock = availability(false, game.over ? 'Run finished.' : 'No Relays.');
+
+  return {
+    supply: { ...supply, cost: supplyCost },
+    merge: { available: !game.over && relayCount >= GAME_RULES.mergeCount, reason: game.over ? 'Run finished.' : relayCount < GAME_RULES.mergeCount ? 'Need three Relays.' : '', selectedRequired: GAME_RULES.mergeCount },
+    swap: { ...swap, charges: swapCharges },
+    focus: { ...focus, cost: focusCost },
+    linkPulse: { ...linkPulse, cost: GAME_RULES.linkPulseCost, cooldownRemaining: linkPulseCooldownRemaining, partnerTargets: partnerRelayCount },
+    overclock: { ...overclock, heat: GAME_RULES.overclockHeat, duration: GAME_RULES.overclockDuration, activeRemaining: overclockActiveRemaining }
+  };
+}
+
+function computeActionState(game) {
+  return {
+    p1: computeActionStateForPlayer(game, 'p1'),
+    p2: computeActionStateForPlayer(game, 'p2')
+  };
+}
+
 export function computeActiveLinks(board, now = 0) {
   const links = [];
   board.slots.forEach((relay, index) => {
@@ -410,6 +512,7 @@ export function computeActiveLinks(board, now = 0) {
       if (neighbor < 0 || neighbor < index) continue;
       const other = board.slots[neighbor];
       if (!relayOnline(other, now)) continue;
+      if (linkDisabled(board, index, neighbor, now)) continue;
       if (other.linkShape.includes(opposite(direction))) links.push({ a: index, b: neighbor, direction });
     }
   });
@@ -433,8 +536,8 @@ export function createGame({ mode = 'bot', seed = Date.now() } = {}) {
       { id: 'p2', name: mode === 'bot' ? 'AUTO PARTNER' : 'Partner', bot: mode === 'bot', ready: true }
     ],
     boards: {
-      p1: { id: 'p1', name: 'Your Relay Board', anchorIndex: 5, slots: Array(GAME_RULES.boardSlots).fill(null), comboText: '', overclockUntil: 0, overclockResolvedUntil: 0 },
-      p2: { id: 'p2', name: 'Partner Relay Board', anchorIndex: 5, slots: Array(GAME_RULES.boardSlots).fill(null), comboText: '', overclockUntil: 0, overclockResolvedUntil: 0 }
+      p1: { id: 'p1', name: 'Your Relay Board', anchorIndex: 5, slots: Array(GAME_RULES.boardSlots).fill(null), comboText: '', overclockUntil: 0, overclockResolvedUntil: 0, disabledLinks: [] },
+      p2: { id: 'p2', name: 'Partner Relay Board', anchorIndex: 5, slots: Array(GAME_RULES.boardSlots).fill(null), comboText: '', overclockUntil: 0, overclockResolvedUntil: 0, disabledLinks: [] }
     },
     resources: { charge: 110, linkEnergy: 50, swapCharges: { p1: 1, p2: 1 }, gems: 30, xp: 0 },
     supplyOdds: { ...SUPPLY_TABLE },
@@ -459,6 +562,8 @@ export function createGame({ mode = 'bot', seed = Date.now() } = {}) {
     linkPulseSignalGainThisWave: 0,
     dualOverclockBossUntil: 0,
     unlocks: [],
+    eventLog: [],
+    result: null,
     over: false,
     won: false
   };
@@ -479,6 +584,7 @@ export function supplyRelay(game, { playerId }) {
   game.rng.pity[playerId] = gradeRank(relaySpec.grade) >= gradeRank('Prime') ? 0 : game.rng.pity[playerId] + 1;
   board.slots[slotIndex] = relay;
   game.effects.push({ id: `fx${nextId++}`, type: 'supply', playerId, slot: slotIndex, relayId: relay.relayId, grade: relay.grade, ttl: 0.8 });
+  pushEvent(game, { type: 'supply', playerId, slot: slotIndex, relayId: relay.relayId, relayName: RELAY_TYPES[relay.relayId].name, tier: relay.tier, grade: relay.grade, cost });
   return { ok: true, slot: slotIndex, relay };
 }
 
@@ -500,6 +606,7 @@ export function mergeRelays(game, { playerId, slotIds }) {
   game.stats.merges[playerId] = (game.stats.merges[playerId] ?? 0) + 1;
   board.comboText = `${RELAY_TYPES[merged.relayId].name} T${merged.tier}`;
   game.effects.push({ id: `fx${nextId++}`, type: 'merge', playerId, slot: slotIds[0], relayId: merged.relayId, grade: merged.grade, ttl: 1.0 });
+  pushEvent(game, { type: 'merge', playerId, slot: slotIds[0], relayId: merged.relayId, relayName: RELAY_TYPES[merged.relayId].name, tier: merged.tier, consumedSlots: slotIds });
   return { ok: true, relay: merged };
 }
 
@@ -515,6 +622,7 @@ export function swapRelays(game, { playerId, from, to }) {
   board.slots[to] = temp;
   game.stats.swaps[playerId] = (game.stats.swaps[playerId] ?? 0) + 1;
   game.effects.push({ id: `fx${nextId++}`, type: 'swap', playerId, from, to, ttl: 0.7 });
+  pushEvent(game, { type: 'swap', playerId, from, to, remainingCharges: game.resources.swapCharges[playerId] ?? 0 });
   return { ok: true };
 }
 
@@ -529,6 +637,7 @@ export function upgradeSupplyFocus(game, { playerId }) {
   game.supplyOdds.Core += 0.006;
   game.supplyOdds.Origin += 0.001;
   game.effects.push({ id: `fx${nextId++}`, type: 'focus', playerId, ttl: 0.75 });
+  pushEvent(game, { type: 'focus', playerId, cost, focusLevel: game.stats.focusUps[playerId] });
   return { ok: true, odds: clone(game.supplyOdds) };
 }
 
@@ -584,6 +693,15 @@ export function castLinkPulse(game, { playerId }) {
       ttl: 1.25
     });
   }
+  pushEvent(game, {
+    type: heatSave || signalSave ? 'link_pulse_save' : 'link_pulse',
+    playerId,
+    targetPlayerId,
+    targetCount: affectedTargets.length,
+    signalGain,
+    savedUnitIds,
+    cooldown: GAME_RULES.linkPulseCooldown
+  });
   return { ok: true, unitIds: affectedTargets.map((target) => target.id), signalGain };
 }
 
@@ -599,6 +717,7 @@ export function overclockRelay(game, { playerId, slot }) {
   if (otherBoard.overclockUntil > game.now) game.dualOverclockBossUntil = game.now + 4;
   game.stats.overclocks[playerId] = (game.stats.overclocks[playerId] ?? 0) + 1;
   game.effects.push({ id: `fx${nextId++}`, type: 'overclock', playerId, slot, unitIds: relays.map((relay) => relay.id), ttl: 0.8 });
+  pushEvent(game, { type: 'overclock', playerId, affectedCount: relays.length, dualBossWindow: game.dualOverclockBossUntil > game.now });
   return { ok: true, boardId: playerId };
 }
 
@@ -616,6 +735,98 @@ export function tryBuyShopItem(game, { itemId }) {
   return { ok: true, itemId };
 }
 
+function bossDisruptionTypeForWave(waveNumber) {
+  if (waveNumber >= 10) return 'boss_origin_spore';
+  if (waveNumber >= 6) return 'boss_mirror_linkbreak';
+  return 'boss_orchid_heatroot';
+}
+
+function relayPressureTargets(game) {
+  const candidates = [];
+  for (const [playerId, board] of Object.entries(game.boards)) {
+    const links = computeActiveLinks(board, game.now);
+    board.slots.forEach((relay, slot) => {
+      if (!relay) return;
+      candidates.push({
+        playerId,
+        board,
+        relay,
+        slot,
+        heat: relay.heat,
+        activeLinks: activeLinkCountForSocket(links, slot)
+      });
+    });
+  }
+  return candidates
+    .sort((a, b) => b.activeLinks - a.activeLinks || b.heat - a.heat || a.playerId.localeCompare(b.playerId) || a.slot - b.slot)
+    .slice(0, 2);
+}
+
+function applyOrchidHeatroot(game) {
+  const targets = relayPressureTargets(game);
+  for (const target of targets) applyHeat(game, target.relay, 12);
+  const payloadTargets = targets.map((target) => ({
+    playerId: target.playerId,
+    slot: target.slot,
+    unitId: target.relay.id,
+    heatAfter: target.relay.heat,
+    activeLinks: target.activeLinks
+  }));
+  game.effects.push({ id: `fx${nextId++}`, type: 'boss_orchid_heatroot', targets: payloadTargets, ttl: 1.2 });
+  pushEvent(game, { type: 'boss_orchid_heatroot', wave: game.wave.index + 1, targets: payloadTargets, heatAdded: 12, noOp: targets.length === 0 });
+}
+
+function applyMirrorLinkbreak(game) {
+  const disabled = [];
+  for (const [playerId, board] of Object.entries(game.boards)) {
+    const link = computeActiveLinks(board, game.now)[0] ?? null;
+    if (!link) {
+      disabled.push({ playerId, disabledPair: null, noOp: true });
+      continue;
+    }
+    const entry = {
+      key: linkKey(link.a, link.b),
+      a: link.a,
+      b: link.b,
+      until: game.now + 5,
+      source: 'boss_mirror_linkbreak'
+    };
+    board.disabledLinks = [...(board.disabledLinks ?? []).filter((item) => item.until > game.now), entry];
+    disabled.push({ playerId, disabledPair: [link.a, link.b], until: roundedSeconds(entry.until), noOp: false });
+  }
+  game.effects.push({ id: `fx${nextId++}`, type: 'boss_mirror_linkbreak', disabledLinks: disabled, ttl: 1.2 });
+  pushEvent(game, { type: 'boss_mirror_linkbreak', wave: game.wave.index + 1, disabledLinks: disabled });
+}
+
+function wrapProgress(progress) {
+  if (progress < 0) return progress + 1;
+  if (progress >= 1) return progress - 1;
+  return progress;
+}
+
+function applyOriginSpore(game) {
+  const boss = game.noise.find((noise) => noise.type === 'boss') ?? null;
+  const sourceProgress = boss?.progress ?? 0.5;
+  const lane = boss?.lane ?? 0;
+  const spawnedSpores = [-0.06, 0.06].map((offset) => {
+    const spore = makeNoise(game, 'null_spore', { progress: wrapProgress(sourceProgress + offset), lane, rewardCharge: 0, rewardLink: 0 });
+    spore.spawnedAt = game.now;
+    game.noise.push(spore);
+    return { noiseId: spore.id, progress: Number(spore.progress.toFixed(3)), lane: spore.lane };
+  });
+  game.effects.push({ id: `fx${nextId++}`, type: 'boss_origin_spore', spawnedSpores, ttl: 1.2 });
+  pushEvent(game, { type: 'boss_origin_spore', wave: game.wave.index + 1, bossId: boss?.id ?? null, spawnedSpores, sourceProgress: Number(sourceProgress.toFixed(3)) });
+}
+
+function resolveBossDisruption(game) {
+  if (!game.boss.active || game.wave.disruptionFired || game.boss.timer >= game.boss.limit - 8) return;
+  game.wave.disruptionFired = true;
+  const type = bossDisruptionTypeForWave(game.wave.index + 1);
+  if (type === 'boss_orchid_heatroot') applyOrchidHeatroot(game);
+  if (type === 'boss_mirror_linkbreak') applyMirrorLinkbreak(game);
+  if (type === 'boss_origin_spore') applyOriginSpore(game);
+}
+
 function resolveOverclockExpiry(game) {
   for (const [playerId, board] of Object.entries(game.boards)) {
     if (board.overclockUntil <= 0 || board.overclockUntil > game.now) continue;
@@ -630,9 +841,28 @@ function resolveOverclockExpiry(game) {
   }
 }
 
+function finishGame(game, { won, code, text }) {
+  if (game.over) return;
+  game.over = true;
+  game.won = won;
+  game.resultReason = text;
+  game.result = {
+    won,
+    code,
+    text,
+    wave: Math.min(game.wave.index + 1, GAME_RULES.maxWave),
+    time: roundedSeconds(game.now),
+    stats: clone(game.stats)
+  };
+  pushEvent(game, { type: 'run_finished', won, code, text, wave: game.result.wave, time: game.result.time });
+}
+
 export function tickGame(game, dt) {
   if (game.over) return game;
   game.now += dt;
+  for (const board of Object.values(game.boards)) {
+    board.disabledLinks = (board.disabledLinks ?? []).filter((link) => link.until > game.now);
+  }
   resolveOverclockExpiry(game);
   botThink(game);
 
@@ -647,10 +877,7 @@ export function tickGame(game, dt) {
       game.noise.push(makeNoise(game, game.wave.queue.shift()));
       game.wave.spawnTimer = Math.max(0.12, 0.42 - game.wave.index * 0.012);
     }
-    if (game.boss.active && !game.wave.disruptionFired && game.boss.timer < game.boss.limit - 8) {
-      game.wave.disruptionFired = true;
-      game.effects.push({ id: `fx${nextId++}`, type: 'boss_disruption', waveIndex: game.wave.index + 1, ttl: 1.2 });
-    }
+    resolveBossDisruption(game);
   }
 
   for (const [playerId, board] of Object.entries(game.boards)) {
@@ -666,16 +893,16 @@ export function tickGame(game, dt) {
   if (game.boss.active) {
     game.boss.timer -= dt;
     if (game.boss.timer <= 0 && game.noise.some((noise) => noise.type === 'boss')) {
-      game.over = true;
-      game.won = false;
-      game.resultReason = 'Boss timer expired.';
+      finishGame(game, { won: false, code: 'loss_boss_timer', text: 'Boss timer expired.' });
     }
   }
 
-  if (game.saturation.count >= game.saturation.limit || game.signal.integrity <= 0) {
-    game.over = true;
-    game.won = false;
-    game.resultReason = game.signal.integrity <= 0 ? 'Signal collapsed.' : 'Saturation reached 100.';
+  if (!game.over && (game.saturation.count >= game.saturation.limit || game.signal.integrity <= 0)) {
+    finishGame(game, {
+      won: false,
+      code: game.signal.integrity <= 0 ? 'loss_signal_collapse' : 'loss_saturation',
+      text: game.signal.integrity <= 0 ? 'Signal collapsed.' : 'Saturation reached 100.'
+    });
   }
 
   game.effects = game.effects.map((effect) => ({ ...effect, ttl: effect.ttl - dt })).filter((effect) => effect.ttl > 0);
@@ -690,11 +917,10 @@ export function tickGame(game, dt) {
     game.resources.gems += game.wave.index % 3 === 0 ? 8 : 0;
     game.signal.integrity = Math.min(GAME_RULES.signalMax, game.signal.integrity + 5);
     game.saturation.count = Math.max(0, game.saturation.count - 18);
+    pushEvent(game, { type: 'wave_cleared', wave: game.wave.index, chargeReward: 45 + game.wave.index * 8, linkReward: 12 });
     if (game.wave.index >= GAME_RULES.maxWave) {
-      game.over = true;
-      game.won = true;
-      game.resultReason = 'Signal loop stabilized.';
       game.resources.gems += 120;
+      finishGame(game, { won: true, code: 'win_signal_lock', text: 'Signal loop stabilized.' });
     }
   }
   return game;
@@ -728,6 +954,9 @@ export function serializeState(game) {
     effects: game.effects,
     stats: game.stats,
     unlocks: game.unlocks,
+    actionState: computeActionState(game),
+    eventLog: game.eventLog ?? [],
+    result: game.result ?? null,
     resultReason: game.resultReason,
     over: game.over,
     won: game.won
