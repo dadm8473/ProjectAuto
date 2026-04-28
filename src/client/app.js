@@ -44,16 +44,11 @@ const resultStats = document.querySelector('#resultStats');
 const resultReward = document.querySelector('#resultReward');
 const resultRetryButton = document.querySelector('#resultRetryButton');
 const resultLobbyButton = document.querySelector('#resultLobbyButton');
-const botButton = document.querySelector('#botButton');
-const onlineButton = document.querySelector('#onlineButton');
 const shopButton = document.querySelector('#shopButton');
 const actionButtons = {
   supply: document.querySelector('#supplyButton'),
   merge: document.querySelector('#mergeButton'),
-  swap: document.querySelector('#swapButton'),
-  focus: document.querySelector('#focusButton'),
-  pulse: document.querySelector('#pulseButton'),
-  overclock: document.querySelector('#overclockButton')
+  pulse: document.querySelector('#pulseButton')
 };
 
 const artDirectionImage = new Image();
@@ -210,26 +205,18 @@ function buildResultView(state, summary) {
   };
 }
 
-function syncModeButtons() {
-  const modeLocked = runStarted;
-  botButton.disabled = modeLocked;
-  onlineButton.disabled = modeLocked || socket?.readyState === WebSocket.CONNECTING;
-  botButton.title = modeLocked ? 'Finish the current run first.' : '';
-  onlineButton.title = modeLocked ? 'Finish the current run first.' : '';
-}
-
 function localAction(action) {
   let result = { ok: false, reason: 'Unknown action.' };
   if (action.type === 'supply') result = supplyRelay(game, { playerId: localBoardId });
-  if (action.type === 'merge') result = mergeRelays(game, { playerId: localBoardId, slotIds: selected });
+  if (action.type === 'merge') result = mergeRelays(game, { playerId: localBoardId, slotIds: action.slotIds ?? selected });
   if (action.type === 'swap') {
-    if (selected.length < 2) result = { ok: false, reason: 'Select two sockets.' };
-    else result = swapRelays(game, { playerId: localBoardId, from: selected[0], to: selected[1] });
+    if (action.from === undefined || action.to === undefined) result = { ok: false, reason: 'Select two sockets.' };
+    else result = swapRelays(game, { playerId: localBoardId, from: action.from, to: action.to });
   }
   if (action.type === 'focus') result = upgradeSupplyFocus(game, { playerId: localBoardId });
   if (action.type === 'pulse') result = castLinkPulse(game, { playerId: localBoardId });
   if (action.type === 'overclock') {
-    const slot = selected.at(-1);
+    const slot = action.slot ?? selected.at(-1);
     result = slot === undefined ? { ok: false, reason: 'Select one Relay.' } : overclockRelay(game, { playerId: localBoardId, slot });
   }
   if (action.type === 'buy') result = tryBuyShopItem(game, { itemId: action.itemId });
@@ -250,18 +237,30 @@ function localAction(action) {
   }
 }
 
+function prepareAction(action) {
+  const state = currentState();
+  if (action.type !== 'merge') {
+    return {
+      ...action,
+      slotIds: selected,
+      from: selected[0],
+      to: selected[1],
+      slot: selected.at(-1)
+    };
+  }
+  const mergeSlots = state.actionState?.[localBoardId]?.merge.slots ?? [];
+  return { ...action, slotIds: mergeSlots };
+}
+
 function command(action) {
   if (!runStarted || resultView) return;
+  const prepared = prepareAction(action);
   const onlineAction = {
-    ...action,
-    slotIds: selected,
-    from: selected[0],
-    to: selected[1],
-    slot: selected.at(-1),
+    ...prepared,
     ...(action.type === 'buy' ? { profile: { gems: metaProfile.gems, unlocks: metaProfile.unlocks } } : {})
   };
   if (send(onlineAction)) return;
-  localAction(action);
+  localAction(prepared);
 }
 
 function hideLaunchOverlay() {
@@ -1541,36 +1540,18 @@ function setActionButton(button, label, enabled, reason = '') {
 function updateActionButtons(state) {
   const actions = state.actionState?.[localBoardId];
   if (!actions) return;
-  const selectedCount = selected.length;
-  setActionButton(actionButtons.supply, `Supply ${actions.supply.cost}C`, actions.supply.available, actions.supply.reason);
+  setActionButton(actionButtons.supply, 'Supply', actions.supply.available, actions.supply.reason);
   actionButtons.supply.dataset.hot = String(actions.supply.available);
   setActionButton(
     actionButtons.merge,
-    `Merge ${selectedCount}/3`,
-    actions.merge.available && selectedCount === 3,
-      selectedCount < 3 ? 'Select three matching Relays.' : actions.merge.reason
+    'Merge',
+    actions.merge.available,
+    actions.merge.reason
   );
-  actionButtons.merge.dataset.hot = String(actions.merge.available && selectedCount === 3);
-  setActionButton(
-    actionButtons.swap,
-    `Swap ${actions.swap.charges}S`,
-    actions.swap.available && selectedCount >= 2,
-      selectedCount < 2 ? 'Select two Relays.' : actions.swap.reason
-  );
-  actionButtons.swap.dataset.hot = String(actions.swap.available && selectedCount >= 2);
-  setActionButton(actionButtons.focus, `Focus ${actions.focus.cost}C`, actions.focus.available, actions.focus.reason);
-  actionButtons.focus.dataset.hot = String(actions.focus.available && !actions.supply.available);
-  const pulseLabel = actions.linkPulse.cooldownRemaining > 0 ? `Pulse ${Math.ceil(actions.linkPulse.cooldownRemaining)}s` : `Pulse ${actions.linkPulse.cost}L`;
+  actionButtons.merge.dataset.hot = String(actions.merge.available);
+  const pulseLabel = actions.linkPulse.cooldownRemaining > 0 ? `${Math.ceil(actions.linkPulse.cooldownRemaining)}s` : 'Pulse';
   setActionButton(actionButtons.pulse, pulseLabel, actions.linkPulse.available, actions.linkPulse.reason);
   actionButtons.pulse.dataset.ready = String(actions.linkPulse.available);
-  const overclockLabel = actions.overclock.activeRemaining > 0 ? `OC ${Math.ceil(actions.overclock.activeRemaining)}s` : 'Overclock';
-  setActionButton(
-    actionButtons.overclock,
-    overclockLabel,
-    actions.overclock.available && selectedCount >= 1,
-    selectedCount < 1 ? 'Select one Relay.' : actions.overclock.reason
-  );
-  actionButtons.overclock.dataset.hot = String(actions.overclock.available && selectedCount >= 1);
 }
 
 function updateHud() {
@@ -1583,7 +1564,6 @@ function updateHud() {
   bossMeter.textContent = state.boss.active ? `Boss ${Math.ceil(state.boss.timer)}s` : 'Boss --';
   updateActionButtons(state);
   syncResultOverlay(state);
-  syncModeButtons();
 }
 
 function loop(now) {
@@ -1696,18 +1676,7 @@ canvas.addEventListener('pointerdown', (event) => {
 
 actionButtons.supply.addEventListener('click', () => command({ type: 'supply' }));
 actionButtons.merge.addEventListener('click', () => command({ type: 'merge' }));
-actionButtons.swap.addEventListener('click', () => command({ type: 'swap' }));
-actionButtons.focus.addEventListener('click', () => command({ type: 'focus' }));
 actionButtons.pulse.addEventListener('click', () => command({ type: 'pulse' }));
-actionButtons.overclock.addEventListener('click', () => command({ type: 'overclock' }));
-botButton.addEventListener('click', () => {
-  if (runStarted) return;
-  startBotRun();
-});
-onlineButton.addEventListener('click', () => {
-  if (runStarted) return;
-  connectOnline();
-});
 launchBotButton.addEventListener('click', startBotRun);
 launchOnlineButton.addEventListener('click', connectOnline);
 resultRetryButton.addEventListener('click', startBotRun);

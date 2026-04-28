@@ -1,7 +1,7 @@
 :root {
   color-scheme: dark;
   --hud-base: 54px;
-  --action-panel-base: 198px;
+  --action-panel-base: 126px;
   --bg: #080c0d;
   --panel: rgba(13, 18, 17, 0.9);
   --panel-2: #1b2421;
@@ -595,22 +595,19 @@ button:disabled:active {
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
+  gap: 6px;
 }
 
 .secondary-actions {
-  position: absolute;
-  z-index: 9;
-  left: 8px;
-  right: 8px;
+  position: relative;
+  z-index: 2;
   width: auto;
   transform: none;
-  top: auto;
-  bottom: calc(8px + env(safe-area-inset-bottom));
   display: grid;
-  grid-template-columns: 0.72fr 0.86fr 1.36fr;
+  grid-template-columns: 1fr;
   gap: 5px;
-  margin-top: 0;
+  margin: 7px 0 0 auto;
+  max-width: 122px;
 }
 
 #supplyButton {
@@ -787,7 +784,7 @@ button:disabled:active {
 @media (max-height: 720px) {
   :root {
     --hud-base: 48px;
-    --action-panel-base: 180px;
+    --action-panel-base: 116px;
   }
 
   .hud {
@@ -816,7 +813,6 @@ button:disabled:active {
   }
 
   .secondary-actions {
-    top: auto;
-    bottom: calc(7px + env(safe-area-inset-bottom));
+    max-width: 108px;
   }
 }

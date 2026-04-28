@@ -140,6 +140,28 @@ test('client stores meta progression and shows earned run rewards', async () => 
   }
 });
 
+test('mobile combat controls collapse to three core actions', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const js = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const primary = html.slice(html.indexOf('class="primary-actions"'), html.indexOf('class="secondary-actions"'));
+  const secondary = html.slice(html.indexOf('class="secondary-actions"'), html.indexOf('</section>', html.indexOf('class="secondary-actions"')));
+
+  for (const marker of ['id="supplyButton"', 'id="mergeButton"', 'id="pulseButton"']) {
+    assert.equal(primary.includes(marker), true, marker);
+  }
+  for (const marker of ['id="swapButton"', 'id="focusButton"', 'id="overclockButton"', 'id="botButton"', 'id="onlineButton"']) {
+    assert.equal(html.includes(marker), false, marker);
+  }
+  assert.equal((primary.match(/<button/g) ?? []).length, 3);
+  assert.equal((secondary.match(/<button/g) ?? []).length, 1);
+  assert.equal(secondary.includes('id="shopButton"'), true);
+  assert.equal(js.includes('function prepareAction'), true);
+  assert.equal(js.includes('state.actionState?.[localBoardId]?.merge.slots'), true);
+  assert.equal(js.includes('selected.length === 3 ? selected : state.actionState?.[localBoardId]?.merge.slots'), false);
+  assert.equal(css.includes('--action-panel-base: 126px;'), true);
+});
+
 test('browser chrome has a committed icon to avoid favicon noise in smoke tests', async () => {
   const html = await readFile('index.html', 'utf8');
   assert.equal(html.includes('rel="icon"'), true);
@@ -192,7 +214,6 @@ test('app shell has a commercial launch layer before combat starts', async () =>
     'function startBotRun',
     'function syncResultOverlay',
     'function setLaunchConnecting',
-    'function syncModeButtons',
     'if (socket !== activeSocket) return;',
     'if (runStarted && !online) tickGame(game, dt);'
   ]) {
@@ -235,11 +256,13 @@ test('online launch waits for an open socket before starting the run', async () 
   assert.equal(closeHandler.includes('if (socket !== activeSocket) return;'), true);
 });
 
-test('combat mode buttons cannot wipe an active run', async () => {
+test('combat mode changes stay on the launch layer', async () => {
   const js = await readFile('src/client/app.js', 'utf8');
-  assert.equal(js.includes('const modeLocked = runStarted;'), true);
-  assert.equal(js.includes('botButton.disabled = modeLocked;'), true);
-  assert.equal(js.includes('onlineButton.disabled = modeLocked || socket?.readyState === WebSocket.CONNECTING;'), true);
-  assert.equal(js.includes('if (runStarted) return;'), true);
+  const html = await readFile('index.html', 'utf8');
+  assert.equal(html.includes('id="launchBotButton"'), true);
+  assert.equal(html.includes('id="launchOnlineButton"'), true);
+  assert.equal(html.includes('id="botButton"'), false);
+  assert.equal(html.includes('id="onlineButton"'), false);
+  assert.equal(js.includes('function syncModeButtons'), false);
   assert.equal(js.includes("document.querySelector('#botButton').addEventListener"), false);
 });
