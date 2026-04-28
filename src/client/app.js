@@ -49,8 +49,6 @@ const relayAtlas = new Image();
 relayAtlas.src = '/src/client/assets/generated/relay-unit-atlas.png';
 const relayWorldSprites = new Image();
 relayWorldSprites.src = '/src/client/assets/generated/relay-world-sprites.png';
-const noiseEnemyAtlas = new Image();
-noiseEnemyAtlas.src = '/src/client/assets/generated/noise-enemy-atlas.png';
 const noiseWorldSprites = new Image();
 noiseWorldSprites.src = '/src/client/assets/generated/noise-world-sprites.png';
 const bossDisruptionAtlas = new Image();
@@ -340,6 +338,27 @@ function drawTrack(state) {
   const { track, loop } = sceneLayout;
   drawMetalPlate(track.x, track.y, track.w, track.h, 22, 'rgba(244, 201, 93, 0.2)');
 
+  const statusX = track.x + 36;
+  const statusW = track.w - 72;
+  const signalRatio = Math.max(0, Math.min(1, state.signal.integrity / GAME_RULES.signalMax));
+  const saturationRatio = Math.max(0, Math.min(1, state.saturation.count / state.saturation.limit));
+  ctx.fillStyle = 'rgba(2, 5, 6, 0.62)';
+  ctx.beginPath();
+  ctx.roundRect(statusX, track.y + 14, statusW, 8, 4);
+  ctx.fill();
+  ctx.fillStyle = signalRatio < 0.36 ? '#ff6f59' : '#58d7ff';
+  ctx.beginPath();
+  ctx.roundRect(statusX, track.y + 14, statusW * signalRatio, 8, 4);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(2, 5, 6, 0.62)';
+  ctx.beginPath();
+  ctx.roundRect(statusX, track.y + 26, statusW, 5, 3);
+  ctx.fill();
+  ctx.fillStyle = saturationRatio > 0.66 ? '#ff6f59' : '#f4c95d';
+  ctx.beginPath();
+  ctx.roundRect(statusX, track.y + 26, statusW * saturationRatio, 5, 3);
+  ctx.fill();
+
   ctx.strokeStyle = 'rgba(0, 0, 0, 0.56)';
   ctx.lineWidth = 26;
   ctx.beginPath();
@@ -396,6 +415,23 @@ function drawTrack(state) {
   ctx.font = '850 11px system-ui';
   ctx.fillStyle = state.boss.active ? '#ff6f59' : '#8ee6d2';
   ctx.fillText(state.boss.active ? `BOSS ${Math.ceil(state.boss.timer)}s` : `SIGNAL ${Math.ceil(state.signal.integrity)}`, loop.cx, loop.cy + 15);
+  if (state.boss.active) {
+    const bossRatio = Math.max(0, Math.min(1, state.boss.timer / state.boss.limit));
+    ctx.shadowColor = 'rgba(255, 111, 89, 0.7)';
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = 'rgba(5, 7, 8, 0.72)';
+    ctx.beginPath();
+    ctx.roundRect(track.x + 52, track.y + track.h - 23, track.w - 104, 11, 6);
+    ctx.fill();
+    ctx.fillStyle = bossRatio < 0.35 ? '#ff6f59' : '#f4c95d';
+    ctx.beginPath();
+    ctx.roundRect(track.x + 52, track.y + track.h - 23, (track.w - 104) * bossRatio, 11, 6);
+    ctx.fill();
+    ctx.fillStyle = '#f5f0dc';
+    ctx.font = '950 10px system-ui';
+    ctx.fillText('BOSS WINDOW', loop.cx, track.y + track.h - 28);
+    ctx.shadowBlur = 0;
+  }
   ctx.shadowBlur = 0;
   ctx.restore();
 }
@@ -411,8 +447,8 @@ function noisePosition(noise) {
 }
 
 function drawAmbientNoise(state) {
-  const atlas = noiseWorldSprites.complete && noiseWorldSprites.naturalWidth > 0 ? noiseWorldSprites : noiseEnemyAtlas;
-  if (state.noise.length > 0 || !atlas.complete || atlas.naturalWidth === 0) return;
+  const atlas = noiseWorldSprites.complete && noiseWorldSprites.naturalWidth > 0 ? noiseWorldSprites : null;
+  if (state.noise.length > 0 || !atlas) return;
   const previews = [
     { type: 'flicker', progress: (state.now * 0.022) % 1, lane: 0 },
     { type: 'crawler', progress: (0.08 + state.now * 0.018) % 1, lane: 1 },
@@ -427,14 +463,41 @@ function drawAmbientNoise(state) {
   ctx.restore();
 }
 
+function drawNoiseFallback(noise, pos, spec, iconSize) {
+  const threat = Math.max(0, noise.progress - 0.62) / 0.38;
+  ctx.save();
+  ctx.shadowColor = spec.color;
+  ctx.shadowBlur = 10 + threat * 10;
+  ctx.fillStyle = spec.color;
+  ctx.globalAlpha = noise.type === 'boss' ? 0.9 : 0.78;
+  ctx.beginPath();
+  ctx.arc(pos.x, pos.y, iconSize * (noise.type === 'boss' ? 0.34 : 0.28), 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 0.22 + threat * 0.18;
+  ctx.strokeStyle = spec.color;
+  ctx.lineWidth = noise.type === 'boss' ? 4 : 2;
+  ctx.beginPath();
+  ctx.arc(pos.x, pos.y, iconSize * (0.38 + threat * 0.08), 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
 function drawNoise(state) {
   drawAmbientNoise(state);
   for (const noise of state.noise) {
     const pos = noisePosition(noise);
     const spec = NOISE_TYPES[noise.type];
     const iconSize = noise.type === 'boss' ? 78 : Math.max(38, noise.radius * 5);
-    const atlas = noiseWorldSprites.complete && noiseWorldSprites.naturalWidth > 0 ? noiseWorldSprites : noiseEnemyAtlas;
-    if (atlas.complete && atlas.naturalWidth > 0) {
+    const atlas = noiseWorldSprites.complete && noiseWorldSprites.naturalWidth > 0 ? noiseWorldSprites : null;
+    const threat = Math.max(0, noise.progress - 0.72) / 0.28;
+    ctx.save();
+    ctx.globalAlpha = 0.32 + threat * 0.18;
+    ctx.fillStyle = noise.type === 'boss' ? 'rgba(255, 111, 89, 0.48)' : 'rgba(0, 0, 0, 0.46)';
+    ctx.beginPath();
+    ctx.ellipse(pos.x, pos.y + iconSize * 0.24, iconSize * 0.38, iconSize * 0.13, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    if (atlas?.complete && atlas.naturalWidth > 0) {
       const atlasIndex = spec.atlasIndex ?? 0;
       const cellW = atlas.naturalWidth / 4;
       const cellH = atlas.naturalHeight / 2;
@@ -446,10 +509,19 @@ function drawNoise(state) {
       ctx.drawImage(atlas, col * cellW, row * cellH, cellW, cellH, pos.x - iconSize / 2, pos.y - iconSize / 2, iconSize, iconSize);
       ctx.restore();
     } else {
-      ctx.fillStyle = spec.color;
+      drawNoiseFallback(noise, pos, spec, iconSize);
+    }
+    if (threat > 0) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(0.4, threat * 0.5);
+      ctx.strokeStyle = noise.type === 'boss' ? '#f4c95d' : '#ff6f59';
+      ctx.shadowColor = ctx.strokeStyle;
+      ctx.shadowBlur = 8;
+      ctx.lineWidth = noise.type === 'boss' ? 3 : 2;
       ctx.beginPath();
-      ctx.arc(pos.x, pos.y, noise.radius, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.arc(pos.x, pos.y, iconSize * (0.44 + threat * 0.08), 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
     }
     if (noise.type === 'boss') {
       ctx.strokeStyle = '#f4c95d';
@@ -502,6 +574,124 @@ function drawRelayIcon(relay, x, y, size) {
 function slotCenter(rect, index) {
   const slot = boardSlotRect(rect, index);
   return { x: slot.x + slot.w / 2, y: slot.y + slot.h / 2 };
+}
+
+function effectTargetPosition(state, effect) {
+  const liveNoise = state.noise.find((item) => item.id === effect.targetId);
+  if (liveNoise) return noisePosition(liveNoise);
+  if (Number.isFinite(effect.targetProgress)) {
+    return noisePosition({ progress: effect.targetProgress, lane: effect.targetLane ?? 0 });
+  }
+  return { ...sceneLayout.loop };
+}
+
+function relayCenterById(state, effect) {
+  const playerId = effect.playerId ?? localBoardId;
+  const board = state.boards[playerId];
+  const directSlot = Number.isInteger(effect.slot) ? effect.slot : -1;
+  const slot = directSlot >= 0 ? directSlot : board?.slots.findIndex((relay) => relay?.id === effect.unitId) ?? -1;
+  if (slot < 0) return null;
+  return slotCenter(displayRectForBoard(playerId), slot);
+}
+
+function drawAttackBeam(state, effect, alpha) {
+  const from = relayCenterById(state, effect);
+  if (!from) return false;
+  const to = effectTargetPosition(state, effect);
+  const color = RELAY_TYPES[effect.relayId]?.palette ?? effect.targetColor ?? '#58d7ff';
+  const impactRadius = 8 + (1 - alpha) * 10;
+
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, 0.28 + alpha * 0.9);
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 16;
+  ctx.lineCap = 'round';
+  ctx.lineWidth = effect.targetType === 'boss' ? 6 : 4;
+  ctx.strokeStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(from.x, from.y);
+  ctx.lineTo(to.x, to.y);
+  ctx.stroke();
+  ctx.globalAlpha = Math.min(1, 0.34 + alpha * 0.55);
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = '#f5f0dc';
+  ctx.beginPath();
+  ctx.moveTo(from.x, from.y);
+  ctx.lineTo(to.x, to.y);
+  ctx.stroke();
+
+  ctx.globalAlpha = Math.min(1, 0.5 + alpha * 0.5);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(to.x, to.y, impactRadius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#f5f0dc';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(to.x, to.y, impactRadius + 4, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.92)';
+  ctx.shadowBlur = 6;
+  ctx.fillStyle = '#f5f0dc';
+  ctx.font = effect.damage >= 100 ? '950 15px system-ui' : '950 13px system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText(String(effect.damage), to.x, to.y - 22 - (1 - alpha) * 14);
+  ctx.restore();
+  return true;
+}
+
+function drawDeathBurst(effect, alpha) {
+  const pos = effectTargetPosition({ noise: [] }, effect);
+  const color = effect.targetColor ?? (effect.targetType === 'boss' ? '#ff6f59' : '#f4c95d');
+  const radius = effect.targetType === 'boss' ? 34 : 18;
+
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, alpha * 1.15);
+  ctx.shadowColor = color;
+  ctx.shadowBlur = effect.targetType === 'boss' ? 22 : 14;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = effect.targetType === 'boss' ? 4 : 2.5;
+  ctx.beginPath();
+  ctx.arc(pos.x, pos.y, radius + (1 - alpha) * 24, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.fillStyle = color;
+  for (let i = 0; i < 9; i += 1) {
+    const angle = (Math.PI * 2 * i) / 9 + (effect.targetProgress ?? 0) * Math.PI;
+    const length = radius * 0.8 + (1 - alpha) * 26;
+    const x = pos.x + Math.cos(angle) * length;
+    const y = pos.y + Math.sin(angle) * length * 0.68;
+    ctx.beginPath();
+    ctx.arc(x, y, effect.targetType === 'boss' ? 3.2 : 2.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if ((effect.rewardCharge ?? 0) > 0 || (effect.rewardLink ?? 0) > 0) {
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+    ctx.shadowBlur = 5;
+    ctx.fillStyle = '#f4c95d';
+    ctx.font = '900 10px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(`+${effect.rewardCharge ?? 0}C`, pos.x, pos.y - radius - 16 - (1 - alpha) * 10);
+  }
+  ctx.restore();
+}
+
+function drawSlotPulse(state, effect, alpha, color) {
+  const center = relayCenterById(state, effect);
+  if (!center) return false;
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, alpha * 1.25);
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 14;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, 18 + (1 - alpha) * 34, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+  return true;
 }
 
 function drawLinks(board, rect, now) {
@@ -623,18 +813,16 @@ function drawBoard(state, playerId) {
 function drawEffects(state) {
   for (const effect of state.effects) {
     const alpha = Math.max(0, Math.min(1, effect.ttl));
-    ctx.globalAlpha = Math.min(1, alpha * 1.8);
     if (effect.type === 'hit') {
-      const noise = state.noise.find((item) => item.id === effect.targetId);
-      if (noise) {
-        const pos = noisePosition(noise);
-        ctx.fillStyle = RELAY_TYPES[effect.relayId]?.palette ?? '#f5f0dc';
-        ctx.font = '900 12px system-ui';
-        ctx.textAlign = 'center';
-        ctx.fillText(String(effect.damage), pos.x, pos.y - 22 - alpha * 12);
-      }
+      drawAttackBeam(state, effect, alpha);
+    } else if (effect.type === 'death_burst') {
+      drawDeathBurst(effect, alpha);
     } else if (effect.type === 'link_pulse' || effect.type === 'link_pulse_save') {
       const { loop } = sceneLayout;
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, alpha * 1.35);
+      ctx.shadowColor = effect.type === 'link_pulse_save' ? '#f4c95d' : '#58d7ff';
+      ctx.shadowBlur = effect.type === 'link_pulse_save' ? 22 : 16;
       ctx.strokeStyle = effect.type === 'link_pulse_save' ? '#f4c95d' : '#58d7ff';
       ctx.lineWidth = effect.type === 'link_pulse_save' ? 5 : 3;
       ctx.beginPath();
@@ -646,17 +834,53 @@ function drawEffects(state) {
         ctx.textAlign = 'center';
         ctx.fillText('SAVED BY LINK PULSE', loop.cx, loop.cy + 4);
       }
+      ctx.restore();
+    } else if (effect.type === 'supply' || effect.type === 'merge') {
+      drawSlotPulse(state, effect, alpha, effect.type === 'merge' ? '#f4c95d' : '#58d7ff');
+    } else if (effect.type === 'repair') {
+      drawSlotPulse(state, effect, alpha, '#95d5b2');
     } else {
       const { loop } = sceneLayout;
       const color = effect.type === 'merge' ? '#f4c95d' : effect.type === 'overclock' || effect.type === 'shutdown' ? '#ff6f59' : '#8ee6d2';
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, alpha * 1.35);
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 14;
       ctx.strokeStyle = color;
       ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.arc(loop.cx, loop.cy, 36 + (1 - alpha) * 54, 0, Math.PI * 2);
       ctx.stroke();
+      ctx.restore();
     }
-    ctx.globalAlpha = 1;
   }
+}
+
+function drawPressureFrame(state) {
+  const signalPressure = 1 - Math.max(0, Math.min(1, state.signal.integrity / GAME_RULES.signalMax));
+  const saturationPressure = Math.max(0, Math.min(1, state.saturation.count / state.saturation.limit));
+  const bossPressure = state.boss.active ? Math.max(0.2, 1 - state.boss.timer / state.boss.limit) : 0;
+  const pressure = Math.max(signalPressure, saturationPressure, bossPressure);
+  if (pressure < 0.34) return;
+
+  const pulse = 0.68 + Math.sin(state.now * (state.boss.active ? 8 : 5)) * 0.22;
+  const alpha = Math.min(0.52, (pressure - 0.25) * pulse);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = state.boss.active ? '#f4c95d' : '#ff6f59';
+  ctx.shadowColor = ctx.strokeStyle;
+  ctx.shadowBlur = 18;
+  ctx.lineWidth = 8;
+  ctx.strokeRect(6, 6, VIEW_WIDTH - 12, viewport.viewHeight - 12);
+  ctx.globalAlpha = Math.min(0.36, alpha * 0.7);
+  const dangerGradient = ctx.createLinearGradient(0, 0, 0, viewport.viewHeight);
+  dangerGradient.addColorStop(0, state.boss.active ? 'rgba(244, 201, 93, 0.26)' : 'rgba(255, 111, 89, 0.3)');
+  dangerGradient.addColorStop(0.34, 'rgba(0, 0, 0, 0)');
+  dangerGradient.addColorStop(0.66, 'rgba(0, 0, 0, 0)');
+  dangerGradient.addColorStop(1, 'rgba(255, 111, 89, 0.2)');
+  ctx.fillStyle = dangerGradient;
+  ctx.fillRect(0, 0, VIEW_WIDTH, viewport.viewHeight);
+  ctx.restore();
 }
 
 function render() {
@@ -670,22 +894,57 @@ function render() {
   drawEventFeed(state);
   drawBoard(state, localBoardId);
   drawEffects(state);
+  drawPressureFrame(state);
 
   if (state.over) {
-    ctx.fillStyle = 'rgba(5, 7, 8, 0.78)';
+    const panelY = viewport.viewHeight * 0.34;
+    ctx.fillStyle = 'rgba(2, 4, 5, 0.82)';
     ctx.fillRect(0, 0, VIEW_WIDTH, viewport.viewHeight);
+    ctx.save();
+    ctx.shadowColor = state.won ? 'rgba(149, 213, 178, 0.42)' : 'rgba(255, 111, 89, 0.48)';
+    ctx.shadowBlur = 28;
+    ctx.fillStyle = 'rgba(13, 18, 17, 0.94)';
+    ctx.strokeStyle = state.won ? '#95d5b2' : '#ff6f59';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(34, panelY, 322, 166, 14);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = state.won ? 'rgba(149, 213, 178, 0.12)' : 'rgba(255, 111, 89, 0.13)';
+    ctx.beginPath();
+    ctx.roundRect(46, panelY + 14, 298, 34, 10);
+    ctx.fill();
     ctx.fillStyle = state.won ? '#95d5b2' : '#ff6f59';
-    ctx.font = '950 34px system-ui';
+    ctx.font = '950 30px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText(state.won ? 'SIGNAL LOCK' : 'SIGNAL LOST', 195, viewport.viewHeight * 0.48);
+    ctx.fillText(state.won ? 'SIGNAL LOCK' : 'SIGNAL LOST', 195, panelY + 41);
     ctx.fillStyle = '#f5f0dc';
     ctx.font = '850 13px system-ui';
-    ctx.fillText(state.resultReason ?? '', 195, viewport.viewHeight * 0.48 + 28);
+    ctx.fillText(state.resultReason ?? '', 195, panelY + 72);
     if (state.result) {
-      ctx.fillStyle = '#8ee6d2';
-      ctx.font = '850 11px system-ui';
-      ctx.fillText(`WAVE ${state.result.wave}  ${Math.floor(state.result.time)}s`, 195, viewport.viewHeight * 0.48 + 50);
+      const chips = [
+        ['WAVE', state.result.wave],
+        ['TIME', `${Math.floor(state.result.time)}s`],
+        ['KILLS', state.result.stats.kills]
+      ];
+      chips.forEach((chip, index) => {
+        const x = 54 + index * 94;
+        ctx.fillStyle = 'rgba(245, 240, 220, 0.07)';
+        ctx.strokeStyle = 'rgba(245, 240, 220, 0.16)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(x, panelY + 94, 82, 44, 8);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#8ee6d2';
+        ctx.font = '900 9px system-ui';
+        ctx.fillText(chip[0], x + 41, panelY + 110);
+        ctx.fillStyle = '#f5f0dc';
+        ctx.font = '950 16px system-ui';
+        ctx.fillText(String(chip[1]), x + 41, panelY + 130);
+      });
     }
+    ctx.restore();
   }
 }
 
@@ -700,19 +959,23 @@ function updateActionButtons(state) {
   if (!actions) return;
   const selectedCount = selected.length;
   setActionButton(actionButtons.supply, `Supply ${actions.supply.cost}C`, actions.supply.available, actions.supply.reason);
+  actionButtons.supply.dataset.hot = String(actions.supply.available);
   setActionButton(
     actionButtons.merge,
     `Merge ${selectedCount}/3`,
     actions.merge.available && selectedCount === 3,
-    selectedCount < 3 ? 'Select three matching Relays.' : actions.merge.reason
+      selectedCount < 3 ? 'Select three matching Relays.' : actions.merge.reason
   );
+  actionButtons.merge.dataset.hot = String(actions.merge.available && selectedCount === 3);
   setActionButton(
     actionButtons.swap,
     `Swap ${actions.swap.charges}S`,
     actions.swap.available && selectedCount >= 2,
-    selectedCount < 2 ? 'Select two Relays.' : actions.swap.reason
+      selectedCount < 2 ? 'Select two Relays.' : actions.swap.reason
   );
+  actionButtons.swap.dataset.hot = String(actions.swap.available && selectedCount >= 2);
   setActionButton(actionButtons.focus, `Focus ${actions.focus.cost}C`, actions.focus.available, actions.focus.reason);
+  actionButtons.focus.dataset.hot = String(actions.focus.available && !actions.supply.available);
   const pulseLabel = actions.linkPulse.cooldownRemaining > 0 ? `Pulse ${Math.ceil(actions.linkPulse.cooldownRemaining)}s` : `Pulse ${actions.linkPulse.cost}L`;
   setActionButton(actionButtons.pulse, pulseLabel, actions.linkPulse.available, actions.linkPulse.reason);
   actionButtons.pulse.dataset.ready = String(actions.linkPulse.available);
@@ -723,6 +986,7 @@ function updateActionButtons(state) {
     actions.overclock.available && selectedCount >= 1,
     selectedCount < 1 ? 'Select one Relay.' : actions.overclock.reason
   );
+  actionButtons.overclock.dataset.hot = String(actions.overclock.available && selectedCount >= 1);
 }
 
 function updateHud() {

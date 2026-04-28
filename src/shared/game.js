@@ -275,16 +275,29 @@ function repairBoard(game, board, relay, spec) {
   game.effects.push({ id: `fx${nextId++}`, type: 'repair', playerId: relay.owner, unitId: relay.id, ttl: 0.75 });
 }
 
-function dealDamage(game, relay, target, amount) {
+function effectNoiseAnchor(noise) {
+  return {
+    targetId: noise.id,
+    targetType: noise.type,
+    targetProgress: Number(noise.progress.toFixed(3)),
+    targetLane: noise.lane,
+    targetColor: noise.color,
+    targetRadius: noise.radius
+  };
+}
+
+function dealDamage(game, relay, source, target, amount) {
   const markedAmount = amount * (1 + target.saturationMarks * 0.08);
   target.hp -= markedAmount;
   game.effects.push({
     id: `fx${nextId++}`,
     type: 'hit',
+    playerId: source.playerId,
+    slot: source.slotIndex,
     relayId: relay.relayId,
-    targetId: target.id,
+    ...effectNoiseAnchor(target),
     damage: Math.round(markedAmount),
-    ttl: 0.42
+    ttl: 0.62
   });
 }
 
@@ -310,16 +323,17 @@ function attackWithRelay(game, board, slotIndex, relay, dt) {
     damage = target.hp + 1;
     game.effects.push({ id: `fx${nextId++}`, type: 'boss_execute', relayId: relay.relayId, targetId: target.id, ttl: 1.1 });
   }
-  dealDamage(game, relay, target, damage);
+  const source = { playerId: relay.owner, slotIndex };
+  dealDamage(game, relay, source, target, damage);
 
   if (spec.splash) {
     for (const noise of game.noise) {
-      if (noise.id !== target.id && Math.abs(noise.progress - target.progress) < spec.splash) dealDamage(game, relay, noise, damage * 0.34);
+      if (noise.id !== target.id && Math.abs(noise.progress - target.progress) < spec.splash) dealDamage(game, relay, source, noise, damage * 0.34);
     }
   }
   if (spec.chain) {
     const chained = game.noise.filter((noise) => noise.id !== target.id).sort((a, b) => b.progress - a.progress).slice(0, spec.chain);
-    for (const noise of chained) dealDamage(game, relay, noise, damage * 0.42);
+    for (const noise of chained) dealDamage(game, relay, source, noise, damage * 0.42);
   }
   if (spec.slow) {
     target.slow = Math.max(target.slow, spec.slow);
@@ -345,6 +359,14 @@ function resolveNoise(game, dt) {
       game.resources.charge += noise.rewardCharge;
       game.resources.linkEnergy += noise.rewardLink;
       game.resources.xp += noise.type === 'boss' ? 30 : 3;
+      game.effects.push({
+        id: `fx${nextId++}`,
+        type: 'death_burst',
+        ...effectNoiseAnchor(noise),
+        rewardCharge: noise.rewardCharge,
+        rewardLink: noise.rewardLink,
+        ttl: noise.type === 'boss' ? 1.25 : 0.78
+      });
       if (noise.type === 'boss') {
         game.boss.active = false;
         game.boss.lastKillWave = game.wave.index + 1;

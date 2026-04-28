@@ -157,3 +157,9 @@ test('noise roster exposes atlas indices for generated enemy sprites', () => {
     assert.equal(spec.atlasIndex >= 0, true, id);
   }
 });
+
+test('battle renderer never falls back to legacy card-backed enemy atlas', async () => {
+  const source = await readFile('src/client/app.js', 'utf8');
+  assert.equal(source.includes('noise-enemy-atlas'), false);
+  assert.equal(source.includes('noiseEnemyAtlas'), false);
+});

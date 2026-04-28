@@ -44,6 +44,7 @@ button {
   letter-spacing: 0;
   min-height: 35px;
   box-shadow: inset 0 1px rgba(245, 240, 220, 0.12), 0 7px 16px rgba(0, 0, 0, 0.28);
+  transition: filter 120ms ease, transform 120ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
 .primary-actions button,
@@ -87,6 +88,13 @@ button:disabled {
   opacity: 0.42;
   filter: saturate(0.62);
   box-shadow: inset 0 1px rgba(245, 240, 220, 0.04);
+}
+
+.primary-actions button[data-hot="true"],
+.secondary-actions button[data-hot="true"],
+#pulseButton[data-ready="true"] {
+  border-color: rgba(245, 240, 220, 0.36);
+  filter: saturate(1.18) brightness(1.08);
 }
 
 button:disabled:active {
@@ -251,6 +259,10 @@ button:disabled:active {
   background: linear-gradient(180deg, #6d531f, #2d2517);
 }
 
+#supplyButton[data-hot="true"] {
+  box-shadow: inset 0 1px rgba(245, 240, 220, 0.18), 0 0 0 1px rgba(244, 201, 93, 0.22), 0 10px 24px rgba(244, 201, 93, 0.18);
+}
+
 #supplyButton::before {
   background-position: 100% 0%;
 }
@@ -260,6 +272,11 @@ button:disabled:active {
   background: linear-gradient(180deg, #65332b, #261c1a);
 }
 
+#mergeButton[data-hot="true"],
+#overclockButton[data-hot="true"] {
+  box-shadow: inset 0 1px rgba(245, 240, 220, 0.16), 0 0 0 1px rgba(255, 111, 89, 0.2), 0 9px 22px rgba(255, 111, 89, 0.18);
+}
+
 #mergeButton::before {
   background-position: 0% 50%;
 }
@@ -267,6 +284,10 @@ button:disabled:active {
 #swapButton {
   border-color: rgba(88, 215, 255, 0.56);
   background: linear-gradient(180deg, #244950, #142123);
+}
+
+#swapButton[data-hot="true"] {
+  box-shadow: inset 0 1px rgba(245, 240, 220, 0.14), 0 0 0 1px rgba(88, 215, 255, 0.2), 0 9px 22px rgba(88, 215, 255, 0.16);
 }
 
 #swapButton::before {

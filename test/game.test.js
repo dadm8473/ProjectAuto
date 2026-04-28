@@ -301,6 +301,40 @@ test('Dual Overclock does not buff non-boss damage and expires after 4 seconds',
   assert.equal(runScenario({ dual: true, targetType: 'boss', elapsed: 3.9 }), runScenario({ dual: false, targetType: 'boss', elapsed: 3.9 }));
 });
 
+test('combat hit effects carry source and target anchors for readable beams', () => {
+  const game = createGame({ mode: 'bot', seed: 32 });
+  installRelay(game, 'p1', 5, 'needle_beam', { cooldown: 0 });
+  installNoise(game, { id: 'noise-anchor', type: 'flicker', hp: 100, maxHp: 100, progress: 0.37, lane: 1 });
+
+  tickGame(game, 0.1);
+
+  const hit = game.effects.find((effect) => effect.type === 'hit');
+  assert.equal(hit.playerId, 'p1');
+  assert.equal(hit.slot, 5);
+  assert.equal(hit.targetId, 'noise-anchor');
+  assert.equal(hit.targetType, 'flicker');
+  assert.equal(hit.targetProgress, 0.37);
+  assert.equal(hit.targetLane, 1);
+  assert.equal(typeof hit.targetColor, 'string');
+  assert.equal(hit.ttl > 0.5, true);
+});
+
+test('defeated Noise emits a persistent death burst after leaving the live roster', () => {
+  const game = createGame({ mode: 'bot', seed: 34 });
+  installRelay(game, 'p1', 5, 'needle_beam', { cooldown: 0 });
+  installNoise(game, { id: 'noise-pop', type: 'flicker', hp: 1, maxHp: 1, progress: 0.42, lane: 0 });
+
+  tickGame(game, 0.1);
+
+  assert.equal(game.noise.some((noise) => noise.id === 'noise-pop'), false);
+  const burst = game.effects.find((effect) => effect.type === 'death_burst');
+  assert.equal(burst.targetId, 'noise-pop');
+  assert.equal(burst.targetType, 'flicker');
+  assert.equal(burst.targetProgress, 0.42);
+  assert.equal(burst.targetLane, 0);
+  assert.equal(burst.rewardCharge > 0, true);
+});
+
 test('serialized action state exposes exact costs, cooldowns, and availability', () => {
   const game = createGame({ mode: 'bot', seed: 86 });
   game.resources.charge = 22;
