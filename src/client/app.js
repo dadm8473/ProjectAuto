@@ -1676,26 +1676,32 @@ function render() {
   }
 }
 
-function setActionButton(button, label, enabled, reason = '') {
+function setActionButton(button, label, enabled, reason = '', accessibleLabel = label) {
   button.textContent = label;
   button.disabled = !enabled;
   button.title = reason;
+  button.setAttribute('aria-disabled', String(!enabled));
+  button.setAttribute('aria-label', accessibleLabel);
 }
 
 function updateActionButtons(state) {
   const actions = state.actionState?.[localBoardId];
   if (!actions) return;
-  setActionButton(actionButtons.supply, 'Supply', actions.supply.available, actions.supply.reason);
+  setActionButton(actionButtons.supply, 'Supply', actions.supply.available, actions.supply.reason, 'Supply relay');
   actionButtons.supply.dataset.hot = String(actions.supply.available);
   setActionButton(
     actionButtons.merge,
     'Merge',
     actions.merge.available,
-    actions.merge.reason
+    actions.merge.reason,
+    'Merge relays'
   );
   actionButtons.merge.dataset.hot = String(actions.merge.available);
   const pulseLabel = actions.linkPulse.cooldownRemaining > 0 ? `${Math.ceil(actions.linkPulse.cooldownRemaining)}s` : 'Pulse';
-  setActionButton(actionButtons.pulse, pulseLabel, actions.linkPulse.available, actions.linkPulse.reason);
+  const pulseAccessibleLabel = actions.linkPulse.cooldownRemaining > 0
+    ? `Link Pulse ${Math.ceil(actions.linkPulse.cooldownRemaining)} seconds`
+    : 'Link Pulse';
+  setActionButton(actionButtons.pulse, pulseLabel, actions.linkPulse.available, actions.linkPulse.reason, pulseAccessibleLabel);
   actionButtons.pulse.dataset.ready = String(actions.linkPulse.available);
   actionButtons.pulse.dataset.clutch = String(actions.linkPulse.clutch);
 }

@@ -160,7 +160,48 @@ test('mobile combat controls collapse to three core actions', async () => {
   assert.equal(js.includes('state.actionState?.[localBoardId]?.merge.slots'), true);
   assert.equal(js.includes('selected.length === 3 ? selected : state.actionState?.[localBoardId]?.merge.slots'), false);
   assert.equal(js.includes('drawRewardFlyout(effect, center, alpha);'), true);
-  assert.equal(css.includes('--action-panel-base: 126px;'), true);
+  assert.equal(css.includes('--action-panel-base: 144px;'), true);
+});
+
+test('mobile combat controls are thumb-safe without adding more visible commands', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const js = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    'role="toolbar"',
+    'aria-label="Combat actions"',
+    'aria-label="Supply relay"',
+    'aria-label="Merge relays"',
+    'aria-label="Link Pulse"',
+    'aria-label="BM and missions"'
+  ]) {
+    assert.equal(html.includes(marker), true, marker);
+  }
+  for (const marker of [
+    'overscroll-behavior: none;',
+    'touch-action: manipulation;',
+    'user-select: none;',
+    '-webkit-user-select: none;',
+    '.primary-actions button {\n  min-height: 44px;',
+    '.secondary-actions button {\n  min-height: 44px;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+  const shortViewportCss = css.slice(css.indexOf('@media (max-height: 720px)'));
+  assert.equal(shortViewportCss.includes('min-height: 40px;'), false);
+  assert.equal(shortViewportCss.includes('min-height: 31px;'), false);
+  for (const marker of [
+    "button.setAttribute('aria-disabled', String(!enabled));",
+    "button.setAttribute('aria-label', accessibleLabel);",
+    "setActionButton(actionButtons.supply, 'Supply', actions.supply.available, actions.supply.reason, 'Supply relay');",
+    "'Merge relays'",
+    'const pulseAccessibleLabel = actions.linkPulse.cooldownRemaining > 0',
+    'Link Pulse ${Math.ceil(actions.linkPulse.cooldownRemaining)} seconds',
+    'pulseAccessibleLabel'
+  ]) {
+    assert.equal(js.includes(marker), true, marker);
+  }
 });
 
 test('combat surface previews merge readiness and Pulse clutch without extra controls', async () => {

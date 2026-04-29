@@ -1,7 +1,7 @@
 :root {
   color-scheme: dark;
   --hud-base: 54px;
-  --action-panel-base: 126px;
+  --action-panel-base: 144px;
   --bg: #080c0d;
   --panel: rgba(13, 18, 17, 0.9);
   --panel-2: #1b2421;
@@ -25,12 +25,15 @@ body {
   height: 100%;
   margin: 0;
   overflow: hidden;
+  overscroll-behavior: none;
   background:
     radial-gradient(circle at 50% 32%, rgba(88, 215, 255, 0.1), transparent 30%),
     linear-gradient(90deg, rgba(2, 5, 6, 0.98), rgba(8, 13, 13, 0.92), rgba(2, 5, 6, 0.98)),
     #080c0d;
   color: var(--ink);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 button {
@@ -45,6 +48,7 @@ button {
   font-weight: 900;
   letter-spacing: 0;
   min-height: 35px;
+  touch-action: manipulation;
   box-shadow: inset 0 1px rgba(245, 240, 220, 0.12), 0 7px 16px rgba(0, 0, 0, 0.28);
   transition: filter 120ms ease, transform 120ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
@@ -58,6 +62,19 @@ button {
   padding: 0 6px;
   line-height: 1;
   white-space: nowrap;
+}
+
+.primary-actions button {
+  min-height: 44px;
+}
+
+.secondary-actions button {
+  min-height: 44px;
+}
+
+button:focus-visible {
+  outline: 2px solid rgba(245, 240, 220, 0.78);
+  outline-offset: 2px;
 }
 
 .primary-actions button::after,
@@ -877,7 +894,7 @@ button:disabled:active {
 @media (max-height: 720px) {
   :root {
     --hud-base: 48px;
-    --action-panel-base: 116px;
+    --action-panel-base: 140px;
   }
 
   .hud {
@@ -901,7 +918,6 @@ button:disabled:active {
 
   .primary-actions button,
   .secondary-actions button {
-    min-height: 31px;
     font-size: 11px;
   }
 
