@@ -83,6 +83,20 @@ let runStarted = false;
 let resultView = null;
 let viewport = computeCanvasViewport();
 let sceneLayout = buildSceneLayout(viewport.viewHeight);
+let audioContext = null;
+let feedbackRunId = '';
+const feedbackSeenEvents = new Set();
+
+const FEEDBACK_TONES = {
+  supply: { notes: [330, 494], duration: 0.1, gain: 0.035, type: 'triangle', haptic: [8] },
+  merge: { notes: [392, 587, 784], duration: 0.16, gain: 0.045, type: 'sawtooth', haptic: [12, 24, 18] },
+  pulse: { notes: [262, 523, 659], duration: 0.2, gain: 0.04, type: 'sine', haptic: [18] },
+  save: { notes: [220, 440, 880], duration: 0.26, gain: 0.052, type: 'triangle', haptic: [24, 32, 24] },
+  boss: { notes: [110, 82], duration: 0.3, gain: 0.05, type: 'sawtooth', haptic: [32, 46, 32] },
+  danger: { notes: [196, 147], duration: 0.22, gain: 0.044, type: 'square', haptic: [30] },
+  clear: { notes: [523, 659, 988], duration: 0.24, gain: 0.04, type: 'triangle', haptic: [14, 26, 16] },
+  result: { notes: [330, 494, 660], duration: 0.28, gain: 0.04, type: 'sine', haptic: [26, 34, 26] }
+};
 
 function loadMetaProfile() {
   try {
@@ -142,6 +156,91 @@ function showToast(message) {
   showToast.timer = setTimeout(() => {
     toast.hidden = true;
   }, 1600);
+}
+
+function unlockSensoryFeedback() {
+  try {
+    const AudioCtor = window.AudioContext ?? window.webkitAudioContext;
+    if (!AudioCtor) return null;
+    audioContext ??= new AudioCtor();
+    if (audioContext.state === 'suspended') audioContext.resume().catch(() => {});
+  } catch {
+    audioContext = null;
+  }
+  return audioContext;
+}
+
+function playFeedbackTone(kind) {
+  try {
+    const config = FEEDBACK_TONES[kind];
+    const context = unlockSensoryFeedback();
+    if (!config || !context || context.state === 'closed') return;
+    const start = context.currentTime;
+    config.notes.forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const noteStart = start + index * 0.045;
+      const noteEnd = noteStart + config.duration;
+      oscillator.type = config.type;
+      oscillator.frequency.setValueAtTime(frequency, noteStart);
+      gain.gain.setValueAtTime(0.0001, noteStart);
+      gain.gain.exponentialRampToValueAtTime(config.gain, noteStart + 0.018);
+      gain.gain.exponentialRampToValueAtTime(0.0001, noteEnd);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(noteStart);
+      oscillator.stop(noteEnd + 0.02);
+    });
+  } catch {
+    audioContext = null;
+  }
+}
+
+function pulseHaptics(kind) {
+  try {
+    const pattern = FEEDBACK_TONES[kind]?.haptic;
+    if (!pattern) return;
+    navigator.vibrate?.(pattern);
+  } catch {
+    // Haptics are an optional mobile layer; gameplay must not depend on them.
+  }
+}
+
+function feedbackForEvent(event) {
+  if (event.type === 'supply') return 'supply';
+  if (event.type === 'merge') return 'merge';
+  if (event.type === 'link_pulse_save') return 'save';
+  if (event.type === 'link_pulse') return 'pulse';
+  if (event.type === 'boss_wave_started') return 'boss';
+  if (event.type === 'loop_complete') return 'danger';
+  if (event.type === 'wave_cleared') return 'clear';
+  if (event.type === 'run_finished') return 'result';
+  return '';
+}
+
+function syncSensoryFeedback(state) {
+  if (state.id !== feedbackRunId) {
+    seedFeedbackSeenEvents(state);
+    return;
+  }
+  for (const event of state.eventLog ?? []) {
+    if (feedbackSeenEvents.has(event.id)) continue;
+    feedbackSeenEvents.add(event.id);
+    const feedback = feedbackForEvent(event);
+    if (!feedback) continue;
+    playFeedbackTone(feedback);
+    pulseHaptics(feedback);
+  }
+}
+
+function seedFeedbackSeenEvents(state) {
+  feedbackRunId = state.id;
+  feedbackSeenEvents.clear();
+  for (const event of state.eventLog ?? []) feedbackSeenEvents.add(event.id);
+}
+
+function attachFeedbackBaseline(state = currentState()) {
+  seedFeedbackSeenEvents(state);
 }
 
 function currentState() {
@@ -305,6 +404,7 @@ function mergeCueSlots(state, playerId = localBoardId) {
 
 function command(action) {
   if (!runStarted || resultView) return;
+  unlockSensoryFeedback();
   const prepared = prepareAction(action);
   const onlineAction = {
     ...prepared,
@@ -333,6 +433,7 @@ function showLaunchOverlay() {
   activeRunProfileGems = metaProfile.gems;
   onlineProfileSpentGems = 0;
   game = createProfiledGame({ mode: 'bot', seed: Date.now() % 100000 });
+  attachFeedbackBaseline();
   netStatus.textContent = 'BOT CO-OP';
   launchOverlay.hidden = false;
 }
@@ -347,6 +448,7 @@ function startBotRun() {
   activeRunProfileGems = metaProfile.gems;
   onlineProfileSpentGems = 0;
   game = createProfiledGame({ mode: 'bot', seed: Date.now() % 100000 });
+  attachFeedbackBaseline();
   netStatus.textContent = 'BOT CO-OP';
   hideLaunchOverlay();
 }
@@ -1727,6 +1829,7 @@ function updateHud() {
   bossMeter.textContent = state.boss.active ? `Boss ${Math.ceil(state.boss.timer)}s` : 'Boss --';
   updateActionButtons(state);
   syncCoachCue(state);
+  syncSensoryFeedback(state);
   syncResultOverlay(state);
 }
 
@@ -1797,9 +1900,11 @@ function connectOnline() {
     if (socket !== activeSocket) return;
     const message = JSON.parse(event.data);
     if (message.type === 'state') {
+      const previousStateId = game?.id;
       if (message.boardPlayer && message.boardPlayer !== localBoardId) selected = [];
       localBoardId = message.boardPlayer ?? localBoardId;
       game = message.state;
+      if (game.id !== previousStateId) attachFeedbackBaseline(game);
     }
     if (message.type === 'action_result' && message.actionType === 'buy' && message.result?.ok) {
       onlineProfileSpentGems += Math.max(0, Math.floor(message.result.spent?.gems ?? 0));
@@ -1822,11 +1927,13 @@ function connectOnline() {
     netStatus.textContent = 'BOT CO-OP';
     showToast('Bot co-op resumed.');
     game = createProfiledGame({ mode: 'bot', seed: Date.now() % 100000 });
+    attachFeedbackBaseline();
     runStarted = true;
   });
 }
 
 canvas.addEventListener('pointerdown', (event) => {
+  unlockSensoryFeedback();
   if (!runStarted || resultView) return;
   const hit = slotAt(canvasPoint(event));
   if (!hit || hit.playerId !== localBoardId) return;
@@ -1841,16 +1948,31 @@ canvas.addEventListener('pointerdown', (event) => {
 actionButtons.supply.addEventListener('click', () => command({ type: 'supply' }));
 actionButtons.merge.addEventListener('click', () => command({ type: 'merge' }));
 actionButtons.pulse.addEventListener('click', () => command({ type: 'pulse' }));
-launchBotButton.addEventListener('click', startBotRun);
-launchOnlineButton.addEventListener('click', connectOnline);
-resultRetryButton.addEventListener('click', startBotRun);
-resultLobbyButton.addEventListener('click', showLaunchOverlay);
+launchBotButton.addEventListener('click', () => {
+  unlockSensoryFeedback();
+  startBotRun();
+});
+launchOnlineButton.addEventListener('click', () => {
+  unlockSensoryFeedback();
+  connectOnline();
+});
+resultRetryButton.addEventListener('click', () => {
+  unlockSensoryFeedback();
+  startBotRun();
+});
+resultLobbyButton.addEventListener('click', () => {
+  unlockSensoryFeedback();
+  showLaunchOverlay();
+});
 shopButton.addEventListener('click', () => {
+  unlockSensoryFeedback();
   drawer.hidden = false;
 });
 document.querySelector('#closeDrawer').addEventListener('click', () => {
+  unlockSensoryFeedback();
   drawer.hidden = true;
 });
 
 buildShop();
+attachFeedbackBaseline();
 requestAnimationFrame(loop);

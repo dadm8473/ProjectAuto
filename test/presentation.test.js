@@ -230,6 +230,43 @@ test('first play guidance highlights existing actions instead of adding tutorial
   assert.equal(html.includes('class="tutorial-panel"'), false);
 });
 
+test('combat moments trigger sensory feedback without visible controls', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const js = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    'let audioContext = null;',
+    'const feedbackSeenEvents = new Set();',
+    'function unlockSensoryFeedback',
+    'function playFeedbackTone',
+    'function pulseHaptics',
+    'function feedbackForEvent',
+    'function seedFeedbackSeenEvents',
+    'function attachFeedbackBaseline',
+    'function syncSensoryFeedback',
+    "event.type === 'supply'",
+    "event.type === 'merge'",
+    "event.type === 'link_pulse_save'",
+    "event.type === 'boss_wave_started'",
+    "event.type === 'loop_complete'",
+    "event.type === 'run_finished'",
+    'navigator.vibrate?.(pattern);',
+    'audioContext.resume().catch(() => {});',
+    'if (state.id !== feedbackRunId) {',
+    'seedFeedbackSeenEvents(state);',
+    'return;',
+    'attachFeedbackBaseline();',
+    'const previousStateId = game?.id;',
+    'if (game.id !== previousStateId) attachFeedbackBaseline(game);',
+    'syncSensoryFeedback(state);',
+    'unlockSensoryFeedback();'
+  ]) {
+    assert.equal(js.includes(marker), true, marker);
+  }
+  assert.equal(html.includes('id="soundButton"'), false);
+  assert.equal(html.includes('id="hapticButton"'), false);
+});
+
 test('combat surface previews merge readiness and Pulse clutch without extra controls', async () => {
   const js = await readFile('src/client/app.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
