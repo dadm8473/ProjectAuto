@@ -1853,24 +1853,26 @@ function loop(now) {
 
 function buildShop() {
   shopList.innerHTML = [
-    buildShopSection('해금', SHOP.items.map((item) => {
+    buildGrowthOverview(),
+    buildShopSection('스킨 상점', SHOP.items.map((item) => {
       const owned = item.grant.cosmetic ? metaProfile.unlocks.includes(item.grant.cosmetic) : false;
+      const kind = item.category === 'cosmetic' ? '외형 해금' : '전투 보급';
       return `
     <div class="row" ${owned ? 'data-claimed="true"' : 'data-claimed="false"'}>
-      <div><strong>${item.name}</strong><span>${item.description}</span></div>
+      <div><strong>${item.name}</strong><span>${kind} · ${item.description}</span></div>
       <button data-buy="${item.id}" ${owned ? 'disabled' : ''}>${owned ? '보유' : `${item.price.gems}젬`}</button>
     </div>
     `;
     }).join('')),
-    buildShopSection('미션', SHOP.dailyMissions.map((mission) => `
+    buildShopSection('오늘 미션', SHOP.dailyMissions.map((mission) => `
     <div class="mission-row" ${metaProfile.claimedMissions.includes(mission.id) ? 'data-claimed="true"' : 'data-claimed="false"'}>
-      <div><strong>${mission.text}</strong><span>${metaProfile.claimedMissions.includes(mission.id) ? '보상 수령' : `보상 ${mission.reward.gems}젬`}</span></div>
+      <div><strong>${mission.text}</strong><span>일일 목표 · ${metaProfile.claimedMissions.includes(mission.id) ? '보상 수령' : `${mission.reward.gems}젬`}</span></div>
       <span>${metaProfile.claimedMissions.includes(mission.id) ? '완료' : '오늘'}</span>
     </div>
     `).join('')),
-    buildShopSection('시즌 트랙', SHOP.pass.tiers.map((tier, index) => `
+    buildShopSection('시즌 패스', SHOP.pass.tiers.map((tier, index) => `
     <div class="track-row" ${metaProfile.claimedPassTiers.includes(index) ? 'data-claimed="true"' : 'data-claimed="false"'}>
-      <div><strong>${SHOP.pass.name} ${index + 1}</strong><span>${tier.xp} 경험치 보상</span></div>
+      <div><strong>${SHOP.pass.name} ${index + 1}</strong><span>시즌 보상 · ${tier.xp} 경험치</span></div>
       <span>${metaProfile.claimedPassTiers.includes(index) ? '수령' : tier.grant.gems ? `${tier.grant.gems}젬` : '스킨'}</span>
     </div>
     `).join(''))
@@ -1878,6 +1880,17 @@ function buildShop() {
   shopList.querySelectorAll('button').forEach((button) => {
     button.addEventListener('click', () => command({ type: 'buy', itemId: button.dataset.buy }));
   });
+}
+
+function buildGrowthOverview() {
+  const passReady = SHOP.pass.tiers.filter((tier, index) => metaProfile.xp >= tier.xp && !metaProfile.claimedPassTiers.includes(index)).length;
+  return `
+    <section class="growth-overview" aria-label="성장 요약">
+      <div class="growth-card growth-card-gem"><span>젬</span><strong>${metaProfile.gems}</strong><small>획득 젬 전용</small></div>
+      <div class="growth-card growth-card-shop"><span>스킨</span><strong>${metaProfile.unlocks.length}</strong><small>외형 해금</small></div>
+      <div class="growth-card growth-card-pass"><span>패스</span><strong>${passReady}</strong><small>시즌 보상</small></div>
+    </section>
+  `;
 }
 
 function buildShopSection(title, body) {

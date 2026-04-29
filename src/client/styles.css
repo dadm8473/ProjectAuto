@@ -861,6 +861,50 @@ button:disabled:active {
   max-height: calc(min(64dvh, 440px) - 60px);
 }
 
+.growth-overview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+
+.growth-card {
+  min-height: 64px;
+  padding: 8px 7px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(245, 240, 220, 0.08), rgba(245, 240, 220, 0.025)),
+    rgba(245, 240, 220, 0.045);
+}
+
+.growth-card-gem {
+  border-color: rgba(149, 213, 178, 0.24);
+}
+
+.growth-card-shop {
+  border-color: rgba(88, 215, 255, 0.22);
+}
+
+.growth-card-pass {
+  border-color: rgba(244, 201, 93, 0.22);
+}
+
+.growth-card span,
+.growth-card small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.growth-card strong {
+  display: block;
+  margin: 2px 0 1px;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 950;
+}
+
 .shop-section {
   display: grid;
   gap: 7px;

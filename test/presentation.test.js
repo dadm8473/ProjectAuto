@@ -100,6 +100,8 @@ test('service shell has launch loadout art and sectioned reward flow', async () 
   }
   for (const marker of [
     'function buildShopSection',
+    'function buildGrowthOverview',
+    'class="growth-overview"',
     'class="shop-section"',
     'class="track-row"',
     'class="mission-row"'
@@ -410,10 +412,9 @@ test('core app copy is Korean and removes unclear BM/resource abbreviations', as
     '젬 30',
     '봇과 시작',
     '온라인 매칭',
-    '보상 보기',
-    '보상 / 미션',
-    'id="launchRewardButton" aria-label="보상과 미션 보기">보상 보기</button>',
-    'id="resultRewardButton" aria-label="전투 보상과 미션 보기">보상</button>'
+    '성장',
+    'id="launchRewardButton" aria-label="성장과 미션 보기">성장</button>',
+    'id="resultRewardButton" aria-label="전투 성장과 미션 보기">성장</button>'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }
@@ -425,9 +426,14 @@ test('core app copy is Korean and removes unclear BM/resource abbreviations', as
     'waveMeter.textContent = `웨이브 ${Math.min(state.wave.index + 1, GAME_RULES.maxWave)}`;',
     'signalMeter.textContent = `신호 ${Math.ceil(state.signal.integrity)} / 오염 ${Math.floor(state.saturation.count)}`;',
     "bossMeter.textContent = state.boss.active ? `보스 ${Math.ceil(state.boss.timer)}초` : '보스 --';",
-    "buildShopSection('해금'",
-    "buildShopSection('미션'",
-    "buildShopSection('시즌 트랙'"
+    "buildShopSection('스킨 상점'",
+    "buildShopSection('오늘 미션'",
+    "buildShopSection('시즌 패스'",
+    'buildGrowthOverview()',
+    '획득 젬 전용',
+    '외형 해금',
+    '일일 목표',
+    '시즌 보상'
   ]) {
     assert.equal(js.includes(marker), true, marker);
   }
@@ -436,6 +442,44 @@ test('core app copy is Korean and removes unclear BM/resource abbreviations', as
   assert.equal(html.includes('C 110'), false);
   assert.equal(html.includes('L 50'), false);
   assert.equal(html.includes('G 30'), false);
+});
+
+test('growth drawer makes BM pillars understandable without entering combat', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const js = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '<strong>성장</strong>',
+    'id="launchRewardButton"',
+    'id="resultRewardButton"'
+  ]) {
+    assert.equal(html.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    'function buildGrowthOverview',
+    'class="growth-card growth-card-gem"',
+    'class="growth-card growth-card-shop"',
+    'class="growth-card growth-card-pass"',
+    '젬',
+    '스킨',
+    '패스',
+    '획득 젬 전용',
+    '외형 해금',
+    '시즌 보상'
+  ]) {
+    assert.equal(js.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    '.growth-overview',
+    '.growth-card',
+    '.growth-card strong',
+    '.growth-card small'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
 });
 
 test('combat readout hides advanced heat language until it matters', async () => {
