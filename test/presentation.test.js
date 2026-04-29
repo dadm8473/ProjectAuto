@@ -339,17 +339,18 @@ test('app shell has a commercial launch layer before combat starts', async () =>
     'id="launchOverlay"',
     'id="launchBotButton"',
     'id="launchOnlineButton"',
-    'id="launchRewardButton"',
+    'id="launchGrowthButton"',
+    'class="launch-menu"',
     'class="launch-contract"',
     'id="resultOverlay"',
     'id="resultReason"',
     'id="resultReward"',
     'id="resultRetryButton"',
-    'id="resultLobbyButton"',
-    'id="resultRewardButton"'
+    'id="resultLobbyButton"'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }
+  assert.equal(html.includes('id="resultRewardButton"'), false);
   for (const marker of [
     'let runStarted = false;',
     'function closeSocket',
@@ -365,7 +366,7 @@ test('app shell has a commercial launch layer before combat starts', async () =>
   for (const marker of [
     '.launch-overlay',
     '.launch-panel',
-    '.launch-actions',
+    '.launch-menu',
     '.launch-contract',
     '.result-overlay',
     '.result-panel',
@@ -413,11 +414,11 @@ test('core app copy is Korean and removes unclear BM/resource abbreviations', as
     '봇과 시작',
     '온라인 매칭',
     '성장',
-    'id="launchRewardButton" aria-label="성장과 미션 보기">성장</button>',
-    'id="resultRewardButton" aria-label="전투 성장과 미션 보기">성장</button>'
+    'id="launchGrowthButton" aria-label="성장과 미션 보기">성장</button>'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }
+  assert.equal(html.includes('전투 성장과 미션 보기'), false);
 
   for (const marker of [
     'chargeMeter.textContent = `전력 ${Math.floor(state.resources.charge)}`;',
@@ -451,11 +452,12 @@ test('growth drawer makes BM pillars understandable without entering combat', as
 
   for (const marker of [
     '<strong>성장</strong>',
-    'id="launchRewardButton"',
-    'id="resultRewardButton"'
+    'id="launchGrowthButton"',
+    'class="launch-menu"'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }
+  assert.equal(html.includes('id="resultRewardButton"'), false);
 
   for (const marker of [
     'function buildGrowthOverview',

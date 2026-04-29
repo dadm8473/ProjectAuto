@@ -38,7 +38,7 @@ const drawer = document.querySelector('#drawer');
 const launchOverlay = document.querySelector('#launchOverlay');
 const launchBotButton = document.querySelector('#launchBotButton');
 const launchOnlineButton = document.querySelector('#launchOnlineButton');
-const launchRewardButton = document.querySelector('#launchRewardButton');
+const launchGrowthButton = document.querySelector('#launchGrowthButton');
 const resultOverlay = document.querySelector('#resultOverlay');
 const resultCode = document.querySelector('#resultCode');
 const resultTitle = document.querySelector('#resultTitle');
@@ -49,7 +49,6 @@ const resultProgress = document.querySelector('#resultProgress');
 const resultReward = document.querySelector('#resultReward');
 const resultRetryButton = document.querySelector('#resultRetryButton');
 const resultLobbyButton = document.querySelector('#resultLobbyButton');
-const resultRewardButton = document.querySelector('#resultRewardButton');
 const actionButtons = {
   power: document.querySelector('#powerButton'),
   pulse: document.querySelector('#pulseButton')
@@ -1982,7 +1981,7 @@ launchOnlineButton.addEventListener('click', () => {
   unlockSensoryFeedback();
   connectOnline();
 });
-launchRewardButton.addEventListener('click', () => {
+launchGrowthButton.addEventListener('click', () => {
   unlockSensoryFeedback();
   openRewardsDrawer();
 });
@@ -1993,10 +1992,6 @@ resultRetryButton.addEventListener('click', () => {
 resultLobbyButton.addEventListener('click', () => {
   unlockSensoryFeedback();
   showLaunchOverlay();
-});
-resultRewardButton.addEventListener('click', () => {
-  unlockSensoryFeedback();
-  openRewardsDrawer();
 });
 document.querySelector('#closeDrawer').addEventListener('click', () => {
   unlockSensoryFeedback();

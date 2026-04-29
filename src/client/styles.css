@@ -473,13 +473,13 @@ button:disabled:active {
   font-weight: 900;
 }
 
-.launch-actions {
+.launch-menu {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 8px;
 }
 
-.launch-actions button {
+.launch-menu button {
   min-height: 42px;
 }
 
@@ -822,8 +822,7 @@ button:disabled:active {
   background-position: 66.667% 100%;
 }
 
-#launchRewardButton::before,
-#resultRewardButton::before {
+#launchGrowthButton::before {
   background-position: 100% 100%;
 }
 
