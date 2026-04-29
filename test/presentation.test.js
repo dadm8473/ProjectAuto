@@ -86,7 +86,7 @@ test('combat renderer adds projectile signatures and tactile impact layers', asy
   }
 });
 
-test('service shell has launch loadout art and sectioned BM flow', async () => {
+test('service shell has launch loadout art and sectioned reward flow', async () => {
   const html = await readFile('index.html', 'utf8');
   const js = await readFile('src/client/app.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
@@ -170,11 +170,11 @@ test('mobile combat controls are thumb-safe without adding more visible commands
 
   for (const marker of [
     'role="toolbar"',
-    'aria-label="Combat actions"',
-    'aria-label="Supply relay"',
-    'aria-label="Merge relays"',
-    'aria-label="Link Pulse"',
-    'aria-label="BM and missions"'
+    'aria-label="전투 행동"',
+    'aria-label="전력으로 릴레이 설치"',
+    'aria-label="같은 릴레이 3개 합성"',
+    'aria-label="파트너 펄스"',
+    'aria-label="보상과 미션"'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }
@@ -194,10 +194,10 @@ test('mobile combat controls are thumb-safe without adding more visible commands
   for (const marker of [
     "button.setAttribute('aria-disabled', String(!enabled));",
     "button.setAttribute('aria-label', accessibleLabel);",
-    "setActionButton(actionButtons.supply, 'Supply', actions.supply.available, actions.supply.reason, 'Supply relay');",
-    "'Merge relays'",
+    "setActionButton(actionButtons.supply, '보급', actions.supply.available, actions.supply.reason, '전력으로 릴레이 설치');",
+    "'같은 릴레이 3개 합성'",
     'const pulseAccessibleLabel = actions.linkPulse.cooldownRemaining > 0',
-    'Link Pulse ${Math.ceil(actions.linkPulse.cooldownRemaining)} seconds',
+    '파트너 펄스 ${Math.ceil(actions.linkPulse.cooldownRemaining)}초',
     'pulseAccessibleLabel'
   ]) {
     assert.equal(js.includes(marker), true, marker);
@@ -236,6 +236,7 @@ test('combat moments trigger sensory feedback without visible controls', async (
 
   for (const marker of [
     'let audioContext = null;',
+    'const sensoryMuted = new URLSearchParams(location.search).has(\'mute\');',
     'const feedbackSeenEvents = new Set();',
     'function unlockSensoryFeedback',
     'function playFeedbackTone',
@@ -251,6 +252,8 @@ test('combat moments trigger sensory feedback without visible controls', async (
     "event.type === 'loop_complete'",
     "event.type === 'run_finished'",
     'navigator.vibrate?.(pattern);',
+    'if (sensoryMuted) return null;',
+    'if (sensoryMuted) return;',
     'audioContext.resume().catch(() => {});',
     'if (state.id !== feedbackRunId) {',
     'seedFeedbackSeenEvents(state);',
@@ -390,8 +393,47 @@ test('online launch waits for an open socket before starting the run', async () 
   assert.equal(openHandler.includes('hideLaunchOverlay();'), true);
   assert.equal(connectBody.includes('setLaunchConnecting(true);'), true);
   assert.equal(closeHandler.includes('if (!runStarted) {'), true);
-  assert.equal(closeHandler.includes("showToast('Online unavailable.');"), true);
+  assert.equal(closeHandler.includes("showToast('온라인 연결 실패.');"), true);
   assert.equal(closeHandler.includes('if (socket !== activeSocket) return;'), true);
+});
+
+test('core app copy is Korean and removes unclear BM/resource abbreviations', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const js = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    '<title>시그널 릴레이</title>',
+    '<strong>시그널 릴레이</strong>',
+    '봇 협동',
+    '전력 110',
+    '링크 50',
+    '젬 30',
+    '봇과 시작',
+    '온라인 매칭',
+    '보상 / 미션',
+    'id="shopButton" aria-label="보상과 미션">보상</button>'
+  ]) {
+    assert.equal(html.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    'chargeMeter.textContent = `전력 ${Math.floor(state.resources.charge)}`;',
+    'linkMeter.textContent = `링크 ${Math.floor(state.resources.linkEnergy)}`;',
+    'gemMeter.textContent = `젬 ${online ? metaProfile.gems : Math.floor(state.resources.gems)}`;',
+    'waveMeter.textContent = `웨이브 ${Math.min(state.wave.index + 1, GAME_RULES.maxWave)}`;',
+    'signalMeter.textContent = `신호 ${Math.ceil(state.signal.integrity)} / 오염 ${Math.floor(state.saturation.count)}`;',
+    "bossMeter.textContent = state.boss.active ? `보스 ${Math.ceil(state.boss.timer)}초` : '보스 --';",
+    "buildShopSection('해금'",
+    "buildShopSection('미션'",
+    "buildShopSection('시즌 트랙'"
+  ]) {
+    assert.equal(js.includes(marker), true, marker);
+  }
+
+  assert.equal(html.includes('BM'), false);
+  assert.equal(html.includes('C 110'), false);
+  assert.equal(html.includes('L 50'), false);
+  assert.equal(html.includes('G 30'), false);
 });
 
 test('combat mode changes stay on the launch layer', async () => {

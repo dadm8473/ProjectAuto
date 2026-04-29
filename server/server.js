@@ -73,12 +73,12 @@ function assignPlayers() {
   const humans = [...room.clients.values()];
   room.game.players = humans.slice(0, 2).map((client, index) => ({
     id: client.playerId,
-    name: client.name || `Player ${index + 1}`,
+    name: client.name || `플레이어 ${index + 1}`,
     bot: false,
     ready: true
   }));
   while (room.game.players.length < 2) {
-    room.game.players.push({ id: 'p2', name: 'AUTO PARTNER', bot: true, ready: true });
+    room.game.players.push({ id: 'p2', name: '자동 파트너', bot: true, ready: true });
   }
 }
 
@@ -93,7 +93,7 @@ function handleAction(socket, action) {
   const client = room.clients.get(socket);
   if (action.type === 'join') {
     client.playerId = action.playerId || client.playerId;
-    client.name = String(action.name || 'Player').slice(0, 18);
+    client.name = String(action.name || '플레이어').slice(0, 18);
     client.profile = safeProfile(action.profile);
     assignPlayers();
     applyProfileToRoomGame(client.profile);
@@ -102,7 +102,7 @@ function handleAction(socket, action) {
     return;
   }
   const playerId = client?.playerId ?? 'guest';
-  let result = { ok: false, reason: 'Unknown action.' };
+  let result = { ok: false, reason: '알 수 없는 행동.' };
   const boardPlayer = boardForPlayer(room.game.players, playerId);
   if (action.type === 'supply' || action.type === 'summon') result = supplyRelay(room.game, { playerId: boardPlayer });
   if (action.type === 'merge') result = mergeRelays(room.game, { playerId: boardPlayer, slotIds: action.slotIds ?? [] });
@@ -136,7 +136,7 @@ function upgrade(req, socket) {
   ].join('\r\n'));
   resetFinishedRoomForJoin(room);
   const id = `p${room.clients.size + 1}`;
-  room.clients.set(socket, { playerId: id, name: `Player ${room.clients.size + 1}` });
+  room.clients.set(socket, { playerId: id, name: `플레이어 ${room.clients.size + 1}` });
   assignPlayers();
 
   socket.on('data', (buffer) => {
@@ -149,7 +149,7 @@ function upgrade(req, socket) {
     try {
       handleAction(socket, JSON.parse(text));
     } catch {
-      send(socket, { type: 'error', reason: 'Bad message.' });
+      send(socket, { type: 'error', reason: '잘못된 메시지.' });
     }
   });
   socket.on('close', () => {
@@ -183,6 +183,6 @@ function tickRoom() {
 const server = http.createServer(serve);
 server.on('upgrade', upgrade);
 server.listen(port, () => {
-  console.log(`ProjectAuto Signal Relay running at http://localhost:${port}`);
+  console.log(`ProjectAuto 시그널 릴레이 실행 중: http://localhost:${port}`);
 });
 setInterval(tickRoom, 100);

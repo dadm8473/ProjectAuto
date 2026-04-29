@@ -84,6 +84,7 @@ let resultView = null;
 let viewport = computeCanvasViewport();
 let sceneLayout = buildSceneLayout(viewport.viewHeight);
 let audioContext = null;
+const sensoryMuted = new URLSearchParams(location.search).has('mute');
 let feedbackRunId = '';
 const feedbackSeenEvents = new Set();
 
@@ -159,6 +160,7 @@ function showToast(message) {
 }
 
 function unlockSensoryFeedback() {
+  if (sensoryMuted) return null;
   try {
     const AudioCtor = window.AudioContext ?? window.webkitAudioContext;
     if (!AudioCtor) return null;
@@ -197,6 +199,7 @@ function playFeedbackTone(kind) {
 }
 
 function pulseHaptics(kind) {
+  if (sensoryMuted) return;
   try {
     const pattern = FEEDBACK_TONES[kind]?.haptic;
     if (!pattern) return;
@@ -270,25 +273,25 @@ function setLaunchConnecting(connecting) {
   launchOverlay.dataset.state = connecting ? 'connecting' : 'idle';
   launchBotButton.disabled = connecting;
   launchOnlineButton.disabled = connecting;
-  launchOnlineButton.textContent = connecting ? 'Matching...' : 'Online Match';
+  launchOnlineButton.textContent = connecting ? '매칭 중...' : '온라인 매칭';
 }
 
 function resultCopyFor(code, won) {
   const copy = {
-    win_signal_lock: ['MISSION CLEAR', 'Signal Lock', 'Signal loop stabilized.'],
-    loss_signal_collapse: ['SIGNAL BROKEN', 'Signal Lost', 'The relay signal collapsed.'],
-    loss_saturation: ['SATURATION LIMIT', 'Signal Lost', 'Noise saturation reached the limit.'],
-    loss_boss_timer: ['BOSS BREACH', 'Signal Lost', 'Boss window expired.']
+    win_signal_lock: ['임무 성공', '신호 고정', '신호 루프가 안정화되었습니다.'],
+    loss_signal_collapse: ['신호 붕괴', '신호 손실', '릴레이 신호가 붕괴했습니다.'],
+    loss_saturation: ['오염 한계', '신호 손실', '오염이 한계에 도달했습니다.'],
+    loss_boss_timer: ['보스 돌파', '신호 손실', '보스 제한 시간이 끝났습니다.']
   };
-  return copy[code] ?? [won ? 'MISSION CLEAR' : 'MISSION FAILED', won ? 'Signal Lock' : 'Signal Lost', 'Run complete.'];
+  return copy[code] ?? [won ? '임무 성공' : '임무 실패', won ? '신호 고정' : '신호 손실', '전투가 종료되었습니다.'];
 }
 
 function rewardSummaryText(summary) {
-  if (!summary) return 'Wave rewards saved. Rebuild and retry.';
-  const gemText = summary.totalGems >= 0 ? `+${summary.totalGems} G` : `${summary.totalGems} G`;
-  const parts = [`+${summary.run.xp} XP`, gemText];
-  if (summary.missions.length > 0) parts.push(`${summary.missions.length} missions`);
-  if (summary.passRewards.length > 0) parts.push(`${summary.passRewards.length} pass rewards`);
+  if (!summary) return '웨이브 보상 저장됨. 다시 정비하세요.';
+  const gemText = summary.totalGems >= 0 ? `+${summary.totalGems} 젬` : `${summary.totalGems} 젬`;
+  const parts = [`+${summary.run.xp} 경험치`, gemText];
+  if (summary.missions.length > 0) parts.push(`미션 ${summary.missions.length}개`);
+  if (summary.passRewards.length > 0) parts.push(`패스 보상 ${summary.passRewards.length}개`);
   return parts.join(' · ');
 }
 
@@ -302,10 +305,10 @@ function buildResultView(state, summary, highlights, progress) {
     highlights,
     progress,
     stats: [
-      ['Wave', state.result.wave],
-      ['Time', `${Math.floor(state.result.time)}s`],
-      ['Kills', state.result.stats.kills],
-      ['Profile', `${metaProfile.gems}G`]
+      ['웨이브', state.result.wave],
+      ['시간', `${Math.floor(state.result.time)}초`],
+      ['처치', state.result.stats.kills],
+      ['보유 젬', `${metaProfile.gems}젬`]
     ]
   };
 }
@@ -346,34 +349,34 @@ function renderResultProgress(items) {
 }
 
 function localAction(action) {
-  let result = { ok: false, reason: 'Unknown action.' };
+  let result = { ok: false, reason: '알 수 없는 행동.' };
   if (action.type === 'supply') result = supplyRelay(game, { playerId: localBoardId });
   if (action.type === 'merge') result = mergeRelays(game, { playerId: localBoardId, slotIds: action.slotIds ?? selected });
   if (action.type === 'swap') {
-    if (action.from === undefined || action.to === undefined) result = { ok: false, reason: 'Select two sockets.' };
+    if (action.from === undefined || action.to === undefined) result = { ok: false, reason: '칸 2개 선택.' };
     else result = swapRelays(game, { playerId: localBoardId, from: action.from, to: action.to });
   }
   if (action.type === 'focus') result = upgradeSupplyFocus(game, { playerId: localBoardId });
   if (action.type === 'pulse') result = castLinkPulse(game, { playerId: localBoardId });
   if (action.type === 'overclock') {
     const slot = action.slot ?? selected.at(-1);
-    result = slot === undefined ? { ok: false, reason: 'Select one Relay.' } : overclockRelay(game, { playerId: localBoardId, slot });
+    result = slot === undefined ? { ok: false, reason: '릴레이 1개 선택.' } : overclockRelay(game, { playerId: localBoardId, slot });
   }
   if (action.type === 'buy') result = tryBuyShopItem(game, { itemId: action.itemId });
   if (!result.ok) showToast(result.reason);
   if (result.ok && ['merge', 'swap', 'overclock'].includes(action.type)) selected = [];
   if (result.ok && action.type === 'supply') showToast(RELAY_TYPES[result.relay.relayId].name);
-  if (result.ok && action.type === 'merge') showToast(`${RELAY_TYPES[result.relay.relayId].name} T${result.relay.tier}`);
-  if (result.ok && action.type === 'swap') showToast('Signal geometry shifted.');
-  if (result.ok && action.type === 'focus') showToast('Supply focus raised.');
+  if (result.ok && action.type === 'merge') showToast(`${RELAY_TYPES[result.relay.relayId].name} Lv${result.relay.tier}`);
+  if (result.ok && action.type === 'swap') showToast('릴레이 배치 변경');
+  if (result.ok && action.type === 'focus') showToast('보급 집중 상승');
   if (result.ok && action.type === 'pulse') {
     const saved = game.effects.some((effect) => effect.type === 'link_pulse_save');
-    showToast(saved ? 'Saved by Link Pulse' : 'Link Pulse');
+    showToast(saved ? '파트너 구원 펄스' : '파트너 펄스');
   }
-  if (result.ok && action.type === 'overclock') showToast('Overdrive armed.');
+  if (result.ok && action.type === 'overclock') showToast('오버드라이브 발동');
   if (result.ok && action.type === 'buy') {
     syncProfileAfterPurchase(result);
-    showToast('Unlocked.');
+    showToast('해금 완료');
   }
 }
 
@@ -434,7 +437,7 @@ function showLaunchOverlay() {
   onlineProfileSpentGems = 0;
   game = createProfiledGame({ mode: 'bot', seed: Date.now() % 100000 });
   attachFeedbackBaseline();
-  netStatus.textContent = 'BOT CO-OP';
+  netStatus.textContent = '봇 협동';
   launchOverlay.hidden = false;
 }
 
@@ -449,7 +452,7 @@ function startBotRun() {
   onlineProfileSpentGems = 0;
   game = createProfiledGame({ mode: 'bot', seed: Date.now() % 100000 });
   attachFeedbackBaseline();
-  netStatus.textContent = 'BOT CO-OP';
+  netStatus.textContent = '봇 협동';
   hideLaunchOverlay();
 }
 
@@ -722,7 +725,7 @@ function drawRunSpine(state) {
   ctx.fillStyle = state.boss.active ? '#ff6f59' : '#8ee6d2';
   ctx.font = '950 9px system-ui';
   ctx.textAlign = 'center';
-  ctx.fillText(state.boss.active ? 'DUAL WINDOW' : 'SYNC LINK', x, Math.max(top + 12, loop.cy - loop.ry - 12));
+  ctx.fillText(state.boss.active ? '협동 타이밍' : '링크 동기화', x, Math.max(top + 12, loop.cy - loop.ry - 12));
   ctx.restore();
 }
 
@@ -855,7 +858,7 @@ function drawTrackLaneMarkers(state) {
   ctx.fillStyle = '#8ee6d2';
   ctx.font = '850 9px system-ui';
   ctx.textAlign = 'center';
-  ctx.fillText('LIVE LOOP', track.x + 48, track.y + track.h - 17);
+  ctx.fillText('진행 루프', track.x + 48, track.y + track.h - 17);
   ctx.restore();
 }
 
@@ -942,14 +945,14 @@ function drawTrack(state) {
   if (state.wave.name) {
     ctx.font = '900 9px system-ui';
     ctx.fillStyle = '#f4c95d';
-    ctx.fillText(state.wave.name.toUpperCase(), loop.cx, loop.cy - 25);
+    ctx.fillText(state.wave.name, loop.cx, loop.cy - 25);
   }
   ctx.fillStyle = '#f5f0dc';
   ctx.font = '950 19px system-ui';
-  ctx.fillText(`WAVE ${Math.min(state.wave.index + 1, GAME_RULES.maxWave)}`, loop.cx, loop.cy - 4);
+  ctx.fillText(`웨이브 ${Math.min(state.wave.index + 1, GAME_RULES.maxWave)}`, loop.cx, loop.cy - 4);
   ctx.font = '850 11px system-ui';
   ctx.fillStyle = state.boss.active ? '#ff6f59' : '#8ee6d2';
-  ctx.fillText(state.boss.active ? `BOSS ${Math.ceil(state.boss.timer)}s` : `SIGNAL ${Math.ceil(state.signal.integrity)}`, loop.cx, loop.cy + 15);
+  ctx.fillText(state.boss.active ? `보스 ${Math.ceil(state.boss.timer)}초` : `신호 ${Math.ceil(state.signal.integrity)}`, loop.cx, loop.cy + 15);
   if (state.boss.active) {
     const bossRatio = Math.max(0, Math.min(1, state.boss.timer / state.boss.limit));
     ctx.shadowColor = 'rgba(255, 111, 89, 0.7)';
@@ -964,7 +967,7 @@ function drawTrack(state) {
     ctx.fill();
     ctx.fillStyle = '#f5f0dc';
     ctx.font = '950 10px system-ui';
-    ctx.fillText('BOSS WINDOW', loop.cx, track.y + track.h - 28);
+    ctx.fillText('보스 제한 시간', loop.cx, track.y + track.h - 28);
     ctx.shadowBlur = 0;
   }
   ctx.shadowBlur = 0;
@@ -1355,10 +1358,10 @@ function drawRewardFlyout(effect, to, alpha) {
   ctx.fillStyle = '#f4c95d';
   ctx.font = '950 10px system-ui';
   ctx.textAlign = 'center';
-  ctx.fillText(`+${charge}C`, to.x - 11, to.y - 32 - lift);
+  ctx.fillText(`+${charge}전력`, to.x - 17, to.y - 32 - lift);
   if (link > 0) {
     ctx.fillStyle = '#58d7ff';
-    ctx.fillText(`+${link}L`, to.x + 18, to.y - 32 - lift);
+    ctx.fillText(`+${link}링크`, to.x + 20, to.y - 32 - lift);
   }
   ctx.restore();
 }
@@ -1554,10 +1557,10 @@ function drawBoard(state, playerId) {
   ctx.fillStyle = '#f5f0dc';
   ctx.font = '900 12px system-ui';
   ctx.textAlign = 'left';
-  ctx.fillText(isMine ? 'YOUR RELAYS' : 'PARTNER RELAYS', rect.x, rect.y - 12);
+  ctx.fillText(isMine ? '내 릴레이' : '파트너 릴레이', rect.x, rect.y - 12);
   ctx.fillStyle = heatPeak >= 90 ? '#ff6f59' : '#f4c95d';
   ctx.textAlign = 'right';
-  ctx.fillText(`HEAT ${Math.floor(heatPeak)}`, rect.x + rect.w, rect.y - 12);
+  ctx.fillText(`열 ${Math.floor(heatPeak)}`, rect.x + rect.w, rect.y - 12);
   ctx.shadowBlur = 0;
 
   drawLinks(board, rect, state.now);
@@ -1593,7 +1596,7 @@ function drawBoard(state, playerId) {
       ctx.fillStyle = GRADES[relay.grade].color;
       ctx.font = '900 9px system-ui';
       ctx.textAlign = 'center';
-      ctx.fillText(`T${relay.tier}`, slot.x + 15, slot.y + 13);
+      ctx.fillText(`Lv${relay.tier}`, slot.x + 15, slot.y + 13);
       ctx.fillStyle = relay.heat >= 90 ? '#ff6f59' : '#f5f0dc';
       ctx.fillText(Math.floor(relay.heat), slot.x + slot.w - 16, slot.y + 13);
       ctx.fillStyle = '#f5f0dc';
@@ -1634,7 +1637,7 @@ function drawEffects(state) {
         ctx.fillStyle = '#f4c95d';
         ctx.font = '900 17px system-ui';
         ctx.textAlign = 'center';
-        ctx.fillText('SAVED BY LINK PULSE', loop.cx, loop.cy + 4);
+        ctx.fillText('파트너 펄스 구원', loop.cx, loop.cy + 4);
       }
       ctx.restore();
     } else if (effect.type === 'supply' || effect.type === 'merge') {
@@ -1686,14 +1689,14 @@ function drawThreatTelemetry(state) {
   ctx.fillStyle = danger > 0.55 || state.boss.active ? '#ff6f59' : '#8ee6d2';
   ctx.font = '950 9px system-ui';
   ctx.textAlign = 'left';
-  ctx.fillText(state.boss.active ? 'BOSS THREAT' : 'THREAT', x + 10, y + 14);
+  ctx.fillText(state.boss.active ? '보스 위협' : '위협', x + 10, y + 14);
   ctx.fillStyle = '#f5f0dc';
   ctx.font = '950 15px system-ui';
   ctx.fillText(String(state.noise.length).padStart(2, '0'), x + 10, y + 33);
   ctx.fillStyle = '#a8b4a7';
   ctx.font = '850 9px system-ui';
   ctx.textAlign = 'right';
-  ctx.fillText(leading ? `${Math.round(leading.progress * 100)}%` : 'CLEAR', x + 94, y + 33);
+  ctx.fillText(leading ? `${Math.round(leading.progress * 100)}%` : '안전', x + 94, y + 33);
 
   if (leading) {
     const pos = noisePosition(leading);
@@ -1790,20 +1793,20 @@ function setActionButton(button, label, enabled, reason = '', accessibleLabel = 
 function updateActionButtons(state) {
   const actions = state.actionState?.[localBoardId];
   if (!actions) return;
-  setActionButton(actionButtons.supply, 'Supply', actions.supply.available, actions.supply.reason, 'Supply relay');
+  setActionButton(actionButtons.supply, '보급', actions.supply.available, actions.supply.reason, '전력으로 릴레이 설치');
   actionButtons.supply.dataset.hot = String(actions.supply.available);
   setActionButton(
     actionButtons.merge,
-    'Merge',
+    '합성',
     actions.merge.available,
     actions.merge.reason,
-    'Merge relays'
+    '같은 릴레이 3개 합성'
   );
   actionButtons.merge.dataset.hot = String(actions.merge.available);
-  const pulseLabel = actions.linkPulse.cooldownRemaining > 0 ? `${Math.ceil(actions.linkPulse.cooldownRemaining)}s` : 'Pulse';
+  const pulseLabel = actions.linkPulse.cooldownRemaining > 0 ? `${Math.ceil(actions.linkPulse.cooldownRemaining)}초` : '펄스';
   const pulseAccessibleLabel = actions.linkPulse.cooldownRemaining > 0
-    ? `Link Pulse ${Math.ceil(actions.linkPulse.cooldownRemaining)} seconds`
-    : 'Link Pulse';
+    ? `파트너 펄스 ${Math.ceil(actions.linkPulse.cooldownRemaining)}초`
+    : '파트너 펄스';
   setActionButton(actionButtons.pulse, pulseLabel, actions.linkPulse.available, actions.linkPulse.reason, pulseAccessibleLabel);
   actionButtons.pulse.dataset.ready = String(actions.linkPulse.available);
   actionButtons.pulse.dataset.clutch = String(actions.linkPulse.clutch);
@@ -1821,12 +1824,12 @@ function syncCoachCue(state) {
 
 function updateHud() {
   const state = currentState();
-  chargeMeter.textContent = `C ${Math.floor(state.resources.charge)}`;
-  linkMeter.textContent = `L ${Math.floor(state.resources.linkEnergy)}`;
-  gemMeter.textContent = `G ${online ? metaProfile.gems : Math.floor(state.resources.gems)}`;
-  waveMeter.textContent = `Wave ${Math.min(state.wave.index + 1, GAME_RULES.maxWave)}`;
-  signalMeter.textContent = `Signal ${Math.ceil(state.signal.integrity)} / Sat ${Math.floor(state.saturation.count)}`;
-  bossMeter.textContent = state.boss.active ? `Boss ${Math.ceil(state.boss.timer)}s` : 'Boss --';
+  chargeMeter.textContent = `전력 ${Math.floor(state.resources.charge)}`;
+  linkMeter.textContent = `링크 ${Math.floor(state.resources.linkEnergy)}`;
+  gemMeter.textContent = `젬 ${online ? metaProfile.gems : Math.floor(state.resources.gems)}`;
+  waveMeter.textContent = `웨이브 ${Math.min(state.wave.index + 1, GAME_RULES.maxWave)}`;
+  signalMeter.textContent = `신호 ${Math.ceil(state.signal.integrity)} / 오염 ${Math.floor(state.saturation.count)}`;
+  bossMeter.textContent = state.boss.active ? `보스 ${Math.ceil(state.boss.timer)}초` : '보스 --';
   updateActionButtons(state);
   syncCoachCue(state);
   syncSensoryFeedback(state);
@@ -1844,25 +1847,25 @@ function loop(now) {
 
 function buildShop() {
   shopList.innerHTML = [
-    buildShopSection('UNLOCKS', SHOP.items.map((item) => {
+    buildShopSection('해금', SHOP.items.map((item) => {
       const owned = item.grant.cosmetic ? metaProfile.unlocks.includes(item.grant.cosmetic) : false;
       return `
     <div class="row" ${owned ? 'data-claimed="true"' : 'data-claimed="false"'}>
       <div><strong>${item.name}</strong><span>${item.description}</span></div>
-      <button data-buy="${item.id}" ${owned ? 'disabled' : ''}>${owned ? 'Owned' : `${item.price.gems} G`}</button>
+      <button data-buy="${item.id}" ${owned ? 'disabled' : ''}>${owned ? '보유' : `${item.price.gems}젬`}</button>
     </div>
     `;
     }).join('')),
-    buildShopSection('MISSIONS', SHOP.dailyMissions.map((mission) => `
+    buildShopSection('미션', SHOP.dailyMissions.map((mission) => `
     <div class="mission-row" ${metaProfile.claimedMissions.includes(mission.id) ? 'data-claimed="true"' : 'data-claimed="false"'}>
-      <div><strong>${mission.text}</strong><span>${metaProfile.claimedMissions.includes(mission.id) ? 'Reward claimed' : `Reward ${mission.reward.gems} G`}</span></div>
-      <span>${metaProfile.claimedMissions.includes(mission.id) ? 'Done' : 'Daily'}</span>
+      <div><strong>${mission.text}</strong><span>${metaProfile.claimedMissions.includes(mission.id) ? '보상 수령' : `보상 ${mission.reward.gems}젬`}</span></div>
+      <span>${metaProfile.claimedMissions.includes(mission.id) ? '완료' : '오늘'}</span>
     </div>
     `).join('')),
-    buildShopSection('SEASON TRACK', SHOP.pass.tiers.map((tier, index) => `
+    buildShopSection('시즌 트랙', SHOP.pass.tiers.map((tier, index) => `
     <div class="track-row" ${metaProfile.claimedPassTiers.includes(index) ? 'data-claimed="true"' : 'data-claimed="false"'}>
-      <div><strong>${SHOP.pass.name} ${index + 1}</strong><span>${tier.xp} XP reward track</span></div>
-      <span>${metaProfile.claimedPassTiers.includes(index) ? 'Claimed' : tier.grant.gems ? `${tier.grant.gems} G` : 'Skin'}</span>
+      <div><strong>${SHOP.pass.name} ${index + 1}</strong><span>${tier.xp} 경험치 보상</span></div>
+      <span>${metaProfile.claimedPassTiers.includes(index) ? '수령' : tier.grant.gems ? `${tier.grant.gems}젬` : '스킨'}</span>
     </div>
     `).join(''))
   ].join('');
@@ -1885,16 +1888,16 @@ function connectOnline() {
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const activeSocket = new WebSocket(`${protocol}//${location.host}/ws`);
   socket = activeSocket;
-  netStatus.textContent = 'CONNECTING';
+  netStatus.textContent = '연결 중';
   activeSocket.addEventListener('open', () => {
     if (socket !== activeSocket) return;
     online = true;
     selected = [];
     activeRunProfileGems = metaProfile.gems;
     onlineProfileSpentGems = 0;
-    netStatus.textContent = 'ONLINE CO-OP';
+    netStatus.textContent = '온라인 협동';
     hideLaunchOverlay();
-    activeSocket.send(JSON.stringify({ type: 'join', playerId: localPlayerId, name: 'Player', profile: { gems: metaProfile.gems, unlocks: metaProfile.unlocks } }));
+    activeSocket.send(JSON.stringify({ type: 'join', playerId: localPlayerId, name: '플레이어', profile: { gems: metaProfile.gems, unlocks: metaProfile.unlocks } }));
   });
   activeSocket.addEventListener('message', (event) => {
     if (socket !== activeSocket) return;
@@ -1918,14 +1921,14 @@ function connectOnline() {
     online = false;
     setLaunchConnecting(false);
     if (!runStarted) {
-      netStatus.textContent = 'BOT CO-OP';
-      showToast('Online unavailable.');
+      netStatus.textContent = '봇 협동';
+      showToast('온라인 연결 실패.');
       return;
     }
     if (resultView) return;
     localBoardId = 'p1';
-    netStatus.textContent = 'BOT CO-OP';
-    showToast('Bot co-op resumed.');
+    netStatus.textContent = '봇 협동';
+    showToast('봇 협동으로 전환.');
     game = createProfiledGame({ mode: 'bot', seed: Date.now() % 100000 });
     attachFeedbackBaseline();
     runStarted = true;

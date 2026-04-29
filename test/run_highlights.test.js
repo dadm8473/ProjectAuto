@@ -30,9 +30,9 @@ test('run highlights prioritize player-readable clutch moments', () => {
   };
 
   assert.deepEqual(buildRunHighlights(state, summary), [
-    { label: 'Clutch Pulse', value: '1', detail: 'boss save', tone: 'link' },
-    { label: 'Best Merge', value: '3', detail: 'relay upgrades', tone: 'charge' },
-    { label: 'Boss Break', value: '2', detail: 'windows cleared', tone: 'danger' }
+    { label: '구원 펄스', value: '1', detail: '보스 세이브', tone: 'link' },
+    { label: '최고 합성', value: '3', detail: '릴레이 강화', tone: 'charge' },
+    { label: '보스 격파', value: '2', detail: '위기 돌파', tone: 'danger' }
   ]);
 });
 
@@ -47,9 +47,9 @@ test('run progress summarizes rewards without long explanatory text', () => {
   };
 
   assert.deepEqual(buildRunProgress(summary, { gems: 240, xp: 310 }), [
-    { label: 'Run', value: '+92 XP', detail: '+128 G' },
-    { label: 'Missions', value: '2 clear', detail: '+35 G' },
-    { label: 'Pass', value: '2 unlock', detail: '310 XP' },
-    { label: 'Vault', value: '240 G', detail: '+183 G' }
+    { label: '전투', value: '+92 경험치', detail: '+128 젬' },
+    { label: '미션', value: '2개 완료', detail: '+35 젬' },
+    { label: '패스', value: '2개 해금', detail: '310 경험치' },
+    { label: '보관함', value: '240 젬', detail: '+183 젬' }
   ]);
 });

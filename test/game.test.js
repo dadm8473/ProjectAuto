@@ -56,10 +56,10 @@ function installNoise(game, overrides = {}) {
   return noise;
 }
 
-test('a new run is a two-board Signal Relay defense with earned-only BM scaffolding', () => {
+test('a new run is a two-board Korean Signal Relay defense with earned-only rewards', () => {
   const game = createGame({ mode: 'bot', seed: 42 });
 
-  assert.equal(game.title, 'Signal Relay');
+  assert.equal(game.title, '시그널 릴레이');
   assert.equal(game.boards.p1.slots.length, 12);
   assert.equal(game.boards.p2.slots.length, 12);
   assert.equal(game.resources.charge, 110);
@@ -96,7 +96,7 @@ test('bot onboarding scripts the first supplies into an immediate merge lesson',
   const firstCue = serializeState(game).onboarding.cues.p1;
 
   assert.equal(firstCue.action, 'supply');
-  assert.equal(firstCue.label, 'SUPPLY 1/3');
+  assert.equal(firstCue.label, '보급 1/3');
 
   const supplies = [
     supplyRelay(game, { playerId: 'p1' }),
@@ -110,7 +110,7 @@ test('bot onboarding scripts the first supplies into an immediate merge lesson',
   assert.deepEqual(relayIds, ['pulse_drum', 'pulse_drum', 'pulse_drum']);
   assert.equal(merge.available, true);
   assert.equal(mergeCue.action, 'merge');
-  assert.equal(mergeCue.label, 'MERGE READY');
+  assert.equal(mergeCue.label, '합성 가능');
   assert.deepEqual(new Set(mergeCue.slots), new Set(merge.slots));
 });
 
@@ -127,7 +127,7 @@ test('bot onboarding guides the first partner Pulse and expires after the openin
 
   const pulseCue = serializeState(game).onboarding.cues.p1;
   assert.equal(pulseCue.action, 'pulse');
-  assert.equal(pulseCue.label, 'PULSE PARTNER');
+  assert.equal(pulseCue.label, '파트너 펄스');
 
   game.now = GAME_RULES.onboardingWindow + 0.1;
   assert.equal(serializeState(game).onboarding.cues.p1, null);
@@ -454,7 +454,7 @@ test('serialized action state exposes exact costs, cooldowns, and availability',
 
   assert.equal(actions.supply.cost, 23);
   assert.equal(actions.supply.available, false);
-  assert.equal(actions.supply.reason, 'Need 23 Charge.');
+  assert.equal(actions.supply.reason, '전력 23 필요.');
   assert.equal(actions.swap.charges, 0);
   assert.equal(actions.swap.available, false);
   assert.equal(actions.linkPulse.cost, 40);
@@ -471,7 +471,7 @@ test('serialized merge availability requires an actual matching trio', () => {
 
   const unavailable = serializeState(game).actionState.p1.merge;
   assert.equal(unavailable.available, false);
-  assert.equal(unavailable.reason, 'No matching trio.');
+  assert.equal(unavailable.reason, '같은 릴레이 3개 없음.');
 
   installRelay(game, 'p1', 3, 'needle_beam');
   installRelay(game, 'p1', 4, 'needle_beam');
@@ -509,7 +509,7 @@ test('terminal states emit a run result and event log entry with one readable ca
 
   assert.equal(snapshot.over, true);
   assert.equal(snapshot.result.code, 'loss_signal_collapse');
-  assert.equal(snapshot.result.text, 'Signal collapsed.');
+  assert.equal(snapshot.result.text, '신호가 붕괴했습니다.');
   assert.equal(snapshot.result.won, false);
   assert.deepEqual(snapshot.result.earned, { gems: 12, xp: 27 });
   assert.deepEqual(snapshot.result.spent, { gems: 5 });
@@ -703,8 +703,8 @@ test('late wave plan favors readable heavy threats over mobile screen floods', (
   assert.deepEqual(spawnTotals, [36, 34, 46, 27]);
   assert.equal(Math.max(...largestSingleStacks) <= 28, true);
   assert.deepEqual(lateWaves.map((wave) => wave.threatScale), [1.2, 1.55, 1.65, 1.45]);
-  assert.equal(WAVE_PLAN[8].intent.includes('Merge'), true);
-  assert.equal(WAVE_PLAN[9].intent.includes('Pulse'), true);
+  assert.equal(WAVE_PLAN[8].intent.includes('합성'), true);
+  assert.equal(WAVE_PLAN[9].intent.includes('펄스'), true);
 });
 
 test('late wave threat scale makes fewer enemies matter', () => {
@@ -814,7 +814,7 @@ test('shop purchases use earned gems and unlock cosmetic-only rewards', () => {
   const duplicate = tryBuyShopItem(game, { itemId: 'mythic-aura' });
 
   assert.equal(duplicate.ok, false);
-  assert.equal(duplicate.reason, 'Already unlocked.');
+  assert.equal(duplicate.reason, '이미 해금됨.');
   assert.equal(game.resources.gems, 60);
   assert.deepEqual(game.unlocks, ['mythic-aura']);
 });

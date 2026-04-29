@@ -28,13 +28,13 @@ export function buildRunHighlights(state, summary) {
   const missions = summary?.missions?.length ?? 0;
   const candidates = [];
 
-  if (saves > 0) candidates.push({ label: 'Clutch Pulse', value: compactNumber(saves), detail: 'boss save', tone: 'link' });
-  if (merges > 0) candidates.push({ label: 'Best Merge', value: compactNumber(merges), detail: 'relay upgrades', tone: 'charge' });
-  if (bosses > 0) candidates.push({ label: 'Boss Break', value: compactNumber(bosses), detail: 'windows cleared', tone: 'danger' });
-  if (overdrives > 0) candidates.push({ label: 'Overdrive', value: compactNumber(overdrives), detail: 'burst windows', tone: 'charge' });
-  if (missions > 0) candidates.push({ label: 'Missions', value: compactNumber(missions), detail: 'claimed now', tone: 'gem' });
-  if (kills > 0) candidates.push({ label: 'Noise Clear', value: compactNumber(kills), detail: 'targets cut', tone: 'link' });
-  candidates.push({ label: 'Wave Reach', value: compactNumber(state?.result?.wave ?? state?.wave?.index ?? 1), detail: 'deepest push', tone: 'neutral' });
+  if (saves > 0) candidates.push({ label: '구원 펄스', value: compactNumber(saves), detail: '보스 세이브', tone: 'link' });
+  if (merges > 0) candidates.push({ label: '최고 합성', value: compactNumber(merges), detail: '릴레이 강화', tone: 'charge' });
+  if (bosses > 0) candidates.push({ label: '보스 격파', value: compactNumber(bosses), detail: '위기 돌파', tone: 'danger' });
+  if (overdrives > 0) candidates.push({ label: '오버드라이브', value: compactNumber(overdrives), detail: '폭발 구간', tone: 'charge' });
+  if (missions > 0) candidates.push({ label: '미션', value: compactNumber(missions), detail: '즉시 수령', tone: 'gem' });
+  if (kills > 0) candidates.push({ label: '노이즈 정리', value: compactNumber(kills), detail: '처치 대상', tone: 'link' });
+  candidates.push({ label: '도달 웨이브', value: compactNumber(state?.result?.wave ?? state?.wave?.index ?? 1), detail: '최고 진도', tone: 'neutral' });
 
   return candidates.slice(0, 3);
 }
@@ -46,9 +46,9 @@ export function buildRunProgress(summary, profile = {}) {
   const missionGems = safeNumber(summary?.missionGems);
   const totalGems = safeNumber(summary?.totalGems);
   return [
-    { label: 'Run', value: `+${safeNumber(run.xp)} XP`, detail: `+${safeNumber(run.gems)} G` },
-    { label: 'Missions', value: `${missionCount} clear`, detail: `+${missionGems} G` },
-    { label: 'Pass', value: `${passCount} unlock`, detail: `${safeNumber(profile.xp)} XP` },
-    { label: 'Vault', value: `${safeNumber(profile.gems)} G`, detail: `${totalGems >= 0 ? '+' : ''}${totalGems} G` }
+    { label: '전투', value: `+${safeNumber(run.xp)} 경험치`, detail: `+${safeNumber(run.gems)} 젬` },
+    { label: '미션', value: `${missionCount}개 완료`, detail: `+${missionGems} 젬` },
+    { label: '패스', value: `${passCount}개 해금`, detail: `${safeNumber(profile.xp)} 경험치` },
+    { label: '보관함', value: `${safeNumber(profile.gems)} 젬`, detail: `${totalGems >= 0 ? '+' : ''}${totalGems} 젬` }
   ];
 }

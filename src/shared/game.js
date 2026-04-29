@@ -345,9 +345,9 @@ function applyHeat(game, relay, amount) {
 
 function armBoardOverdrive(game, playerId, { slot, duration, heat, source = 'overclock' }) {
   const board = findBoard(game, playerId);
-  if (slot !== undefined && !validSlotIndex(board, slot)) return { ok: false, reason: 'Invalid socket.' };
+  if (slot !== undefined && !validSlotIndex(board, slot)) return { ok: false, reason: '잘못된 칸.' };
   const relays = board.slots.filter(Boolean);
-  if (relays.length === 0) return { ok: false, reason: 'No Relays to Overdrive.' };
+  if (relays.length === 0) return { ok: false, reason: '오버드라이브할 릴레이 없음.' };
 
   const until = game.now + duration;
   board.overclockUntil = Math.max(board.overclockUntil ?? 0, until);
@@ -591,15 +591,15 @@ function computeActionStateForPlayer(game, playerId) {
 
   let supply = availability(!game.over && prioritySlotIndex(board) >= 0 && game.resources.charge >= supplyCost);
   if (!supply.available) {
-    supply = availability(false, game.over ? 'Run finished.' : prioritySlotIndex(board) < 0 ? 'Board full.' : `Need ${supplyCost} Charge.`);
+    supply = availability(false, game.over ? '전투 종료.' : prioritySlotIndex(board) < 0 ? '보드 가득 참.' : `전력 ${supplyCost} 필요.`);
   }
 
   let focus = availability(!game.over && game.resources.charge >= focusCost);
-  if (!focus.available) focus = availability(false, game.over ? 'Run finished.' : `Need ${focusCost} Charge.`);
+  if (!focus.available) focus = availability(false, game.over ? '전투 종료.' : `전력 ${focusCost} 필요.`);
 
   let swap = availability(!game.over && swapCharges > 0 && relayCount >= 2);
   if (!swap.available) {
-    swap = availability(false, game.over ? 'Run finished.' : swapCharges <= 0 ? 'No Swap Charge.' : 'Need two Relays.');
+    swap = availability(false, game.over ? '전투 종료.' : swapCharges <= 0 ? '교대권 없음.' : '릴레이 2개 필요.');
   }
 
   let linkPulse = availability(!game.over && game.resources.linkEnergy >= GAME_RULES.linkPulseCost && linkPulseCooldownRemaining <= 0 && partnerRelayCount > 0);
@@ -607,12 +607,12 @@ function computeActionStateForPlayer(game, playerId) {
     linkPulse = availability(
       false,
       game.over
-        ? 'Run finished.'
+        ? '전투 종료.'
         : game.resources.linkEnergy < GAME_RULES.linkPulseCost
-          ? `Need ${GAME_RULES.linkPulseCost} Link.`
+          ? `링크 ${GAME_RULES.linkPulseCost} 필요.`
           : linkPulseCooldownRemaining > 0
-            ? `Ready in ${linkPulseCooldownRemaining}s.`
-            : 'Partner has no Relay.'
+            ? `${linkPulseCooldownRemaining}초 후 가능.`
+            : '파트너 릴레이 없음.'
     );
   }
 
@@ -620,7 +620,7 @@ function computeActionStateForPlayer(game, playerId) {
     supply: { ...supply, cost: supplyCost },
     merge: {
       available: !game.over && Boolean(mergeSlots),
-      reason: game.over ? 'Run finished.' : relayCount < GAME_RULES.mergeCount ? 'Need three Relays.' : mergeSlots ? '' : 'No matching trio.',
+      reason: game.over ? '전투 종료.' : relayCount < GAME_RULES.mergeCount ? '릴레이 3개 필요.' : mergeSlots ? '' : '같은 릴레이 3개 없음.',
       selectedRequired: GAME_RULES.mergeCount,
       slots: mergeSlots ?? [],
       progress: Math.min(GAME_RULES.mergeCount, mergeProgress.slots.length),
@@ -658,7 +658,7 @@ function computeOnboardingCueForPlayer(game, playerId, actions) {
     return {
       step: 'first_merge',
       action: 'merge',
-      label: 'MERGE READY',
+      label: '합성 가능',
       slots: [...actions.merge.slots]
     };
   }
@@ -667,7 +667,7 @@ function computeOnboardingCueForPlayer(game, playerId, actions) {
     return {
       step: 'starter_trio',
       action: 'supply',
-      label: `SUPPLY ${supplies + 1}/${ONBOARDING_SUPPLY_SCRIPT.length}`,
+      label: `보급 ${supplies + 1}/${ONBOARDING_SUPPLY_SCRIPT.length}`,
       targetSlot: prioritySlotIndex(findBoard(game, playerId)),
       progress: supplies
     };
@@ -677,7 +677,7 @@ function computeOnboardingCueForPlayer(game, playerId, actions) {
     return {
       step: 'first_pulse',
       action: 'pulse',
-      label: 'PULSE PARTNER',
+      label: '파트너 펄스',
       targetPlayerId: partnerId(playerId)
     };
   }
@@ -715,7 +715,7 @@ export function computeActiveLinks(board, now = 0) {
 export function createGame({ mode = 'bot', seed = Date.now() } = {}) {
   nextId = 1;
   return {
-    title: 'Signal Relay',
+    title: '시그널 릴레이',
     id: uniqueRunId(seed),
     privateSeed: seed,
     now: 0,
@@ -725,12 +725,12 @@ export function createGame({ mode = 'bot', seed = Date.now() } = {}) {
       pity: { p1: 0, p2: 0 }
     },
     players: [
-      { id: 'p1', name: 'You', bot: false, ready: true },
-      { id: 'p2', name: mode === 'bot' ? 'AUTO PARTNER' : 'Partner', bot: mode === 'bot', ready: true }
+      { id: 'p1', name: '나', bot: false, ready: true },
+      { id: 'p2', name: mode === 'bot' ? '자동 파트너' : '파트너', bot: mode === 'bot', ready: true }
     ],
     boards: {
-      p1: { id: 'p1', name: 'Your Relay Board', anchorIndex: 5, slots: Array(GAME_RULES.boardSlots).fill(null), comboText: '', overclockUntil: 0, overclockResolvedUntil: 0, disabledLinks: [] },
-      p2: { id: 'p2', name: 'Partner Relay Board', anchorIndex: 5, slots: Array(GAME_RULES.boardSlots).fill(null), comboText: '', overclockUntil: 0, overclockResolvedUntil: 0, disabledLinks: [] }
+      p1: { id: 'p1', name: '내 릴레이 보드', anchorIndex: 5, slots: Array(GAME_RULES.boardSlots).fill(null), comboText: '', overclockUntil: 0, overclockResolvedUntil: 0, disabledLinks: [] },
+      p2: { id: 'p2', name: '파트너 릴레이 보드', anchorIndex: 5, slots: Array(GAME_RULES.boardSlots).fill(null), comboText: '', overclockUntil: 0, overclockResolvedUntil: 0, disabledLinks: [] }
     },
     resources: { charge: 110, linkEnergy: 50, swapCharges: { p1: 1, p2: 1 }, gems: 30, xp: 0 },
     metaEarned: { gems: 0, xp: 0 },
@@ -770,8 +770,8 @@ export function supplyRelay(game, { playerId }) {
   const board = findBoard(game, playerId);
   const slotIndex = prioritySlotIndex(board);
   const cost = currentSupplyCostForPlayer(game, playerId);
-  if (slotIndex < 0) return { ok: false, reason: 'Board full. Merge or Swap Relays first.' };
-  if (game.resources.charge < cost) return { ok: false, reason: 'Not enough Charge.' };
+  if (slotIndex < 0) return { ok: false, reason: '보드가 가득 찼습니다. 먼저 합성하세요.' };
+  if (game.resources.charge < cost) return { ok: false, reason: '전력이 부족합니다.' };
   const relaySpec = rollRelay(game, playerId);
   const relay = makeRelay(game, playerId, relaySpec.id);
   game.resources.charge -= cost;
@@ -787,14 +787,14 @@ export function supplyRelay(game, { playerId }) {
 
 export function mergeRelays(game, { playerId, slotIds }) {
   const board = findBoard(game, playerId);
-  if (!Array.isArray(slotIds)) return { ok: false, reason: 'Select three matching Relays.' };
-  if (slotIds.length !== GAME_RULES.mergeCount) return { ok: false, reason: 'Select three matching Relays.' };
-  if (new Set(slotIds).size !== GAME_RULES.mergeCount) return { ok: false, reason: 'Select three different sockets.' };
-  if (!slotIds.every((index) => validSlotIndex(board, index))) return { ok: false, reason: 'Invalid socket.' };
+  if (!Array.isArray(slotIds)) return { ok: false, reason: '같은 릴레이 3개 선택.' };
+  if (slotIds.length !== GAME_RULES.mergeCount) return { ok: false, reason: '같은 릴레이 3개 선택.' };
+  if (new Set(slotIds).size !== GAME_RULES.mergeCount) return { ok: false, reason: '서로 다른 칸 3개 선택.' };
+  if (!slotIds.every((index) => validSlotIndex(board, index))) return { ok: false, reason: '잘못된 칸.' };
   const slots = slotIds.map((index) => board.slots[index]);
-  if (slots.some((slot) => !slot)) return { ok: false, reason: 'Select three matching Relays.' };
+  if (slots.some((slot) => !slot)) return { ok: false, reason: '같은 릴레이 3개 선택.' };
   const [first] = slots;
-  if (!slots.every((slot) => slot.relayId === first.relayId && slot.tier === first.tier)) return { ok: false, reason: 'Relays must match exactly.' };
+  if (!slots.every((slot) => slot.relayId === first.relayId && slot.tier === first.tier)) return { ok: false, reason: '같은 이름과 레벨만 합성 가능.' };
   const averageHeat = slots.reduce((sum, slot) => sum + slot.heat, 0) / slots.length;
   const merged = makeRelay(game, playerId, first.relayId, Math.min(5, first.tier + 1), first.grade);
   merged.heat = Math.min(40, Math.floor(averageHeat * 0.45));
@@ -839,10 +839,10 @@ export function mergeRelays(game, { playerId, slotIds }) {
 
 export function swapRelays(game, { playerId, from, to }) {
   const board = findBoard(game, playerId);
-  if (!validSlotIndex(board, from) || !validSlotIndex(board, to)) return { ok: false, reason: 'Invalid socket.' };
-  if (from === to) return { ok: false, reason: 'Choose two different sockets.' };
-  if (!board.slots[from] || !board.slots[to]) return { ok: false, reason: 'Swap requires two Relays.' };
-  if ((game.resources.swapCharges[playerId] ?? 0) < 1) return { ok: false, reason: 'Not enough Swap Charge.' };
+  if (!validSlotIndex(board, from) || !validSlotIndex(board, to)) return { ok: false, reason: '잘못된 칸.' };
+  if (from === to) return { ok: false, reason: '서로 다른 칸 2개 선택.' };
+  if (!board.slots[from] || !board.slots[to]) return { ok: false, reason: '릴레이 2개가 필요합니다.' };
+  if ((game.resources.swapCharges[playerId] ?? 0) < 1) return { ok: false, reason: '교대권이 부족합니다.' };
   game.resources.swapCharges[playerId] -= 1;
   const temp = board.slots[from];
   board.slots[from] = board.slots[to];
@@ -855,7 +855,7 @@ export function swapRelays(game, { playerId, from, to }) {
 
 export function upgradeSupplyFocus(game, { playerId }) {
   const cost = GAME_RULES.supplyFocusCost + (game.stats.focusUps[playerId] ?? 0) * 25;
-  if (game.resources.charge < cost) return { ok: false, reason: 'Not enough Charge.' };
+  if (game.resources.charge < cost) return { ok: false, reason: '전력이 부족합니다.' };
   game.resources.charge -= cost;
   game.stats.focusUps[playerId] = (game.stats.focusUps[playerId] ?? 0) + 1;
   game.supplyOdds.Basic = Math.max(0.38, game.supplyOdds.Basic - 0.045);
@@ -874,13 +874,13 @@ function boardHasActiveTwinGateLink(board, now) {
 }
 
 export function castLinkPulse(game, { playerId }) {
-  if (game.resources.linkEnergy < GAME_RULES.linkPulseCost) return { ok: false, reason: 'Not enough Link Energy.' };
-  if (game.linkPulseCooldownUntil > game.now) return { ok: false, reason: 'Link Pulse cooling down.' };
+  if (game.resources.linkEnergy < GAME_RULES.linkPulseCost) return { ok: false, reason: '링크가 부족합니다.' };
+  if (game.linkPulseCooldownUntil > game.now) return { ok: false, reason: '파트너 펄스 재사용 대기 중.' };
   const targetPlayerId = partnerId(playerId);
   const board = findBoard(game, targetPlayerId);
   const casterBoard = findBoard(game, playerId);
   const targets = board.slots.filter(Boolean).sort((a, b) => b.heat - a.heat);
-  if (targets.length === 0) return { ok: false, reason: 'Partner has no Relay.' };
+  if (targets.length === 0) return { ok: false, reason: '파트너 릴레이 없음.' };
   const preSignalIntegrity = game.signal.integrity;
   const partnerHeatMax = targets[0]?.heat ?? 0;
   const partnerRelayShutdownSoon = targets.some((relay) => relay.heat >= 92 && relay.cooldown <= 1.5);
@@ -953,10 +953,10 @@ export function overclockRelay(game, { playerId, slot }) {
 
 export function tryBuyShopItem(game, { itemId, ownedUnlocks = game.unlocks } = {}) {
   const item = SHOP.items.find((entry) => entry.id === itemId);
-  if (!item) return { ok: false, reason: 'Shop item not found.' };
-  if (item.grant.cosmetic && ownedUnlocks.includes(item.grant.cosmetic)) return { ok: false, reason: 'Already unlocked.' };
+  if (!item) return { ok: false, reason: '보상 항목 없음.' };
+  if (item.grant.cosmetic && ownedUnlocks.includes(item.grant.cosmetic)) return { ok: false, reason: '이미 해금됨.' };
   for (const [currency, amount] of Object.entries(item.price)) {
-    if ((game.resources[currency] ?? 0) < amount) return { ok: false, reason: `Not enough ${currency}.` };
+    if ((game.resources[currency] ?? 0) < amount) return { ok: false, reason: `${SHOP.currencies[currency]?.name ?? currency} 부족.` };
   }
   for (const [currency, amount] of Object.entries(item.price)) game.resources[currency] -= amount;
   if (item.price.gems) game.metaSpent.gems += item.price.gems;
@@ -1130,7 +1130,7 @@ export function tickGame(game, dt) {
   if (game.boss.active) {
     game.boss.timer -= dt;
     if (game.boss.timer <= 0 && game.noise.some((noise) => noise.type === 'boss')) {
-      finishGame(game, { won: false, code: 'loss_boss_timer', text: 'Boss timer expired.' });
+      finishGame(game, { won: false, code: 'loss_boss_timer', text: '보스 제한 시간 종료.' });
     }
   }
 
@@ -1138,7 +1138,7 @@ export function tickGame(game, dt) {
     finishGame(game, {
       won: false,
       code: game.signal.integrity <= 0 ? 'loss_signal_collapse' : 'loss_saturation',
-      text: game.signal.integrity <= 0 ? 'Signal collapsed.' : 'Saturation reached 100.'
+      text: game.signal.integrity <= 0 ? '신호가 붕괴했습니다.' : '오염이 한계에 도달했습니다.'
     });
   }
 
@@ -1147,7 +1147,7 @@ export function tickGame(game, dt) {
 
   if (game.wave.active && game.wave.queue.length === 0 && game.noise.length === 0) {
     const completedWave = game.wave.index + 1;
-    const completedName = game.wave.name ?? WAVE_PLAN[Math.min(game.wave.index, WAVE_PLAN.length - 1)]?.name ?? `Wave ${completedWave}`;
+    const completedName = game.wave.name ?? WAVE_PLAN[Math.min(game.wave.index, WAVE_PLAN.length - 1)]?.name ?? `웨이브 ${completedWave}`;
     const reward = game.wave.clearReward ?? { charge: 45 + completedWave * 8, linkEnergy: 12, gems: completedWave % 3 === 0 ? 8 : 0 };
     const signalBeforeClearRecovery = Math.ceil(game.signal.integrity);
     game.wave.index += 1;
@@ -1181,7 +1181,7 @@ export function tickGame(game, dt) {
     if (game.wave.index >= GAME_RULES.maxWave) {
       game.resources.gems += 120;
       game.metaEarned.gems += 120;
-      finishGame(game, { won: true, code: 'win_signal_lock', text: 'Signal loop stabilized.' });
+      finishGame(game, { won: true, code: 'win_signal_lock', text: '신호 루프 안정화.' });
     }
   }
   return game;

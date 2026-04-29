@@ -11,10 +11,10 @@ export function safeProfile(value) {
 export function approveProfilePurchase(value, itemId) {
   const profile = safeProfile(value);
   const item = SHOP.items.find((entry) => entry.id === itemId);
-  if (!item) return { ok: false, reason: 'Shop item not found.', profile };
-  if (item.grant.cosmetic && profile.unlocks.includes(item.grant.cosmetic)) return { ok: false, reason: 'Already unlocked.', profile };
+  if (!item) return { ok: false, reason: '보상 항목 없음.', profile };
+  if (item.grant.cosmetic && profile.unlocks.includes(item.grant.cosmetic)) return { ok: false, reason: '이미 해금됨.', profile };
   const gemPrice = item.price.gems ?? 0;
-  if (profile.gems < gemPrice) return { ok: false, reason: 'Not enough gems.', profile };
+  if (profile.gems < gemPrice) return { ok: false, reason: '젬 부족.', profile };
   return {
     ok: true,
     item,
@@ -26,7 +26,7 @@ export function approveProfilePurchase(value, itemId) {
 }
 
 export function approveClientPurchase(client, action) {
-  if (!client?.profile) return { ok: false, reason: 'Join required.', profile: safeProfile(null) };
+  if (!client?.profile) return { ok: false, reason: '참가 후 이용 가능.', profile: safeProfile(null) };
   const approval = approveProfilePurchase(client?.profile, action?.itemId);
   if (approval.ok && client) client.profile = approval.profile;
   return approval;

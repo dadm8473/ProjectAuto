@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#101312">
-    <title>Signal Relay</title>
+    <title>시그널 릴레이</title>
     <link rel="icon" href="/src/client/assets/generated/ui-icon-atlas.png">
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="stylesheet" href="/src/client/styles.css">
@@ -13,85 +13,85 @@
     <main class="shell">
       <section class="hud">
         <div class="brand">
-          <strong>Signal Relay</strong>
-          <span id="netStatus">BOT CO-OP</span>
+          <strong>시그널 릴레이</strong>
+          <span id="netStatus">봇 협동</span>
         </div>
         <div class="meters">
-          <span id="chargeMeter">C 110</span>
-          <span id="linkMeter">L 50</span>
-          <span id="gemMeter">G 30</span>
+          <span id="chargeMeter" aria-label="전력: 릴레이 보급에 쓰는 전투 자원">전력 110</span>
+          <span id="linkMeter" aria-label="링크: 파트너 펄스에 쓰는 협동 자원">링크 50</span>
+          <span id="gemMeter" aria-label="젬: 미션과 웨이브 보상으로 얻는 해금 재화">젬 30</span>
         </div>
       </section>
 
       <section class="stage-wrap">
-        <canvas id="gameCanvas" width="390" height="500" aria-label="Signal Relay cooperative defense board"></canvas>
+        <canvas id="gameCanvas" width="390" height="500" aria-label="시그널 릴레이 협동 타워디펜스 전장"></canvas>
         <div id="toast" class="toast" hidden></div>
         <div id="coachCue" class="coach-cue" hidden aria-live="polite" aria-atomic="true"></div>
       </section>
 
       <section id="launchOverlay" class="launch-overlay">
         <div class="launch-panel">
-          <span class="launch-kicker">SEASON 01</span>
-          <strong>Signal Relay</strong>
-          <p>Co-op defense</p>
+          <span class="launch-kicker">시즌 01</span>
+          <strong>시그널 릴레이</strong>
+          <p>협동 타워디펜스</p>
           <div class="launch-map-preview" aria-hidden="true"></div>
-          <div class="launch-loadout" aria-label="run loadout">
-            <span class="launch-chip">BOT</span>
-            <span class="launch-chip">LOOP</span>
-            <span class="launch-chip">FAIR</span>
+          <div class="launch-loadout" aria-label="전투 세팅">
+            <span class="launch-chip">봇</span>
+            <span class="launch-chip">루프</span>
+            <span class="launch-chip">공정</span>
           </div>
           <div class="launch-contract">
-            <span>DAILY CONTRACT</span>
-            <strong>Clear Wave 3</strong>
-            <em>Reward 8 G</em>
+            <span>오늘의 미션</span>
+            <strong>3웨이브 클리어</strong>
+            <em>보상 8젬</em>
           </div>
           <div class="launch-actions">
-            <button id="launchBotButton">Start Bot Co-op</button>
-            <button id="launchOnlineButton">Online Match</button>
+            <button id="launchBotButton">봇과 시작</button>
+            <button id="launchOnlineButton">온라인 매칭</button>
           </div>
         </div>
       </section>
 
       <section id="resultOverlay" class="result-overlay" hidden>
         <div class="result-panel">
-          <span id="resultCode" class="result-code">RUN COMPLETE</span>
-          <strong id="resultTitle">Signal Lock</strong>
-          <p id="resultReason" class="result-reason">Loop stabilized.</p>
+          <span id="resultCode" class="result-code">전투 완료</span>
+          <strong id="resultTitle">신호 고정</strong>
+          <p id="resultReason" class="result-reason">루프가 안정화되었습니다.</p>
           <div id="resultStats" class="result-stats">
-            <span>Wave --</span>
-            <span>Time --</span>
-            <span>Kills --</span>
+            <span>웨이브 --</span>
+            <span>시간 --</span>
+            <span>처치 --</span>
           </div>
           <div id="resultHighlights" class="result-highlights"></div>
           <div id="resultProgress" class="result-progress"></div>
-          <div id="resultReward" class="result-reward">Mission rewards secured</div>
+          <div id="resultReward" class="result-reward">미션 보상 확보</div>
           <div class="result-actions">
-            <button id="resultRetryButton">Run Again</button>
-            <button id="resultLobbyButton">Ready Room</button>
+            <button id="resultRetryButton">다시 도전</button>
+            <button id="resultLobbyButton">준비실</button>
           </div>
         </div>
       </section>
 
-      <section class="action-panel" role="toolbar" aria-label="Combat actions">
+      <section class="action-panel" role="toolbar" aria-label="전투 행동">
         <div class="status-line">
-          <span id="waveMeter">Wave 1</span>
-          <span id="signalMeter">Signal 100 / Sat 0</span>
-          <span id="bossMeter">Boss --</span>
+          <span id="waveMeter" aria-label="현재 웨이브">웨이브 1</span>
+          <span id="signalMeter" aria-label="신호 체력과 오염 위험">신호 100 / 오염 0</span>
+          <span id="bossMeter" aria-label="보스 제한 시간">보스 --</span>
         </div>
         <div class="primary-actions">
-          <button id="supplyButton" aria-label="Supply relay">Supply</button>
-          <button id="mergeButton" aria-label="Merge relays">Merge x3</button>
-          <button id="pulseButton" aria-label="Link Pulse">Link Pulse</button>
+          <button id="supplyButton" aria-label="전력으로 릴레이 설치">보급</button>
+          <button id="mergeButton" aria-label="같은 릴레이 3개 합성">합성</button>
+          <button id="pulseButton" aria-label="파트너 펄스">펄스</button>
         </div>
         <div class="secondary-actions">
-          <button id="shopButton" aria-label="BM and missions">BM</button>
+          <button id="shopButton" aria-label="보상과 미션">보상</button>
         </div>
       </section>
 
       <section id="drawer" class="drawer" hidden>
         <div class="drawer-head">
-          <strong>BM / Missions</strong>
-          <button id="closeDrawer">Close</button>
+          <strong>보상 / 미션</strong>
+          <button id="closeDrawer">닫기</button>
         </div>
         <div id="shopList" class="list"></div>
       </section>

@@ -7,7 +7,7 @@ test('online purchases are approved from the buyer profile, not a shared gem poo
   const denied = approveProfilePurchase({ gems: 0, unlocks: [] }, 'mythic-aura');
 
   assert.equal(denied.ok, false);
-  assert.equal(denied.reason, 'Not enough gems.');
+  assert.equal(denied.reason, '젬 부족.');
 
   const approved = approveProfilePurchase({ gems: 98, unlocks: [] }, 'mythic-aura');
 
@@ -17,7 +17,7 @@ test('online purchases are approved from the buyer profile, not a shared gem poo
   const duplicate = approveProfilePurchase({ gems: 200, unlocks: ['mythic-aura'] }, 'mythic-aura');
 
   assert.equal(duplicate.ok, false);
-  assert.equal(duplicate.reason, 'Already unlocked.');
+  assert.equal(duplicate.reason, '이미 해금됨.');
 });
 
 test('profile purchase input is normalized before approval', () => {
@@ -36,7 +36,7 @@ test('server purchase approval ignores stale echoed profile after the first ACK'
   assert.equal(first.ok, true);
   assert.deepEqual(client.profile, { gems: 8, unlocks: ['mythic-aura'] });
   assert.equal(second.ok, false);
-  assert.equal(second.reason, 'Already unlocked.');
+  assert.equal(second.reason, '이미 해금됨.');
   assert.deepEqual(client.profile, { gems: 8, unlocks: ['mythic-aura'] });
 });
 
@@ -46,6 +46,6 @@ test('server purchase approval requires a joined client profile', () => {
   const result = approveClientPurchase(unjoined, { itemId: 'mythic-aura', profile: { gems: 500, unlocks: [] } });
 
   assert.equal(result.ok, false);
-  assert.equal(result.reason, 'Join required.');
+  assert.equal(result.reason, '참가 후 이용 가능.');
   assert.equal(unjoined.profile, undefined);
 });

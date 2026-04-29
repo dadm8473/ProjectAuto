@@ -1,6 +1,6 @@
 {
-  "name": "ProjectAuto Signal Relay",
-  "short_name": "SignalRelay",
+  "name": "ProjectAuto 시그널 릴레이",
+  "short_name": "시그널",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
