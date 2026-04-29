@@ -96,7 +96,7 @@ test('bot onboarding scripts the first supplies into an immediate merge lesson',
   const firstCue = serializeState(game).onboarding.cues.p1;
 
   assert.equal(firstCue.action, 'supply');
-  assert.equal(firstCue.label, '보급 1/3');
+  assert.equal(firstCue.label, '강화');
 
   const supplies = [
     supplyRelay(game, { playerId: 'p1' }),
@@ -110,7 +110,7 @@ test('bot onboarding scripts the first supplies into an immediate merge lesson',
   assert.deepEqual(relayIds, ['pulse_drum', 'pulse_drum', 'pulse_drum']);
   assert.equal(merge.available, true);
   assert.equal(mergeCue.action, 'merge');
-  assert.equal(mergeCue.label, '합성 가능');
+  assert.equal(mergeCue.label, '합성!');
   assert.deepEqual(new Set(mergeCue.slots), new Set(merge.slots));
 });
 

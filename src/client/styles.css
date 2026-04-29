@@ -1,7 +1,7 @@
 :root {
   color-scheme: dark;
   --hud-base: 54px;
-  --action-panel-base: 144px;
+  --action-panel-base: 104px;
   --bg: #080c0d;
   --panel: rgba(13, 18, 17, 0.9);
   --panel-2: #1b2421;
@@ -53,8 +53,7 @@ button {
   transition: filter 120ms ease, transform 120ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
-.primary-actions button,
-.secondary-actions button {
+.primary-actions button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -65,11 +64,7 @@ button {
 }
 
 .primary-actions button {
-  min-height: 44px;
-}
-
-.secondary-actions button {
-  min-height: 44px;
+  min-height: 48px;
 }
 
 button:focus-visible {
@@ -77,8 +72,7 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
-.primary-actions button::after,
-.secondary-actions button::after {
+.primary-actions button::after {
   content: "";
   position: absolute;
   inset: 1px 1px auto;
@@ -90,7 +84,6 @@ button:focus-visible {
 }
 
 .primary-actions button::before,
-.secondary-actions button::before,
 .meters span::before {
   content: "";
   flex: 0 0 auto;
@@ -122,7 +115,6 @@ button:disabled {
 }
 
 .primary-actions button[data-hot="true"],
-.secondary-actions button[data-hot="true"],
 #pulseButton[data-ready="true"] {
   border-color: rgba(245, 240, 220, 0.36);
   filter: saturate(1.18) brightness(1.08);
@@ -747,46 +739,34 @@ button:disabled:active {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1.18fr 1fr;
   gap: 6px;
 }
 
-.secondary-actions {
-  position: relative;
-  z-index: 2;
-  width: auto;
-  transform: none;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 5px;
-  margin: 7px 0 0 auto;
-  max-width: 122px;
-}
-
-#supplyButton {
+#powerButton {
   border-color: rgba(244, 201, 93, 0.62);
   background: linear-gradient(180deg, #6d531f, #2d2517);
 }
 
-#supplyButton[data-hot="true"] {
+#powerButton[data-hot="true"] {
   box-shadow: inset 0 1px rgba(245, 240, 220, 0.18), 0 0 0 1px rgba(244, 201, 93, 0.22), 0 10px 24px rgba(244, 201, 93, 0.18);
 }
 
-#supplyButton::before {
+#powerButton::before {
   background-position: 100% 0%;
 }
 
-#mergeButton {
+#powerButton[data-mode="merge"] {
   border-color: rgba(255, 111, 89, 0.6);
   background: linear-gradient(180deg, #65332b, #261c1a);
 }
 
-#mergeButton[data-hot="true"],
+#powerButton[data-mode="merge"][data-hot="true"],
 #overclockButton[data-hot="true"] {
   box-shadow: inset 0 1px rgba(245, 240, 220, 0.16), 0 0 0 1px rgba(255, 111, 89, 0.2), 0 9px 22px rgba(255, 111, 89, 0.18);
 }
 
-#mergeButton::before {
+#powerButton[data-mode="merge"]::before {
   background-position: 0% 50%;
 }
 
@@ -842,7 +822,8 @@ button:disabled:active {
   background-position: 66.667% 100%;
 }
 
-#shopButton::before {
+#launchRewardButton::before,
+#resultRewardButton::before {
   background-position: 100% 100%;
 }
 
@@ -942,7 +923,7 @@ button:disabled:active {
 @media (max-height: 720px) {
   :root {
     --hud-base: 48px;
-    --action-panel-base: 140px;
+    --action-panel-base: 96px;
   }
 
   .hud {
@@ -964,12 +945,7 @@ button:disabled:active {
     padding-top: 6px;
   }
 
-  .primary-actions button,
-  .secondary-actions button {
+  .primary-actions button {
     font-size: 11px;
-  }
-
-  .secondary-actions {
-    max-width: 108px;
   }
 }

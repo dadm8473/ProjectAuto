@@ -140,27 +140,27 @@ test('client stores meta progression and shows earned run rewards', async () => 
   }
 });
 
-test('mobile combat controls collapse to three core actions', async () => {
+test('mobile combat controls collapse to one main action plus rescue', async () => {
   const html = await readFile('index.html', 'utf8');
   const js = await readFile('src/client/app.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
-  const primary = html.slice(html.indexOf('class="primary-actions"'), html.indexOf('class="secondary-actions"'));
-  const secondary = html.slice(html.indexOf('class="secondary-actions"'), html.indexOf('</section>', html.indexOf('class="secondary-actions"')));
+  const primary = html.slice(html.indexOf('class="primary-actions"'), html.indexOf('</div>', html.indexOf('class="primary-actions"')));
 
-  for (const marker of ['id="supplyButton"', 'id="mergeButton"', 'id="pulseButton"']) {
+  for (const marker of ['id="powerButton"', 'id="pulseButton"']) {
     assert.equal(primary.includes(marker), true, marker);
   }
-  for (const marker of ['id="swapButton"', 'id="focusButton"', 'id="overclockButton"', 'id="botButton"', 'id="onlineButton"']) {
+  for (const marker of ['id="supplyButton"', 'id="mergeButton"', 'id="shopButton"', 'id="swapButton"', 'id="focusButton"', 'id="overclockButton"', 'id="botButton"', 'id="onlineButton"']) {
     assert.equal(html.includes(marker), false, marker);
   }
-  assert.equal((primary.match(/<button/g) ?? []).length, 3);
-  assert.equal((secondary.match(/<button/g) ?? []).length, 1);
-  assert.equal(secondary.includes('id="shopButton"'), true);
+  assert.equal((primary.match(/<button/g) ?? []).length, 2);
+  assert.equal(html.includes('class="secondary-actions"'), false);
   assert.equal(js.includes('function prepareAction'), true);
+  assert.equal(js.includes('function primaryCombatAction'), true);
+  assert.equal(js.includes("actions.merge.available ? { type: 'merge' } : { type: 'supply' }"), true);
   assert.equal(js.includes('state.actionState?.[localBoardId]?.merge.slots'), true);
   assert.equal(js.includes('selected.length === 3 ? selected : state.actionState?.[localBoardId]?.merge.slots'), false);
   assert.equal(js.includes('drawRewardFlyout(effect, center, alpha);'), true);
-  assert.equal(css.includes('--action-panel-base: 144px;'), true);
+  assert.equal(css.includes('--action-panel-base: 104px;'), true);
 });
 
 test('mobile combat controls are thumb-safe without adding more visible commands', async () => {
@@ -171,10 +171,8 @@ test('mobile combat controls are thumb-safe without adding more visible commands
   for (const marker of [
     'role="toolbar"',
     'aria-label="전투 행동"',
-    'aria-label="전력으로 릴레이 설치"',
-    'aria-label="같은 릴레이 3개 합성"',
-    'aria-label="파트너 구원"',
-    'aria-label="보상과 미션"'
+    'aria-label="보급 또는 합성 자동 선택"',
+    'aria-label="파트너 구원"'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }
@@ -183,8 +181,7 @@ test('mobile combat controls are thumb-safe without adding more visible commands
     'touch-action: manipulation;',
     'user-select: none;',
     '-webkit-user-select: none;',
-    '.primary-actions button {\n  min-height: 44px;',
-    '.secondary-actions button {\n  min-height: 44px;'
+    '.primary-actions button {\n  min-height: 48px;'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
@@ -194,9 +191,10 @@ test('mobile combat controls are thumb-safe without adding more visible commands
   for (const marker of [
     "button.setAttribute('aria-disabled', String(!enabled));",
     "button.setAttribute('aria-label', accessibleLabel);",
-    "setActionButton(actionButtons.supply, '보급', actions.supply.available, actions.supply.reason, '전력으로 릴레이 설치');",
-    "'같은 릴레이 3개 합성'",
+    "setActionButton(actionButtons.power, powerLabel, powerAvailable, powerReason, powerAccessibleLabel);",
+    "const powerLabel = actions.merge.available ? '합성!' : '강화';",
     'const pulseAccessibleLabel = actions.linkPulse.cooldownRemaining > 0',
+    "actions.linkPulse.clutch ? '구원!' : '구원'",
     '파트너 구원 ${Math.ceil(actions.linkPulse.cooldownRemaining)}초',
     'pulseAccessibleLabel'
   ]) {
@@ -214,7 +212,7 @@ test('first play guidance highlights existing actions instead of adding tutorial
     'aria-live="polite"',
     'function syncCoachCue',
     'state.onboarding?.cues?.[localBoardId]',
-    'button.dataset.coach = String(cue?.action === action);',
+    "button.dataset.coach = String(action === 'power' ? ['supply', 'merge'].includes(cue?.action) : cue?.action === action);",
     'syncCoachCue(state);'
   ]) {
     assert.equal(`${html}\n${js}`.includes(marker), true, marker);
@@ -339,12 +337,14 @@ test('app shell has a commercial launch layer before combat starts', async () =>
     'id="launchOverlay"',
     'id="launchBotButton"',
     'id="launchOnlineButton"',
+    'id="launchRewardButton"',
     'class="launch-contract"',
     'id="resultOverlay"',
     'id="resultReason"',
     'id="resultReward"',
     'id="resultRetryButton"',
-    'id="resultLobbyButton"'
+    'id="resultLobbyButton"',
+    'id="resultRewardButton"'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }
@@ -410,8 +410,10 @@ test('core app copy is Korean and removes unclear BM/resource abbreviations', as
     '젬 30',
     '봇과 시작',
     '온라인 매칭',
+    '보상 보기',
     '보상 / 미션',
-    'id="shopButton" aria-label="보상과 미션">보상</button>'
+    'id="launchRewardButton" aria-label="보상과 미션 보기">보상 보기</button>',
+    'id="resultRewardButton" aria-label="전투 보상과 미션 보기">보상</button>'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }

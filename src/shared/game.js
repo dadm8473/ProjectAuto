@@ -658,7 +658,7 @@ function computeOnboardingCueForPlayer(game, playerId, actions) {
     return {
       step: 'first_merge',
       action: 'merge',
-      label: '합성 가능',
+      label: '합성!',
       slots: [...actions.merge.slots]
     };
   }
@@ -667,7 +667,7 @@ function computeOnboardingCueForPlayer(game, playerId, actions) {
     return {
       step: 'starter_trio',
       action: 'supply',
-      label: `보급 ${supplies + 1}/${ONBOARDING_SUPPLY_SCRIPT.length}`,
+      label: '강화',
       targetSlot: prioritySlotIndex(findBoard(game, playerId)),
       progress: supplies
     };

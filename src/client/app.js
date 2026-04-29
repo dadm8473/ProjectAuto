@@ -38,6 +38,7 @@ const drawer = document.querySelector('#drawer');
 const launchOverlay = document.querySelector('#launchOverlay');
 const launchBotButton = document.querySelector('#launchBotButton');
 const launchOnlineButton = document.querySelector('#launchOnlineButton');
+const launchRewardButton = document.querySelector('#launchRewardButton');
 const resultOverlay = document.querySelector('#resultOverlay');
 const resultCode = document.querySelector('#resultCode');
 const resultTitle = document.querySelector('#resultTitle');
@@ -48,10 +49,9 @@ const resultProgress = document.querySelector('#resultProgress');
 const resultReward = document.querySelector('#resultReward');
 const resultRetryButton = document.querySelector('#resultRetryButton');
 const resultLobbyButton = document.querySelector('#resultLobbyButton');
-const shopButton = document.querySelector('#shopButton');
+const resultRewardButton = document.querySelector('#resultRewardButton');
 const actionButtons = {
-  supply: document.querySelector('#supplyButton'),
-  merge: document.querySelector('#mergeButton'),
+  power: document.querySelector('#powerButton'),
   pulse: document.querySelector('#pulseButton')
 };
 
@@ -397,6 +397,12 @@ function prepareAction(action) {
 
 function autoMergeSlots(state, playerId = localBoardId) {
   return state.actionState?.[playerId]?.merge.slots ?? [];
+}
+
+function primaryCombatAction() {
+  const actions = currentState().actionState?.[localBoardId];
+  if (!actions) return { type: 'supply' };
+  return actions.merge.available ? { type: 'merge' } : { type: 'supply' };
 }
 
 function mergeCueSlots(state, playerId = localBoardId) {
@@ -1796,17 +1802,14 @@ function setActionButton(button, label, enabled, reason = '', accessibleLabel = 
 function updateActionButtons(state) {
   const actions = state.actionState?.[localBoardId];
   if (!actions) return;
-  setActionButton(actionButtons.supply, '보급', actions.supply.available, actions.supply.reason, '전력으로 릴레이 설치');
-  actionButtons.supply.dataset.hot = String(actions.supply.available);
-  setActionButton(
-    actionButtons.merge,
-    '합성',
-    actions.merge.available,
-    actions.merge.reason,
-    '같은 릴레이 3개 합성'
-  );
-  actionButtons.merge.dataset.hot = String(actions.merge.available);
-  const pulseLabel = actions.linkPulse.cooldownRemaining > 0 ? `${Math.ceil(actions.linkPulse.cooldownRemaining)}초` : '구원';
+  const powerLabel = actions.merge.available ? '합성!' : '강화';
+  const powerAvailable = actions.merge.available || actions.supply.available;
+  const powerReason = actions.merge.available ? actions.merge.reason : actions.supply.reason;
+  const powerAccessibleLabel = actions.merge.available ? '같은 릴레이 3개 자동 합성' : '전력으로 릴레이 강화';
+  setActionButton(actionButtons.power, powerLabel, powerAvailable, powerReason, powerAccessibleLabel);
+  actionButtons.power.dataset.hot = String(powerAvailable);
+  actionButtons.power.dataset.mode = actions.merge.available ? 'merge' : 'supply';
+  const pulseLabel = actions.linkPulse.cooldownRemaining > 0 ? `${Math.ceil(actions.linkPulse.cooldownRemaining)}초` : actions.linkPulse.clutch ? '구원!' : '구원';
   const pulseAccessibleLabel = actions.linkPulse.cooldownRemaining > 0
     ? `파트너 구원 ${Math.ceil(actions.linkPulse.cooldownRemaining)}초`
     : '파트너 구원';
@@ -1818,7 +1821,7 @@ function updateActionButtons(state) {
 function syncCoachCue(state) {
   const cue = state.onboarding?.cues?.[localBoardId] ?? null;
   for (const [action, button] of Object.entries(actionButtons)) {
-    button.dataset.coach = String(cue?.action === action);
+    button.dataset.coach = String(action === 'power' ? ['supply', 'merge'].includes(cue?.action) : cue?.action === action);
   }
   coachCue.hidden = !cue;
   coachCue.textContent = cue?.label ?? '';
@@ -1879,6 +1882,11 @@ function buildShop() {
 
 function buildShopSection(title, body) {
   return `<section class="shop-section"><strong>${title}</strong>${body}</section>`;
+}
+
+function openRewardsDrawer() {
+  buildShop();
+  drawer.hidden = false;
 }
 
 function connectOnline() {
@@ -1951,8 +1959,7 @@ canvas.addEventListener('pointerdown', (event) => {
   if (names.length > 0) showToast(names.join(' + '));
 });
 
-actionButtons.supply.addEventListener('click', () => command({ type: 'supply' }));
-actionButtons.merge.addEventListener('click', () => command({ type: 'merge' }));
+actionButtons.power.addEventListener('click', () => command(primaryCombatAction()));
 actionButtons.pulse.addEventListener('click', () => command({ type: 'pulse' }));
 launchBotButton.addEventListener('click', () => {
   unlockSensoryFeedback();
@@ -1962,6 +1969,10 @@ launchOnlineButton.addEventListener('click', () => {
   unlockSensoryFeedback();
   connectOnline();
 });
+launchRewardButton.addEventListener('click', () => {
+  unlockSensoryFeedback();
+  openRewardsDrawer();
+});
 resultRetryButton.addEventListener('click', () => {
   unlockSensoryFeedback();
   startBotRun();
@@ -1970,9 +1981,9 @@ resultLobbyButton.addEventListener('click', () => {
   unlockSensoryFeedback();
   showLaunchOverlay();
 });
-shopButton.addEventListener('click', () => {
+resultRewardButton.addEventListener('click', () => {
   unlockSensoryFeedback();
-  drawer.hidden = false;
+  openRewardsDrawer();
 });
 document.querySelector('#closeDrawer').addEventListener('click', () => {
   unlockSensoryFeedback();
