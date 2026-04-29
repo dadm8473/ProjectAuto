@@ -386,7 +386,7 @@ button:disabled:active {
   width: 100%;
   height: 100%;
   max-height: none;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .app-screen[hidden] {
@@ -672,6 +672,194 @@ button:disabled:active {
 
 .notification-dot[hidden] {
   display: none;
+}
+
+.lobby-screen {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 9px;
+  overflow: hidden;
+}
+
+.home-topbar {
+  display: grid;
+  gap: 7px;
+  min-height: 0;
+}
+
+.lobby-screen .lobby-hero {
+  grid-template-columns: minmax(0, 1fr) minmax(116px, 0.72fr);
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-color: rgba(88, 215, 255, 0.2);
+  background:
+    linear-gradient(135deg, rgba(31, 78, 88, 0.32), rgba(8, 11, 10, 0.52)),
+    rgba(245, 240, 220, 0.045);
+}
+
+.lobby-screen .lobby-hero strong {
+  font-size: 22px;
+}
+
+.lobby-screen .lobby-hero p {
+  font-size: 10px;
+}
+
+.lobby-screen .lobby-status-row span {
+  min-height: 42px;
+  padding: 7px;
+}
+
+.lobby-screen .lobby-profile {
+  margin: 0;
+  min-height: 42px;
+  padding: 8px 10px;
+}
+
+.home-arena {
+  position: relative;
+  display: grid;
+  min-height: 0;
+  overflow: hidden;
+  padding: 10px;
+  border: 1px solid rgba(245, 240, 220, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(4, 7, 8, 0.08), rgba(4, 7, 8, 0.86)),
+    url("/src/client/assets/generated/signal-relay-playfield-frame.png") center / cover;
+  box-shadow:
+    inset 0 0 0 1px rgba(88, 215, 255, 0.1),
+    inset 0 -46px 56px rgba(0, 0, 0, 0.54),
+    0 14px 34px rgba(0, 0, 0, 0.3);
+}
+
+.home-arena::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 36%, rgba(88, 215, 255, 0.16), transparent 24%),
+    linear-gradient(180deg, rgba(2, 4, 5, 0.05), rgba(2, 4, 5, 0.7));
+  pointer-events: none;
+}
+
+.home-arena .lobby-primary,
+.home-arena .launch-loadout,
+.home-arena .launch-contract {
+  position: relative;
+  z-index: 1;
+}
+
+.home-arena .lobby-primary {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  min-height: 0;
+}
+
+.home-arena .lobby-preview {
+  min-height: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.home-play-deck {
+  display: grid;
+  grid-template-columns: 1.2fr 0.9fr;
+  gap: 8px;
+}
+
+.play-button,
+.match-button {
+  min-height: 52px;
+  font-size: 15px;
+}
+
+.play-button {
+  border-color: rgba(244, 201, 93, 0.74);
+  background: linear-gradient(180deg, #9a7425, #3b2b13);
+}
+
+.match-button {
+  border-color: rgba(88, 215, 255, 0.62);
+  background: linear-gradient(180deg, #247083, #143035);
+}
+
+.home-arena .launch-loadout {
+  margin: 8px 0;
+}
+
+.home-arena .launch-contract {
+  margin: 0;
+  padding: 9px 10px;
+  background:
+    linear-gradient(90deg, rgba(244, 201, 93, 0.16), rgba(4, 7, 8, 0.34)),
+    rgba(4, 7, 8, 0.42);
+}
+
+.home-arena .launch-contract strong {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lobby-menu[data-game-dock] {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  min-height: 78px;
+  padding: 7px;
+  border: 1px solid rgba(245, 240, 220, 0.12);
+  border-radius: 8px;
+  background: rgba(2, 4, 5, 0.52);
+  box-shadow: inset 0 1px rgba(245, 240, 220, 0.08);
+}
+
+.lobby-menu[data-game-dock] .menu-card {
+  justify-items: center;
+  gap: 1px;
+  min-height: 64px;
+  padding: 7px 5px 6px;
+  text-align: center;
+}
+
+.lobby-menu[data-game-dock] .menu-card span,
+.lobby-menu[data-game-dock] .menu-card small {
+  display: none;
+}
+
+.lobby-menu[data-game-dock] .menu-card strong {
+  font-size: 11px;
+}
+
+.dock-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background-image: url("/src/client/assets/generated/ui-icon-atlas.png");
+  background-size: 400% 300%;
+  box-shadow: inset 0 0 0 1px rgba(245, 240, 220, 0.14);
+}
+
+.dock-icon-relay {
+  background-position: 0% 0%;
+}
+
+.dock-icon-shop {
+  background-position: 33.333% 100%;
+}
+
+.dock-icon-mission {
+  background-position: 66.667% 50%;
+}
+
+.dock-icon-season {
+  background-position: 100% 50%;
 }
 
 #launchBotButton {

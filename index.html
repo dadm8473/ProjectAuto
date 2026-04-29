@@ -39,57 +39,67 @@
         </div>
 
         <div id="lobbyScreen" class="app-screen lobby-screen" data-screen-panel="lobby" hidden>
-          <section class="lobby-hero" aria-label="홈">
-            <div>
-              <span class="launch-kicker">시즌 01</span>
-              <strong>시그널 릴레이</strong>
-              <p>두 명이 하나의 길을 막는 협동 타워디펜스</p>
-            </div>
-            <div class="lobby-status-row" aria-label="보유 재화와 시즌 경험치">
-              <span><small>보유 젬</small><strong id="lobbyGemMeter">0</strong></span>
-              <span><small>시즌 XP</small><strong id="lobbyXpMeter">0</strong></span>
-            </div>
-          </section>
-          <section class="lobby-profile" aria-label="프로필 요약">
-            <span>플레이어</span>
-            <strong id="lobbyRunPlan">오늘의 협동 루프 준비</strong>
-            <em>전투 보상은 종료 후 자동 정산</em>
-          </section>
-          <section class="lobby-primary" aria-label="전투 시작">
-            <div class="lobby-preview launch-map-preview" aria-hidden="true"></div>
-            <button id="launchBotButton">봇과 시작</button>
-            <button id="launchOnlineButton">온라인 매칭</button>
-          </section>
-          <div class="launch-loadout" aria-label="전투 세팅">
-            <span class="launch-chip">봇</span>
-            <span class="launch-chip">루프</span>
-            <span class="launch-chip">공정</span>
+          <div class="home-topbar">
+            <section class="lobby-hero" aria-label="홈">
+              <div>
+                <span class="launch-kicker">시즌 01</span>
+                <strong>시그널 릴레이</strong>
+                <p>협동 타워디펜스</p>
+              </div>
+              <div class="lobby-status-row" aria-label="보유 재화와 시즌 경험치">
+                <span><small>젬</small><strong id="lobbyGemMeter">0</strong></span>
+                <span><small>XP</small><strong id="lobbyXpMeter">0</strong></span>
+              </div>
+            </section>
+            <section class="lobby-profile" aria-label="프로필 요약">
+              <span>플레이어</span>
+              <strong id="lobbyRunPlan">오늘의 협동 루프 준비</strong>
+              <em>전투 보상 자동 정산</em>
+            </section>
           </div>
-          <div class="launch-contract">
-            <span>오늘의 미션</span>
-            <strong id="lobbyMissionPreview">보스 웨이브에서 파트너 구원</strong>
-            <em id="lobbySeasonPreview">시즌 진행 0 XP</em>
-          </div>
-          <nav class="lobby-menu" aria-label="준비실 메뉴">
+          <section class="home-arena" aria-label="전투 입장">
+            <section class="lobby-primary" aria-label="전투 시작">
+              <div class="lobby-preview launch-map-preview" aria-hidden="true"></div>
+              <div class="home-play-deck">
+                <button id="launchBotButton" class="play-button">봇과 시작</button>
+                <button id="launchOnlineButton" class="match-button">온라인 매칭</button>
+              </div>
+            </section>
+            <div class="launch-loadout" aria-label="전투 세팅">
+              <span class="launch-chip">봇</span>
+              <span class="launch-chip">루프</span>
+              <span class="launch-chip">공정</span>
+            </div>
+            <div class="launch-contract">
+              <span>오늘의 미션</span>
+              <strong id="lobbyMissionPreview">보스 웨이브에서 파트너 구원</strong>
+              <em id="lobbySeasonPreview">시즌 진행 0 XP</em>
+            </div>
+          </section>
+          <nav class="lobby-menu" data-game-dock aria-label="준비실 메뉴">
             <button class="menu-card" data-open-screen="lab">
+              <i class="dock-icon dock-icon-relay" aria-hidden="true"></i>
               <span>유닛</span>
               <strong>릴레이</strong>
               <small>역할 확인</small>
               <b class="notification-dot" data-menu-alert="lab" hidden>0</b>
             </button>
             <button class="menu-card" data-open-screen="shop">
+              <i class="dock-icon dock-icon-shop" aria-hidden="true"></i>
               <span>외형</span>
               <strong>상점</strong>
               <small>젬 사용</small>
               <b class="notification-dot" data-menu-alert="shop" hidden>0</b>
             </button>
             <button class="menu-card" data-open-screen="missions">
+              <i class="dock-icon dock-icon-mission" aria-hidden="true"></i>
               <span>보상</span>
               <strong>미션</strong>
               <small>일일 목표</small>
               <b class="notification-dot" data-menu-alert="missions" hidden>0</b>
             </button>
             <button class="menu-card" data-open-screen="season">
+              <i class="dock-icon dock-icon-season" aria-hidden="true"></i>
               <span>패스</span>
               <strong>시즌</strong>
               <small>진행 보상</small>

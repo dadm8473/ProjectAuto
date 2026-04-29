@@ -228,6 +228,41 @@ test('mobile lobby reads like a live game home with alerts and progress', async 
   }
 });
 
+test('lobby is framed as a fixed mobile game home instead of a scrolling webpage', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    'class="home-topbar"',
+    'class="home-arena"',
+    'class="home-play-deck"',
+    'class="play-button"',
+    'class="match-button"',
+    'data-game-dock',
+    'class="dock-icon dock-icon-relay"',
+    'class="dock-icon dock-icon-shop"',
+    'class="dock-icon dock-icon-mission"',
+    'class="dock-icon dock-icon-season"'
+  ]) {
+    assert.equal(html.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    '.lobby-screen {',
+    'grid-template-rows: auto minmax(0, 1fr) auto;',
+    '.home-topbar',
+    '.home-arena',
+    '.home-play-deck',
+    '.play-button',
+    '.match-button',
+    '.lobby-menu[data-game-dock]',
+    '.dock-icon',
+    'overflow: hidden;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
 test('app screens hide inactive panels instead of stacking every menu', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   for (const marker of [
