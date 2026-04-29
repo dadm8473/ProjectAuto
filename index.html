@@ -39,13 +39,21 @@
         </div>
 
         <div id="lobbyScreen" class="app-screen lobby-screen" data-screen-panel="lobby" hidden>
-          <span class="launch-kicker">시즌 01</span>
-          <strong>시그널 릴레이</strong>
-          <p>협동 타워디펜스</p>
+          <section class="lobby-hero" aria-label="홈">
+            <div>
+              <span class="launch-kicker">시즌 01</span>
+              <strong>시그널 릴레이</strong>
+              <p>두 명이 하나의 길을 막는 협동 타워디펜스</p>
+            </div>
+            <div class="lobby-status-row" aria-label="보유 재화와 시즌 경험치">
+              <span><small>보유 젬</small><strong id="lobbyGemMeter">0</strong></span>
+              <span><small>시즌 XP</small><strong id="lobbyXpMeter">0</strong></span>
+            </div>
+          </section>
           <section class="lobby-profile" aria-label="프로필 요약">
             <span>플레이어</span>
-            <strong id="lobbyGemMeter">0젬</strong>
-            <em id="lobbyXpMeter">0 XP</em>
+            <strong id="lobbyRunPlan">오늘의 협동 루프 준비</strong>
+            <em>전투 보상은 종료 후 자동 정산</em>
           </section>
           <section class="lobby-primary" aria-label="전투 시작">
             <div class="lobby-preview launch-map-preview" aria-hidden="true"></div>
@@ -63,38 +71,70 @@
             <em id="lobbySeasonPreview">시즌 진행 0 XP</em>
           </div>
           <nav class="lobby-menu" aria-label="준비실 메뉴">
-            <button data-open-screen="lab">릴레이</button>
-            <button data-open-screen="shop">상점</button>
-            <button data-open-screen="missions">미션</button>
-            <button data-open-screen="season">시즌</button>
+            <button class="menu-card" data-open-screen="lab">
+              <span>유닛</span>
+              <strong>릴레이</strong>
+              <small>역할 확인</small>
+              <b class="notification-dot" data-menu-alert="lab" hidden>0</b>
+            </button>
+            <button class="menu-card" data-open-screen="shop">
+              <span>외형</span>
+              <strong>상점</strong>
+              <small>젬 사용</small>
+              <b class="notification-dot" data-menu-alert="shop" hidden>0</b>
+            </button>
+            <button class="menu-card" data-open-screen="missions">
+              <span>보상</span>
+              <strong>미션</strong>
+              <small>일일 목표</small>
+              <b class="notification-dot" data-menu-alert="missions" hidden>0</b>
+            </button>
+            <button class="menu-card" data-open-screen="season">
+              <span>패스</span>
+              <strong>시즌</strong>
+              <small>진행 보상</small>
+              <b class="notification-dot" data-menu-alert="season" hidden>0</b>
+            </button>
           </nav>
         </div>
 
         <div id="labScreen" class="app-screen hub-screen" data-screen-panel="lab" hidden>
-          <button class="screen-back" data-open-screen="lobby">준비실</button>
-          <strong>릴레이 연구소</strong>
-          <p>전투 밖에서 유닛 역할과 외형을 확인합니다.</p>
+          <section class="screen-hero">
+            <button class="screen-back" data-open-screen="lobby">준비실</button>
+            <span>유닛 정보</span>
+            <strong>릴레이 연구소</strong>
+            <p>전투 밖에서 역할과 등급을 확인합니다.</p>
+          </section>
           <div id="labList" class="screen-list"></div>
         </div>
 
         <div id="shopScreen" class="app-screen hub-screen" data-screen-panel="shop" hidden>
-          <button class="screen-back" data-open-screen="lobby">준비실</button>
-          <strong>상점</strong>
-          <p>획득 젬 전용 · 전투력 판매 없음</p>
+          <section class="screen-hero">
+            <button class="screen-back" data-open-screen="lobby">준비실</button>
+            <span>외형 상점</span>
+            <strong>상점</strong>
+            <p>획득 젬 전용 · 전투력 판매 없음</p>
+          </section>
           <div id="shopList" class="screen-list"></div>
         </div>
 
         <div id="missionsScreen" class="app-screen hub-screen" data-screen-panel="missions" hidden>
-          <button class="screen-back" data-open-screen="lobby">준비실</button>
-          <strong>미션</strong>
-          <p>협동 플레이 목표를 완료하고 젬을 받습니다.</p>
+          <section class="screen-hero">
+            <button class="screen-back" data-open-screen="lobby">준비실</button>
+            <span>일일 목표</span>
+            <strong>미션</strong>
+            <p>협동 플레이 목표를 완료하고 젬을 받습니다.</p>
+          </section>
           <div id="missionsList" class="screen-list"></div>
         </div>
 
         <div id="seasonScreen" class="app-screen hub-screen" data-screen-panel="season" hidden>
-          <button class="screen-back" data-open-screen="lobby">준비실</button>
-          <strong>시즌 패스</strong>
-          <p>플레이 경험치로 시즌 보상을 엽니다.</p>
+          <section class="screen-hero">
+            <button class="screen-back" data-open-screen="lobby">준비실</button>
+            <span>시즌 진행</span>
+            <strong>시즌 패스</strong>
+            <p>플레이 경험치로 시즌 보상을 엽니다.</p>
+          </section>
           <div id="seasonList" class="screen-list"></div>
         </div>
       </section>

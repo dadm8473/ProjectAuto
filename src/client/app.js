@@ -37,8 +37,10 @@ const appScreenPanels = [...document.querySelectorAll('[data-screen-panel]')];
 const splashStartButton = document.querySelector('#splashStartButton');
 const lobbyGemMeter = document.querySelector('#lobbyGemMeter');
 const lobbyXpMeter = document.querySelector('#lobbyXpMeter');
+const lobbyRunPlan = document.querySelector('#lobbyRunPlan');
 const lobbyMissionPreview = document.querySelector('#lobbyMissionPreview');
 const lobbySeasonPreview = document.querySelector('#lobbySeasonPreview');
+const lobbyAlertBadges = new Map([...document.querySelectorAll('[data-menu-alert]')].map((badge) => [badge.dataset.menuAlert, badge]));
 const labList = document.querySelector('#labList');
 const shopList = document.querySelector('#shopList');
 const missionsList = document.querySelector('#missionsList');
@@ -1897,10 +1899,46 @@ function buildShop() {
 function renderLobbySummary() {
   const mission = SHOP.dailyMissions.find((entry) => !metaProfile.claimedMissions.includes(entry.id)) ?? SHOP.dailyMissions[0];
   const nextTier = SHOP.pass.tiers.find((tier, index) => metaProfile.xp < tier.xp || !metaProfile.claimedPassTiers.includes(index));
-  lobbyGemMeter.textContent = `${metaProfile.gems}젬`;
-  lobbyXpMeter.textContent = `${metaProfile.xp} XP`;
+  const seasonReady = menuAlertCount('season');
+  const affordableSkins = menuAlertCount('shop');
+  lobbyGemMeter.textContent = `${metaProfile.gems}`;
+  lobbyXpMeter.textContent = `${metaProfile.xp}`;
+  lobbyRunPlan.textContent = seasonReady > 0
+    ? `시즌 보상 ${seasonReady}개 수령 가능`
+    : affordableSkins > 0
+      ? `스킨 ${affordableSkins}개 해금 가능`
+      : '봇과 바로 시작 가능';
   lobbyMissionPreview.textContent = mission?.text ?? '오늘 미션 완료';
   lobbySeasonPreview.textContent = nextTier ? `시즌 ${metaProfile.xp}/${nextTier.xp} XP` : '시즌 보상 완료';
+  updateMenuAlerts();
+}
+
+function setMenuAlert(screen, count) {
+  const badge = lobbyAlertBadges.get(screen);
+  if (!badge) return;
+  const visibleCount = Math.max(0, Math.floor(count));
+  badge.textContent = visibleCount > 9 ? '9+' : `${visibleCount}`;
+  badge.hidden = visibleCount === 0;
+  badge.dataset.count = `${visibleCount}`;
+  badge.closest('.menu-card')?.setAttribute('data-alert', String(visibleCount > 0));
+}
+
+function menuAlertCount(screen) {
+  if (screen === 'missions') return SHOP.dailyMissions.filter((mission) => !metaProfile.claimedMissions.includes(mission.id)).length;
+  if (screen === 'season') return SHOP.pass.tiers.filter((tier, index) => metaProfile.xp >= tier.xp && !metaProfile.claimedPassTiers.includes(index)).length;
+  if (screen === 'shop') {
+    return SHOP.items.filter((item) => item.category === 'cosmetic'
+      && !metaProfile.unlocks.includes(item.grant.cosmetic)
+      && metaProfile.gems >= item.price.gems).length;
+  }
+  if (screen === 'lab') return Math.min(metaProfile.unlocks.length, 9);
+  return 0;
+}
+
+function updateMenuAlerts() {
+  for (const screen of ['lab', 'shop', 'missions', 'season']) {
+    setMenuAlert(screen, menuAlertCount(screen));
+  }
 }
 
 function buildGrowthOverview() {
@@ -1922,9 +1960,28 @@ function relayRole(spec) {
   return '공격';
 }
 
+function relayCardTone(spec) {
+  if (spec.tags.includes('Repair')) return 'repair';
+  if (spec.tags.includes('Amp')) return 'amp';
+  if (spec.tags.includes('Sink')) return 'sink';
+  if (spec.tags.includes('Support')) return 'support';
+  return 'attack';
+}
+
+function featuredRelaySpecs() {
+  const relays = Object.values(RELAY_TYPES);
+  const featuredRoles = ['attack', 'repair', 'amp', 'sink', 'support', 'attack'];
+  const featured = [];
+  for (const role of featuredRoles) {
+    const relay = relays.find((spec) => relayCardTone(spec) === role && !featured.includes(spec));
+    if (relay) featured.push(relay);
+  }
+  return featured.length === featuredRoles.length ? featured : relays.slice(0, 6);
+}
+
 function buildRelayLab() {
-  labList.innerHTML = Object.values(RELAY_TYPES).slice(0, 6).map((relay) => `
-    <article class="screen-card relay-card">
+  labList.innerHTML = featuredRelaySpecs().map((relay) => `
+    <article class="screen-card relay-card" data-role="${relayCardTone(relay)}">
       <span>${relayRole(relay)}</span>
       <strong>${relay.name}</strong>
       <em>Lv1 · ${GRADES[relay.grade]?.name ?? relay.grade}</em>
@@ -1935,21 +1992,34 @@ function buildRelayLab() {
 }
 
 function buildMissionScreen() {
-  missionsList.innerHTML = SHOP.dailyMissions.map((mission) => `
-    <article class="screen-card mission-row" ${metaProfile.claimedMissions.includes(mission.id) ? 'data-claimed="true"' : 'data-claimed="false"'}>
-      <div><strong>${mission.text}</strong><span>일일 목표 · ${mission.reward.gems}젬</span></div>
-      <span>${metaProfile.claimedMissions.includes(mission.id) ? '완료' : '진행'}</span>
-    </article>
-  `).join('');
+  missionsList.innerHTML = SHOP.dailyMissions.map((mission) => {
+    const claimed = metaProfile.claimedMissions.includes(mission.id);
+    return `
+      <article class="screen-card mission-row" ${claimed ? 'data-claimed="true"' : 'data-claimed="false"'}>
+        <div><strong>${mission.text}</strong><span>일일 목표 · ${mission.reward.gems}젬 · 전투 후 자동 정산</span></div>
+        <span>${claimed ? '완료' : '도전'}</span>
+      </article>
+    `;
+  }).join('');
+}
+
+function seasonProgressPercent(tier) {
+  if (!tier.xp) return 100;
+  return Math.max(0, Math.min(100, Math.floor((metaProfile.xp / tier.xp) * 100)));
 }
 
 function buildSeasonScreen() {
-  seasonList.innerHTML = SHOP.pass.tiers.map((tier, index) => `
-    <article class="screen-card track-row" ${metaProfile.claimedPassTiers.includes(index) ? 'data-claimed="true"' : 'data-claimed="false"'}>
-      <div><strong>${SHOP.pass.name} ${index + 1}</strong><span>시즌 보상 · ${tier.xp} 경험치</span></div>
-      <span>${metaProfile.claimedPassTiers.includes(index) ? '수령' : tier.grant.gems ? `${tier.grant.gems}젬` : '스킨'}</span>
-    </article>
-  `).join('');
+  seasonList.innerHTML = SHOP.pass.tiers.map((tier, index) => {
+    const claimed = metaProfile.claimedPassTiers.includes(index);
+    const reward = tier.grant.gems ? `${tier.grant.gems}젬` : '스킨';
+    return `
+      <article class="screen-card track-row" ${claimed ? 'data-claimed="true"' : 'data-claimed="false"'}>
+        <div><strong>${SHOP.pass.name} ${index + 1}</strong><span>시즌 보상 · ${tier.xp} XP</span></div>
+        <span>${claimed ? '수령' : reward}</span>
+        <i class="progress-bar" style="--progress:${seasonProgressPercent(tier)}%;" aria-hidden="true"></i>
+      </article>
+    `;
+  }).join('');
 }
 
 function renderAppScreens() {

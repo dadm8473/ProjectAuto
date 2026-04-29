@@ -182,6 +182,88 @@ test('app shell exposes splash, lobby, and non-combat menu screens', async () =>
   }
 });
 
+test('mobile lobby reads like a live game home with alerts and progress', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const js = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    'class="lobby-hero"',
+    'class="lobby-status-row"',
+    'id="lobbyRunPlan"',
+    'class="menu-card"',
+    'class="notification-dot"',
+    'data-menu-alert="missions"',
+    'data-menu-alert="season"',
+    'class="screen-hero"'
+  ]) {
+    assert.equal(html.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    'const lobbyAlertBadges = new Map',
+    'function setMenuAlert',
+    'function menuAlertCount',
+    'function updateMenuAlerts',
+    'function seasonProgressPercent',
+    'function relayCardTone',
+    'data-role="${relayCardTone(relay)}"',
+    'style="--progress:${seasonProgressPercent(tier)}%;"',
+    'lobbyRunPlan.textContent'
+  ]) {
+    assert.equal(js.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    '.lobby-hero',
+    '.lobby-status-row',
+    '.menu-card',
+    '.notification-dot',
+    '.screen-hero',
+    '.progress-bar',
+    '.relay-card[data-role="repair"]',
+    '.track-row .progress-bar'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
+test('app screens hide inactive panels instead of stacking every menu', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  for (const marker of [
+    '.app-screen[hidden]',
+    'display: none !important;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
+test('hub screen lists keep cards content-sized on tall mobile screens', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screenListStart = css.indexOf('.screen-list');
+  const screenListEnd = css.indexOf('.screen-card');
+  assert.notEqual(screenListStart, -1);
+  assert.notEqual(screenListEnd, -1);
+  const screenListBlock = css.slice(screenListStart, screenListEnd);
+  for (const marker of [
+    'align-content: start;',
+    'grid-auto-rows: max-content;'
+  ]) {
+    assert.equal(screenListBlock.includes(marker), true, marker);
+  }
+});
+
+test('relay lab surfaces mixed roles instead of only early attack units', async () => {
+  const js = await readFile('src/client/app.js', 'utf8');
+  for (const marker of [
+    'function featuredRelaySpecs',
+    "const featuredRoles = ['attack', 'repair', 'amp', 'sink', 'support', 'attack'];",
+    'featuredRelaySpecs().map((relay)'
+  ]) {
+    assert.equal(js.includes(marker), true, marker);
+  }
+});
+
 test('client stores meta progression and shows earned run rewards', async () => {
   const js = await readFile('src/client/app.js', 'utf8');
   for (const marker of [
@@ -481,9 +563,9 @@ test('core app copy is Korean and removes unclear BM/resource abbreviations', as
     '상점',
     '미션',
     '시즌',
-    'data-open-screen="shop">상점</button>',
-    'data-open-screen="missions">미션</button>',
-    'data-open-screen="season">시즌</button>'
+    'class="menu-card" data-open-screen="shop"',
+    'class="menu-card" data-open-screen="missions"',
+    'class="menu-card" data-open-screen="season"'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }
