@@ -127,7 +127,7 @@ test('bot onboarding guides the first partner Pulse and expires after the openin
 
   const pulseCue = serializeState(game).onboarding.cues.p1;
   assert.equal(pulseCue.action, 'pulse');
-  assert.equal(pulseCue.label, '파트너 펄스');
+  assert.equal(pulseCue.label, '파트너 구원');
 
   game.now = GAME_RULES.onboardingWindow + 0.1;
   assert.equal(serializeState(game).onboarding.cues.p1, null);
@@ -461,6 +461,10 @@ test('serialized action state exposes exact costs, cooldowns, and availability',
   assert.equal(actions.linkPulse.cooldownRemaining, 3.42);
   assert.equal(actions.linkPulse.available, false);
   assert.equal(Object.hasOwn(actions, 'overclock'), false);
+
+  game.linkPulseCooldownUntil = game.now;
+  game.resources.linkEnergy = 39;
+  assert.equal(serializeState(game).actionState.p1.linkPulse.reason, '협력 40 필요.');
 });
 
 test('serialized merge availability requires an actual matching trio', () => {
@@ -704,7 +708,7 @@ test('late wave plan favors readable heavy threats over mobile screen floods', (
   assert.equal(Math.max(...largestSingleStacks) <= 28, true);
   assert.deepEqual(lateWaves.map((wave) => wave.threatScale), [1.2, 1.55, 1.65, 1.45]);
   assert.equal(WAVE_PLAN[8].intent.includes('합성'), true);
-  assert.equal(WAVE_PLAN[9].intent.includes('펄스'), true);
+  assert.equal(WAVE_PLAN[9].intent.includes('구원'), true);
 });
 
 test('late wave threat scale makes fewer enemies matter', () => {

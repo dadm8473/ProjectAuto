@@ -173,7 +173,7 @@ test('mobile combat controls are thumb-safe without adding more visible commands
     'aria-label="전투 행동"',
     'aria-label="전력으로 릴레이 설치"',
     'aria-label="같은 릴레이 3개 합성"',
-    'aria-label="파트너 펄스"',
+    'aria-label="파트너 구원"',
     'aria-label="보상과 미션"'
   ]) {
     assert.equal(html.includes(marker), true, marker);
@@ -197,7 +197,7 @@ test('mobile combat controls are thumb-safe without adding more visible commands
     "setActionButton(actionButtons.supply, '보급', actions.supply.available, actions.supply.reason, '전력으로 릴레이 설치');",
     "'같은 릴레이 3개 합성'",
     'const pulseAccessibleLabel = actions.linkPulse.cooldownRemaining > 0',
-    '파트너 펄스 ${Math.ceil(actions.linkPulse.cooldownRemaining)}초',
+    '파트너 구원 ${Math.ceil(actions.linkPulse.cooldownRemaining)}초',
     'pulseAccessibleLabel'
   ]) {
     assert.equal(js.includes(marker), true, marker);
@@ -406,7 +406,7 @@ test('core app copy is Korean and removes unclear BM/resource abbreviations', as
     '<strong>시그널 릴레이</strong>',
     '봇 협동',
     '전력 110',
-    '링크 50',
+    '협력 50',
     '젬 30',
     '봇과 시작',
     '온라인 매칭',
@@ -418,7 +418,7 @@ test('core app copy is Korean and removes unclear BM/resource abbreviations', as
 
   for (const marker of [
     'chargeMeter.textContent = `전력 ${Math.floor(state.resources.charge)}`;',
-    'linkMeter.textContent = `링크 ${Math.floor(state.resources.linkEnergy)}`;',
+    'linkMeter.textContent = `협력 ${Math.floor(state.resources.linkEnergy)}`;',
     'gemMeter.textContent = `젬 ${online ? metaProfile.gems : Math.floor(state.resources.gems)}`;',
     'waveMeter.textContent = `웨이브 ${Math.min(state.wave.index + 1, GAME_RULES.maxWave)}`;',
     'signalMeter.textContent = `신호 ${Math.ceil(state.signal.integrity)} / 오염 ${Math.floor(state.saturation.count)}`;',
@@ -434,6 +434,18 @@ test('core app copy is Korean and removes unclear BM/resource abbreviations', as
   assert.equal(html.includes('C 110'), false);
   assert.equal(html.includes('L 50'), false);
   assert.equal(html.includes('G 30'), false);
+});
+
+test('combat readout hides advanced heat language until it matters', async () => {
+  const js = await readFile('src/client/app.js', 'utf8');
+  for (const marker of [
+    "const heatLabel = heatPeak >= 70 ? `과열 ${Math.floor(heatPeak)}` : '안정';",
+    'ctx.fillText(heatLabel, rect.x + rect.w, rect.y - 12);',
+    'if (relay.heat >= 70) {',
+    "ctx.fillText('적', x + 10, y + 14);"
+  ]) {
+    assert.equal(js.includes(marker), true, marker);
+  }
 });
 
 test('combat mode changes stay on the launch layer', async () => {

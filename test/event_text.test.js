@@ -11,5 +11,6 @@ test('event labels cover recorded player actions and loop pressure', () => {
   assert.equal(eventLabel({ type: 'boss_wave_started', wave: 3, waveName: '보스 오키드' }), '보스 오키드 접근');
   assert.equal(eventLabel({ type: 'wave_cleared', wave: 1, waveName: '보정 드리프트' }), '보정 드리프트 정리');
   assert.equal(eventLabel({ type: 'overclock', dualBossWindow: false }), '오버드라이브 발동');
+  assert.equal(eventLabel({ type: 'link_pulse_save' }), '파트너 구원 성공');
   assert.equal(eventLabel({ type: 'overclock', dualBossWindow: true }), '협동 오버드라이브 창');
 });

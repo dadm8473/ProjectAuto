@@ -313,7 +313,7 @@ export const RELAY_TYPES = {
     linkShape: ['N', 'S', 'W', 'E'],
     palette: '#80ffdb',
     atlasIndex: 18,
-    skill: '잘 배치하면 파트너 펄스 구원 시간이 늘어남.'
+    skill: '잘 배치하면 파트너 구원 시간이 늘어남.'
   },
   origin_seed: {
     id: 'origin_seed',
@@ -401,13 +401,13 @@ export const WAVE_PLAN = [
   },
   {
     name: '장갑 점검',
-    intent: '불워크 압박으로 빔과 펄스의 역할 차이를 느끼게 한다.',
+    intent: '불워크 압박으로 단일 공격과 범위 공격의 차이를 느끼게 한다.',
     spawns: { crawler: 18, bulwark: 4 },
     clearReward: { charge: 45, linkEnergy: 12, gems: 0 }
   },
   {
     name: '보스 오키드',
-    intent: '첫 협동 열 위기: 파트너 펄스와 합성 타이밍이 의미를 갖는다.',
+    intent: '첫 협동 위기: 파트너 구원과 합성 타이밍이 의미를 갖는다.',
     spawns: { crawler: 20, splitter: 8, boss: 1 },
     clearReward: { charge: 65, linkEnergy: 22, gems: 8 },
     bossTimer: 36
@@ -426,7 +426,7 @@ export const WAVE_PLAN = [
   },
   {
     name: '보스 미러',
-    intent: '두 번째 협동 위기: 끊어진 링크가 파트너 구원 타이밍을 시험한다.',
+    intent: '두 번째 협동 위기: 끊어진 연결이 파트너 구원 타이밍을 시험한다.',
     spawns: { crawler: 22, null: 12, boss: 1 },
     clearReward: { charge: 85, linkEnergy: 28, gems: 8 },
     bossTimer: 42
@@ -454,7 +454,7 @@ export const WAVE_PLAN = [
   },
   {
     name: '기원 널',
-    intent: '최종 보스는 널 제어, 합성/펄스 오버드라이브, 파트너 구원을 요구한다.',
+    intent: '최종 보스는 널 제어, 합성과 구원 타이밍을 요구한다.',
     spawns: { null: 12, bulwark: 14, boss: 1 },
     threatScale: 1.45,
     clearReward: { charge: 0, linkEnergy: 0, gems: 0 },
@@ -467,7 +467,7 @@ export const WAVES = WAVE_PLAN.map((wave) => wave.spawns);
 export const SHOP = {
   currencies: {
     charge: { name: '전력', earned: true, description: '릴레이 보급에 쓰는 전투 자원.' },
-    linkEnergy: { name: '링크', earned: true, description: '파트너 펄스에 쓰는 협동 자원.' },
+    linkEnergy: { name: '협력', earned: true, description: '파트너 구원에 쓰는 협동 자원.' },
     gems: { name: '젬', earned: true, description: '미션과 웨이브에서만 얻는 해금 재화.' }
   },
   items: [
@@ -512,7 +512,7 @@ export const SHOP = {
   },
   dailyMissions: [
     { id: 'merge-three', text: '한 전투에서 릴레이 3개를 합성.', reward: { gems: 15 } },
-    { id: 'save-partner', text: '보스 웨이브에서 파트너 펄스 구원 발동.', reward: { gems: 20 } },
+    { id: 'save-partner', text: '보스 웨이브에서 파트너 구원 발동.', reward: { gems: 20 } },
     { id: 'signal-clutch', text: '신호 35 이하로 웨이브 클리어.', reward: { gems: 25 } }
   ]
 };

@@ -371,7 +371,7 @@ function localAction(action) {
   if (result.ok && action.type === 'focus') showToast('보급 집중 상승');
   if (result.ok && action.type === 'pulse') {
     const saved = game.effects.some((effect) => effect.type === 'link_pulse_save');
-    showToast(saved ? '파트너 구원 펄스' : '파트너 펄스');
+    showToast(saved ? '파트너 구원 성공' : '파트너 안정화');
   }
   if (result.ok && action.type === 'overclock') showToast('오버드라이브 발동');
   if (result.ok && action.type === 'buy') {
@@ -725,7 +725,7 @@ function drawRunSpine(state) {
   ctx.fillStyle = state.boss.active ? '#ff6f59' : '#8ee6d2';
   ctx.font = '950 9px system-ui';
   ctx.textAlign = 'center';
-  ctx.fillText(state.boss.active ? '협동 타이밍' : '링크 동기화', x, Math.max(top + 12, loop.cy - loop.ry - 12));
+  ctx.fillText(state.boss.active ? '구원 타이밍' : '협력 연결', x, Math.max(top + 12, loop.cy - loop.ry - 12));
   ctx.restore();
 }
 
@@ -1361,7 +1361,7 @@ function drawRewardFlyout(effect, to, alpha) {
   ctx.fillText(`+${charge}전력`, to.x - 17, to.y - 32 - lift);
   if (link > 0) {
     ctx.fillStyle = '#58d7ff';
-    ctx.fillText(`+${link}링크`, to.x + 20, to.y - 32 - lift);
+    ctx.fillText(`+${link}협력`, to.x + 20, to.y - 32 - lift);
   }
   ctx.restore();
 }
@@ -1560,7 +1560,8 @@ function drawBoard(state, playerId) {
   ctx.fillText(isMine ? '내 릴레이' : '파트너 릴레이', rect.x, rect.y - 12);
   ctx.fillStyle = heatPeak >= 90 ? '#ff6f59' : '#f4c95d';
   ctx.textAlign = 'right';
-  ctx.fillText(`열 ${Math.floor(heatPeak)}`, rect.x + rect.w, rect.y - 12);
+  const heatLabel = heatPeak >= 70 ? `과열 ${Math.floor(heatPeak)}` : '안정';
+  ctx.fillText(heatLabel, rect.x + rect.w, rect.y - 12);
   ctx.shadowBlur = 0;
 
   drawLinks(board, rect, state.now);
@@ -1597,8 +1598,10 @@ function drawBoard(state, playerId) {
       ctx.font = '900 9px system-ui';
       ctx.textAlign = 'center';
       ctx.fillText(`Lv${relay.tier}`, slot.x + 15, slot.y + 13);
-      ctx.fillStyle = relay.heat >= 90 ? '#ff6f59' : '#f5f0dc';
-      ctx.fillText(Math.floor(relay.heat), slot.x + slot.w - 16, slot.y + 13);
+      if (relay.heat >= 70) {
+        ctx.fillStyle = relay.heat >= 90 ? '#ff6f59' : '#f5f0dc';
+        ctx.fillText(Math.floor(relay.heat), slot.x + slot.w - 16, slot.y + 13);
+      }
       ctx.fillStyle = '#f5f0dc';
       ctx.font = '800 8px system-ui';
       ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
@@ -1637,7 +1640,7 @@ function drawEffects(state) {
         ctx.fillStyle = '#f4c95d';
         ctx.font = '900 17px system-ui';
         ctx.textAlign = 'center';
-        ctx.fillText('파트너 펄스 구원', loop.cx, loop.cy + 4);
+        ctx.fillText('파트너 구원 성공', loop.cx, loop.cy + 4);
       }
       ctx.restore();
     } else if (effect.type === 'supply' || effect.type === 'merge') {
@@ -1689,7 +1692,7 @@ function drawThreatTelemetry(state) {
   ctx.fillStyle = danger > 0.55 || state.boss.active ? '#ff6f59' : '#8ee6d2';
   ctx.font = '950 9px system-ui';
   ctx.textAlign = 'left';
-  ctx.fillText(state.boss.active ? '보스 위협' : '위협', x + 10, y + 14);
+  ctx.fillText('적', x + 10, y + 14);
   ctx.fillStyle = '#f5f0dc';
   ctx.font = '950 15px system-ui';
   ctx.fillText(String(state.noise.length).padStart(2, '0'), x + 10, y + 33);
@@ -1803,10 +1806,10 @@ function updateActionButtons(state) {
     '같은 릴레이 3개 합성'
   );
   actionButtons.merge.dataset.hot = String(actions.merge.available);
-  const pulseLabel = actions.linkPulse.cooldownRemaining > 0 ? `${Math.ceil(actions.linkPulse.cooldownRemaining)}초` : '펄스';
+  const pulseLabel = actions.linkPulse.cooldownRemaining > 0 ? `${Math.ceil(actions.linkPulse.cooldownRemaining)}초` : '구원';
   const pulseAccessibleLabel = actions.linkPulse.cooldownRemaining > 0
-    ? `파트너 펄스 ${Math.ceil(actions.linkPulse.cooldownRemaining)}초`
-    : '파트너 펄스';
+    ? `파트너 구원 ${Math.ceil(actions.linkPulse.cooldownRemaining)}초`
+    : '파트너 구원';
   setActionButton(actionButtons.pulse, pulseLabel, actions.linkPulse.available, actions.linkPulse.reason, pulseAccessibleLabel);
   actionButtons.pulse.dataset.ready = String(actions.linkPulse.available);
   actionButtons.pulse.dataset.clutch = String(actions.linkPulse.clutch);
@@ -1825,7 +1828,7 @@ function syncCoachCue(state) {
 function updateHud() {
   const state = currentState();
   chargeMeter.textContent = `전력 ${Math.floor(state.resources.charge)}`;
-  linkMeter.textContent = `링크 ${Math.floor(state.resources.linkEnergy)}`;
+  linkMeter.textContent = `협력 ${Math.floor(state.resources.linkEnergy)}`;
   gemMeter.textContent = `젬 ${online ? metaProfile.gems : Math.floor(state.resources.gems)}`;
   waveMeter.textContent = `웨이브 ${Math.min(state.wave.index + 1, GAME_RULES.maxWave)}`;
   signalMeter.textContent = `신호 ${Math.ceil(state.signal.integrity)} / 오염 ${Math.floor(state.saturation.count)}`;

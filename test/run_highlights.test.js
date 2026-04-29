@@ -30,7 +30,7 @@ test('run highlights prioritize player-readable clutch moments', () => {
   };
 
   assert.deepEqual(buildRunHighlights(state, summary), [
-    { label: '구원 펄스', value: '1', detail: '보스 세이브', tone: 'link' },
+    { label: '결정적 구원', value: '1', detail: '보스 세이브', tone: 'link' },
     { label: '최고 합성', value: '3', detail: '릴레이 강화', tone: 'charge' },
     { label: '보스 격파', value: '2', detail: '위기 돌파', tone: 'danger' }
   ]);

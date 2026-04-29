@@ -28,7 +28,7 @@ export function buildRunHighlights(state, summary) {
   const missions = summary?.missions?.length ?? 0;
   const candidates = [];
 
-  if (saves > 0) candidates.push({ label: '구원 펄스', value: compactNumber(saves), detail: '보스 세이브', tone: 'link' });
+  if (saves > 0) candidates.push({ label: '결정적 구원', value: compactNumber(saves), detail: '보스 세이브', tone: 'link' });
   if (merges > 0) candidates.push({ label: '최고 합성', value: compactNumber(merges), detail: '릴레이 강화', tone: 'charge' });
   if (bosses > 0) candidates.push({ label: '보스 격파', value: compactNumber(bosses), detail: '위기 돌파', tone: 'danger' });
   if (overdrives > 0) candidates.push({ label: '오버드라이브', value: compactNumber(overdrives), detail: '폭발 구간', tone: 'charge' });

@@ -609,7 +609,7 @@ function computeActionStateForPlayer(game, playerId) {
       game.over
         ? '전투 종료.'
         : game.resources.linkEnergy < GAME_RULES.linkPulseCost
-          ? `링크 ${GAME_RULES.linkPulseCost} 필요.`
+          ? `협력 ${GAME_RULES.linkPulseCost} 필요.`
           : linkPulseCooldownRemaining > 0
             ? `${linkPulseCooldownRemaining}초 후 가능.`
             : '파트너 릴레이 없음.'
@@ -677,7 +677,7 @@ function computeOnboardingCueForPlayer(game, playerId, actions) {
     return {
       step: 'first_pulse',
       action: 'pulse',
-      label: '파트너 펄스',
+      label: '파트너 구원',
       targetPlayerId: partnerId(playerId)
     };
   }
@@ -874,8 +874,8 @@ function boardHasActiveTwinGateLink(board, now) {
 }
 
 export function castLinkPulse(game, { playerId }) {
-  if (game.resources.linkEnergy < GAME_RULES.linkPulseCost) return { ok: false, reason: '링크가 부족합니다.' };
-  if (game.linkPulseCooldownUntil > game.now) return { ok: false, reason: '파트너 펄스 재사용 대기 중.' };
+  if (game.resources.linkEnergy < GAME_RULES.linkPulseCost) return { ok: false, reason: '협력이 부족합니다.' };
+  if (game.linkPulseCooldownUntil > game.now) return { ok: false, reason: '파트너 구원 재사용 대기 중.' };
   const targetPlayerId = partnerId(playerId);
   const board = findBoard(game, targetPlayerId);
   const casterBoard = findBoard(game, playerId);
