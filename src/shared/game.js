@@ -14,6 +14,7 @@ import {
 let nextId = 1;
 let nextRunId = 1;
 const EVENT_LOG_LIMIT = 24;
+const ONBOARDING_SUPPLY_SCRIPT = ['pulse_drum', 'pulse_drum', 'pulse_drum'];
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -140,6 +141,8 @@ function makeRelay(game, playerId, relayId, tier = 1, grade = RELAY_TYPES[relayI
 }
 
 function rollRelay(game, playerId) {
+  const scriptedRelayId = scriptedOnboardingRelayId(game, playerId);
+  if (scriptedRelayId) return RELAY_TYPES[scriptedRelayId];
   const odds = { ...game.supplyOdds };
   if (game.rng.pity[playerId] >= GAME_RULES.pityThreshold) {
     odds.Basic = Math.max(0.35, odds.Basic - 0.22);
@@ -152,6 +155,16 @@ function rollRelay(game, playerId) {
   const pool = relaysByGrade(grade);
   const relay = pool[Math.floor(game.rng.next() * pool.length)] ?? relaysByGrade('Basic')[0];
   return relay;
+}
+
+function onboardingActive(game) {
+  return Boolean(game.onboarding?.active) && game.now <= GAME_RULES.onboardingWindow;
+}
+
+function scriptedOnboardingRelayId(game, playerId) {
+  if (!onboardingActive(game) || game.mode !== 'bot' || playerId !== 'p1') return null;
+  const supplied = game.stats.supplies[playerId] ?? 0;
+  return ONBOARDING_SUPPLY_SCRIPT[supplied] ?? null;
 }
 
 function expandWave(wave) {
@@ -635,6 +648,54 @@ function computeActionState(game) {
   };
 }
 
+function computeOnboardingCueForPlayer(game, playerId, actions) {
+  if (!onboardingActive(game) || game.mode !== 'bot' || playerId !== 'p1') return null;
+  const supplies = game.stats.supplies[playerId] ?? 0;
+  const merges = game.stats.merges[playerId] ?? 0;
+  const pulses = game.stats.linkPulses[playerId] ?? 0;
+
+  if (actions.merge.available && merges === 0) {
+    return {
+      step: 'first_merge',
+      action: 'merge',
+      label: 'MERGE READY',
+      slots: [...actions.merge.slots]
+    };
+  }
+
+  if (supplies < ONBOARDING_SUPPLY_SCRIPT.length && actions.supply.available) {
+    return {
+      step: 'starter_trio',
+      action: 'supply',
+      label: `SUPPLY ${supplies + 1}/${ONBOARDING_SUPPLY_SCRIPT.length}`,
+      targetSlot: prioritySlotIndex(findBoard(game, playerId)),
+      progress: supplies
+    };
+  }
+
+  if (merges > 0 && pulses === 0 && actions.linkPulse.available) {
+    return {
+      step: 'first_pulse',
+      action: 'pulse',
+      label: 'PULSE PARTNER',
+      targetPlayerId: partnerId(playerId)
+    };
+  }
+
+  return null;
+}
+
+function computeOnboardingState(game, actionState) {
+  return {
+    active: onboardingActive(game),
+    windowRemaining: roundedSeconds(GAME_RULES.onboardingWindow - game.now),
+    cues: {
+      p1: computeOnboardingCueForPlayer(game, 'p1', actionState.p1),
+      p2: computeOnboardingCueForPlayer(game, 'p2', actionState.p2)
+    }
+  };
+}
+
 export function computeActiveLinks(board, now = 0) {
   const links = [];
   board.slots.forEach((relay, index) => {
@@ -693,6 +754,7 @@ export function createGame({ mode = 'bot', seed = Date.now() } = {}) {
     },
     firstPlayerSupplyAt: null,
     pendingSupplyDiscountPct: 0,
+    onboarding: { active: mode === 'bot' },
     linkPulseCooldownUntil: 0,
     linkPulseSignalGainThisWave: 0,
     dualOverclockBossUntil: 0,
@@ -1126,6 +1188,7 @@ export function tickGame(game, dt) {
 }
 
 export function serializeState(game) {
+  const actionState = computeActionState(game);
   return {
     title: game.title,
     id: game.id,
@@ -1153,7 +1216,8 @@ export function serializeState(game) {
     effects: game.effects,
     stats: game.stats,
     unlocks: game.unlocks,
-    actionState: computeActionState(game),
+    actionState,
+    onboarding: computeOnboardingState(game, actionState),
     eventLog: game.eventLog ?? [],
     result: game.result ?? null,
     resultReason: game.resultReason,

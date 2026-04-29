@@ -91,6 +91,48 @@ test('Supply spends Charge, uses socket priority, and advances pity', () => {
   assert.ok(game.rng.pity.p1 >= 1 || result.relay.grade !== 'Basic');
 });
 
+test('bot onboarding scripts the first supplies into an immediate merge lesson', () => {
+  const game = createGame({ mode: 'bot', seed: 101 });
+  const firstCue = serializeState(game).onboarding.cues.p1;
+
+  assert.equal(firstCue.action, 'supply');
+  assert.equal(firstCue.label, 'SUPPLY 1/3');
+
+  const supplies = [
+    supplyRelay(game, { playerId: 'p1' }),
+    supplyRelay(game, { playerId: 'p1' }),
+    supplyRelay(game, { playerId: 'p1' })
+  ];
+  const relayIds = supplies.map((result) => result.relay.relayId);
+  const merge = serializeState(game).actionState.p1.merge;
+  const mergeCue = serializeState(game).onboarding.cues.p1;
+
+  assert.deepEqual(relayIds, ['pulse_drum', 'pulse_drum', 'pulse_drum']);
+  assert.equal(merge.available, true);
+  assert.equal(mergeCue.action, 'merge');
+  assert.equal(mergeCue.label, 'MERGE READY');
+  assert.deepEqual(new Set(mergeCue.slots), new Set(merge.slots));
+});
+
+test('bot onboarding guides the first partner Pulse and expires after the opening window', () => {
+  const game = createGame({ mode: 'bot', seed: 102 });
+  game.resources.charge = 300;
+  const supplies = [
+    supplyRelay(game, { playerId: 'p1' }),
+    supplyRelay(game, { playerId: 'p1' }),
+    supplyRelay(game, { playerId: 'p1' })
+  ];
+  mergeRelays(game, { playerId: 'p1', slotIds: supplies.map((result) => result.slot) });
+  installRelay(game, 'p2', 5, 'coolant_moss', { heat: 72 });
+
+  const pulseCue = serializeState(game).onboarding.cues.p1;
+  assert.equal(pulseCue.action, 'pulse');
+  assert.equal(pulseCue.label, 'PULSE PARTNER');
+
+  game.now = GAME_RULES.onboardingWindow + 0.1;
+  assert.equal(serializeState(game).onboarding.cues.p1, null);
+});
+
 test('Supply cost scales by personal supply count, not team total', () => {
   const game = createGame({ mode: 'bot', seed: 10 });
   game.resources.charge = 1000;

@@ -204,6 +204,32 @@ test('mobile combat controls are thumb-safe without adding more visible commands
   }
 });
 
+test('first play guidance highlights existing actions instead of adding tutorial buttons', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const js = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    'id="coachCue"',
+    'aria-live="polite"',
+    'function syncCoachCue',
+    'state.onboarding?.cues?.[localBoardId]',
+    'button.dataset.coach = String(cue?.action === action);',
+    'syncCoachCue(state);'
+  ]) {
+    assert.equal(`${html}\n${js}`.includes(marker), true, marker);
+  }
+  for (const marker of [
+    '.coach-cue',
+    '[data-coach="true"]',
+    '@keyframes coachPulse'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+  assert.equal(html.includes('id="tutorialButton"'), false);
+  assert.equal(html.includes('class="tutorial-panel"'), false);
+});
+
 test('combat surface previews merge readiness and Pulse clutch without extra controls', async () => {
   const js = await readFile('src/client/app.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');

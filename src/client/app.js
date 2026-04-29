@@ -25,6 +25,7 @@ const canvas = document.querySelector('#gameCanvas');
 const ctx = canvas.getContext('2d');
 const stageWrap = document.querySelector('.stage-wrap');
 const toast = document.querySelector('#toast');
+const coachCue = document.querySelector('#coachCue');
 const netStatus = document.querySelector('#netStatus');
 const chargeMeter = document.querySelector('#chargeMeter');
 const linkMeter = document.querySelector('#linkMeter');
@@ -1706,6 +1707,16 @@ function updateActionButtons(state) {
   actionButtons.pulse.dataset.clutch = String(actions.linkPulse.clutch);
 }
 
+function syncCoachCue(state) {
+  const cue = state.onboarding?.cues?.[localBoardId] ?? null;
+  for (const [action, button] of Object.entries(actionButtons)) {
+    button.dataset.coach = String(cue?.action === action);
+  }
+  coachCue.hidden = !cue;
+  coachCue.textContent = cue?.label ?? '';
+  coachCue.dataset.action = cue?.action ?? 'idle';
+}
+
 function updateHud() {
   const state = currentState();
   chargeMeter.textContent = `C ${Math.floor(state.resources.charge)}`;
@@ -1715,6 +1726,7 @@ function updateHud() {
   signalMeter.textContent = `Signal ${Math.ceil(state.signal.integrity)} / Sat ${Math.floor(state.saturation.count)}`;
   bossMeter.textContent = state.boss.active ? `Boss ${Math.ceil(state.boss.timer)}s` : 'Boss --';
   updateActionButtons(state);
+  syncCoachCue(state);
   syncResultOverlay(state);
 }
 

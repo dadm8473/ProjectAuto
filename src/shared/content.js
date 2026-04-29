@@ -373,6 +373,7 @@ export const GAME_RULES = {
   saturationLimit: 100,
   bossTimer: 34,
   maxWave: 10,
+  onboardingWindow: 60,
   mergeCount: 3,
   mergeSurgeCharge: 12,
   mergeSurgeLink: 6,
