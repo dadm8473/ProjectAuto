@@ -94,7 +94,7 @@ test('service shell has launch loadout art and sectioned reward flow', async () 
   for (const marker of [
     'class="launch-loadout"',
     'class="launch-chip"',
-    'class="launch-map-preview"'
+    'launch-map-preview'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }
@@ -103,8 +103,8 @@ test('service shell has launch loadout art and sectioned reward flow', async () 
     'function buildGrowthOverview',
     'class="growth-overview"',
     'class="shop-section"',
-    'class="track-row"',
-    'class="mission-row"'
+    'screen-card track-row',
+    'screen-card mission-row'
   ]) {
     assert.equal(js.includes(marker), true, marker);
   }
@@ -114,6 +114,69 @@ test('service shell has launch loadout art and sectioned reward flow', async () 
     '.shop-section',
     '.track-row',
     'signal-relay-playfield-frame.png'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
+test('app shell exposes splash, lobby, and non-combat menu screens', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const js = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    'id="splashScreen"',
+    'id="splashStartButton"',
+    'id="lobbyScreen"',
+    'id="labScreen"',
+    'id="shopScreen"',
+    'id="missionsScreen"',
+    'id="seasonScreen"',
+    'data-open-screen="lab"',
+    'data-open-screen="shop"',
+    'data-open-screen="missions"',
+    'data-open-screen="season"',
+    'class="lobby-profile"',
+    'class="lobby-primary"',
+    'lobby-preview',
+    'class="lobby-menu"'
+  ]) {
+    assert.equal(html.includes(marker), true, marker);
+  }
+  assert.equal(html.includes('id="drawer"'), false);
+  assert.equal(html.includes('id="launchGrowthButton"'), false);
+  assert.equal(html.includes('id="resultRewardButton"'), false);
+  assert.equal(html.includes('전투 성장과 미션 보기'), false);
+
+  for (const marker of [
+    "let appScreen = 'splash';",
+    'function showAppScreen',
+    'function showLobby',
+    'function renderAppScreens',
+    'function buildRelayLab',
+    'function buildMissionScreen',
+    'function buildSeasonScreen',
+    'launchOverlay.dataset.screen = appScreen',
+    'document.body.dataset.appScreen = appScreen',
+    "showAppScreen('battle')",
+    "showAppScreen('result')"
+  ]) {
+    assert.equal(js.includes(marker), true, marker);
+  }
+  assert.equal(js.includes("document.querySelector('#drawer')"), false);
+  assert.equal(js.includes('openRewardsDrawer'), false);
+  assert.equal(js.includes('closeDrawer'), false);
+
+  for (const marker of [
+    '.app-screen',
+    '.splash-screen',
+    '.lobby-screen',
+    '.lobby-profile',
+    '.lobby-menu',
+    '.lobby-preview',
+    '.screen-grid',
+    '.screen-back',
+    '.screen-card'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
@@ -339,8 +402,9 @@ test('app shell has a commercial launch layer before combat starts', async () =>
     'id="launchOverlay"',
     'id="launchBotButton"',
     'id="launchOnlineButton"',
-    'id="launchGrowthButton"',
-    'class="launch-menu"',
+    'id="splashScreen"',
+    'id="lobbyScreen"',
+    'class="lobby-menu"',
     'class="launch-contract"',
     'id="resultOverlay"',
     'id="resultReason"',
@@ -365,8 +429,8 @@ test('app shell has a commercial launch layer before combat starts', async () =>
   }
   for (const marker of [
     '.launch-overlay',
-    '.launch-panel',
-    '.launch-menu',
+    '.app-screen',
+    '.lobby-menu',
     '.launch-contract',
     '.result-overlay',
     '.result-panel',
@@ -413,11 +477,17 @@ test('core app copy is Korean and removes unclear BM/resource abbreviations', as
     '젬 30',
     '봇과 시작',
     '온라인 매칭',
-    '성장',
-    'id="launchGrowthButton" aria-label="성장과 미션 보기">성장</button>'
+    '릴레이',
+    '상점',
+    '미션',
+    '시즌',
+    'data-open-screen="shop">상점</button>',
+    'data-open-screen="missions">미션</button>',
+    'data-open-screen="season">시즌</button>'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }
+  assert.equal(html.includes('id="launchGrowthButton"'), false);
   assert.equal(html.includes('전투 성장과 미션 보기'), false);
 
   for (const marker of [
@@ -428,8 +498,8 @@ test('core app copy is Korean and removes unclear BM/resource abbreviations', as
     'signalMeter.textContent = `신호 ${Math.ceil(state.signal.integrity)} / 오염 ${Math.floor(state.saturation.count)}`;',
     "bossMeter.textContent = state.boss.active ? `보스 ${Math.ceil(state.boss.timer)}초` : '보스 --';",
     "buildShopSection('스킨 상점'",
-    "buildShopSection('오늘 미션'",
-    "buildShopSection('시즌 패스'",
+    'function buildMissionScreen',
+    'function buildSeasonScreen',
     'buildGrowthOverview()',
     '획득 젬 전용',
     '외형 해금',
@@ -445,18 +515,24 @@ test('core app copy is Korean and removes unclear BM/resource abbreviations', as
   assert.equal(html.includes('G 30'), false);
 });
 
-test('growth drawer makes BM pillars understandable without entering combat', async () => {
+test('growth systems live in lobby screens instead of a combat drawer', async () => {
   const html = await readFile('index.html', 'utf8');
   const js = await readFile('src/client/app.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '<strong>성장</strong>',
-    'id="launchGrowthButton"',
-    'class="launch-menu"'
+    '<strong>상점</strong>',
+    '<strong>미션</strong>',
+    '<strong>시즌 패스</strong>',
+    'id="shopScreen"',
+    'id="missionsScreen"',
+    'id="seasonScreen"',
+    'class="lobby-menu"'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }
+  assert.equal(html.includes('id="drawer"'), false);
+  assert.equal(html.includes('id="launchGrowthButton"'), false);
   assert.equal(html.includes('id="resultRewardButton"'), false);
 
   for (const marker of [
@@ -482,6 +558,31 @@ test('growth drawer makes BM pillars understandable without entering combat', as
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
+});
+
+test('shop screen only sells cosmetic earned-gem items after screen split', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const js = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    "SHOP.items.filter((item) => item.category === 'cosmetic')",
+    "buildShopSection('스킨 상점'",
+    '외형 해금',
+    '획득 젬 전용'
+  ]) {
+    assert.equal(js.includes(marker), true, marker);
+  }
+  assert.equal(html.includes('전투력 판매 없음'), true);
+
+  const buildShopStart = js.indexOf('function buildShop()');
+  const buildShopEnd = js.indexOf('function renderLobbySummary()');
+  assert.notEqual(buildShopStart, -1);
+  assert.notEqual(buildShopEnd, -1);
+  const buildShopBody = js.slice(buildShopStart, buildShopEnd);
+  assert.equal(buildShopBody.includes("buildShopSection('오늘 미션'"), false);
+  assert.equal(buildShopBody.includes("buildShopSection('시즌 패스'"), false);
+  assert.equal(buildShopBody.includes('전투 보급'), false);
+  assert.equal(buildShopBody.includes('lucky-cache'), false);
 });
 
 test('combat readout hides advanced heat language until it matters', async () => {

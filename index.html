@@ -29,12 +29,29 @@
         <div id="coachCue" class="coach-cue" hidden aria-live="polite" aria-atomic="true"></div>
       </section>
 
-      <section id="launchOverlay" class="launch-overlay">
-        <div class="launch-panel">
+      <section id="launchOverlay" class="launch-overlay" data-screen="splash">
+        <div id="splashScreen" class="app-screen splash-screen" data-screen-panel="splash">
+          <span class="launch-kicker">시즌 01</span>
+          <strong>시그널 릴레이</strong>
+          <p>두 신호장을 연결하세요</p>
+          <div class="splash-mark" aria-hidden="true"></div>
+          <button id="splashStartButton">탭해서 시작</button>
+        </div>
+
+        <div id="lobbyScreen" class="app-screen lobby-screen" data-screen-panel="lobby" hidden>
           <span class="launch-kicker">시즌 01</span>
           <strong>시그널 릴레이</strong>
           <p>협동 타워디펜스</p>
-          <div class="launch-map-preview" aria-hidden="true"></div>
+          <section class="lobby-profile" aria-label="프로필 요약">
+            <span>플레이어</span>
+            <strong id="lobbyGemMeter">0젬</strong>
+            <em id="lobbyXpMeter">0 XP</em>
+          </section>
+          <section class="lobby-primary" aria-label="전투 시작">
+            <div class="lobby-preview launch-map-preview" aria-hidden="true"></div>
+            <button id="launchBotButton">봇과 시작</button>
+            <button id="launchOnlineButton">온라인 매칭</button>
+          </section>
           <div class="launch-loadout" aria-label="전투 세팅">
             <span class="launch-chip">봇</span>
             <span class="launch-chip">루프</span>
@@ -42,14 +59,43 @@
           </div>
           <div class="launch-contract">
             <span>오늘의 미션</span>
-            <strong>3웨이브 클리어</strong>
-            <em>보상 8젬</em>
+            <strong id="lobbyMissionPreview">보스 웨이브에서 파트너 구원</strong>
+            <em id="lobbySeasonPreview">시즌 진행 0 XP</em>
           </div>
-          <div class="launch-menu">
-            <button id="launchBotButton">봇과 시작</button>
-            <button id="launchOnlineButton">온라인 매칭</button>
-            <button id="launchGrowthButton" aria-label="성장과 미션 보기">성장</button>
-          </div>
+          <nav class="lobby-menu" aria-label="준비실 메뉴">
+            <button data-open-screen="lab">릴레이</button>
+            <button data-open-screen="shop">상점</button>
+            <button data-open-screen="missions">미션</button>
+            <button data-open-screen="season">시즌</button>
+          </nav>
+        </div>
+
+        <div id="labScreen" class="app-screen hub-screen" data-screen-panel="lab" hidden>
+          <button class="screen-back" data-open-screen="lobby">준비실</button>
+          <strong>릴레이 연구소</strong>
+          <p>전투 밖에서 유닛 역할과 외형을 확인합니다.</p>
+          <div id="labList" class="screen-list"></div>
+        </div>
+
+        <div id="shopScreen" class="app-screen hub-screen" data-screen-panel="shop" hidden>
+          <button class="screen-back" data-open-screen="lobby">준비실</button>
+          <strong>상점</strong>
+          <p>획득 젬 전용 · 전투력 판매 없음</p>
+          <div id="shopList" class="screen-list"></div>
+        </div>
+
+        <div id="missionsScreen" class="app-screen hub-screen" data-screen-panel="missions" hidden>
+          <button class="screen-back" data-open-screen="lobby">준비실</button>
+          <strong>미션</strong>
+          <p>협동 플레이 목표를 완료하고 젬을 받습니다.</p>
+          <div id="missionsList" class="screen-list"></div>
+        </div>
+
+        <div id="seasonScreen" class="app-screen hub-screen" data-screen-panel="season" hidden>
+          <button class="screen-back" data-open-screen="lobby">준비실</button>
+          <strong>시즌 패스</strong>
+          <p>플레이 경험치로 시즌 보상을 엽니다.</p>
+          <div id="seasonList" class="screen-list"></div>
         </div>
       </section>
 
@@ -85,13 +131,6 @@
         </div>
       </section>
 
-      <section id="drawer" class="drawer" hidden>
-        <div class="drawer-head">
-          <strong>성장</strong>
-          <button id="closeDrawer">닫기</button>
-        </div>
-        <div id="shopList" class="list"></div>
-      </section>
     </main>
     <script type="module" src="/src/client/app.js"></script>
   </body>

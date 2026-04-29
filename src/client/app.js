@@ -33,12 +33,19 @@ const gemMeter = document.querySelector('#gemMeter');
 const waveMeter = document.querySelector('#waveMeter');
 const signalMeter = document.querySelector('#signalMeter');
 const bossMeter = document.querySelector('#bossMeter');
+const appScreenPanels = [...document.querySelectorAll('[data-screen-panel]')];
+const splashStartButton = document.querySelector('#splashStartButton');
+const lobbyGemMeter = document.querySelector('#lobbyGemMeter');
+const lobbyXpMeter = document.querySelector('#lobbyXpMeter');
+const lobbyMissionPreview = document.querySelector('#lobbyMissionPreview');
+const lobbySeasonPreview = document.querySelector('#lobbySeasonPreview');
+const labList = document.querySelector('#labList');
 const shopList = document.querySelector('#shopList');
-const drawer = document.querySelector('#drawer');
+const missionsList = document.querySelector('#missionsList');
+const seasonList = document.querySelector('#seasonList');
 const launchOverlay = document.querySelector('#launchOverlay');
 const launchBotButton = document.querySelector('#launchBotButton');
 const launchOnlineButton = document.querySelector('#launchOnlineButton');
-const launchGrowthButton = document.querySelector('#launchGrowthButton');
 const resultOverlay = document.querySelector('#resultOverlay');
 const resultCode = document.querySelector('#resultCode');
 const resultTitle = document.querySelector('#resultTitle');
@@ -78,6 +85,7 @@ let socket = null;
 let last = performance.now();
 let selected = [];
 let localBoardId = 'p1';
+let appScreen = 'splash';
 let runStarted = false;
 let resultView = null;
 let viewport = computeCanvasViewport();
@@ -134,7 +142,7 @@ function syncProfileAfterPurchase(result) {
     unlocks
   });
   saveMetaProfile();
-  buildShop();
+  renderAppScreens();
 }
 
 function resultStateForProfile(state) {
@@ -275,6 +283,22 @@ function setLaunchConnecting(connecting) {
   launchOnlineButton.textContent = connecting ? '매칭 중...' : '온라인 매칭';
 }
 
+function showAppScreen(screen) {
+  appScreen = screen;
+  launchOverlay.dataset.screen = appScreen;
+  document.body.dataset.appScreen = appScreen;
+  if (screen === 'battle') {
+    launchOverlay.hidden = true;
+    resultOverlay.hidden = true;
+    return;
+  }
+  launchOverlay.hidden = screen === 'result';
+  appScreenPanels.forEach((panel) => {
+    panel.hidden = panel.dataset.screenPanel !== screen;
+  });
+  if (screen !== 'splash' && screen !== 'result') renderAppScreens();
+}
+
 function resultCopyFor(code, won) {
   const copy = {
     win_signal_lock: ['임무 성공', '신호 고정', '신호 루프가 안정화되었습니다.'],
@@ -411,7 +435,7 @@ function mergeCueSlots(state, playerId = localBoardId) {
 }
 
 function command(action) {
-  if (!runStarted || resultView) return;
+  if (action.type !== 'buy' && (!runStarted || resultView)) return;
   unlockSensoryFeedback();
   const prepared = prepareAction(action);
   const onlineAction = {
@@ -425,12 +449,12 @@ function command(action) {
 function hideLaunchOverlay() {
   setLaunchConnecting(false);
   clearResultOverlay();
-  launchOverlay.hidden = true;
+  showAppScreen('battle');
   runStarted = true;
   last = performance.now();
 }
 
-function showLaunchOverlay() {
+function showLobby() {
   runStarted = false;
   online = false;
   closeSocket();
@@ -443,7 +467,7 @@ function showLaunchOverlay() {
   game = createProfiledGame({ mode: 'bot', seed: Date.now() % 100000 });
   attachFeedbackBaseline();
   netStatus.textContent = '봇 협동';
-  launchOverlay.hidden = false;
+  showAppScreen('lobby');
 }
 
 function startBotRun() {
@@ -477,6 +501,7 @@ function syncResultOverlay(state) {
     resultOverlay.hidden = true;
     return;
   }
+  showAppScreen('result');
   resultOverlay.hidden = false;
   resultCode.textContent = resultView.code;
   resultTitle.textContent = resultView.title;
@@ -1851,34 +1876,31 @@ function loop(now) {
 }
 
 function buildShop() {
+  const cosmeticItems = SHOP.items.filter((item) => item.category === 'cosmetic');
   shopList.innerHTML = [
     buildGrowthOverview(),
-    buildShopSection('스킨 상점', SHOP.items.map((item) => {
+    buildShopSection('스킨 상점', cosmeticItems.map((item) => {
       const owned = item.grant.cosmetic ? metaProfile.unlocks.includes(item.grant.cosmetic) : false;
-      const kind = item.category === 'cosmetic' ? '외형 해금' : '전투 보급';
       return `
     <div class="row" ${owned ? 'data-claimed="true"' : 'data-claimed="false"'}>
-      <div><strong>${item.name}</strong><span>${kind} · ${item.description}</span></div>
+      <div><strong>${item.name}</strong><span>외형 해금 · ${item.description}</span></div>
       <button data-buy="${item.id}" ${owned ? 'disabled' : ''}>${owned ? '보유' : `${item.price.gems}젬`}</button>
     </div>
     `;
-    }).join('')),
-    buildShopSection('오늘 미션', SHOP.dailyMissions.map((mission) => `
-    <div class="mission-row" ${metaProfile.claimedMissions.includes(mission.id) ? 'data-claimed="true"' : 'data-claimed="false"'}>
-      <div><strong>${mission.text}</strong><span>일일 목표 · ${metaProfile.claimedMissions.includes(mission.id) ? '보상 수령' : `${mission.reward.gems}젬`}</span></div>
-      <span>${metaProfile.claimedMissions.includes(mission.id) ? '완료' : '오늘'}</span>
-    </div>
-    `).join('')),
-    buildShopSection('시즌 패스', SHOP.pass.tiers.map((tier, index) => `
-    <div class="track-row" ${metaProfile.claimedPassTiers.includes(index) ? 'data-claimed="true"' : 'data-claimed="false"'}>
-      <div><strong>${SHOP.pass.name} ${index + 1}</strong><span>시즌 보상 · ${tier.xp} 경험치</span></div>
-      <span>${metaProfile.claimedPassTiers.includes(index) ? '수령' : tier.grant.gems ? `${tier.grant.gems}젬` : '스킨'}</span>
-    </div>
-    `).join(''))
+    }).join(''))
   ].join('');
   shopList.querySelectorAll('button').forEach((button) => {
     button.addEventListener('click', () => command({ type: 'buy', itemId: button.dataset.buy }));
   });
+}
+
+function renderLobbySummary() {
+  const mission = SHOP.dailyMissions.find((entry) => !metaProfile.claimedMissions.includes(entry.id)) ?? SHOP.dailyMissions[0];
+  const nextTier = SHOP.pass.tiers.find((tier, index) => metaProfile.xp < tier.xp || !metaProfile.claimedPassTiers.includes(index));
+  lobbyGemMeter.textContent = `${metaProfile.gems}젬`;
+  lobbyXpMeter.textContent = `${metaProfile.xp} XP`;
+  lobbyMissionPreview.textContent = mission?.text ?? '오늘 미션 완료';
+  lobbySeasonPreview.textContent = nextTier ? `시즌 ${metaProfile.xp}/${nextTier.xp} XP` : '시즌 보상 완료';
 }
 
 function buildGrowthOverview() {
@@ -1892,13 +1914,54 @@ function buildGrowthOverview() {
   `;
 }
 
-function buildShopSection(title, body) {
-  return `<section class="shop-section"><strong>${title}</strong>${body}</section>`;
+function relayRole(spec) {
+  if (spec.tags.includes('Repair')) return '수리';
+  if (spec.tags.includes('Amp')) return '증폭';
+  if (spec.tags.includes('Sink')) return '냉각';
+  if (spec.tags.includes('Support')) return '지원';
+  return '공격';
 }
 
-function openRewardsDrawer() {
+function buildRelayLab() {
+  labList.innerHTML = Object.values(RELAY_TYPES).slice(0, 6).map((relay) => `
+    <article class="screen-card relay-card">
+      <span>${relayRole(relay)}</span>
+      <strong>${relay.name}</strong>
+      <em>Lv1 · ${GRADES[relay.grade]?.name ?? relay.grade}</em>
+      <small>${relay.skill}</small>
+      <b>보유</b>
+    </article>
+  `).join('');
+}
+
+function buildMissionScreen() {
+  missionsList.innerHTML = SHOP.dailyMissions.map((mission) => `
+    <article class="screen-card mission-row" ${metaProfile.claimedMissions.includes(mission.id) ? 'data-claimed="true"' : 'data-claimed="false"'}>
+      <div><strong>${mission.text}</strong><span>일일 목표 · ${mission.reward.gems}젬</span></div>
+      <span>${metaProfile.claimedMissions.includes(mission.id) ? '완료' : '진행'}</span>
+    </article>
+  `).join('');
+}
+
+function buildSeasonScreen() {
+  seasonList.innerHTML = SHOP.pass.tiers.map((tier, index) => `
+    <article class="screen-card track-row" ${metaProfile.claimedPassTiers.includes(index) ? 'data-claimed="true"' : 'data-claimed="false"'}>
+      <div><strong>${SHOP.pass.name} ${index + 1}</strong><span>시즌 보상 · ${tier.xp} 경험치</span></div>
+      <span>${metaProfile.claimedPassTiers.includes(index) ? '수령' : tier.grant.gems ? `${tier.grant.gems}젬` : '스킨'}</span>
+    </article>
+  `).join('');
+}
+
+function renderAppScreens() {
+  renderLobbySummary();
   buildShop();
-  drawer.hidden = false;
+  buildRelayLab();
+  buildMissionScreen();
+  buildSeasonScreen();
+}
+
+function buildShopSection(title, body) {
+  return `<section class="shop-section"><strong>${title}</strong>${body}</section>`;
 }
 
 function connectOnline() {
@@ -1973,6 +2036,10 @@ canvas.addEventListener('pointerdown', (event) => {
 
 actionButtons.power.addEventListener('click', () => command(primaryCombatAction()));
 actionButtons.pulse.addEventListener('click', () => command({ type: 'pulse' }));
+splashStartButton.addEventListener('click', () => {
+  unlockSensoryFeedback();
+  showAppScreen('lobby');
+});
 launchBotButton.addEventListener('click', () => {
   unlockSensoryFeedback();
   startBotRun();
@@ -1981,9 +2048,11 @@ launchOnlineButton.addEventListener('click', () => {
   unlockSensoryFeedback();
   connectOnline();
 });
-launchGrowthButton.addEventListener('click', () => {
-  unlockSensoryFeedback();
-  openRewardsDrawer();
+document.querySelectorAll('[data-open-screen]').forEach((button) => {
+  button.addEventListener('click', () => {
+    unlockSensoryFeedback();
+    showAppScreen(button.dataset.openScreen);
+  });
 });
 resultRetryButton.addEventListener('click', () => {
   unlockSensoryFeedback();
@@ -1991,13 +2060,9 @@ resultRetryButton.addEventListener('click', () => {
 });
 resultLobbyButton.addEventListener('click', () => {
   unlockSensoryFeedback();
-  showLaunchOverlay();
-});
-document.querySelector('#closeDrawer').addEventListener('click', () => {
-  unlockSensoryFeedback();
-  drawer.hidden = true;
+  showLobby();
 });
 
-buildShop();
+showAppScreen('splash');
 attachFeedbackBaseline();
 requestAnimationFrame(loop);
