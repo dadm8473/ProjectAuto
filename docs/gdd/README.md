@@ -33,6 +33,7 @@
 9. [App Screen Architecture](./09_app_screen_architecture.md)
 10. [Competitor Genre Analysis](./10_competitor_genre_analysis.md)
 11. [Core Combat Prototype Spec](./11_core_combat_prototype_spec.md)
+12. [Reboot Modification Plan](./12_reboot_modification_plan.md)
 
 ## Prototype Definition
 
