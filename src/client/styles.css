@@ -862,16 +862,6 @@ button:disabled:active {
   background-position: 100% 50%;
 }
 
-#launchBotButton {
-  border-color: rgba(244, 201, 93, 0.66);
-  background: linear-gradient(180deg, #7b5f24, #322715);
-}
-
-#launchOnlineButton {
-  border-color: rgba(88, 215, 255, 0.58);
-  background: linear-gradient(180deg, #1e5e6f, #14272b);
-}
-
 .launch-overlay[data-state="connecting"] .lobby-screen {
   box-shadow:
     inset 0 1px rgba(245, 240, 220, 0.13),
@@ -890,6 +880,13 @@ button:disabled:active {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 10px;
+}
+
+.game-panel-screen {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 10%, rgba(88, 215, 255, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(18, 31, 29, 0.96), rgba(5, 8, 9, 0.99));
 }
 
 .screen-hero {
@@ -926,6 +923,21 @@ button:disabled:active {
   grid-row: 1 / span 3;
   align-self: start;
   min-width: 70px;
+}
+
+.game-panel-header {
+  min-height: 92px;
+  border-color: rgba(88, 215, 255, 0.2);
+  background:
+    radial-gradient(circle at 82% 18%, rgba(244, 201, 93, 0.11), transparent 28%),
+    linear-gradient(135deg, rgba(37, 66, 61, 0.7), rgba(8, 12, 12, 0.72));
+}
+
+.game-back {
+  min-height: 38px;
+  border-color: rgba(245, 240, 220, 0.18);
+  background: rgba(2, 4, 5, 0.42);
+  font-size: 11px;
 }
 
 .result-overlay {
@@ -1265,6 +1277,12 @@ body:not([data-app-screen="battle"]) .action-panel {
   max-height: none;
 }
 
+.game-tile-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding-right: 2px;
+}
+
 .screen-card {
   display: grid;
   gap: 4px;
@@ -1295,9 +1313,138 @@ body:not([data-app-screen="battle"]) .action-panel {
   font-weight: 950;
 }
 
-.relay-card {
+.game-tile {
   position: relative;
+  min-height: 96px;
+  align-content: start;
+  padding: 10px;
   overflow: hidden;
+  border-color: rgba(245, 240, 220, 0.14);
+  background:
+    linear-gradient(180deg, rgba(245, 240, 220, 0.075), rgba(245, 240, 220, 0.025)),
+    rgba(4, 7, 8, 0.34);
+}
+
+.game-tile::after {
+  content: "";
+  position: absolute;
+  inset: auto 8px 8px auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(245, 240, 220, 0.035);
+  pointer-events: none;
+}
+
+.game-tile div {
+  display: grid;
+  gap: 2px;
+}
+
+.game-tile strong {
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.game-tile span,
+.game-tile em {
+  color: var(--muted);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.tile-icon {
+  display: block;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background-image: url("/src/client/assets/generated/ui-icon-atlas.png");
+  background-size: 400% 300%;
+  box-shadow:
+    inset 0 0 0 1px rgba(245, 240, 220, 0.14),
+    0 6px 14px rgba(0, 0, 0, 0.28);
+}
+
+.tile-icon-shop,
+.tile-icon-season {
+  background-position: 33.333% 100%;
+}
+
+.tile-icon-mission {
+  background-position: 66.667% 50%;
+}
+
+.tile-icon-attack,
+.tile-icon-amp {
+  background-position: 100% 0%;
+}
+
+.tile-icon-repair {
+  background-position: 100% 50%;
+}
+
+.tile-icon-sink {
+  background-position: 66.667% 100%;
+}
+
+.tile-icon-support {
+  background-position: 33.333% 50%;
+}
+
+.reward-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: start;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid rgba(244, 201, 93, 0.26);
+  border-radius: 999px;
+  background: rgba(244, 201, 93, 0.1);
+  color: var(--charge);
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.shop-tile {
+  min-height: 126px;
+  border-color: rgba(88, 215, 255, 0.2);
+}
+
+.shop-tile button {
+  align-self: end;
+  min-height: 34px;
+  margin-top: 2px;
+  border-color: rgba(244, 201, 93, 0.38);
+  background: linear-gradient(180deg, rgba(115, 83, 29, 0.96), rgba(36, 27, 17, 0.96));
+  font-size: 11px;
+}
+
+.mission-tile,
+.season-tile {
+  grid-column: span 2;
+  min-height: 76px;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+}
+
+.mission-tile em {
+  justify-self: end;
+  color: var(--gem);
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.season-tile {
+  border-color: rgba(244, 201, 93, 0.22);
+}
+
+.season-tile .progress-bar {
+  grid-column: 1 / -1;
+}
+
+.relay-card {
   padding-left: 12px;
 }
 
@@ -1344,12 +1491,13 @@ body:not([data-app-screen="battle"]) .action-panel {
 
 .growth-overview {
   display: grid;
+  grid-column: 1 / -1;
   grid-template-columns: repeat(3, 1fr);
   gap: 7px;
 }
 
 .growth-card {
-  min-height: 64px;
+  min-height: 58px;
   padding: 8px 7px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1388,34 +1536,24 @@ body:not([data-app-screen="battle"]) .action-panel {
 
 .shop-section {
   display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
 }
 
 .shop-section > strong {
+  grid-column: 1 / -1;
   color: var(--charge);
   font-size: 10px;
   font-weight: 950;
 }
 
-.row,
-.mission-row,
-.track-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-  align-items: center;
-  padding: 9px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(245, 240, 220, 0.055);
-}
-
-.mission-row {
+.mission-tile {
   border-color: rgba(149, 213, 178, 0.2);
   background: rgba(149, 213, 178, 0.06);
 }
 
-.track-row {
+.season-tile {
   border-color: rgba(244, 201, 93, 0.2);
   background:
     linear-gradient(90deg, rgba(244, 201, 93, 0.1), rgba(88, 215, 255, 0.035)),
@@ -1440,28 +1578,24 @@ body:not([data-app-screen="battle"]) .action-panel {
   background: linear-gradient(90deg, var(--link), var(--charge));
 }
 
-.track-row .progress-bar {
-  grid-column: 1 / -1;
-}
-
-.mission-row[data-claimed="true"],
-.track-row[data-claimed="true"],
-.row[data-claimed="true"] {
+.mission-tile[data-claimed="true"],
+.season-tile[data-claimed="true"],
+.shop-tile[data-claimed="true"] {
   border-color: rgba(88, 215, 255, 0.18);
   background: rgba(88, 215, 255, 0.045);
   opacity: 0.82;
 }
 
-.row strong,
-.mission-row strong,
-.track-row strong {
+.shop-tile strong,
+.mission-tile strong,
+.season-tile strong {
   display: block;
   font-size: 13px;
 }
 
-.row span,
-.mission-row span,
-.track-row span {
+.shop-tile span,
+.mission-tile span,
+.season-tile span {
   display: block;
   color: var(--muted);
   font-size: 11px;
@@ -1494,5 +1628,49 @@ body:not([data-app-screen="battle"]) .action-panel {
 
   .primary-actions button {
     font-size: 11px;
+  }
+
+  .lobby-screen {
+    gap: 6px;
+    padding: calc(10px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom));
+  }
+
+  .lobby-screen .lobby-hero {
+    padding: 8px;
+  }
+
+  .lobby-screen .lobby-hero strong {
+    font-size: 18px;
+  }
+
+  .lobby-screen .lobby-profile {
+    display: none;
+  }
+
+  .home-arena {
+    padding: 8px;
+  }
+
+  .home-arena .launch-contract {
+    display: none;
+  }
+
+  .home-arena .launch-loadout {
+    margin: 6px 0 0;
+  }
+
+  .play-button,
+  .match-button {
+    min-height: 46px;
+    font-size: 13px;
+  }
+
+  .lobby-menu[data-game-dock] {
+    min-height: 70px;
+    padding: 5px;
+  }
+
+  .lobby-menu[data-game-dock] .menu-card {
+    min-height: 58px;
   }
 }

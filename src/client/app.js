@@ -1884,10 +1884,12 @@ function buildShop() {
     buildShopSection('스킨 상점', cosmeticItems.map((item) => {
       const owned = item.grant.cosmetic ? metaProfile.unlocks.includes(item.grant.cosmetic) : false;
       return `
-    <div class="row" ${owned ? 'data-claimed="true"' : 'data-claimed="false"'}>
-      <div><strong>${item.name}</strong><span>외형 해금 · ${item.description}</span></div>
-      <button data-buy="${item.id}" ${owned ? 'disabled' : ''}>${owned ? '보유' : `${item.price.gems}젬`}</button>
-    </div>
+    <article class="screen-card game-tile shop-tile" ${owned ? 'data-claimed="true"' : 'data-claimed="false"'}>
+      <i class="tile-icon tile-icon-shop" aria-hidden="true"></i>
+      <div><strong>${item.name}</strong><span>외형 해금</span></div>
+      <b class="reward-badge">${owned ? '보유' : `${item.price.gems}젬`}</b>
+      <button data-buy="${item.id}" ${owned ? 'disabled' : ''}>${owned ? '장착됨' : '해금'}</button>
+    </article>
     `;
     }).join(''))
   ].join('');
@@ -1960,6 +1962,20 @@ function relayRole(spec) {
   return '공격';
 }
 
+function compactMissionText(text) {
+  return text
+    .replace('한 전투에서 ', '')
+    .replace('보스 웨이브에서 ', '보스 ')
+    .replace(' 발동.', '')
+    .replace('웨이브 클리어.', '클리어');
+}
+
+function rewardLabel(grant) {
+  if (grant?.gems) return `${grant.gems}젬`;
+  if (grant?.cosmetic) return '스킨';
+  return '보상';
+}
+
 function relayCardTone(spec) {
   if (spec.tags.includes('Repair')) return 'repair';
   if (spec.tags.includes('Amp')) return 'amp';
@@ -1981,12 +1997,10 @@ function featuredRelaySpecs() {
 
 function buildRelayLab() {
   labList.innerHTML = featuredRelaySpecs().map((relay) => `
-    <article class="screen-card relay-card" data-role="${relayCardTone(relay)}">
-      <span>${relayRole(relay)}</span>
-      <strong>${relay.name}</strong>
-      <em>Lv1 · ${GRADES[relay.grade]?.name ?? relay.grade}</em>
-      <small>${relay.skill}</small>
-      <b>보유</b>
+    <article class="screen-card game-tile relay-card" data-role="${relayCardTone(relay)}">
+      <i class="tile-icon tile-icon-${relayCardTone(relay)}" aria-hidden="true"></i>
+      <div><strong>${relay.name}</strong><span>${relayRole(relay)} · ${GRADES[relay.grade]?.name ?? relay.grade}</span></div>
+      <b class="reward-badge">보유</b>
     </article>
   `).join('');
 }
@@ -1995,9 +2009,11 @@ function buildMissionScreen() {
   missionsList.innerHTML = SHOP.dailyMissions.map((mission) => {
     const claimed = metaProfile.claimedMissions.includes(mission.id);
     return `
-      <article class="screen-card mission-row" ${claimed ? 'data-claimed="true"' : 'data-claimed="false"'}>
-        <div><strong>${mission.text}</strong><span>일일 목표 · ${mission.reward.gems}젬 · 전투 후 자동 정산</span></div>
-        <span>${claimed ? '완료' : '도전'}</span>
+      <article class="screen-card game-tile mission-tile" ${claimed ? 'data-claimed="true"' : 'data-claimed="false"'}>
+        <i class="tile-icon tile-icon-mission" aria-hidden="true"></i>
+        <div><strong>${compactMissionText(mission.text)}</strong><span>일일 목표</span></div>
+        <b class="reward-badge">${mission.reward.gems}젬</b>
+        <em>${claimed ? '완료' : '도전'}</em>
       </article>
     `;
   }).join('');
@@ -2011,11 +2027,11 @@ function seasonProgressPercent(tier) {
 function buildSeasonScreen() {
   seasonList.innerHTML = SHOP.pass.tiers.map((tier, index) => {
     const claimed = metaProfile.claimedPassTiers.includes(index);
-    const reward = tier.grant.gems ? `${tier.grant.gems}젬` : '스킨';
     return `
-      <article class="screen-card track-row" ${claimed ? 'data-claimed="true"' : 'data-claimed="false"'}>
-        <div><strong>${SHOP.pass.name} ${index + 1}</strong><span>시즌 보상 · ${tier.xp} XP</span></div>
-        <span>${claimed ? '수령' : reward}</span>
+      <article class="screen-card game-tile season-tile" ${claimed ? 'data-claimed="true"' : 'data-claimed="false"'}>
+        <i class="tile-icon tile-icon-season" aria-hidden="true"></i>
+        <div><strong>티어 ${index + 1}</strong><span>${tier.xp} XP</span></div>
+        <b class="reward-badge">${claimed ? '수령' : rewardLabel(tier.grant)}</b>
         <i class="progress-bar" style="--progress:${seasonProgressPercent(tier)}%;" aria-hidden="true"></i>
       </article>
     `;

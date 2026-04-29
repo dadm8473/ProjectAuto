@@ -2,6 +2,20 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
+function cssBlock(css, selector) {
+  const selectorIndex = css.indexOf(selector);
+  assert.notEqual(selectorIndex, -1, selector);
+  const openIndex = css.indexOf('{', selectorIndex);
+  assert.notEqual(openIndex, -1, `${selector} open`);
+  let depth = 0;
+  for (let index = openIndex; index < css.length; index++) {
+    if (css[index] === '{') depth++;
+    if (css[index] === '}') depth--;
+    if (depth === 0) return css.slice(openIndex + 1, index);
+  }
+  assert.fail(`${selector} close`);
+}
+
 test('battle renderer includes commercial battlefield depth layers', async () => {
   const source = await readFile('src/client/app.js', 'utf8');
   for (const marker of [
@@ -103,8 +117,8 @@ test('service shell has launch loadout art and sectioned reward flow', async () 
     'function buildGrowthOverview',
     'class="growth-overview"',
     'class="shop-section"',
-    'screen-card track-row',
-    'screen-card mission-row'
+    'screen-card game-tile season-tile',
+    'screen-card game-tile mission-tile'
   ]) {
     assert.equal(js.includes(marker), true, marker);
   }
@@ -112,7 +126,7 @@ test('service shell has launch loadout art and sectioned reward flow', async () 
     '.launch-map-preview',
     '.launch-loadout',
     '.shop-section',
-    '.track-row',
+    '.season-tile',
     'signal-relay-playfield-frame.png'
   ]) {
     assert.equal(css.includes(marker), true, marker);
@@ -195,7 +209,7 @@ test('mobile lobby reads like a live game home with alerts and progress', async 
     'class="notification-dot"',
     'data-menu-alert="missions"',
     'data-menu-alert="season"',
-    'class="screen-hero"'
+    'class="screen-hero game-panel-header"'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }
@@ -222,7 +236,7 @@ test('mobile lobby reads like a live game home with alerts and progress', async 
     '.screen-hero',
     '.progress-bar',
     '.relay-card[data-role="repair"]',
-    '.track-row .progress-bar'
+    '.season-tile .progress-bar'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
@@ -258,6 +272,77 @@ test('lobby is framed as a fixed mobile game home instead of a scrolling webpage
     '.lobby-menu[data-game-dock]',
     '.dock-icon',
     'overflow: hidden;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
+test('mobile game home layout contract keeps arena and dock inside the viewport', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const lobbyBlock = cssBlock(css, '.lobby-screen {');
+  assert.match(lobbyBlock, /grid-template-rows:\s*auto minmax\(0, 1fr\) auto;/);
+  assert.match(lobbyBlock, /overflow:\s*hidden;/);
+
+  const arenaBlock = cssBlock(css, '.home-arena {');
+  assert.match(arenaBlock, /min-height:\s*0;/);
+  assert.match(arenaBlock, /overflow:\s*hidden;/);
+
+  const dockBlock = cssBlock(css, '.lobby-menu[data-game-dock] {');
+  assert.match(dockBlock, /grid-template-columns:\s*repeat\(4, 1fr\);/);
+  assert.match(dockBlock, /min-height:\s*78px;/);
+
+  const shortViewportCss = css.slice(css.indexOf('@media (max-height: 720px)'));
+  for (const marker of [
+    '.lobby-screen',
+    '.home-arena .launch-contract',
+    '.lobby-menu[data-game-dock]',
+    'display: none;'
+  ]) {
+    assert.equal(shortViewportCss.includes(marker), true, marker);
+  }
+});
+
+test('hub screens use game tiles and badges instead of webpage rows', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const js = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    'class="app-screen hub-screen game-panel-screen"',
+    'class="screen-hero game-panel-header"',
+    'class="screen-back game-back"',
+    'class="screen-list game-tile-grid"'
+  ]) {
+    assert.equal(html.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    'function compactMissionText',
+    'function rewardLabel',
+    'class="screen-card game-tile shop-tile"',
+    'class="screen-card game-tile mission-tile"',
+    'class="screen-card game-tile season-tile"',
+    'class="screen-card game-tile relay-card"',
+    'class="tile-icon tile-icon-shop"',
+    'class="reward-badge"'
+  ]) {
+    assert.equal(js.includes(marker), true, marker);
+  }
+
+  assert.equal(js.includes('class="row"'), false);
+  assert.equal(js.includes('mission-row'), false);
+  assert.equal(js.includes('track-row'), false);
+
+  for (const marker of [
+    '.game-panel-screen',
+    '.game-panel-header',
+    '.game-tile-grid',
+    '.game-tile',
+    '.tile-icon',
+    '.reward-badge',
+    '.shop-tile',
+    '.mission-tile',
+    '.season-tile'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
