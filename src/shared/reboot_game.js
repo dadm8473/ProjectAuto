@@ -132,7 +132,7 @@ function applyTimedResources(game) {
     }
   }
 
-  if (game.now >= REBOOT_RULES.rescue.passiveChargeAt) {
+  if (!game.internal.rescued && game.now >= REBOOT_RULES.rescue.passiveChargeAt) {
     for (const resources of Object.values(game.resources)) {
       resources.rescue = Math.max(resources.rescue, REBOOT_RULES.rescue.passiveChargeAmount);
     }
@@ -141,7 +141,7 @@ function applyTimedResources(game) {
   const rescueReadyAt = game.seedName === 'tutorial_success'
     ? REBOOT_RULES.rescue.tutorialWindowStart
     : 70;
-  if (game.now >= rescueReadyAt) {
+  if (!game.internal.rescued && game.now >= rescueReadyAt) {
     for (const resources of Object.values(game.resources)) {
       resources.rescue = REBOOT_RULES.rescue.chargeRequired;
     }

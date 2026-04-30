@@ -4,183 +4,101 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#101312">
-    <title>시그널 릴레이</title>
+    <title>ProjectAuto</title>
     <link rel="icon" href="/src/client/assets/generated/ui-icon-atlas.png">
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="stylesheet" href="/src/client/styles.css">
   </head>
-  <body>
+  <body data-app-screen="splash">
     <main class="shell">
       <section class="hud">
         <div class="brand">
-          <strong>시그널 릴레이</strong>
+          <strong>ProjectAuto</strong>
           <span id="netStatus">봇 협동</span>
         </div>
         <div class="meters">
-          <span id="chargeMeter" aria-label="전력: 릴레이 보급에 쓰는 전투 자원">전력 110</span>
-          <span id="linkMeter" aria-label="협력: 파트너 구원에 쓰는 협동 자원">협력 50</span>
-          <span id="gemMeter" aria-label="젬: 미션과 웨이브 보상으로 얻는 해금 재화">젬 30</span>
+          <span id="summonMeter">소환 10</span>
+          <span id="rescueMeter">구원 0%</span>
+          <span id="dangerMeter">위험 0</span>
         </div>
       </section>
 
       <section class="stage-wrap">
-        <canvas id="gameCanvas" width="390" height="500" aria-label="시그널 릴레이 협동 타워디펜스 전장"></canvas>
+        <canvas id="gameCanvas" width="390" height="620" aria-label="ProjectAuto 협동 타워디펜스 전장"></canvas>
         <div id="toast" class="toast" hidden></div>
-        <div id="coachCue" class="coach-cue" hidden aria-live="polite" aria-atomic="true"></div>
       </section>
 
-      <section id="launchOverlay" class="launch-overlay" data-screen="splash">
+      <section id="launchOverlay" class="screen-overlay" data-screen="splash">
         <div id="splashScreen" class="app-screen splash-screen" data-screen-panel="splash">
-          <span class="launch-kicker">시즌 01</span>
-          <strong>시그널 릴레이</strong>
-          <p>두 신호장을 연결하세요</p>
-          <div class="splash-mark" aria-hidden="true"></div>
-          <button id="splashStartButton">탭해서 시작</button>
+          <span>시즌 01</span>
+          <strong>ProjectAuto</strong>
+          <p>소환, 합성, 구원으로 파트너와 버티세요</p>
+          <button id="splashStartButton">시작</button>
         </div>
 
         <div id="lobbyScreen" class="app-screen lobby-screen" data-screen-panel="lobby" hidden>
-          <div class="home-topbar">
-            <section class="lobby-hero" aria-label="홈">
-              <div>
-                <span class="launch-kicker">시즌 01</span>
-                <strong>시그널 릴레이</strong>
-                <p>협동 타워디펜스</p>
-              </div>
-              <div class="lobby-status-row" aria-label="보유 재화와 시즌 경험치">
-                <span><small>젬</small><strong id="lobbyGemMeter">0</strong></span>
-                <span><small>XP</small><strong id="lobbyXpMeter">0</strong></span>
-              </div>
-            </section>
-            <section class="lobby-profile" aria-label="프로필 요약">
-              <span>플레이어</span>
-              <strong id="lobbyRunPlan">오늘의 협동 루프 준비</strong>
-              <em>전투 보상 자동 정산</em>
-            </section>
-          </div>
-          <section class="home-arena" aria-label="전투 입장">
-            <section class="lobby-primary" aria-label="전투 시작">
-              <div class="lobby-preview launch-map-preview" aria-hidden="true"></div>
-              <div class="home-play-deck">
-                <button id="launchBotButton" class="play-button">봇과 시작</button>
-                <button id="launchOnlineButton" class="match-button">온라인 매칭</button>
-              </div>
-            </section>
-            <div class="launch-loadout" aria-label="전투 세팅">
-              <span class="launch-chip">봇</span>
-              <span class="launch-chip">루프</span>
-              <span class="launch-chip">공정</span>
-            </div>
-            <div class="launch-contract">
-              <span>오늘의 미션</span>
-              <strong id="lobbyMissionPreview">보스 웨이브에서 파트너 구원</strong>
-              <em id="lobbySeasonPreview">시즌 진행 0 XP</em>
-            </div>
-          </section>
-          <nav class="lobby-menu" data-game-dock aria-label="준비실 메뉴">
-            <button class="menu-card" data-open-screen="lab">
-              <i class="dock-icon dock-icon-relay" aria-hidden="true"></i>
-              <span>유닛</span>
-              <strong>릴레이</strong>
-              <small>역할 확인</small>
-              <b class="notification-dot" data-menu-alert="lab" hidden>0</b>
-            </button>
-            <button class="menu-card" data-open-screen="shop">
-              <i class="dock-icon dock-icon-shop" aria-hidden="true"></i>
-              <span>외형</span>
-              <strong>상점</strong>
-              <small>젬 사용</small>
-              <b class="notification-dot" data-menu-alert="shop" hidden>0</b>
-            </button>
-            <button class="menu-card" data-open-screen="missions">
-              <i class="dock-icon dock-icon-mission" aria-hidden="true"></i>
-              <span>보상</span>
-              <strong>미션</strong>
-              <small>일일 목표</small>
-              <b class="notification-dot" data-menu-alert="missions" hidden>0</b>
-            </button>
-            <button class="menu-card" data-open-screen="season">
-              <i class="dock-icon dock-icon-season" aria-hidden="true"></i>
-              <span>패스</span>
-              <strong>시즌</strong>
-              <small>진행 보상</small>
-              <b class="notification-dot" data-menu-alert="season" hidden>0</b>
-            </button>
+          <div id="lobbyContent"></div>
+          <button id="launchBotButton" class="play-button">봇과 시작</button>
+          <button id="launchOnlineButton" class="match-button">온라인 협동</button>
+          <nav class="bottom-dock" aria-label="메뉴">
+            <button data-open-screen="collection">유닛</button>
+            <button data-open-screen="shop">상점</button>
+            <button data-open-screen="missions">미션</button>
+            <button data-open-screen="season">시즌</button>
           </nav>
         </div>
 
-        <div id="labScreen" class="app-screen hub-screen game-panel-screen" data-screen-panel="lab" hidden>
-          <section class="screen-hero game-panel-header">
-            <button class="screen-back game-back" data-open-screen="lobby">준비실</button>
-            <span>유닛 정보</span>
-            <strong>릴레이 연구소</strong>
-            <p>전투 밖에서 역할과 등급을 확인합니다.</p>
-          </section>
-          <div id="labList" class="screen-list game-tile-grid"></div>
+        <div id="collectionScreen" class="app-screen hub-screen" data-screen-panel="collection" hidden>
+          <button class="screen-back" data-open-screen="lobby">홈</button>
+          <h1>유닛 강화</h1>
+          <div id="collectionList" class="screen-list"></div>
         </div>
 
-        <div id="shopScreen" class="app-screen hub-screen game-panel-screen" data-screen-panel="shop" hidden>
-          <section class="screen-hero game-panel-header">
-            <button class="screen-back game-back" data-open-screen="lobby">준비실</button>
-            <span>외형 상점</span>
-            <strong>상점</strong>
-            <p>획득 젬 전용 · 전투력 판매 없음</p>
-          </section>
-          <div id="shopList" class="screen-list game-tile-grid"></div>
+        <div id="shopScreen" class="app-screen hub-screen" data-screen-panel="shop" hidden>
+          <button class="screen-back" data-open-screen="lobby">홈</button>
+          <h1>상점</h1>
+          <div id="shopList" class="screen-list"></div>
         </div>
 
-        <div id="missionsScreen" class="app-screen hub-screen game-panel-screen" data-screen-panel="missions" hidden>
-          <section class="screen-hero game-panel-header">
-            <button class="screen-back game-back" data-open-screen="lobby">준비실</button>
-            <span>일일 목표</span>
-            <strong>미션</strong>
-            <p>협동 플레이 목표를 완료하고 젬을 받습니다.</p>
-          </section>
-          <div id="missionsList" class="screen-list game-tile-grid"></div>
+        <div id="missionsScreen" class="app-screen hub-screen" data-screen-panel="missions" hidden>
+          <button class="screen-back" data-open-screen="lobby">홈</button>
+          <h1>미션</h1>
+          <div id="missionsList" class="screen-list"></div>
         </div>
 
-        <div id="seasonScreen" class="app-screen hub-screen game-panel-screen" data-screen-panel="season" hidden>
-          <section class="screen-hero game-panel-header">
-            <button class="screen-back game-back" data-open-screen="lobby">준비실</button>
-            <span>시즌 진행</span>
-            <strong>시즌 패스</strong>
-            <p>플레이 경험치로 시즌 보상을 엽니다.</p>
-          </section>
-          <div id="seasonList" class="screen-list game-tile-grid"></div>
+        <div id="seasonScreen" class="app-screen hub-screen" data-screen-panel="season" hidden>
+          <button class="screen-back" data-open-screen="lobby">홈</button>
+          <h1>시즌</h1>
+          <div id="seasonList" class="screen-list"></div>
         </div>
       </section>
 
       <section id="resultOverlay" class="result-overlay" hidden>
         <div class="result-panel">
-          <span id="resultCode" class="result-code">전투 완료</span>
-          <strong id="resultTitle">신호 고정</strong>
-          <p id="resultReason" class="result-reason">루프가 안정화되었습니다.</p>
-          <div id="resultStats" class="result-stats">
-            <span>웨이브 --</span>
-            <span>시간 --</span>
-            <span>처치 --</span>
-          </div>
+          <span id="resultCode">전투 완료</span>
+          <strong id="resultTitle">승리</strong>
+          <p id="resultReason">파트너를 구했습니다</p>
+          <p id="resultNextGoal">다음 판 목표</p>
           <div id="resultHighlights" class="result-highlights"></div>
-          <div id="resultProgress" class="result-progress"></div>
-          <div id="resultReward" class="result-reward">미션 보상 확보</div>
+          <div id="resultReward" class="result-reward"></div>
           <div class="result-actions">
             <button id="resultRetryButton">다시 도전</button>
-            <button id="resultLobbyButton">준비실</button>
+            <button id="resultLobbyButton">홈</button>
           </div>
         </div>
       </section>
 
       <section class="action-panel" role="toolbar" aria-label="전투 행동">
         <div class="status-line">
-          <span id="waveMeter" aria-label="현재 웨이브">웨이브 1</span>
-          <span id="signalMeter" aria-label="신호 체력과 오염 위험">신호 100 / 오염 0</span>
-          <span id="bossMeter" aria-label="보스 제한 시간">보스 --</span>
+          <span id="timeMeter">0초</span>
+          <span id="bossMeter">보스 대기</span>
         </div>
         <div class="primary-actions">
-          <button id="powerButton" aria-label="보급 또는 합성 자동 선택">강화</button>
-          <button id="pulseButton" aria-label="파트너 구원">구원</button>
+          <button id="summonButton" aria-label="소환">소환</button>
+          <button id="mergeButton" aria-label="합성">합성</button>
+          <button id="rescueButton" aria-label="구원">구원</button>
         </div>
       </section>
-
     </main>
     <script type="module" src="/src/client/app.js"></script>
   </body>

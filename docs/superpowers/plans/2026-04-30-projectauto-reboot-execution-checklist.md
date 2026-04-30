@@ -17,10 +17,10 @@
 ## Phase 0: 작업 안전장치
 
 - [x] `main`이 아닌 구현 브랜치에서 작업한다.
-- [ ] 로컬 git 계정이 `dadm8473 <dadm8473@gmail.com>`인지 커밋 전 확인한다.
-- [ ] 큰 작업은 기능 단위 커밋으로 나눈다.
-- [ ] 각 커밋 전 `git diff --check`를 통과시킨다.
-- [ ] 문서/테스트/코드가 같은 방향을 가리키는지 확인한다.
+- [x] 로컬 git 계정이 `dadm8473 <dadm8473@gmail.com>`인지 커밋 전 확인한다.
+- [x] 큰 작업은 기능 단위 커밋으로 나눈다.
+- [x] 각 커밋 전 `git diff --check`를 통과시킨다.
+- [x] 문서/테스트/코드가 같은 방향을 가리키는지 확인한다.
 
 ## Phase 1: 리부트 콘텐츠 계약
 
@@ -70,62 +70,62 @@
 
 ## Phase 5: 클라이언트 모듈 분리
 
-- [ ] `src/client/reboot_actions.js`를 만든다.
-- [ ] `src/client/reboot_render.js`를 만든다.
-- [ ] `src/client/reboot_screens.js`를 만든다.
-- [ ] `src/client/reboot_online.js`를 만든다.
-- [ ] `src/client/app.js`는 bootstrap/wiring만 담당한다.
-- [ ] `app.js`는 900줄 이하로 줄인다.
-- [ ] `app.js`에서 legacy renderer anchor를 제거한다.
+- [x] `src/client/reboot_actions.js`를 만든다.
+- [x] `src/client/reboot_render.js`를 만든다.
+- [x] `src/client/reboot_screens.js`를 만든다.
+- [x] `src/client/reboot_online.js`를 만든다.
+- [x] `src/client/app.js`는 bootstrap/wiring만 담당한다.
+- [x] `app.js`는 900줄 이하로 줄인다.
+- [x] `app.js`에서 legacy renderer anchor를 제거한다.
 
 ## Phase 6: 전투 UI
 
-- [ ] 전투 화면 버튼은 `소환`, `합성`, `구원` 3개만 보인다.
-- [ ] 전투 중 상점, 패스, 미션, 광고, 유료 부활 버튼이 없다.
-- [ ] 파트너 보드와 내 보드가 동시에 보인다.
-- [ ] 경로 위 적이 카드/아이콘처럼 보이지 않는다.
-- [ ] 구원 beam은 양쪽 보드를 잇는 사건처럼 보인다.
-- [ ] 위험 상태는 텍스트 없이도 읽힌다.
+- [x] 전투 화면 버튼은 `소환`, `합성`, `구원` 3개만 보인다.
+- [x] 전투 중 상점, 패스, 미션, 광고, 유료 부활 버튼이 없다.
+- [x] 파트너 보드와 내 보드가 동시에 보인다.
+- [x] 경로 위 적이 카드/아이콘처럼 보이지 않는다.
+- [x] 구원 beam은 양쪽 보드를 잇는 사건처럼 보인다.
+- [x] 위험 상태는 텍스트 없이도 읽힌다.
 
 ## Phase 7: 결과와 재도전
 
-- [ ] 결과 화면은 제목, 하이라이트, 원인, 다음 목표, 보상, 다시 도전, 홈 순서다.
-- [ ] 실패 직후 shop/ad/paid revive/pass purchase로 보내지 않는다.
-- [ ] `다시 도전`은 새 `runId`를 만들고 state/result/events를 초기화한다.
-- [ ] named training seed 재도전은 같은 `seedName`으로 다시 시작한다.
+- [x] 결과 화면은 제목, 하이라이트, 원인, 다음 목표, 보상, 다시 도전, 홈 순서다.
+- [x] 실패 직후 shop/ad/paid revive/pass purchase로 보내지 않는다.
+- [x] `다시 도전`은 새 `runId`를 만들고 state/result/events를 초기화한다.
+- [x] named training seed 재도전은 같은 `seedName`으로 다시 시작한다.
 
 ## Phase 8: 홈, 유닛, 상점
 
-- [ ] 홈은 하나의 큰 `시작` 버튼 중심이다.
-- [ ] 컬렉션은 유닛 5종의 역할과 등급을 보여준다.
-- [ ] 상점은 스킨, 보드 테마, 합성 효과, 구원 효과, 이모트, 프로필 프레임만 판매한다.
-- [ ] paid power, paid revive, paid reroll, paid summon odds는 없다.
-- [ ] 화면은 웹페이지가 아니라 앱게임 shell처럼 보여야 한다.
+- [x] 홈은 하나의 큰 `시작` 버튼 중심이다.
+- [x] 컬렉션은 유닛 5종의 역할과 등급을 보여준다.
+- [x] 상점은 스킨, 보드 테마, 합성 효과, 구원 효과, 이모트, 프로필 프레임만 판매한다.
+- [x] paid power, paid revive, paid reroll, paid summon odds는 없다.
+- [x] 화면은 웹페이지가 아니라 앱게임 shell처럼 보여야 한다.
 
 ## Phase 9: 리부트 에셋 통합
 
-- [ ] `reboot-unit-atlas.png`를 통합한다.
-- [ ] `reboot-enemy-atlas.png`를 통합한다.
-- [ ] `reboot-ui-icons.png`를 통합한다.
-- [ ] `reboot-reward-icons.png`를 통합한다.
-- [ ] `reboot-board-accents.png`를 통합한다.
-- [ ] manifest `columns`, `rows`, `cell`, `order`가 실제 PNG와 일치한다.
-- [ ] content는 숫자 `atlasIndex` 대신 `spriteKey`를 사용한다.
-- [ ] 24px, 48px, 64px proof sheet에서 역할이 보인다.
+- [x] `reboot-unit-atlas.png`를 통합한다.
+- [x] `reboot-enemy-atlas.png`를 통합한다.
+- [x] `reboot-ui-icons.png`를 통합한다.
+- [x] `reboot-reward-icons.png`를 통합한다.
+- [x] `reboot-board-accents.png`를 통합한다.
+- [x] manifest `columns`, `rows`, `cell`, `order`가 실제 PNG와 일치한다.
+- [x] content는 숫자 `atlasIndex` 대신 `spriteKey`를 사용한다.
+- [x] 24px, 48px, 64px proof sheet에서 역할이 보인다.
 
 ## Phase 10: 브라우저 QA
 
-- [ ] `npm run dev`로 서버를 실행한다.
-- [ ] `http://localhost:4173/?mute=1`로 연다.
-- [ ] 375x812에서 확인한다.
-- [ ] 390x844에서 확인한다.
-- [ ] 430x932에서 확인한다.
-- [ ] 소리가 나지 않는다.
-- [ ] 전투 버튼은 3개뿐이다.
-- [ ] BM 버튼은 전투 중 없다.
-- [ ] 첫 120초가 자동/봇 테스트로 끝까지 플레이 가능하다.
-- [ ] 결과 화면에서 재도전이 즉시 작동한다.
+- [x] `npm run dev`로 서버를 실행한다.
+- [x] `http://localhost:4173/?mute=1`로 연다.
+- [x] 375x812에서 확인한다.
+- [x] 390x844에서 확인한다.
+- [x] 430x932에서 확인한다.
+- [x] 소리가 나지 않는다.
+- [x] 전투 버튼은 3개뿐이다.
+- [x] BM 버튼은 전투 중 없다.
+- [x] 첫 120초가 자동/봇 테스트로 끝까지 플레이 가능하다.
+- [x] 결과 화면에서 재도전이 즉시 작동한다.
 
 ## 현재 진행 포인터
 
-지금부터 Phase 1을 TDD로 진행한다.
+Phase 0~10 완료. `tools/reboot_browser_qa.mjs`로 모바일 3종 뷰포트와 120초 가속 플레이스루를 검증한다.

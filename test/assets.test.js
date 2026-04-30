@@ -22,6 +22,14 @@ const GRID_ASSETS = [
   { path: 'src/client/assets/generated/ui-icon-atlas.png', columns: 4, rows: 3 }
 ];
 
+const REBOOT_GRID_ASSETS = [
+  { path: 'src/client/assets/generated/reboot-unit-atlas.png', width: 1280, height: 256, columns: 5, rows: 1 },
+  { path: 'src/client/assets/generated/reboot-enemy-atlas.png', width: 1024, height: 256, columns: 4, rows: 1 },
+  { path: 'src/client/assets/generated/reboot-ui-icons.png', width: 1536, height: 256, columns: 6, rows: 1 },
+  { path: 'src/client/assets/generated/reboot-reward-icons.png', width: 1024, height: 256, columns: 4, rows: 1 },
+  { path: 'src/client/assets/generated/reboot-board-accents.png', width: 1280, height: 256, columns: 5, rows: 1 }
+];
+
 const WORLD_SPRITE_ASSETS = [
   { path: 'src/client/assets/generated/noise-world-sprites.png', columns: 4, rows: 2 },
   { path: 'src/client/assets/generated/relay-world-sprites.png', columns: 4, rows: 5 }
@@ -162,4 +170,17 @@ test('battle renderer never falls back to legacy card-backed enemy atlas', async
   const source = await readFile('src/client/app.js', 'utf8');
   assert.equal(source.includes('noise-enemy-atlas'), false);
   assert.equal(source.includes('noiseEnemyAtlas'), false);
+});
+
+test('reboot runtime atlases exist with exact transparent manifest dimensions', async () => {
+  for (const asset of REBOOT_GRID_ASSETS) {
+    const bytes = await readFile(asset.path);
+    assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+    assert.equal(bytes[25], 6, `${asset.path} must be RGBA`);
+    assert.equal(bytes.readUInt32BE(16), asset.width, asset.path);
+    assert.equal(bytes.readUInt32BE(20), asset.height, asset.path);
+    assert.equal(asset.width % asset.columns, 0, asset.path);
+    assert.equal(asset.height % asset.rows, 0, asset.path);
+    assert.equal(bytes.length > 1000, true, asset.path);
+  }
 });

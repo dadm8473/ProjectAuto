@@ -113,6 +113,22 @@ test('tutorial_success teaches summon, merge, and rescue within 120 seconds', ()
   assert.equal(game.boards.p2.danger < 100, true);
 });
 
+test('rescue spends charge and cannot be spammed after the tutorial window', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 111 });
+  advanceTo(game, 78);
+
+  assert.equal(game.actionState.p1.rescue, true);
+  assert.equal(castRescue(game, { playerId: 'p1' }).ok, true);
+  assert.equal(game.resources.p1.rescue, 0);
+  assert.equal(game.actionState.p1.rescue, false);
+
+  advanceTo(game, 86);
+  assert.equal(game.resources.p1.rescue, 0);
+  assert.equal(game.actionState.p1.rescue, false);
+  assert.equal(castRescue(game, { playerId: 'p1' }).ok, false);
+  assert.equal(types(game).filter((type) => type === 'rescue').length, 1);
+});
+
 test('lucky_clutch produces a visible boss final-hit result', () => {
   const game = runScript(
     createRebootGame({ mode: 'bot', seedName: 'lucky_clutch', seed: 202 }),
