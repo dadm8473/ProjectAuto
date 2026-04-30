@@ -37,16 +37,16 @@
 
 ## Phase 2: 리부트 엔진
 
-- [ ] `src/shared/reboot_game.js`를 만든다.
-- [ ] `test/reboot_game.test.js`를 먼저 작성한다.
-- [ ] `createRebootGame` state shape를 고정한다.
-- [ ] `summonToy`, `mergeToys`, `castRescue`, `tickRebootGame`, `serializeRebootState`를 구현한다.
-- [ ] `Math.random()`을 사용하지 않는다.
-- [ ] `tutorial_success`가 소환, 합성, 구원을 모두 경험하게 한다.
-- [ ] `greed_loss`는 대표 원인 `greed` 하나만 낸다.
-- [ ] `rescue_miss`는 대표 원인 `rescue_missed` 하나만 낸다.
-- [ ] `boss_clutch`는 `boss_slowed`, `boss_final_hit`, `boss_leaked` 분기를 구분한다.
-- [ ] 결과에 `nextGoal`과 `highlights`를 포함한다.
+- [x] `src/shared/reboot_game.js`를 만든다.
+- [x] `test/reboot_game.test.js`를 먼저 작성한다.
+- [x] `createRebootGame` state shape를 고정한다.
+- [x] `summonToy`, `mergeToys`, `castRescue`, `tickRebootGame`, `serializeRebootState`를 구현한다.
+- [x] `Math.random()`을 사용하지 않는다.
+- [x] `tutorial_success`가 소환, 합성, 구원을 모두 경험하게 한다.
+- [x] `greed_loss`는 대표 원인 `greed` 하나만 낸다.
+- [x] `rescue_miss`는 대표 원인 `rescue_missed` 하나만 낸다.
+- [x] `boss_clutch`는 `boss_slowed`, `boss_final_hit`, `boss_leaked` 분기를 구분한다.
+- [x] 결과에 `nextGoal`과 `highlights`를 포함한다.
 
 ## Phase 3: 기존 API 어댑터
 
