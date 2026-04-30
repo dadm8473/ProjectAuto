@@ -10,6 +10,14 @@ import {
   WAVE_PLAN,
   WAVES
 } from './content.js';
+import {
+  castRescue,
+  createRebootGame,
+  mergeToys,
+  serializeRebootState,
+  summonToy,
+  tickRebootGame
+} from './reboot_game.js';
 
 let nextId = 1;
 let nextRunId = 1;
@@ -18,6 +26,14 @@ const ONBOARDING_SUPPLY_SCRIPT = ['pulse_drum', 'pulse_drum', 'pulse_drum'];
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function isRebootGame(game) {
+  return typeof game?.runId === 'string' && game.runId.startsWith('reboot-');
+}
+
+function rebootDisabledAction() {
+  return { ok: false, reason: '리부트 전투에서는 사용하지 않습니다.' };
 }
 
 function roundedSeconds(value) {
@@ -712,7 +728,9 @@ export function computeActiveLinks(board, now = 0) {
   return links;
 }
 
-export function createGame({ mode = 'bot', seed = Date.now() } = {}) {
+export function createGame({ mode = 'bot', seed = Date.now(), seedName, branch, players } = {}) {
+  if (seedName) return createRebootGame({ mode, seedName, seed, branch, players });
+
   nextId = 1;
   return {
     title: '시그널 릴레이',
@@ -767,6 +785,8 @@ export function createGame({ mode = 'bot', seed = Date.now() } = {}) {
 }
 
 export function supplyRelay(game, { playerId }) {
+  if (isRebootGame(game)) return summonToy(game, { playerId });
+
   const board = findBoard(game, playerId);
   const slotIndex = prioritySlotIndex(board);
   const cost = currentSupplyCostForPlayer(game, playerId);
@@ -786,6 +806,8 @@ export function supplyRelay(game, { playerId }) {
 }
 
 export function mergeRelays(game, { playerId, slotIds }) {
+  if (isRebootGame(game)) return mergeToys(game, { playerId, unitIds: slotIds ?? [] });
+
   const board = findBoard(game, playerId);
   if (!Array.isArray(slotIds)) return { ok: false, reason: '같은 릴레이 3개 선택.' };
   if (slotIds.length !== GAME_RULES.mergeCount) return { ok: false, reason: '같은 릴레이 3개 선택.' };
@@ -838,6 +860,8 @@ export function mergeRelays(game, { playerId, slotIds }) {
 }
 
 export function swapRelays(game, { playerId, from, to }) {
+  if (isRebootGame(game)) return rebootDisabledAction();
+
   const board = findBoard(game, playerId);
   if (!validSlotIndex(board, from) || !validSlotIndex(board, to)) return { ok: false, reason: '잘못된 칸.' };
   if (from === to) return { ok: false, reason: '서로 다른 칸 2개 선택.' };
@@ -854,6 +878,8 @@ export function swapRelays(game, { playerId, from, to }) {
 }
 
 export function upgradeSupplyFocus(game, { playerId }) {
+  if (isRebootGame(game)) return rebootDisabledAction();
+
   const cost = GAME_RULES.supplyFocusCost + (game.stats.focusUps[playerId] ?? 0) * 25;
   if (game.resources.charge < cost) return { ok: false, reason: '전력이 부족합니다.' };
   game.resources.charge -= cost;
@@ -874,6 +900,8 @@ function boardHasActiveTwinGateLink(board, now) {
 }
 
 export function castLinkPulse(game, { playerId }) {
+  if (isRebootGame(game)) return castRescue(game, { playerId });
+
   if (game.resources.linkEnergy < GAME_RULES.linkPulseCost) return { ok: false, reason: '협력이 부족합니다.' };
   if (game.linkPulseCooldownUntil > game.now) return { ok: false, reason: '파트너 구원 재사용 대기 중.' };
   const targetPlayerId = partnerId(playerId);
@@ -943,6 +971,8 @@ export function castLinkPulse(game, { playerId }) {
 }
 
 export function overclockRelay(game, { playerId, slot }) {
+  if (isRebootGame(game)) return rebootDisabledAction();
+
   return armBoardOverdrive(game, playerId, {
     slot,
     source: 'manual',
@@ -1095,6 +1125,8 @@ function finishGame(game, { won, code, text }) {
 }
 
 export function tickGame(game, dt) {
+  if (isRebootGame(game)) return tickRebootGame(game, dt);
+
   if (game.over) return game;
   game.now += dt;
   for (const board of Object.values(game.boards)) {
@@ -1188,6 +1220,8 @@ export function tickGame(game, dt) {
 }
 
 export function serializeState(game) {
+  if (isRebootGame(game)) return serializeRebootState(game);
+
   const actionState = computeActionState(game);
   return {
     title: game.title,

@@ -50,13 +50,13 @@
 
 ## Phase 3: 기존 API 어댑터
 
-- [ ] `src/shared/game.js` public API는 유지한다.
-- [ ] `createGame`을 리부트 state로 연결한다.
-- [ ] `supplyRelay`는 `summonToy`로 연결한다.
-- [ ] `mergeRelays`는 `mergeToys`로 연결한다.
-- [ ] `castLinkPulse`는 `castRescue`로 연결한다.
-- [ ] `swapRelays`, `upgradeSupplyFocus`, `overclockRelay`는 첫 120초 리부트 전투에서 no-op/reject 처리한다.
-- [ ] 기존 테스트는 레거시 전용 수치 의존을 제거한다.
+- [x] `src/shared/game.js` public API는 유지한다.
+- [x] `createGame`을 리부트 state로 연결한다.
+- [x] `supplyRelay`는 `summonToy`로 연결한다.
+- [x] `mergeRelays`는 `mergeToys`로 연결한다.
+- [x] `castLinkPulse`는 `castRescue`로 연결한다.
+- [x] `swapRelays`, `upgradeSupplyFocus`, `overclockRelay`는 첫 120초 리부트 전투에서 no-op/reject 처리한다.
+- [x] 기존 테스트는 레거시 기본 경로를 유지하면서 리부트 seed 경로를 추가 검증한다.
 
 ## Phase 4: 서버 멀티플레이
 
