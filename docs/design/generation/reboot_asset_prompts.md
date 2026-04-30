@@ -1,0 +1,564 @@
+# ProjectAuto Reboot Asset Generation Prompts
+
+작성일: 2026-04-30
+
+## 목적
+
+이 문서는 ProjectAuto 리부트 vertical slice에 필요한 이미지 생성 기준과 프롬프트를 정의한다.
+
+기존 `Signal Relay` 에셋은 어두운 기술 패널, 회로, 릴레이 장치 중심이었다. 리부트 방향은 다음과 같이 바뀐다.
+
+- 장르: 세로형 협동 랜덤 보드-구원 TD
+- 첫 조작: `소환`, `합성`, `구원`
+- 핵심 감정: 둘이 운을 굴려 무너지는 보드를 마지막 구원으로 버틴다.
+- 비주얼 thesis: premium animated co-op toy-board
+
+에셋은 예쁜 단품 이미지가 아니라 실제 390x844 세로 화면에서 읽히는 게임 자산이어야 한다.
+
+## 선행 게이트
+
+다음 4개 스타일 락 산출물이 승인되기 전에는 전투 UI 구현과 홈/상점/컬렉션 리스킨을 시작하지 않는다.
+
+1. 홈 mockup 1장
+2. 전투 mockup 1장
+3. 유닛/적 스타일 샘플 1장
+4. 보상/재화 샘플 1장
+
+승인 기준:
+
+- 390x844 세로 화면에서 모바일 게임처럼 보인다.
+- 웹 대시보드, SaaS 패널, 기술 콘솔처럼 보이지 않는다.
+- 유닛과 적이 64px에서 실루엣으로 구분된다.
+- 생성 이미지에 글자, 숫자, 워터마크가 없다.
+- 홈/전투/보상/상점이 같은 세계의 UI처럼 보인다.
+
+## 공통 스타일 규칙
+
+### 비주얼 thesis
+
+Premium animated co-op toy-board.
+
+### 형태 언어
+
+- Chunky silhouettes
+- Compact toy-machine bodies
+- Soft mechanical charm
+- Rounded but not childish
+- Clear role icons through shape
+- Thick rim light
+- Readable at 24px, 48px, 64px
+
+### 재질
+
+- Polished painted metal
+- Soft glass cores
+- Rubber-like toy joints
+- Subtle luminous signal seams
+- Small screws, sockets, and handles
+- No thin circuit-board detail as the primary read
+
+### 팔레트
+
+- Base: deep graphite, warm dark navy, muted charcoal
+- Signal: bright teal
+- Charge: amber yellow
+- Rescue: warm cyan + white core
+- Danger: coral red
+- Slow/control: cool mint
+- Reward/premium: gold + ivory
+- Disabled: desaturated slate
+
+금지:
+
+- Dominant purple/blue gradient backgrounds
+- Beige/brown/espresso dominance
+- Casino/dice/pip language
+- Thin sci-fi linework
+- Dark unreadable silhouettes
+- Pure UI cards as enemies
+- Text inside generated images
+
+### 스타일 락 고정 토큰
+
+아래 값은 홈, 전투, 상점, 유닛, 적, UI 아이콘에 공통 적용한다. 한 번 승인되면 같은 vertical slice 안에서 바꾸지 않는다.
+
+| Token | Locked Value |
+| --- | --- |
+| Camera | three-quarter top-down, 25-30 degree tilt, phone-game asset view |
+| Key light | top-left warm key, lower-right soft fill |
+| Shadow | soft ellipse, 12-18% opacity, y offset 8-14px at 256px cell |
+| Outer outline | dark graphite outline, 3-5px at 256px cell |
+| Inner rim | 1-2px colored rim on glass/core edge |
+| Unit material | painted toy metal shell, soft glass core, rubber feet/handles |
+| Enemy material | corrupted rubber/glass toy fragment, never square UI tile |
+| Button material | pressed painted metal frame, glass icon well, subtle amber/cyan light |
+| Runtime frame radius | 8px or less for UI containers; generated frame corners must not look like web cards |
+| Rarity frame common | teal thin rim, graphite body |
+| Rarity frame upgraded | amber double rim, brighter core |
+| Rescue frame | cyan-white core, teal rim, clean medical/rescue feeling without text |
+| Boss/danger frame | coral pulse rim, dark graphite shell, no skull/text glyph |
+| Effect density | one primary glow per object; no full-screen fog or illegible particle wash |
+
+생성 프롬프트에는 위 토큰을 반복 삽입한다. 결과물이 토큰과 다르면 후처리로 보정하지 말고 재생성한다.
+
+## 에셋 인벤토리
+
+### Style Lock
+
+| Asset | Count | Format | Use |
+| --- | --- | --- | --- |
+| Home mockup | 1 | PNG/WebP | 홈 방향 승인 |
+| Battle mockup | 1 | PNG/WebP | 전투 방향 승인 |
+| Unit/enemy style sample | 1 | PNG/WebP | 캐릭터/적 형태 승인 |
+| Reward/currency sample | 1 | PNG/WebP | 보상 방향 승인 |
+
+### Vertical Slice Runtime Assets
+
+| Asset | Count | Format | Notes |
+| --- | --- | --- | --- |
+| Unit atlas | 5 units | PNG/WebP transparent | 5 cells, equal size |
+| Enemy atlas | 4 enemies | PNG/WebP transparent | 4 cells, equal size |
+| UI/action icons | 6+ icons | PNG/WebP transparent | summon, merge, rescue, danger, reward |
+| Reward icons | 3+ icons | PNG/WebP transparent | soft currency, shard, season progress |
+| Board frame accents | 3-5 pieces | PNG/WebP transparent | sockets, warning frame, rescue beam |
+
+## 런타임 아틀라스 계약
+
+생성 이미지는 예쁜 샘플이 아니라 코드가 바로 slice해서 그릴 수 있는 런타임 자산이어야 한다. 모든 아틀라스는 straight alpha PNG 또는 lossless WebP로 저장한다. Premultiplied alpha 색 번짐, 검은 배경색 bleed, 흰 matte bleed는 실패다.
+
+### Unit Atlas
+
+| Field | Value |
+| --- | --- |
+| File | `src/client/assets/generated/reboot-unit-atlas.png` |
+| Final size | 1280x256 |
+| Grid | 5 columns x 1 row |
+| Cell size | 256x256 |
+| Cell order | `spark_pin`, `toktok_amp`, `slow_coil`, `burst_pin`, `rescue_coil` |
+| Runtime pivot | x 128, y 176 |
+| Subject bbox | 160-210px on longest side |
+| Center tolerance | cell center x deviation <= 8px |
+| Foot/pivot tolerance | lowest contact point y 166-188 |
+| Transparency | transparent pixel ratio >= 45% per cell |
+| Margin | >= 18px clear margin on all sides |
+
+### Enemy Atlas
+
+| Field | Value |
+| --- | --- |
+| File | `src/client/assets/generated/reboot-enemy-atlas.png` |
+| Final size | 1024x256 |
+| Grid | 4 columns x 1 row |
+| Cell size | 256x256 |
+| Cell order | `noise_shard`, `quick_noise`, `heavy_noise`, `mini_boss` |
+| Runtime pivot | x 128, y 172 |
+| Subject bbox | 130-220px on longest side |
+| Center tolerance | cell center x deviation <= 8px |
+| Ground contact tolerance | lowest contact point y 160-190 |
+| Transparency | transparent pixel ratio >= 45% per cell |
+| Margin | >= 18px clear margin on all sides |
+
+### UI Action Icon Atlas
+
+| Field | Value |
+| --- | --- |
+| File | `src/client/assets/generated/reboot-ui-icons.png` |
+| Final size | 1536x256 |
+| Grid | 6 columns x 1 row |
+| Cell size | 256x256 |
+| Cell order | `summon_charge`, `merge_action`, `rescue_action`, `partner_danger`, `boss_warning`, `reward_shard` |
+| Runtime pivot | x 128, y 128 |
+| Subject bbox | 148-190px on longest side |
+| Center tolerance | x/y deviation <= 6px |
+| Transparency | transparent pixel ratio >= 35% per cell |
+| Margin | >= 24px clear margin on all sides |
+
+### Board Accent Atlas
+
+| Field | Value |
+| --- | --- |
+| File | `src/client/assets/generated/reboot-board-accents.png` |
+| Final size | 1280x256 |
+| Grid | 5 columns x 1 row |
+| Cell size | 256x256 |
+| Cell order | `player_socket`, `partner_socket`, `merge_ready_frame`, `rescue_beam_segment`, `danger_pulse_frame` |
+| Runtime pivot | x 128, y 128 |
+| Frame bbox | 210-244px on longest side |
+| Center tolerance | x/y deviation <= 6px |
+| Transparency | transparent pixel ratio >= 25% per cell |
+| Margin | >= 6px clear margin on all sides |
+
+### Reward Icon Atlas
+
+| Field | Value |
+| --- | --- |
+| File | `src/client/assets/generated/reboot-reward-icons.png` |
+| Final size | 1024x256 |
+| Grid | 4 columns x 1 row |
+| Cell size | 256x256 |
+| Cell order | `soft_currency`, `cosmetic_shard`, `season_progress`, `unlock_capsule` |
+| Runtime pivot | x 128, y 128 |
+| Subject bbox | 148-190px on longest side |
+| Center tolerance | x/y deviation <= 6px |
+| Transparency | transparent pixel ratio >= 35% per cell |
+| Margin | >= 24px clear margin on all sides |
+
+## 런타임 소비 전환 계약
+
+현재 앱은 기존 `Signal Relay` 자산을 다음 방식으로 소비한다.
+
+| Current Runtime File | Current Grid | Current Use |
+| --- | --- | --- |
+| `src/client/assets/generated/relay-unit-atlas.png` | legacy unit grid | legacy fallback unit art |
+| `src/client/assets/generated/relay-world-sprites.png` | 4 columns x 5 rows | legacy relay world sprites |
+| `src/client/assets/generated/noise-world-sprites.png` | 4 columns x 2 rows | legacy enemy/world sprites |
+| `src/client/assets/generated/ui-icon-atlas.png` | legacy UI grid | legacy UI icons |
+
+리부트 구현은 위 파일과 grid를 재사용하지 않는다. `src/client/reboot_render.js`는 아래 manifest만 통해 새 자산을 slice한다.
+
+```js
+export const REBOOT_ATLAS_MANIFEST = {
+  units: {
+    src: '/src/client/assets/generated/reboot-unit-atlas.png',
+    columns: 5,
+    rows: 1,
+    cell: { width: 256, height: 256 },
+    pivot: { x: 128, y: 176 },
+    order: ['spark_pin', 'toktok_amp', 'slow_coil', 'burst_pin', 'rescue_coil']
+  },
+  enemies: {
+    src: '/src/client/assets/generated/reboot-enemy-atlas.png',
+    columns: 4,
+    rows: 1,
+    cell: { width: 256, height: 256 },
+    pivot: { x: 128, y: 172 },
+    order: ['noise_shard', 'quick_noise', 'heavy_noise', 'mini_boss']
+  },
+  ui: {
+    src: '/src/client/assets/generated/reboot-ui-icons.png',
+    columns: 6,
+    rows: 1,
+    cell: { width: 256, height: 256 },
+    pivot: { x: 128, y: 128 },
+    order: ['summon_charge', 'merge_action', 'rescue_action', 'partner_danger', 'boss_warning', 'reward_shard']
+  },
+  rewards: {
+    src: '/src/client/assets/generated/reboot-reward-icons.png',
+    columns: 4,
+    rows: 1,
+    cell: { width: 256, height: 256 },
+    pivot: { x: 128, y: 128 },
+    order: ['soft_currency', 'cosmetic_shard', 'season_progress', 'unlock_capsule']
+  },
+  board: {
+    src: '/src/client/assets/generated/reboot-board-accents.png',
+    columns: 5,
+    rows: 1,
+    cell: { width: 256, height: 256 },
+    pivot: { x: 128, y: 128 },
+    order: ['player_socket', 'partner_socket', 'merge_ready_frame', 'rescue_beam_segment', 'danger_pulse_frame']
+  }
+};
+```
+
+전환 규칙:
+
+- `src/client/reboot_render.js`는 legacy `relayWorldSprites`, `noiseWorldSprites`, `relayAtlas`, `bossDisruptionAtlas`를 import하거나 참조하지 않는다.
+- 리부트 content의 `atlasIndex`는 숫자가 아니라 manifest key를 사용한다. 예: `spriteKey: 'spark_pin'`.
+- atlas slice는 `order.indexOf(spriteKey)`로만 계산한다.
+- `test/assets.test.js`는 리부트 manifest의 `columns`, `rows`, `cell`, `order`와 실제 PNG 크기가 일치하는지 검증한다.
+- 리부트 적은 `noise-world-sprites.png`의 4x2 grid로 slice하면 실패다.
+- 기존 레거시 파일은 fallback으로도 쓰지 않는다. 임시 이미지가 필요하면 리부트 manifest에 맞는 임시 silhouette atlas를 만든다.
+
+### Metadata Manifest
+
+후처리 결과에는 slice manifest를 함께 남긴다.
+
+```json
+{
+  "asset_id": "reboot-unit-atlas-v1",
+  "image": "src/client/assets/generated/reboot-unit-atlas.png",
+  "dimensions": { "width": 1280, "height": 256 },
+  "grid": { "columns": 5, "rows": 1 },
+  "cell": { "width": 256, "height": 256 },
+  "alpha": "straight",
+  "pivot": { "x": 128, "y": 176 },
+  "order": ["spark_pin", "toktok_amp", "slow_coil", "burst_pin", "rescue_coil"],
+  "qa": {
+    "bbox_margin_min_px": 18,
+    "center_deviation_max_px": 8,
+    "transparent_pixel_ratio_min": 0.45,
+    "stray_alpha_outside_bbox_max_ratio": 0.01,
+    "thumbnail_passed": ["24px", "48px", "64px"]
+  }
+}
+```
+
+## 네이밍 규칙
+
+생성 원본:
+
+```text
+docs/design/generation/source/reboot/<asset-type>/<YYYYMMDD>-<short-name>.png
+```
+
+후처리 결과:
+
+```text
+docs/design/generation/processed/reboot/<asset-type>/<short-name>.png
+```
+
+런타임 적용:
+
+```text
+src/client/assets/generated/reboot-<asset-type>.png
+```
+
+메타데이터:
+
+```text
+docs/design/generation/processed/reboot/<asset-type>/<short-name>.json
+```
+
+메타데이터 필수 필드:
+
+```json
+{
+  "asset_id": "reboot-unit-atlas-v1",
+  "created_at": "2026-04-30",
+  "source_prompt": "prompt text",
+  "postprocess": ["background_removed", "rim_normalized", "atlas_sliced"],
+  "final_dimensions": "1280x256",
+  "grid": { "columns": 5, "rows": 1 },
+  "cell": { "width": 256, "height": 256 },
+  "pivot": { "x": 128, "y": 176 },
+  "order": ["spark_pin", "toktok_amp", "slow_coil", "burst_pin", "rescue_coil"],
+  "qa": {
+    "bbox_margin_min_px": 18,
+    "center_deviation_max_px": 8,
+    "transparent_pixel_ratio_min": 0.45,
+    "stray_alpha_outside_bbox_max_ratio": 0.01,
+    "thumbnail_passed": ["24px", "48px", "64px"]
+  },
+  "intended_use": "first 120 seconds unit atlas",
+  "approval_state": "candidate"
+}
+```
+
+## Style Lock Prompt: Home Mockup
+
+```text
+Use case: stylized-concept
+Asset type: vertical mobile game home screen mockup for ProjectAuto reboot; style lock image.
+Primary request: Create a polished portrait mobile game home screen for a cooperative random board-rescue tower defense game. The screen must feel like a real shipped Korean mobile game, not a website, dashboard, or prototype.
+Core fantasy: two players collect and deploy charming signal toy-machines, merge them, and rescue each other on a shared glowing track.
+Composition: exact 9:16 portrait phone composition. Center 35-45% of screen occupied by a tactile toy-board preview with 5 collectible signal toy units lined up like a premium game shelf. One dominant play button at bottom-center. Compact currencies at top. Bottom dock with icon-first entries for units, shop, missions, season.
+Style lock tokens: three-quarter top-down 25-30 degree asset view inside UI previews, top-left warm key light, lower-right soft fill, dark graphite 3-5px outlines, 1-2px colored inner rim, pressed painted metal frames, glass icon wells, runtime frame radius 8px or less, one primary glow per object.
+Visual style: premium animated co-op toy-board, chunky collectible toy-machines, polished painted metal, soft glass cores, thick rim light, crisp mobile UI frames, bright readable action areas.
+Palette: deep graphite and warm charcoal base, teal signal glow, amber charge, coral danger accents, gold reward highlights, ivory UI edges.
+Mood: playful but premium, readable, collectible, energetic, thumb-first.
+Constraints: no readable text inside generated image, no letters, no numbers, no watermark. UI labels will be rendered by code. Do not copy any existing game. No dice, no casino pips, no chibi heroes, no dark sci-fi control panel, no SaaS dashboard cards.
+Quality: high production value mobile game screen, strong first impression, clear commercial app-game feeling.
+```
+
+## Style Lock Prompt: Battle Mockup
+
+```text
+Use case: stylized-concept
+Asset type: vertical mobile game battle screen mockup for ProjectAuto reboot; style lock image.
+Primary request: Create a polished 390x844 portrait battle screen mockup for a cooperative random board-rescue tower defense game. It must be readable as gameplay within one second.
+Core fantasy: two players defend a shared glowing toy track by summoning, merging, and rescuing with collectible signal toy-machines.
+Composition: top compact partner board and danger meter, center shared enemy track with small toy-like corruption enemies moving toward a gate, lower player board with 5 toy-machine units, bottom action area with three large icon buttons for summon, merge, rescue. No shop or monetization buttons.
+Required readability: enemy path, player board, partner board, danger state, summon/merge/rescue actions must be identifiable without text.
+Style lock tokens: three-quarter top-down 25-30 degree gameplay view, top-left warm key light, lower-right soft fill, dark graphite 3-5px outlines on units/enemies, 1-2px colored inner rims, soft ellipse shadows, pressed painted metal action buttons, glass icon wells, runtime frame radius 8px or less, one primary glow per object.
+Visual style: premium animated co-op toy-board, high-end Korean mobile game combat UI, chunky silhouettes, crisp effects, tactile toy materials, strong attack impacts and rescue beam.
+Palette: graphite/charcoal base, teal signal track, amber summon charge, coral danger warning, cyan-white rescue beam, gold reward sparkle only as minor accent.
+Motion impression: merge reveal glow, rescue beam connecting both boards, boss warning silhouette, small hit flashes.
+Constraints: no readable text inside generated image, no letters, no numbers, no watermark. No dice, no casino UI, no generic card battler, no dark technical console, no thin circuit diagram.
+Quality: shipped-game battle screen, compact, juicy, readable at phone size.
+```
+
+## Style Lock Prompt: Unit/Enemy Sample
+
+```text
+Use case: stylized-concept
+Asset type: style sample sheet for ProjectAuto reboot units and enemies.
+Primary request: Create a clean style sample sheet showing 5 collectible signal toy-machine units and 4 toy-like corruption enemies for a vertical co-op random tower defense game. Transparent or neutral simple background, no text.
+Unit subjects: Spark Pin basic attacker, Toktok Amp support booster, Slow Coil control unit, Burst Pin upgraded attacker, Rescue Coil co-op rescue unit.
+Enemy subjects: Noise Shard basic enemy, Quick Noise fast enemy, Heavy Noise tank enemy, Mini Boss chunky corruption toy.
+Style lock tokens: three-quarter top-down 25-30 degree camera, top-left warm key light, lower-right soft fill, soft ellipse shadows, dark graphite 3-5px outer outline, 1-2px colored inner rim, one primary glow per object.
+Visual style: premium mobile game toy-board assets, chunky readable silhouettes, polished painted metal and soft glass cores for units, corrupted rubber/glass toy fragments for enemies, consistent three-quarter top-down camera, consistent top-left lighting, strong rim light.
+Role readability: attacker has pointed spark barrel, amplifier has round speaker/booster shape, slow coil has spiral/magnet shape, burst pin is larger and more powerful, rescue coil has cyan-white medical/rescue core; enemies have clear speed/tank/boss silhouette differences.
+Palette: units use teal, amber, mint, cyan-white rescue accents; enemies use coral danger, dark graphite, small teal corruption highlights.
+Constraints: no readable text, no letters, no numbers, no watermark. No dice, no playing cards, no humanoid heroes, no tiny thin details.
+Quality: asset direction proof that each object reads at 64px.
+```
+
+## Style Lock Prompt: Reward/Currency Sample
+
+```text
+Use case: stylized-concept
+Asset type: reward and currency style sample for ProjectAuto reboot.
+Primary request: Create a compact premium mobile game reward/currency sample sheet for a cooperative toy-board tower defense game. No text.
+Subjects: summon charge token, rescue energy core, cosmetic shard, soft currency coin, season progress badge, new unlock capsule, reward chest.
+Style lock tokens: three-quarter top-down 25-30 degree icon view, top-left warm key light, lower-right soft fill, soft ellipse shadow, dark graphite 3-5px outline, 1-2px colored inner rim, pressed painted metal micro-frame, glass core, one primary glow per icon.
+Visual style: cohesive game UI icons, polished toy-like metal and glass, thick outlines, strong silhouette, readable at 24px and 48px, matching ProjectAuto reboot unit style.
+Palette: amber summon charge, cyan-white rescue, gold/ivory rewards, teal signal accents, coral danger only for warning badge, graphite frame.
+Composition: equal icon cells with generous padding, consistent camera and lighting, transparent or simple neutral background, no labels.
+Constraints: no readable text, no letters, no numbers, no watermark. No casino chips, dice, gacha machine, copied app icons, or generic emojis.
+Quality: shipped mobile game reward icon set.
+```
+
+## Runtime Prompt: Unit Atlas
+
+```text
+Use case: sprite-atlas
+Asset type: 5-cell transparent unit atlas for ProjectAuto reboot.
+Primary request: Create 5 collectible signal toy-machine unit sprites in a single horizontal sprite atlas. Transparent background. Equal cell sizes. No text.
+Output contract: final atlas 1280x256, 5 columns x 1 row, each cell exactly 256x256, straight alpha, no premultiplied alpha bleed.
+Subjects left to right:
+1. Spark Pin: basic attacker, eager tiny striker personality, small pointed spark barrel, teal glass core like a bright eye-light, amber spark tip, iconic forward-leaning pose.
+2. Toktok Amp: support booster, cheerful round speaker-like amplifier body, amber ring, friendly chunky silhouette, little handle ears, readable as the team's booster.
+3. Slow Coil: control unit, calm sleepy coil personality, mint spiral coil and magnetic feet, cool glow, iconic slow-field posture.
+4. Burst Pin: upgraded attacker, bold premium version of Spark Pin, larger double spark barrel, stronger teal/amber glow, heroic compact pose, clearly grade 2.
+5. Rescue Coil: co-op rescue unit, caring rescue-beacon personality, cyan-white rescue core, small wing-like handles, beam emitter shape, reads as the unit players want to protect.
+Style lock tokens: three-quarter top-down 25-30 degree camera, top-left warm key light, lower-right soft fill, soft ellipse shadow, dark graphite 3-5px outline, 1-2px colored inner rim, painted toy metal shell, soft glass core, one primary glow per unit.
+Style: premium mobile game toy-board unit sprites, three-quarter top-down 25-30 degree camera, chunky silhouettes, polished painted metal, soft glass cores, dark graphite 3-5px outline, 1-2px inner colored rim, readable at 64px.
+Lighting: top-left warm key light, lower-right soft fill, soft ellipse shadow at 12-18% opacity, consistent scale.
+Constraints: transparent background, no card frames, no square tile, no text, no letters, no numbers, no watermark, no dice, no humanoid heroes.
+Export target: subject bbox 160-210px longest side, pivot x 128 y 176, foot contact y 166-188, center x deviation <= 8px, at least 18px margin around the subject.
+```
+
+## Runtime Prompt: Enemy Atlas
+
+```text
+Use case: sprite-atlas
+Asset type: 4-cell transparent enemy atlas for ProjectAuto reboot.
+Primary request: Create 4 toy-like corruption enemy sprites in a single horizontal sprite atlas. Transparent background. Equal cell sizes. No text.
+Output contract: final atlas 1024x256, 4 columns x 1 row, each cell exactly 256x256, straight alpha, no premultiplied alpha bleed.
+Subjects left to right:
+1. Noise Shard: small basic corruption fragment, coral core, graphite shell, simple triangular chunky silhouette.
+2. Quick Noise: fast enemy, small streamlined body, bright coral streak, lean silhouette.
+3. Heavy Noise: tank enemy, squat heavy body, thick armor shell, slow chunky silhouette.
+4. Mini Boss: larger corruption toy boss, crown-like broken signal core, coral danger glow, clearly larger than others.
+Style lock tokens: three-quarter top-down 25-30 degree camera, top-left warm key light, lower-right soft fill, soft ellipse shadow, dark graphite 3-5px outline, 1-2px colored inner rim, corrupted rubber/glass toy fragment material, one primary coral glow per enemy.
+Style: premium mobile game toy-board enemy sprites, corrupted glass/rubber toy materials, three-quarter top-down 25-30 degree camera, strong silhouette, readable at 48px, not a UI icon card.
+Lighting: top-left warm key light, lower-right soft fill, subtle ellipse shadow, teal rim contamination.
+Constraints: transparent background, no card frames, no square tile, no text, no watermark, no dice, no generic monster copy.
+Export target: subject bbox 130-220px longest side, pivot x 128 y 172, lowest contact y 160-190, center x deviation <= 8px, at least 18px margin around the subject.
+```
+
+## Runtime Prompt: UI Action Icons
+
+```text
+Use case: sprite-atlas
+Asset type: transparent UI action icon atlas for ProjectAuto reboot.
+Primary request: Create 6 compact mobile game UI action/resource icons in a single horizontal transparent atlas. Equal cells. No text.
+Output contract: final atlas 1536x256, 6 columns x 1 row, each cell exactly 256x256, straight alpha, no premultiplied alpha bleed.
+Subjects left to right:
+1. Summon charge: amber toy battery/token with spark.
+2. Merge action: two small toy cores combining into one burst.
+3. Rescue action: cyan-white beam heart/core connecting two boards.
+4. Partner danger: coral warning gate with pulse.
+5. Boss warning: chunky boss silhouette badge with coral rim.
+6. Reward shard: gold/ivory cosmetic shard with teal glint.
+Style lock tokens: three-quarter top-down 25-30 degree icon view, top-left warm key light, lower-right soft fill, soft ellipse shadow, dark graphite 3-5px outline, 1-2px colored inner rim, pressed painted metal micro-frame, glass core, one primary glow per icon.
+Style: premium mobile game UI icons, chunky symbolic silhouettes, polished metal/glass, high contrast, readable at 24px.
+Palette: amber summon, teal merge, cyan-white rescue, coral danger, gold reward, graphite outline.
+Constraints: transparent background, no text, no letters, no numbers, no watermark, no dice pips, no generic emojis.
+Export target: icon bbox 148-190px longest side, pivot x 128 y 128, center deviation <= 6px, at least 24px margin around the subject.
+```
+
+## Runtime Prompt: Board Accents
+
+```text
+Use case: sprite-atlas
+Asset type: transparent board accent atlas for ProjectAuto reboot battle screen.
+Primary request: Create 5 transparent board accent pieces for a vertical co-op toy-board tower defense game. Equal cells. No text.
+Output contract: final atlas 1280x256, 5 columns x 1 row, each cell exactly 256x256, straight alpha, no premultiplied alpha bleed.
+Subjects left to right:
+1. Player socket frame: rounded chunky toy socket with teal rim.
+2. Partner socket frame: smaller matching socket with cyan rim.
+3. Merge ready frame: glowing amber dual-unit highlight frame.
+4. Rescue beam segment: cyan-white beam with soft core and chunky toy energy edges.
+5. Danger pulse frame: coral warning border for partner board.
+Style lock tokens: three-quarter top-down 25-30 degree UI-gameplay hybrid view, top-left warm key light, lower-right soft fill, dark graphite 3-5px outline, 1-2px colored inner rim, pressed painted metal frame material, glass energy wells, one primary glow per accent.
+Style: premium mobile game UI/gameplay hybrid assets, chunky toy-board material, polished metal, readable at phone scale.
+Constraints: transparent background, no text, no watermark, no full-screen panel, no thin circuit lines.
+Export target: frame bbox 210-244px longest side, pivot x 128 y 128, center deviation <= 6px, at least 6px margin around the subject.
+```
+
+## Runtime Prompt: Reward Icons
+
+```text
+Use case: sprite-atlas
+Asset type: transparent reward icon atlas for ProjectAuto reboot result, shop, and collection screens.
+Primary request: Create 4 compact mobile game reward icons in a single horizontal transparent atlas. Equal cells. No text.
+Output contract: final atlas 1024x256, 4 columns x 1 row, each cell exactly 256x256, straight alpha, no premultiplied alpha bleed.
+Subjects left to right:
+1. Soft currency: gold/ivory toy coin with teal signal glint, not a casino chip.
+2. Cosmetic shard: faceted gold/ivory shard with teal edge light.
+3. Season progress: premium toy badge with amber progress core, no letters or numbers.
+4. Unlock capsule: compact glass-and-metal capsule with a soft cyan reward core, no gacha-machine silhouette.
+Style lock tokens: three-quarter top-down 25-30 degree icon view, top-left warm key light, lower-right soft fill, soft ellipse shadow, dark graphite 3-5px outline, 1-2px colored inner rim, pressed painted metal micro-frame, glass core, one primary glow per icon.
+Style: premium mobile game reward icons, chunky symbolic silhouettes, polished metal/glass, high contrast, readable at 24px.
+Palette: gold/ivory reward, teal signal accent, amber progress, cyan unlock core, graphite outline.
+Constraints: transparent background, no text, no letters, no numbers, no watermark, no casino chips, no dice, no generic emojis, no copied app icons.
+Export target: icon bbox 148-190px longest side, pivot x 128 y 128, center deviation <= 6px, at least 24px margin around the subject.
+```
+
+## 후처리 기준
+
+필수:
+
+- 배경 제거
+- straight alpha export; premultiplied alpha 금지
+- alpha edge cleanup; outside subject bbox stray semi-transparent pixels <= 1% of cell pixels
+- atlas cell alignment; final dimensions and cell dimensions exactly match the runtime atlas contract
+- per-cell transparent pixel ratio matches the runtime atlas contract
+- subject bounding box margin meets each atlas contract
+- center/pivot deviation meets each atlas contract
+- outline/rim consistency
+- color correction to shared palette
+- 24px/48px/64px proof sheet
+- in-game screenshot proof at 375x812, 390x844, 430x932
+
+자동/수동 QA 기준:
+
+- `image.width` and `image.height` exactly equal the atlas contract.
+- `image.width % cellWidth === 0` and `image.height % cellHeight === 0`.
+- 각 cell을 독립 PNG로 slice했을 때 배경이 투명해야 한다.
+- 24px, 48px, 64px proof sheet에서 5초 안에 역할을 말할 수 있어야 한다.
+- 390x844 전투 화면에서 적은 track 위 위협체처럼 보여야 하며 UI 아이콘처럼 떠 있으면 실패다.
+- 24px 아이콘은 텍스트 없이 소환/합성/구원 중 무엇인지 구분되어야 한다.
+
+Reject 조건:
+
+- 텍스트/숫자/워터마크가 보임
+- 검은 사각형 배경이 남음
+- 흰색/검은색 matte bleed가 outline 주변에 남음
+- premultiplied alpha 때문에 어두운 halo가 생김
+- 에셋이 카드처럼 보임
+- 64px에서 유닛 역할이 구분되지 않음
+- 적이 트랙 위 오브젝트가 아니라 UI 아이콘처럼 보임
+- 색상만 다르고 실루엣이 같음
+- 홈/전투/상점 화면에서 서로 다른 게임의 에셋처럼 보임
+- 피사체가 잘림
+- 부품이 비정상적으로 중복되거나 여분의 다리/손잡이/코어가 붙음
+- 유닛과 적의 원근이 서로 다름
+- edge가 흐리거나 저해상도 업스케일처럼 보임
+- baked shadow box가 cell 전체를 덮음
+- 더러운 반투명 배경이 남음
+- atlas cell이 중복되거나 순서가 manifest와 다름
+- 24px에서 pseudo-text, 문자처럼 보이는 장식, 숫자 같은 glyph가 보임
+
+## 승인 체크리스트
+
+- 홈 mockup이 웹페이지가 아니라 게임 준비실처럼 보인다.
+- 전투 mockup에서 적 경로, 내 보드, 파트너 보드, 위험, 주 버튼이 보인다.
+- 유닛 5종은 64px에서 실루엣으로 구분된다.
+- 적 4종은 트랙 위 위협체처럼 보인다.
+- 구원 beam은 양쪽 보드를 연결하는 사건처럼 보인다.
+- 소환/합성/구원 아이콘은 24px에서 구분된다.
+- 모든 에셋은 텍스트 없이 의미가 읽힌다.
+- 생성 프롬프트와 후처리 기록이 메타데이터로 남는다.
