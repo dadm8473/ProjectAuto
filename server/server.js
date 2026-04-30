@@ -1,20 +1,16 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import {
-  castLinkPulse,
-  mergeRelays,
   serializeState,
-  supplyRelay,
-  swapRelays,
   tickGame,
-  tryBuyShopItem,
-  upgradeSupplyFocus
+  tryBuyShopItem
 } from '../src/shared/game.js';
 import { boardForPlayer, createOnlineRoom, resetFinishedRoomForJoin, resetRoomGame } from './room.js';
 import { approveClientPurchase, safeProfile } from './profile_purchase.js';
+import { dispatchBattleAction } from './reboot_action_dispatch.js';
 import { acceptKey, decodeClientFrame, encodeServerFrame } from './ws.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -69,56 +65,62 @@ function broadcast(message) {
   }
 }
 
-function assignPlayers() {
-  const humans = [...room.clients.values()];
-  room.game.players = humans.slice(0, 2).map((client, index) => ({
+function isRebootGame(game) {
+  return typeof game?.runId === 'string' && game.runId.startsWith('reboot-');
+}
+
+function assignPlayers(targetRoom = room) {
+  const humans = [...targetRoom.clients.values()];
+  targetRoom.game.players = humans.slice(0, 2).map((client, index) => ({
     id: client.playerId,
     name: client.name || `플레이어 ${index + 1}`,
     bot: false,
     ready: true
   }));
-  while (room.game.players.length < 2) {
-    room.game.players.push({ id: 'p2', name: '자동 파트너', bot: true, ready: true });
+  while (targetRoom.game.players.length < 2) {
+    targetRoom.game.players.push({ id: 'p2', name: '자동 파트너', bot: true, ready: true });
   }
 }
 
-function applyProfileToRoomGame(profile) {
+function applyProfileToRoomGame(profile, targetRoom = room) {
   const safe = safeProfile(profile);
-  room.game.resources.gems = Math.max(room.game.resources.gems ?? 0, safe.gems);
-  room.game.metaProfile.startingGems = Math.max(room.game.metaProfile.startingGems ?? 0, safe.gems);
-  room.game.unlocks = [...new Set([...(room.game.unlocks ?? []), ...safe.unlocks])];
+  targetRoom.game.resources.gems = Math.max(targetRoom.game.resources.gems ?? 0, safe.gems);
+  targetRoom.game.metaProfile = targetRoom.game.metaProfile ?? { startingGems: 0 };
+  targetRoom.game.metaProfile.startingGems = Math.max(targetRoom.game.metaProfile.startingGems ?? 0, safe.gems);
+  targetRoom.game.unlocks = [...new Set([...(targetRoom.game.unlocks ?? []), ...safe.unlocks])];
 }
 
-function handleAction(socket, action) {
-  const client = room.clients.get(socket);
+export function handleActionForTest({ targetRoom = room, socket, action, send: sendFn = send }) {
+  const client = targetRoom.clients.get(socket);
   if (action.type === 'join') {
     client.playerId = action.playerId || client.playerId;
     client.name = String(action.name || '플레이어').slice(0, 18);
     client.profile = safeProfile(action.profile);
-    assignPlayers();
-    applyProfileToRoomGame(client.profile);
-    const boardPlayer = boardForPlayer(room.game.players, client.playerId);
-    send(socket, { type: 'state', state: serializeState(room.game), playerId: client.playerId, boardPlayer });
+    assignPlayers(targetRoom);
+    applyProfileToRoomGame(client.profile, targetRoom);
+    const boardPlayer = boardForPlayer(targetRoom.game.players, client.playerId);
+    sendFn(socket, { type: 'state', state: serializeState(targetRoom.game), playerId: client.playerId, boardPlayer });
     return;
   }
   const playerId = client?.playerId ?? 'guest';
   let result = { ok: false, reason: '알 수 없는 행동.' };
-  const boardPlayer = boardForPlayer(room.game.players, playerId);
-  if (action.type === 'supply' || action.type === 'summon') result = supplyRelay(room.game, { playerId: boardPlayer });
-  if (action.type === 'merge') result = mergeRelays(room.game, { playerId: boardPlayer, slotIds: action.slotIds ?? [] });
-  if (action.type === 'swap') result = swapRelays(room.game, { playerId: boardPlayer, from: action.from, to: action.to });
-  if (action.type === 'focus' || action.type === 'chance') result = upgradeSupplyFocus(room.game, { playerId: boardPlayer });
-  if (action.type === 'pulse' || action.type === 'boost') result = castLinkPulse(room.game, { playerId: boardPlayer });
-  if (action.type === 'buy') {
+  const boardPlayer = boardForPlayer(targetRoom.game.players, playerId);
+  if (action.type === 'buy' && !isRebootGame(targetRoom.game)) {
     const approval = approveClientPurchase(client, action);
     if (!approval.ok) result = { ok: false, reason: approval.reason };
     else {
-      room.game.resources.gems = Math.max(room.game.resources.gems ?? 0, approval.profile.gems + (approval.item.price.gems ?? 0));
-      result = tryBuyShopItem(room.game, { playerId, itemId: action.itemId, ownedUnlocks: approval.profile.unlocks.filter((unlock) => unlock !== approval.item.grant.cosmetic) });
+      targetRoom.game.resources.gems = Math.max(targetRoom.game.resources.gems ?? 0, approval.profile.gems + (approval.item.price.gems ?? 0));
+      result = tryBuyShopItem(targetRoom.game, { playerId, itemId: action.itemId, ownedUnlocks: approval.profile.unlocks.filter((unlock) => unlock !== approval.item.grant.cosmetic) });
     }
+  } else {
+    result = dispatchBattleAction({ game: targetRoom.game, action, playerId, boardPlayer });
   }
-  if (result.ok) send(socket, { type: 'action_result', actionType: action.type, result, state: serializeState(room.game) });
-  if (!result.ok) send(socket, { type: 'error', reason: result.reason });
+  if (result.ok) sendFn(socket, { type: 'action_result', actionType: action.type, result, state: serializeState(targetRoom.game) });
+  if (!result.ok) sendFn(socket, { type: 'error', reason: result.reason });
+}
+
+function handleAction(socket, action) {
+  handleActionForTest({ targetRoom: room, socket, action, send });
 }
 
 function upgrade(req, socket) {
@@ -180,9 +182,11 @@ function tickRoom() {
   broadcast({ type: 'state', state: serializeState(room.game) });
 }
 
-const server = http.createServer(serve);
-server.on('upgrade', upgrade);
-server.listen(port, () => {
-  console.log(`ProjectAuto 시그널 릴레이 실행 중: http://localhost:${port}`);
-});
-setInterval(tickRoom, 100);
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  const server = http.createServer(serve);
+  server.on('upgrade', upgrade);
+  server.listen(port, () => {
+    console.log(`ProjectAuto 시그널 릴레이 실행 중: http://localhost:${port}`);
+  });
+  setInterval(tickRoom, 100);
+}

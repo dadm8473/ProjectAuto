@@ -60,13 +60,13 @@
 
 ## Phase 4: 서버 멀티플레이
 
-- [ ] `server/server.js`의 실제 `handleAction` 경로를 수정한다.
-- [ ] `summon`, `merge`, `rescue`만 active battle action으로 허용한다.
-- [ ] legacy action은 state를 바꾸지 않는다.
-- [ ] `buy`는 active combat action이 아니다.
-- [ ] 두 플레이어가 같은 `seedName`, `runId`, `result.reason`을 본다.
-- [ ] 파트너 disconnect 시 봇이 이어받는다.
-- [ ] 테스트는 문자열 검사만 하지 않고 dispatcher 또는 WebSocket round trip을 사용한다.
+- [x] `server/server.js`의 실제 `handleAction` 경로를 수정한다.
+- [x] `summon`, `merge`, `rescue`만 active battle action으로 허용한다.
+- [x] legacy action은 state를 바꾸지 않는다.
+- [x] `buy`는 active combat action이 아니다.
+- [x] 두 플레이어가 같은 `seedName`, `runId`, `result.reason`을 본다.
+- [x] 파트너 disconnect 시 봇이 이어받는다.
+- [x] 테스트는 문자열 검사만 하지 않고 dispatcher 또는 WebSocket round trip을 사용한다.
 
 ## Phase 5: 클라이언트 모듈 분리
 

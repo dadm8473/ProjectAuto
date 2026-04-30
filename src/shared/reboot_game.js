@@ -35,6 +35,8 @@ function event(game, payload) {
 
 function result(game, status, reason, highlights = [reason]) {
   if (game.result) return game.result;
+  game.over = true;
+  game.won = status === 'won';
   game.result = {
     status,
     reason,
@@ -239,13 +241,15 @@ export function createRebootGame({
   ],
   branch = 'wait'
 } = {}) {
+  const runId = `reboot-${nextRunId++}`;
   const game = {
     mode,
     seedName,
     seed,
     branch,
     now: 0,
-    runId: `reboot-${nextRunId++}`,
+    id: runId,
+    runId,
     players: clone(players),
     boards: {
       p1: createBoard('p1'),
@@ -257,6 +261,8 @@ export function createRebootGame({
       p2: createPlayerResources()
     },
     result: null,
+    over: false,
+    won: false,
     events: [],
     actionState: {
       p1: { summon: true, merge: false, rescue: false },

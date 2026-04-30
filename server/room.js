@@ -6,7 +6,7 @@ export function boardForPlayer(players, playerId) {
 
 export function createOnlineRoom(seed = Date.now() % 100000) {
   return {
-    game: createGame({ mode: 'online', seed }),
+    game: createGame({ mode: 'online', seed, seedName: 'tutorial_success' }),
     clients: new Map(),
     lastTick: Date.now(),
     resetAt: null
@@ -14,7 +14,7 @@ export function createOnlineRoom(seed = Date.now() % 100000) {
 }
 
 export function resetRoomGame(room, seed = Date.now() % 100000) {
-  room.game = createGame({ mode: 'online', seed });
+  room.game = createGame({ mode: 'online', seed, seedName: 'tutorial_success' });
   room.lastTick = Date.now();
   room.resetAt = null;
   return room.game;
