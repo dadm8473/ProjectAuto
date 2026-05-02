@@ -7,6 +7,12 @@ import {
 
 let nextRunId = 1;
 
+const BOT_PARTNER_SCRIPT = [
+  { at: 18, unitId: 'spark_pin', highlight: false },
+  { at: 46, unitId: 'slow_coil', highlight: true },
+  { at: 88, unitId: 'rescue_coil', highlight: true }
+];
+
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
@@ -164,6 +170,24 @@ function applyPressureScript(game) {
   }
 }
 
+function applyBotPartnerScript(game) {
+  if (game.mode !== 'bot' || game.result) return;
+  for (const step of BOT_PARTNER_SCRIPT) {
+    if (game.now < step.at || game.internal.partnerAutoApplied.includes(step.at)) continue;
+    game.internal.partnerAutoApplied.push(step.at);
+    const unit = makeUnit(step.unitId, 'p2', game.internal.unitSequence++);
+    game.boards.p2.units.push(unit);
+    game.boards.p2.danger = Math.max(0, game.boards.p2.danger - 6);
+    event(game, {
+      type: 'partner_auto',
+      action: 'summon',
+      playerId: 'p2',
+      unitId: step.unitId,
+      highlight: step.highlight
+    });
+  }
+}
+
 function spawnDueWaves(game) {
   for (const wave of REBOOT_WAVES) {
     if (game.now < wave.at || game.internal.wavesSpawned.includes(wave.at)) continue;
@@ -275,6 +299,7 @@ export function createRebootGame({
     internal: {
       grantsApplied: [],
       wavesSpawned: [],
+      partnerAutoApplied: [],
       summonIndexes: { p1: 0, p2: 0 },
       mergeIndex: 0,
       unitSequence: 0,
@@ -357,6 +382,7 @@ export function tickRebootGame(game, dt) {
   applyTimedResources(game);
   spawnDueWaves(game);
   applyPressureScript(game);
+  applyBotPartnerScript(game);
   if (game.now >= REBOOT_RULES.boss.spawnAt) game.boss.active = true;
   resolveTerminal(game);
   refreshActionState(game);

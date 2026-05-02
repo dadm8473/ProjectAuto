@@ -131,3 +131,34 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
     assert.equal(css.includes(marker), true, marker);
   }
 });
+
+test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const { buildRebootCollection } = await import('../src/client/reboot_screens.js');
+  const collection = buildRebootCollection();
+
+  for (const marker of [
+    'class="sprite-token unit-sprite"',
+    'class="sprite-token shop-token"',
+    'data-sprite="${unit.spriteKey}"',
+    'data-shop-icon="${icon}"',
+    'ROLE_LABELS[unit.role]',
+    'reboot-unit-atlas.png',
+    'reboot-ui-icons.png',
+    'reboot-reward-icons.png',
+    'grid-template-columns: 64px 1fr'
+  ]) {
+    assert.equal(`${screens}\n${css}`.includes(marker), true, marker);
+  }
+
+  for (const label of ['공격', '지원', '제어', '구원']) {
+    assert.equal(collection.includes(label), true, label);
+  }
+  for (const forbiddenRole of ['>attack<', '>support<', '>control<', '>rescue<']) {
+    assert.equal(collection.includes(forbiddenRole), false, forbiddenRole);
+  }
+
+  assert.equal(css.includes('.unit-card i'), false);
+  assert.equal(css.includes('linear-gradient(90deg, var(--teal), var(--amber))'), false);
+});

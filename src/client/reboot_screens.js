@@ -23,6 +23,13 @@ const GOAL_LABELS = {
   turn_bad_rolls_into_utility: '애매한 유닛도 제어와 구원 재료로 활용하세요'
 };
 
+const ROLE_LABELS = {
+  attack: '공격',
+  support: '지원',
+  control: '제어',
+  rescue: '구원'
+};
+
 export function buildRebootLobby(model = {}) {
   const gems = model.gems ?? 0;
   return `
@@ -41,28 +48,33 @@ export function buildRebootLobby(model = {}) {
 
 export function buildRebootCollection() {
   return Object.values(REBOOT_UNITS).map((unit) => `
-    <article class="screen-card unit-card">
-      <i data-sprite="${unit.spriteKey}"></i>
-      <span>${unit.role}</span>
-      <strong>${unit.name}</strong>
-      <p>등급 ${unit.grade}</p>
+    <article class="screen-card unit-card" data-role="${unit.role}">
+      <span class="sprite-token unit-sprite" data-sprite="${unit.spriteKey}"></span>
+      <div class="card-copy">
+        <span class="role-pill">${ROLE_LABELS[unit.role] ?? unit.role}</span>
+        <strong>${unit.name}</strong>
+        <p>등급 ${unit.grade}</p>
+      </div>
     </article>
   `).join('');
 }
 
 export function buildRebootShop() {
   const items = [
-    ['board_theme', '보드 테마', '전장 외형'],
-    ['merge_effect', '합성 효과', '연출 외형'],
-    ['rescue_effect', '구원 효과', '구원 빔 외형'],
-    ['emote', '협동 이모트', '파트너 반응'],
-    ['profile_frame', '프로필 프레임', '홈 외형']
+    ['board_theme', '보드 테마', '전장 외형', 'partner_danger'],
+    ['merge_effect', '합성 효과', '연출 외형', 'merge_action'],
+    ['rescue_effect', '구원 효과', '구원 빔 외형', 'rescue_action'],
+    ['emote', '협동 이모트', '파트너 반응', 'reward_shard'],
+    ['profile_frame', '프로필 프레임', '홈 외형', 'soft_currency']
   ];
-  return items.map(([id, name, desc]) => `
+  return items.map(([id, name, desc, icon]) => `
     <article class="screen-card shop-card" data-item="${id}">
-      <span>외형</span>
-      <strong>${name}</strong>
-      <p>${desc}</p>
+      <span class="sprite-token shop-token" data-shop-icon="${icon}"></span>
+      <div class="card-copy">
+        <span class="role-pill">외형</span>
+        <strong>${name}</strong>
+        <p>${desc}</p>
+      </div>
       <button type="button">해금</button>
     </article>
   `).join('');

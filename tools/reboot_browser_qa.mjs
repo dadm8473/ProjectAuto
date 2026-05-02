@@ -48,6 +48,14 @@ async function verifyShell(page, viewport) {
   await page.getByRole('button', { name: '시작' }).click();
   await page.getByRole('button', { name: '봇과 시작' }).waitFor({ state: 'visible' });
   assert.equal(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
+  await page.getByRole('button', { name: '유닛' }).click();
+  await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
+  assert.equal(await page.locator('.sprite-token.unit-sprite').count(), 5);
+  await page.getByRole('button', { name: '홈' }).click();
+  await page.getByRole('button', { name: '상점' }).click();
+  await page.locator('.shop-token').first().waitFor({ state: 'visible' });
+  assert.equal(await page.locator('.sprite-token.shop-token').count(), 5);
+  await page.getByRole('button', { name: '홈' }).click();
 
   await page.getByRole('button', { name: '봇과 시작' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });

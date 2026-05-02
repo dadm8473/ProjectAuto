@@ -129,6 +129,26 @@ test('rescue spends charge and cannot be spammed after the tutorial window', () 
   assert.equal(types(game).filter((type) => type === 'rescue').length, 1);
 });
 
+test('bot partner visibly contributes with scripted board actions', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1212 });
+  advanceTo(game, 54);
+
+  const partnerEvents = game.events.filter((event) => event.type === 'partner_auto');
+
+  assert.equal(game.boards.p2.units.length >= 2, true);
+  assert.deepEqual(partnerEvents.map((event) => event.action), ['summon', 'summon']);
+  assert.equal(partnerEvents.every((event) => event.playerId === 'p2'), true);
+  assert.equal(partnerEvents.some((event) => event.highlight), true);
+});
+
+test('online reboot rooms do not run local bot partner automation', () => {
+  const game = createRebootGame({ mode: 'online', seedName: 'tutorial_success', seed: 1313 });
+  advanceTo(game, 54);
+
+  assert.equal(game.boards.p2.units.length, 0);
+  assert.equal(types(game).includes('partner_auto'), false);
+});
+
 test('lucky_clutch produces a visible boss final-hit result', () => {
   const game = runScript(
     createRebootGame({ mode: 'bot', seedName: 'lucky_clutch', seed: 202 }),

@@ -277,17 +277,87 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   margin-bottom: 10px;
 }
 
-.unit-card i {
+.sprite-token {
   display: block;
-  width: 34px;
-  height: 24px;
-  border-radius: 8px;
-  background: linear-gradient(90deg, var(--teal), var(--amber));
+  width: 48px;
+  height: 48px;
   margin-bottom: 8px;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
+}
+
+.unit-sprite {
+  background-image: url("/src/client/assets/generated/reboot-unit-atlas.png");
+  background-size: 240px 48px;
+}
+
+.unit-sprite[data-sprite="spark_pin"] { background-position: 0 0; }
+.unit-sprite[data-sprite="toktok_amp"] { background-position: -48px 0; }
+.unit-sprite[data-sprite="slow_coil"] { background-position: -96px 0; }
+.unit-sprite[data-sprite="burst_pin"] { background-position: -144px 0; }
+.unit-sprite[data-sprite="rescue_coil"] { background-position: -192px 0; }
+
+.shop-token {
+  background-size: 288px 48px;
+}
+
+.shop-token[data-shop-icon="summon_charge"],
+.shop-token[data-shop-icon="merge_action"],
+.shop-token[data-shop-icon="rescue_action"],
+.shop-token[data-shop-icon="partner_danger"],
+.shop-token[data-shop-icon="boss_warning"],
+.shop-token[data-shop-icon="reward_shard"] {
+  background-image: url("/src/client/assets/generated/reboot-ui-icons.png");
+}
+
+.shop-token[data-shop-icon="soft_currency"] {
+  background-image: url("/src/client/assets/generated/reboot-reward-icons.png");
+  background-size: 192px 48px;
+}
+
+.shop-token[data-shop-icon="summon_charge"] { background-position: 0 0; }
+.shop-token[data-shop-icon="merge_action"] { background-position: -48px 0; }
+.shop-token[data-shop-icon="rescue_action"] { background-position: -96px 0; }
+.shop-token[data-shop-icon="partner_danger"] { background-position: -144px 0; }
+.shop-token[data-shop-icon="boss_warning"] { background-position: -192px 0; }
+.shop-token[data-shop-icon="reward_shard"] { background-position: -240px 0; }
+.shop-token[data-shop-icon="soft_currency"] { background-position: 0 0; }
+
+.unit-card,
+.shop-card {
+  min-height: 108px;
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.shop-card {
+  grid-template-columns: 64px 1fr 72px;
+}
+
+.card-copy {
+  display: grid;
+  gap: 3px;
+}
+
+.card-copy strong {
+  font-size: 17px;
+  line-height: 1.12;
+}
+
+.role-pill {
+  width: fit-content;
+  padding: 3px 7px;
+  border-radius: 8px;
+  color: var(--mint);
+  background: rgba(142, 230, 210, 0.1);
+  border: 1px solid rgba(142, 230, 210, 0.22);
+  font-size: 11px;
+  font-weight: 900;
 }
 
 .shop-card button {
-  margin-top: 8px;
   min-height: 34px;
 }
 
