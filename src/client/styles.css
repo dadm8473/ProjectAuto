@@ -134,6 +134,27 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   background: rgba(245, 240, 220, 0.06);
 }
 
+.meters span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.meters span::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  background-image: url("/src/client/assets/generated/reboot-ui-icons.png");
+  background-repeat: no-repeat;
+  background-size: 108px 18px;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.46));
+}
+
+#summonMeter::before { background-position: 0 0; }
+#rescueMeter::before { background-position: -36px 0; }
+#dangerMeter::before { background-position: -54px 0; }
+
 .stage-wrap {
   position: relative;
   z-index: 1;

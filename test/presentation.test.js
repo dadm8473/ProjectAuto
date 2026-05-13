@@ -488,3 +488,19 @@ test('mission and season rows show generated reward tokens', async () => {
     assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
   }
 });
+
+test('combat resource HUD uses generated icons instead of text-only chips', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '#summonMeter::before',
+    '#rescueMeter::before',
+    '#dangerMeter::before',
+    'background-image: url("/src/client/assets/generated/reboot-ui-icons.png")',
+    '#summonMeter::before { background-position: 0 0; }',
+    '#rescueMeter::before { background-position: -36px 0; }',
+    '#dangerMeter::before { background-position: -54px 0; }'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
