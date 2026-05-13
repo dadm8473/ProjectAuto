@@ -144,7 +144,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-status-plates">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-buttons">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -234,14 +234,25 @@ test('combat action buttons use generated icons instead of text-only web buttons
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
+    '--combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons")',
+    '.primary-actions button {\n  display: inline-flex;',
+    'background-image: var(--combat-action-buttons);',
+    'background-size: 300% 100%;',
     '.primary-actions button::before',
     'background-image: url("/src/client/assets/generated/reboot-ui-icons.png")',
     '#summonButton::before',
     '#mergeButton::before',
-    '#rescueButton::before'
+    '#rescueButton::before',
+    '#summonButton { background-position: 0 0; }',
+    '#mergeButton { background-position: 50% 0; }',
+    '#rescueButton { background-position: 100% 0; }'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
+
+  const actionBlock = css.slice(css.indexOf('.primary-actions button {\n  display: inline-flex;'), css.indexOf('.primary-actions button::before'));
+  assert.equal(actionBlock.includes('background-image: var(--screen-chrome);'), false);
+  assert.equal(actionBlock.includes('background-size: 500% 100%;'), false);
 });
 
 test('result screen uses imagegen reward backdrop instead of a plain overlay', async () => {

@@ -37,6 +37,7 @@
   --meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png");
+  --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons");
   --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets");
   --combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates");
   --combat-hud-row: clamp(72px, 22.33vw, 96px);
@@ -413,11 +414,14 @@ body[data-app-screen="lobby"] .toast {
   justify-content: center;
   gap: 7px;
   min-height: clamp(48px, 13.02vw, 56px);
-  background-image: var(--screen-chrome);
+  background-image: var(--combat-action-buttons);
   background-repeat: no-repeat;
-  background-size: 500% 100%;
-  background-position: 25% 0;
+  background-size: 300% 100%;
 }
+
+#summonButton { background-position: 0 0; }
+#mergeButton { background-position: 50% 0; }
+#rescueButton { background-position: 100% 0; }
 
 .primary-actions button::before {
   content: "";

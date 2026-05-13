@@ -146,6 +146,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 70_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-action-buttons.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-action-buttons-imagegen.png',
+    width: 1170,
+    height: 112,
+    minRuntimeBytes: 90_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-result-panel-frame.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-result-panel-frame-imagegen.png',
     width: 390,
