@@ -590,6 +590,23 @@ test('shop screen uses a dedicated generated storefront banner', async () => {
   }
 });
 
+test('mission and season screens use dedicated generated progress banners', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--missions-banner: url("/src/client/assets/generated/reboot-missions-banner.png")',
+    '--season-banner: url("/src/client/assets/generated/reboot-season-banner.png")',
+    '.meta-summary[data-summary-kind="missions"]',
+    '.meta-summary[data-summary-kind="season"]',
+    'var(--missions-banner)',
+    'var(--season-banner)',
+    '.meta-summary[data-summary-kind="missions"]::before',
+    '.meta-summary[data-summary-kind="season"]::before'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
 test('mission and season rows show generated reward tokens', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');

@@ -20,6 +20,8 @@
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
   --training-banner: url("/src/client/assets/generated/reboot-training-banner.png");
   --shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png");
+  --missions-banner: url("/src/client/assets/generated/reboot-missions-banner.png");
+  --season-banner: url("/src/client/assets/generated/reboot-season-banner.png");
   --reward-burst: url("/src/client/assets/generated/reboot-reward-burst.png");
   --shop-cosmetics: url("/src/client/assets/generated/reboot-shop-cosmetics.png");
 }
@@ -695,6 +697,32 @@ body[data-app-screen="lobby"] .toast {
 }
 
 .meta-summary[data-summary-kind="shop"]::before {
+  opacity: 0.52;
+}
+
+.meta-summary[data-summary-kind="missions"],
+.meta-summary[data-summary-kind="season"] {
+  min-height: 132px;
+  align-content: end;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+.meta-summary[data-summary-kind="missions"] {
+  background-image:
+    linear-gradient(180deg, rgba(5, 8, 8, 0.06), rgba(5, 8, 8, 0.48) 48%, rgba(5, 8, 8, 0.9)),
+    var(--missions-banner);
+}
+
+.meta-summary[data-summary-kind="season"] {
+  background-image:
+    linear-gradient(180deg, rgba(5, 8, 8, 0.04), rgba(5, 8, 8, 0.46) 48%, rgba(5, 8, 8, 0.9)),
+    var(--season-banner);
+}
+
+.meta-summary[data-summary-kind="missions"]::before,
+.meta-summary[data-summary-kind="season"]::before {
   opacity: 0.52;
 }
 
