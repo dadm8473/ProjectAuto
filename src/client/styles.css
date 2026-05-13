@@ -591,7 +591,9 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 .shop-token[data-shop-icon="soft_currency"] { background-position: 0 0; }
 
 .unit-card,
-.shop-card {
+.shop-card,
+.mission-card,
+.season-card {
   min-height: 108px;
   display: grid;
   align-items: center;
@@ -607,7 +609,14 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   grid-template-columns: 64px 1fr 72px;
 }
 
-.shop-card[data-owned="true"] {
+.mission-card,
+.season-card {
+  grid-template-columns: 1fr 82px;
+}
+
+.shop-card[data-owned="true"],
+.mission-card[data-owned="true"],
+.season-card[data-owned="true"] {
   border-color: rgba(142, 230, 210, 0.42);
 }
 
@@ -678,7 +687,9 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 }
 
 .shop-card button,
-.unit-card button {
+.unit-card button,
+.mission-card button,
+.season-card button {
   min-height: 34px;
 }
 
@@ -688,7 +699,9 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   white-space: nowrap;
 }
 
-.shop-card[data-owned="true"] button {
+.shop-card[data-owned="true"] button,
+.mission-card[data-owned="true"] button,
+.season-card[data-owned="true"] button {
   color: var(--mint);
 }
 

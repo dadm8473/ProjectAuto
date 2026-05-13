@@ -400,3 +400,24 @@ test('client wires unit training to profile XP and collection rerender', async (
     assert.equal(`${app}\n${screens}`.includes(marker), true, marker);
   }
 });
+
+test('client wires missions and season pass claim loops', async () => {
+  const app = await readFile('src/client/app.js', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    'REBOOT_MISSIONS',
+    'data-mission-claim="${mission.id}"',
+    'data-pass-claim="${index}"',
+    'handleMissionClaim',
+    'handlePassClaim',
+    'claimedMissions',
+    'claimedPassTiers',
+    'buildMissionScreen(profile)',
+    'buildSeasonScreen(profile)',
+    'dom.missionsList.addEventListener',
+    'dom.seasonList.addEventListener'
+  ]) {
+    assert.equal(`${app}\n${screens}`.includes(marker), true, marker);
+  }
+});

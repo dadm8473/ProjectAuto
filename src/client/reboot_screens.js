@@ -43,6 +43,43 @@ export function unitUpgradeCost(level = 1) {
   return 40 + Math.max(0, level - 1) * 20;
 }
 
+export const REBOOT_MISSIONS = [
+  {
+    id: 'first-run',
+    title: '첫 작전 완료',
+    goal: '전투를 1회 끝내세요',
+    target: 1,
+    reward: { gems: 20 },
+    progress(profile = {}) {
+      return profile.processedRuns?.length ?? 0;
+    }
+  },
+  {
+    id: 'train-unit',
+    title: '유닛 훈련',
+    goal: '아무 유닛이나 1회 훈련하세요',
+    target: 1,
+    reward: { gems: 20 },
+    progress(profile = {}) {
+      return Object.values(profile.unitLevels ?? {}).filter((level) => level > 1).length;
+    }
+  },
+  {
+    id: 'unlock-cosmetic',
+    title: '외형 해금',
+    goal: '상점에서 외형 1개를 보유하세요',
+    target: 1,
+    reward: { gems: 25 },
+    progress(profile = {}) {
+      return profile.unlocks?.length ?? 0;
+    }
+  }
+];
+
+export function missionProgress(profile, mission) {
+  return Math.min(mission.target, mission.progress(profile));
+}
+
 export function buildRebootLobby(model = {}) {
   const gems = model.gems ?? 0;
   return `
@@ -107,18 +144,53 @@ export function buildRebootShop(profile = {}) {
   }).join('');
 }
 
-export function buildMissionScreen() {
-  return `
-    <article class="screen-card"><strong>파트너 구원 1회</strong><p>구원 버튼으로 위험을 낮추세요</p></article>
-    <article class="screen-card"><strong>보스 경고 대응</strong><p>92초 이후 소환 또는 합성</p></article>
+export function buildMissionScreen(profile = {}) {
+  const claimed = new Set(profile.claimedMissions ?? []);
+  return REBOOT_MISSIONS.map((mission) => {
+    const progress = missionProgress(profile, mission);
+    const done = progress >= mission.target;
+    const received = claimed.has(mission.id);
+    const label = received ? '받음' : done ? '수령' : '진행중';
+    return `
+    <article class="screen-card mission-card" data-mission="${mission.id}" data-owned="${received}">
+      <div class="card-copy">
+        <span class="role-pill">미션</span>
+        <strong>${mission.title}</strong>
+        <p>${mission.goal}</p>
+        <span class="shop-price">${progress}/${mission.target} · ${mission.reward.gems} 젬</span>
+      </div>
+      <button type="button" data-mission-claim="${mission.id}"${done && !received ? '' : ' disabled'}>${label}</button>
+    </article>
   `;
+  }).join('');
 }
 
-export function buildSeasonScreen() {
-  return `
-    <article class="screen-card"><strong>시즌 진행</strong><p>플레이 보상으로 외형을 엽니다</p></article>
-    <article class="screen-card"><strong>무료 보상</strong><p>전투력 판매 없음</p></article>
+function seasonRewardLabel(grant = {}) {
+  if (grant.gems) return `${grant.gems} 젬`;
+  if (grant.cosmetic) return '외형 보상';
+  return '보상';
+}
+
+export function buildSeasonScreen(profile = {}) {
+  const claimed = new Set(profile.claimedPassTiers ?? []);
+  const xp = profile.xp ?? 0;
+  return SHOP.pass.tiers.map((tier, index) => {
+    const done = xp >= tier.xp;
+    const received = claimed.has(index);
+    const label = received ? '받음' : done ? '수령' : '진행중';
+    const progress = Math.min(tier.xp, xp);
+    return `
+    <article class="screen-card season-card" data-pass-tier="${index}" data-owned="${received}">
+      <div class="card-copy">
+        <span class="role-pill">시즌</span>
+        <strong>${index + 1}단계 · ${seasonRewardLabel(tier.grant)}</strong>
+        <p>${progress}/${tier.xp} 경험치</p>
+        <span class="shop-price">${tier.xp} 경험치</span>
+      </div>
+      <button type="button" data-pass-claim="${index}"${done && !received ? '' : ' disabled'}>${label}</button>
+    </article>
   `;
+  }).join('');
 }
 
 export function buildRebootResultModel({ result, rewards = [] }) {

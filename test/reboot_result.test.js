@@ -2,7 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createGame, mergeRelays, serializeState, supplyRelay, tickGame, castLinkPulse } from '../src/shared/game.js';
-import { buildRebootCollection, buildRebootResultModel, buildRebootShop, startRebootRetry } from '../src/client/reboot_screens.js';
+import {
+  buildMissionScreen,
+  buildRebootCollection,
+  buildRebootResultModel,
+  buildRebootShop,
+  buildSeasonScreen,
+  startRebootRetry
+} from '../src/client/reboot_screens.js';
 
 function advanceTo(game, time) {
   while (game.now < time) tickGame(game, Math.min(0.25, time - game.now));
@@ -84,4 +91,31 @@ test('reboot collection renders unit training state from profile XP and levels',
   assert.equal(collection.includes('data-unit-upgrade="burst_pin"'), true);
   assert.equal(collection.includes('40 경험치'), true);
   assert.equal(collection.includes('>경험치 부족<'), true);
+});
+
+test('mission screen renders profile progress and claim states', () => {
+  const missions = buildMissionScreen({
+    processedRuns: ['run-1'],
+    unitLevels: { spark_pin: 2 },
+    unlocks: [],
+    claimedMissions: ['first-run']
+  });
+
+  assert.equal(missions.includes('data-mission-claim="first-run"'), true);
+  assert.equal(missions.includes('data-mission-claim="train-unit"'), true);
+  assert.equal(missions.includes('첫 작전 완료'), true);
+  assert.equal(missions.includes('유닛 훈련'), true);
+  assert.equal(missions.includes('>받음<'), true);
+  assert.equal(missions.includes('>수령<'), true);
+});
+
+test('season screen renders pass tiers from profile XP and claim states', () => {
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
+
+  assert.equal(season.includes('data-pass-claim="0"'), true);
+  assert.equal(season.includes('data-pass-claim="1"'), true);
+  assert.equal(season.includes('60 경험치'), true);
+  assert.equal(season.includes('160 경험치'), true);
+  assert.equal(season.includes('>받음<'), true);
+  assert.equal(season.includes('>진행중<'), true);
 });

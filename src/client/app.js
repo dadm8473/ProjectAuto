@@ -11,6 +11,8 @@ import {
   buildRebootResultModel,
   buildRebootShop,
   buildSeasonScreen,
+  missionProgress,
+  REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
 } from './reboot_screens.js';
@@ -112,8 +114,8 @@ function renderHomeScreens() {
   dom.lobbyContent.innerHTML = buildRebootLobby(profile);
   dom.collectionList.innerHTML = buildRebootCollection(profile);
   dom.shopList.innerHTML = buildRebootShop(profile);
-  dom.missionsList.innerHTML = buildMissionScreen();
-  dom.seasonList.innerHTML = buildSeasonScreen();
+  dom.missionsList.innerHTML = buildMissionScreen(profile);
+  dom.seasonList.innerHTML = buildSeasonScreen(profile);
 }
 
 function resultRewards(current) {
@@ -183,6 +185,47 @@ function handleUnitUpgrade(event) {
   saveProfile();
   renderHomeScreens();
   showToast(`${unit.name} Lv.${currentLevel + 1}`);
+}
+
+function applyGrantToProfile(grant = {}) {
+  profile = normalizeMetaProfile({
+    ...profile,
+    gems: profile.gems + (grant.gems ?? 0),
+    unlocks: grant.cosmetic && !profile.unlocks.includes(grant.cosmetic)
+      ? [...profile.unlocks, grant.cosmetic]
+      : profile.unlocks
+  });
+}
+
+function handleMissionClaim(event) {
+  const button = event.target.closest('[data-mission-claim]');
+  if (!button) return;
+  const mission = REBOOT_MISSIONS.find((entry) => entry.id === button.dataset.missionClaim);
+  if (!mission || profile.claimedMissions.includes(mission.id) || missionProgress(profile, mission) < mission.target) return;
+  applyGrantToProfile(mission.reward);
+  profile = normalizeMetaProfile({
+    ...profile,
+    claimedMissions: [...profile.claimedMissions, mission.id]
+  });
+  saveProfile();
+  renderHomeScreens();
+  showToast(`${mission.title} 보상`);
+}
+
+function handlePassClaim(event) {
+  const button = event.target.closest('[data-pass-claim]');
+  if (!button) return;
+  const index = Number(button.dataset.passClaim);
+  const tier = SHOP.pass.tiers[index];
+  if (!tier || profile.claimedPassTiers.includes(index) || profile.xp < tier.xp) return;
+  applyGrantToProfile(tier.grant);
+  profile = normalizeMetaProfile({
+    ...profile,
+    claimedPassTiers: [...profile.claimedPassTiers, index]
+  });
+  saveProfile();
+  renderHomeScreens();
+  showToast(`${index + 1}단계 보상`);
 }
 
 function startBotRun() {
@@ -302,6 +345,8 @@ function bind() {
   dom.rescueButton.addEventListener('click', () => command('rescue'));
   dom.collectionList.addEventListener('click', handleUnitUpgrade);
   dom.shopList.addEventListener('click', handleShopPurchase);
+  dom.missionsList.addEventListener('click', handleMissionClaim);
+  dom.seasonList.addEventListener('click', handlePassClaim);
   qs('#resultRetryButton').addEventListener('click', retry);
   qs('#resultLobbyButton').addEventListener('click', () => {
     dom.resultOverlay.hidden = true;
