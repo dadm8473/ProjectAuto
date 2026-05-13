@@ -144,7 +144,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-result-actions">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-result-detail-strips">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -366,7 +366,7 @@ test('result debrief stays usable on short portrait phones', async () => {
     '.result-panel {\n    gap: 6px;',
     '.result-panel strong {\n    font-size: 24px;',
     '.result-panel p {\n    line-height: 1.12;',
-    '.result-highlights span,\n  .result-reward {\n    padding: 6px;',
+    '.result-highlights span,\n  .result-reward {\n    min-height: 44px;',
     '.result-reward::before {\n    width: 28px;',
     '.result-reward::after {\n    width: 38px;',
     '.result-overlay .result-action-button {\n    min-height: 44px;'
@@ -406,6 +406,32 @@ test('result actions use dedicated generated button frames', async () => {
   assert.equal(css.includes('.result-actions button {\n    min-height: 40px;'), false);
   assert.equal(/(^|\n)\.result-action-button \{\n  display: grid;/.test(css), false);
   assert.equal(/(^|\n)\.result-action-secondary \{ background-position: 100% 0; \}/.test(css), false);
+});
+
+test('result highlights and reward use generated strip frames', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--result-detail-strips: url("/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail")',
+    '.result-highlights span,\n.result-reward',
+    'background-image: var(--result-detail-strips);',
+    'background-size: 200% 100%;',
+    'min-height: 48px;',
+    'border: 0;',
+    '.result-highlights span {\n  background-position: 0 0;',
+    '.result-reward {\n  display: flex;',
+    'background-position: 100% 0;',
+    '.result-highlights span,\n  .result-reward {\n    min-height: 44px;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const stripBlock = css.slice(
+    css.indexOf('.result-highlights span,\n.result-reward'),
+    css.indexOf('.result-reward::before')
+  );
+  assert.equal(stripBlock.includes('background: rgba(88, 215, 255, 0.1);'), false);
+  assert.equal(stripBlock.includes('border: 1px solid rgba(88, 215, 255, 0.22);'), false);
 });
 
 test('combat renderer uses generated VFX atlas for action feedback', async () => {

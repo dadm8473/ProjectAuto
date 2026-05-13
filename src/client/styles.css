@@ -15,6 +15,7 @@
   --result-badges: url("/src/client/assets/generated/reboot-result-badges.png");
   --result-panel-frame: url("/src/client/assets/generated/reboot-result-panel-frame.png");
   --result-action-buttons: url("/src/client/assets/generated/reboot-result-action-buttons.png?v=result-actions");
+  --result-detail-strips: url("/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail");
   --result-panel-width: min(calc(100vw - 28px), calc((100dvh - 52px) * 0.6964), 390px);
   --result-panel-top-pad: clamp(108px, calc(var(--result-panel-width) * 0.31), 128px);
   --screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png");
@@ -1356,16 +1357,27 @@ body[data-app-screen="lobby"] .toast {
 .result-highlights span,
 .result-reward {
   display: block;
-  padding: 8px;
-  border-radius: 8px;
-  background: rgba(88, 215, 255, 0.1);
-  border: 1px solid rgba(88, 215, 255, 0.22);
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  background-image: var(--result-detail-strips);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  overflow: hidden;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.62);
+}
+
+.result-highlights span {
+  background-position: 0 0;
 }
 
 .result-reward {
   display: flex;
   align-items: center;
   gap: 8px;
+  background-position: 100% 0;
 }
 
 .result-reward::before {
@@ -1416,7 +1428,8 @@ body[data-app-screen="lobby"] .toast {
 
   .result-highlights span,
   .result-reward {
-    padding: 6px;
+    min-height: 44px;
+    padding: 6px 10px;
   }
 
   .result-reward::before {
