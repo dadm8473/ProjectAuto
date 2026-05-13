@@ -547,6 +547,21 @@ test('meta screens expose game-like status headers before scroll lists', async (
   }
 });
 
+test('unit training screen uses a dedicated generated training banner', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--training-banner: url("/src/client/assets/generated/reboot-training-banner.png")',
+    '.meta-summary[data-summary-kind="collection"]',
+    'background-image:',
+    'var(--training-banner)',
+    'min-height: 132px',
+    '.meta-summary[data-summary-kind="collection"]::before'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
 test('shop cosmetics use a dedicated imagegen item atlas', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
