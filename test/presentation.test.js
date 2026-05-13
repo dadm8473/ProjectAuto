@@ -144,7 +144,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-nav-glow">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-meta-row-frames">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -285,6 +285,41 @@ test('meta screens use generated game chrome instead of css-only panels', async 
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
+});
+
+test('meta list rows use dedicated generated game row frames', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    '--meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row")',
+    'class="screen-card unit-card"',
+    'class="screen-card shop-card"',
+    'class="screen-card mission-card"',
+    'class="screen-card season-card"',
+    '.unit-card::before,\n.shop-card::before,\n.mission-card::before,\n.season-card::before',
+    'background-image: var(--meta-row-frames);',
+    'background-size: 400% 100%;',
+    '.unit-card::before { background-position: 0 0; }',
+    '.shop-card::before { background-position: 33.333% 0; }',
+    '.mission-card::before { background-position: 66.666% 0; }',
+    '.season-card::before { background-position: 100% 0; }',
+    '.unit-card,\n.shop-card,\n.mission-card,\n.season-card {\n  border-color: transparent;\n  background: transparent;',
+    'backdrop-filter: none;',
+    '.shop-card[data-owned="true"],\n.mission-card[data-owned="true"],\n.season-card[data-owned="true"] {\n  filter: saturate(1.12) brightness(1.08);'
+  ]) {
+    assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    '.shop-card button,\n.unit-card button,\n.mission-card button,\n.season-card button',
+    'min-height: 44px;',
+    'min-width: 88px;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  assert.equal(css.includes('min-height: 34px;'), false);
 });
 
 test('result screen uses generated status badges for win and loss peaks', async () => {

@@ -186,6 +186,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     width: 512,
     height: 128,
     minRuntimeBytes: 28_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-meta-row-frames.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-meta-row-frames-imagegen.png',
+    width: 1720,
+    height: 120,
+    minRuntimeBytes: 120_000
   }
 ];
 

@@ -30,6 +30,7 @@
   --shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png");
   --missions-banner: url("/src/client/assets/generated/reboot-missions-banner.png");
   --season-banner: url("/src/client/assets/generated/reboot-season-banner.png");
+  --meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png");
   --combat-hud-row: clamp(72px, 22.33vw, 96px);
@@ -1126,11 +1127,31 @@ body[data-app-screen="lobby"] .toast {
 .shop-card,
 .mission-card,
 .season-card {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.36);
+  backdrop-filter: none;
   min-height: 108px;
   display: grid;
   align-items: center;
   column-gap: 10px;
 }
+
+.unit-card::before,
+.shop-card::before,
+.mission-card::before,
+.season-card::before {
+  background-image: var(--meta-row-frames);
+  background-size: 400% 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  opacity: 1;
+}
+
+.unit-card::before { background-position: 0 0; }
+.shop-card::before { background-position: 33.333% 0; }
+.mission-card::before { background-position: 66.666% 0; }
+.season-card::before { background-position: 100% 0; }
 
 .unit-card {
   min-height: 122px;
@@ -1138,18 +1159,18 @@ body[data-app-screen="lobby"] .toast {
 }
 
 .shop-card {
-  grid-template-columns: 64px 1fr 72px;
+  grid-template-columns: 64px 1fr 88px;
 }
 
 .mission-card,
 .season-card {
-  grid-template-columns: 52px 1fr 82px;
+  grid-template-columns: 52px 1fr 88px;
 }
 
 .shop-card[data-owned="true"],
 .mission-card[data-owned="true"],
 .season-card[data-owned="true"] {
-  border-color: rgba(142, 230, 210, 0.42);
+  filter: saturate(1.12) brightness(1.08);
 }
 
 .card-copy {
@@ -1222,11 +1243,12 @@ body[data-app-screen="lobby"] .toast {
 .unit-card button,
 .mission-card button,
 .season-card button {
-  min-height: 34px;
+  min-width: 88px;
+  min-height: 44px;
+  padding: 0 8px;
 }
 
 .unit-card button {
-  padding: 0 6px;
   font-size: 11px;
   white-space: nowrap;
 }
