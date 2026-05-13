@@ -412,6 +412,48 @@ test('result reward strip uses generated reward burst art', async () => {
   }
 });
 
+test('profile rewards use generated burst feedback instead of plain text toasts', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    "function showToast(text, kind = 'info')",
+    'dom.toast.dataset.toastKind = kind',
+    "showToast(`${item.name} 해금`, 'reward')",
+    "showToast(`${unit.name} Lv.${currentLevel + 1}`, 'reward')",
+    "showToast(`${mission.title} 보상`, 'reward')",
+    "showToast(`${index + 1}단계 보상`, 'reward')",
+    'const TOAST_VISIBLE_MS = 1400',
+    '}, TOAST_VISIBLE_MS)',
+    '.toast[data-toast-kind="reward"]',
+    '.toast[data-toast-kind="reward"]::before',
+    '.toast[data-toast-kind="reward"]::after',
+    'background-image: var(--reward-burst)',
+    'reboot-reward-icons.png'
+  ]) {
+    assert.equal(`${css}\n${app}`.includes(marker), true, marker);
+  }
+});
+
+test('reward toast sits above app overlays instead of inside the blurred battle stage', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const stageStart = html.indexOf('<section class="stage-wrap">');
+  const stageEnd = html.indexOf('</section>', stageStart);
+  const toastIndex = html.indexOf('id="toast"');
+
+  assert.equal(stageStart >= 0, true);
+  assert.equal(stageEnd >= 0, true);
+  assert.equal(toastIndex > stageEnd, true, 'toast must be a shell-level overlay, not a child of stage-wrap');
+  for (const marker of [
+    'z-index: 12',
+    'body[data-app-screen="battle"] .toast',
+    'body[data-app-screen="lobby"] .toast'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
 test('client wires unit training to profile XP and collection rerender', async () => {
   const app = await readFile('src/client/app.js', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');

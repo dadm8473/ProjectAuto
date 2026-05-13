@@ -56,6 +56,7 @@ const dom = {
 const ctx = dom.canvas.getContext('2d');
 const rebootAssets = createRebootAssetImages();
 const PROFILE_STORAGE_KEY = 'projectauto.reboot.profile.v1';
+const TOAST_VISIBLE_MS = 1400;
 let appScreen = 'splash';
 let game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
 let localBoardId = 'p1';
@@ -86,13 +87,15 @@ function state() {
   return serializeState(game);
 }
 
-function showToast(text) {
+function showToast(text, kind = 'info') {
   dom.toast.textContent = text;
+  dom.toast.dataset.toastKind = kind;
   dom.toast.hidden = false;
   clearTimeout(showToast.timer);
   showToast.timer = setTimeout(() => {
     dom.toast.hidden = true;
-  }, 900);
+    delete dom.toast.dataset.toastKind;
+  }, TOAST_VISIBLE_MS);
 }
 
 function softFeedback(kind) {
@@ -160,7 +163,7 @@ function handleShopPurchase(event) {
   });
   saveProfile();
   renderHomeScreens();
-  showToast(`${item.name} 해금`);
+  showToast(`${item.name} 해금`, 'reward');
 }
 
 function handleLobbyOpen(event) {
@@ -195,7 +198,7 @@ function handleUnitUpgrade(event) {
   });
   saveProfile();
   renderHomeScreens();
-  showToast(`${unit.name} Lv.${currentLevel + 1}`);
+  showToast(`${unit.name} Lv.${currentLevel + 1}`, 'reward');
 }
 
 function applyGrantToProfile(grant = {}) {
@@ -220,7 +223,7 @@ function handleMissionClaim(event) {
   });
   saveProfile();
   renderHomeScreens();
-  showToast(`${mission.title} 보상`);
+  showToast(`${mission.title} 보상`, 'reward');
 }
 
 function handlePassClaim(event) {
@@ -236,7 +239,7 @@ function handlePassClaim(event) {
   });
   saveProfile();
   renderHomeScreens();
-  showToast(`${index + 1}단계 보상`);
+  showToast(`${index + 1}단계 보상`, 'reward');
 }
 
 function startBotRun() {
