@@ -50,6 +50,20 @@ const IMAGEGEN_REBOOT_ATLASES = [
     width: 1024,
     height: 256,
     minRuntimeBytes: 70_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-ui-icons.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260513-ui-icons-imagegen.png',
+    width: 1536,
+    height: 256,
+    minRuntimeBytes: 90_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-reward-icons.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260513-reward-icons-imagegen.png',
+    width: 1024,
+    height: 256,
+    minRuntimeBytes: 70_000
   }
 ];
 
@@ -218,7 +232,7 @@ test('reboot battle uses a committed imagegen backdrop at canvas size', async ()
   }
 });
 
-test('reboot creature atlases are promoted from imagegen sources instead of procedural placeholders', async () => {
+test('reboot runtime visual atlases are promoted from imagegen sources instead of procedural placeholders', async () => {
   for (const asset of IMAGEGEN_REBOOT_ATLASES) {
     const source = await readFile(asset.source);
     const runtime = await readFile(asset.path);

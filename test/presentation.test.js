@@ -218,3 +218,17 @@ test('combat renderer keeps imagegen enemy sprites readable on phone canvas', as
     assert.equal(render.includes(marker), true, marker);
   }
 });
+
+test('combat action buttons use generated icons instead of text-only web buttons', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '.primary-actions button::before',
+    'background-image: url("/src/client/assets/generated/reboot-ui-icons.png")',
+    '#summonButton::before',
+    '#mergeButton::before',
+    '#rescueButton::before'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
