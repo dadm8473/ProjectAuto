@@ -26,6 +26,7 @@
   --nav-button-glow-size: clamp(62px, 18vw, 76px);
   --title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png");
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
+  --splash-title-plate: url("/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title");
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
   --lobby-operation-poster: url("/src/client/assets/generated/reboot-lobby-operation-poster.png?v=operation-poster");
   --lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips");
@@ -580,22 +581,72 @@ body[data-app-screen="lobby"] .toast {
   z-index: 1;
 }
 
-.splash-screen strong {
-  font-size: 42px;
+.splash-screen > strong {
+  display: none;
+}
+
+.splash-title-lockup {
+  position: relative;
+  width: min(418px, calc(100vw - 8px));
+  min-height: clamp(156px, 42.79vw, 184px);
+  align-self: center;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 3px;
+  padding: clamp(40px, 11.16vw, 48px) clamp(38px, 10.56vw, 58px) clamp(25px, 7.44vw, 32px);
+  background-image: var(--splash-title-plate);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  color: var(--ink);
+  text-align: center;
+  filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.62));
+}
+
+.splash-title-lockup strong {
+  max-width: 100%;
+  font-size: clamp(29px, 8.55vw, 42px);
   line-height: 0.95;
+  letter-spacing: 0;
+  white-space: nowrap;
   text-shadow: 0 5px 18px rgba(0, 0, 0, 0.72), 0 0 18px rgba(88, 215, 255, 0.28);
 }
 
+.splash-title-lockup p {
+  max-width: 270px;
+  color: rgba(245, 240, 220, 0.82);
+  font-size: clamp(12px, 3.49vw, 15px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: 0;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
+}
+
+.splash-season {
+  position: absolute;
+  top: clamp(22px, 6.51vw, 28px);
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--mint);
+  font-size: clamp(10px, 3.02vw, 13px);
+  font-weight: 1000;
+  line-height: 1;
+  letter-spacing: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.72);
+}
+
 .splash-title-emblem {
-  width: min(326px, 82vw);
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  width: clamp(118px, 36vw, 154px);
   aspect-ratio: 2 / 1;
-  margin-bottom: -18px;
-  align-self: center;
+  transform: translateX(-50%);
   background-image: var(--title-emblem);
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.62));
+  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.62));
   pointer-events: none;
 }
 

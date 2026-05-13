@@ -263,6 +263,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     width: 720,
     height: 96,
     minRuntimeBytes: 70_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-splash-title-plate.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-splash-title-plate-imagegen.png',
+    width: 430,
+    height: 184,
+    minRuntimeBytes: 90_000
   }
 ];
 
@@ -596,6 +603,18 @@ test('reboot lobby UI scene art is promoted from imagegen sources', async () => 
     assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
     assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
   }
+});
+
+test('splash title plate has transparent corners instead of an opaque web banner', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-splash-title-plate.png'));
+  const corners = [
+    alphaAt(image, 1, 1),
+    alphaAt(image, image.width - 2, 1),
+    alphaAt(image, 1, image.height - 2),
+    alphaAt(image, image.width - 2, image.height - 2)
+  ];
+  assert.equal(corners.every((alpha) => alpha < 10), true, 'splash title plate must not render as a black rectangle');
+  assert.equal(alphaAt(image, Math.floor(image.width / 2), Math.floor(image.height / 2)) > 220, true);
 });
 
 test('reboot launch button atlas keeps the primary CTA visibly gold on phone scale', async () => {

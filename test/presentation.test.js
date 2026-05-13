@@ -144,7 +144,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-meta-actions">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-splash-title">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -862,6 +862,46 @@ test('splash uses a generated title emblem instead of plain text only branding',
     'background-image: var(--title-emblem)'
   ]) {
     assert.equal(`${html}\n${css}`.includes(marker), true, marker);
+  }
+});
+
+test('splash title copy sits inside a generated game title plate', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--splash-title-plate: url("/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title")',
+    'class="splash-title-lockup"',
+    'class="splash-season"',
+    '.splash-title-lockup',
+    'background-image: var(--splash-title-plate);',
+    'background-size: 100% 100%;',
+    '.splash-title-lockup strong',
+    '.splash-title-lockup p',
+    'letter-spacing: 0;',
+    '.splash-screen > strong'
+  ]) {
+    assert.equal(`${html}\n${css}`.includes(marker), true, marker);
+  }
+
+  const splashStrongBlock = css.slice(css.indexOf('.splash-screen > strong'), css.indexOf('.splash-title-lockup'));
+  assert.equal(splashStrongBlock.includes('font-size: 42px;'), false);
+});
+
+test('splash title remains readable on 360px portrait screens', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  const lockupBlock = css.slice(css.indexOf('.splash-title-lockup'), css.indexOf('.splash-title-lockup strong'));
+  const titleBlock = css.slice(css.indexOf('.splash-title-lockup strong'), css.indexOf('.splash-title-lockup p'));
+  assert.equal(lockupBlock.includes('padding: clamp(40px, 11.16vw, 48px) 58px'), false);
+  for (const marker of [
+    'width: min(418px, calc(100vw - 8px));',
+    'padding: clamp(40px, 11.16vw, 48px) clamp(38px, 10.56vw, 58px) clamp(25px, 7.44vw, 32px);',
+    'font-size: clamp(29px, 8.55vw, 42px);',
+    'max-width: 100%;',
+    'white-space: nowrap;'
+  ]) {
+    assert.equal(`${lockupBlock}\n${titleBlock}`.includes(marker), true, marker);
   }
 });
 
