@@ -73,6 +73,8 @@ test('reboot shop renders earned-gem cosmetic purchases with owned and locked st
 
   assert.equal(shop.includes('data-shop-buy="mythic-aura"'), true);
   assert.equal(shop.includes('data-shop-buy="founder-board"'), true);
+  assert.equal(shop.includes('data-shop-cosmetic="mythic-aura"'), true);
+  assert.equal(shop.includes('data-shop-cosmetic="founder-board"'), true);
   assert.equal(shop.includes('data-owned="true"'), true);
   assert.equal(shop.includes('90 젬'), true);
   assert.equal(shop.includes('140 젬'), true);

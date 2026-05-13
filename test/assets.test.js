@@ -32,7 +32,8 @@ const REBOOT_GRID_ASSETS = [
   { path: 'src/client/assets/generated/reboot-screen-chrome.png', width: 1280, height: 256, columns: 5, rows: 1 },
   { path: 'src/client/assets/generated/reboot-combat-vfx.png', width: 1280, height: 256, columns: 5, rows: 1 },
   { path: 'src/client/assets/generated/reboot-nav-icons.png', width: 1280, height: 256, columns: 5, rows: 1 },
-  { path: 'src/client/assets/generated/reboot-reward-burst.png', width: 1024, height: 256, columns: 4, rows: 1 }
+  { path: 'src/client/assets/generated/reboot-reward-burst.png', width: 1024, height: 256, columns: 4, rows: 1 },
+  { path: 'src/client/assets/generated/reboot-shop-cosmetics.png', width: 480, height: 96, columns: 5, rows: 1 }
 ];
 
 const IMAGEGEN_REBOOT_BACKDROPS = [
@@ -122,6 +123,13 @@ const IMAGEGEN_REBOOT_ATLASES = [
     width: 1024,
     height: 256,
     minRuntimeBytes: 70_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-shop-cosmetics.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260513-shop-cosmetics-imagegen.png',
+    width: 480,
+    height: 96,
+    minRuntimeBytes: 30_000
   }
 ];
 

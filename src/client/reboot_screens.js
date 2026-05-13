@@ -31,14 +31,6 @@ const ROLE_LABELS = {
   rescue: '구원'
 };
 
-const SHOP_ICON_BY_ITEM = {
-  'mythic-aura': 'boss_warning',
-  'founder-board': 'partner_danger',
-  'merge-effect': 'merge_action',
-  'rescue-effect': 'rescue_action',
-  'profile-frame': 'soft_currency'
-};
-
 export function unitUpgradeCost(level = 1) {
   return 40 + Math.max(0, level - 1) * 20;
 }
@@ -186,11 +178,10 @@ export function buildRebootShop(profile = {}) {
     const owned = unlocks.includes(cosmetic);
     const price = item.price?.gems ?? 0;
     const locked = gems < price;
-    const icon = SHOP_ICON_BY_ITEM[item.id] ?? 'reward_shard';
     const actionLabel = owned ? '보유' : locked ? '젬 부족' : '해금';
     return `
     <article class="screen-card shop-card" data-item="${item.id}" data-owned="${owned}">
-      <span class="sprite-token shop-token" data-shop-icon="${icon}"></span>
+      <span class="sprite-token shop-cosmetic" data-shop-cosmetic="${item.id}"></span>
       <div class="card-copy">
         <span class="role-pill">외형</span>
         <strong>${item.name}</strong>

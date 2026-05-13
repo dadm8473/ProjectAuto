@@ -17,6 +17,7 @@
   --nav-icons: url("/src/client/assets/generated/reboot-nav-icons.png");
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
   --reward-burst: url("/src/client/assets/generated/reboot-reward-burst.png");
+  --shop-cosmetics: url("/src/client/assets/generated/reboot-shop-cosmetics.png");
 }
 
 * {
@@ -620,31 +621,19 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 .unit-sprite[data-sprite="burst_pin"] { background-position: -228px 0; }
 .unit-sprite[data-sprite="rescue_coil"] { background-position: -304px 0; }
 
-.shop-token {
-  background-size: 288px 48px;
+.shop-cosmetic {
+  width: 58px;
+  height: 58px;
+  margin-bottom: 0;
+  background-image: var(--shop-cosmetics);
+  background-size: 290px 58px;
 }
 
-.shop-token[data-shop-icon="summon_charge"],
-.shop-token[data-shop-icon="merge_action"],
-.shop-token[data-shop-icon="rescue_action"],
-.shop-token[data-shop-icon="partner_danger"],
-.shop-token[data-shop-icon="boss_warning"],
-.shop-token[data-shop-icon="reward_shard"] {
-  background-image: url("/src/client/assets/generated/reboot-ui-icons.png");
-}
-
-.shop-token[data-shop-icon="soft_currency"] {
-  background-image: url("/src/client/assets/generated/reboot-reward-icons.png");
-  background-size: 192px 48px;
-}
-
-.shop-token[data-shop-icon="summon_charge"] { background-position: 0 0; }
-.shop-token[data-shop-icon="merge_action"] { background-position: -48px 0; }
-.shop-token[data-shop-icon="rescue_action"] { background-position: -96px 0; }
-.shop-token[data-shop-icon="partner_danger"] { background-position: -144px 0; }
-.shop-token[data-shop-icon="boss_warning"] { background-position: -192px 0; }
-.shop-token[data-shop-icon="reward_shard"] { background-position: -240px 0; }
-.shop-token[data-shop-icon="soft_currency"] { background-position: 0 0; }
+.shop-cosmetic[data-shop-cosmetic="mythic-aura"] { background-position: 0 0; }
+.shop-cosmetic[data-shop-cosmetic="founder-board"] { background-position: -58px 0; }
+.shop-cosmetic[data-shop-cosmetic="merge-effect"] { background-position: -116px 0; }
+.shop-cosmetic[data-shop-cosmetic="rescue-effect"] { background-position: -174px 0; }
+.shop-cosmetic[data-shop-cosmetic="profile-frame"] { background-position: -232px 0; }
 
 .unit-card,
 .shop-card,

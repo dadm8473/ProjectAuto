@@ -143,13 +143,12 @@ test('meta screens use reboot sprite tokens instead of placeholder swatches', as
 
   for (const marker of [
     'class="sprite-token unit-sprite"',
-    'class="sprite-token shop-token"',
+    'class="sprite-token shop-cosmetic"',
     'data-sprite="${unit.spriteKey}"',
-    'data-shop-icon="${icon}"',
+    'data-shop-cosmetic="${item.id}"',
     'ROLE_LABELS[unit.role]',
     'reboot-unit-atlas.png',
-    'reboot-ui-icons.png',
-    'reboot-reward-icons.png',
+    'reboot-shop-cosmetics.png',
     'grid-template-columns: 78px 1fr 96px'
   ]) {
     assert.equal(`${screens}\n${css}`.includes(marker), true, marker);
@@ -452,6 +451,21 @@ test('meta screens expose game-like status headers before scroll lists', async (
     'data-summary-kind="season"',
     '.meta-summary',
     '.meta-summary::after'
+  ]) {
+    assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+});
+
+test('shop cosmetics use a dedicated imagegen item atlas', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    '--shop-cosmetics: url("/src/client/assets/generated/reboot-shop-cosmetics.png")',
+    'data-shop-cosmetic="${item.id}"',
+    '.shop-cosmetic',
+    '[data-shop-cosmetic="mythic-aura"]',
+    '[data-shop-cosmetic="profile-frame"]'
   ]) {
     assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
   }
