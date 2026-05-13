@@ -207,3 +207,14 @@ test('canvas renderer does not duplicate shell resource HUD text', async () => {
     assert.equal(render.includes(forbidden), false, forbidden);
   }
 });
+
+test('combat renderer keeps imagegen enemy sprites readable on phone canvas', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    "const size = enemy.enemyId === 'mini_boss' ? 54 : 36",
+    "drawAtlasSprite(ctx, assets, 'enemies'"
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});

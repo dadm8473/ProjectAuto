@@ -188,7 +188,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
     const p = ((state.now * 0.045 + index * 0.12) % 1);
     const x = 70 + p * 250;
     const y = 285 + Math.sin(p * Math.PI * 2) * 34;
-    const size = enemy.enemyId === 'mini_boss' ? 44 : 31;
+    const size = enemy.enemyId === 'mini_boss' ? 54 : 36;
     if (drawAtlasSprite(ctx, assets, 'enemies', enemy.spriteKey ?? enemy.enemyId, x, y, size)) {
       return;
     }
