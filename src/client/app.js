@@ -52,7 +52,8 @@ const dom = {
   resultHighlights: qs('#resultHighlights'),
   resultReward: qs('#resultReward'),
   resultRetryButton: qs('#resultRetryButton'),
-  resultLobbyButton: qs('#resultLobbyButton')
+  resultLobbyButton: qs('#resultLobbyButton'),
+  resultLobbyLabel: qs('#resultLobbyButton span')
 };
 
 const ctx = dom.canvas.getContext('2d');
@@ -329,7 +330,7 @@ function showResult(current) {
   dom.resultNextGoal.textContent = model.nextGoal.label;
   dom.resultHighlights.innerHTML = `<span>${model.highlight.label}</span>`;
   dom.resultReward.textContent = model.rewards.map((reward) => `보상 ${reward.amount}`).join(' · ');
-  dom.resultLobbyButton.textContent = model.secondaryAction.label;
+  dom.resultLobbyLabel.textContent = model.secondaryAction.label;
   dom.resultLobbyButton.dataset.resultOpen = model.secondaryAction.action;
   dom.resultOverlay.hidden = false;
   setScreen('result');

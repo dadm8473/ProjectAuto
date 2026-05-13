@@ -144,7 +144,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-meta-row-frames">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-result-actions">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -369,10 +369,43 @@ test('result debrief stays usable on short portrait phones', async () => {
     '.result-highlights span,\n  .result-reward {\n    padding: 6px;',
     '.result-reward::before {\n    width: 28px;',
     '.result-reward::after {\n    width: 38px;',
-    '.result-actions button {\n    min-height: 40px;'
+    '.result-overlay .result-action-button {\n    min-height: 44px;'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
+});
+
+test('result actions use dedicated generated button frames', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    '--result-action-buttons: url("/src/client/assets/generated/reboot-result-action-buttons.png?v=result-actions")',
+    '<button id="resultRetryButton" class="result-action-button result-action-primary"><span>다시 도전</span></button>',
+    '<button id="resultLobbyButton" class="result-action-button result-action-secondary"><span>홈</span></button>',
+    'resultLobbyLabel: qs(\'#resultLobbyButton span\')',
+    'dom.resultLobbyLabel.textContent = model.secondaryAction.label',
+    '.result-overlay .result-action-button',
+    'background-image: var(--result-action-buttons);',
+    'background: transparent;',
+    'background-size: 200% 100%;',
+    'display: grid;',
+    'place-items: center;',
+    'padding: 0 8px;',
+    'line-height: 1;',
+    '.result-overlay .result-action-primary { background-position: 0 0; }',
+    '.result-overlay .result-action-secondary { background-position: 100% 0; }',
+    '.result-overlay .result-action-button::before {\n  background-image: none;',
+    '.result-action-button > span',
+    'min-height: 48px;'
+  ]) {
+    assert.equal(`${html}\n${css}\n${app}`.includes(marker), true, marker);
+  }
+
+  assert.equal(css.includes('.result-actions button {\n    min-height: 40px;'), false);
+  assert.equal(/(^|\n)\.result-action-button \{\n  display: grid;/.test(css), false);
+  assert.equal(/(^|\n)\.result-action-secondary \{ background-position: 100% 0; \}/.test(css), false);
 });
 
 test('combat renderer uses generated VFX atlas for action feedback', async () => {
@@ -713,7 +746,7 @@ test('result secondary action opens the recommended growth screen', async () => 
 
   for (const marker of [
     'buildRebootResultModel({ result: current.result, rewards, profile })',
-    'dom.resultLobbyButton.textContent = model.secondaryAction.label',
+    'dom.resultLobbyLabel.textContent = model.secondaryAction.label',
     'dom.resultLobbyButton.dataset.resultOpen = model.secondaryAction.action',
     'function handleResultSecondary()',
     "setScreen(target === 'home' ? 'lobby' : target)",
