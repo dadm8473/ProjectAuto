@@ -41,6 +41,16 @@ const IMAGEGEN_REBOOT_BACKDROPS = [
   { path: 'src/client/assets/generated/reboot-result-backdrop.png', width: 430, height: 932 }
 ];
 
+const IMAGEGEN_REBOOT_OVERLAYS = [
+  {
+    path: 'src/client/assets/generated/reboot-hero-squad.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260513-hero-squad-imagegen.png',
+    width: 640,
+    height: 512,
+    minRuntimeBytes: 80_000
+  }
+];
+
 const IMAGEGEN_REBOOT_ATLASES = [
   {
     path: 'src/client/assets/generated/reboot-unit-atlas.png',
@@ -278,6 +288,19 @@ test('reboot runtime visual atlases are promoted from imagegen sources instead o
     const runtime = await readFile(asset.path);
     assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
     assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+    assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+    assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+    assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+  }
+});
+
+test('reboot runtime overlay art is promoted from imagegen sources', async () => {
+  for (const asset of IMAGEGEN_REBOOT_OVERLAYS) {
+    const source = await readFile(asset.source);
+    const runtime = await readFile(asset.path);
+    assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+    assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+    assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
     assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
     assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
     assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);

@@ -334,3 +334,17 @@ test('home navigation uses generated app-game icons instead of plain text button
     assert.equal(`${html}\n${css}`.includes(marker), true, marker);
   }
 });
+
+test('splash and lobby use generated hero squad art instead of empty landing space', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png")',
+    '.splash-screen::before',
+    '.lobby-screen::before',
+    'background-image: var(--hero-squad)',
+    'pointer-events: none'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});

@@ -15,6 +15,7 @@
   --result-badges: url("/src/client/assets/generated/reboot-result-badges.png");
   --screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png");
   --nav-icons: url("/src/client/assets/generated/reboot-nav-icons.png");
+  --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
 }
 
 * {
@@ -315,6 +316,35 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   flex-direction: column;
   justify-content: flex-end;
   gap: 14px;
+}
+
+.splash-screen::before,
+.lobby-screen::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: calc(78px + env(safe-area-inset-top));
+  z-index: 0;
+  width: min(372px, 90vw);
+  height: min(298px, 38dvh);
+  transform: translateX(-50%);
+  background-image: var(--hero-squad);
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: contain;
+  filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.64));
+  pointer-events: none;
+}
+
+.lobby-screen::before {
+  top: calc(62px + env(safe-area-inset-top));
+  opacity: 0.92;
+}
+
+.splash-screen > *,
+.lobby-screen > * {
+  position: relative;
+  z-index: 1;
 }
 
 .splash-screen strong {

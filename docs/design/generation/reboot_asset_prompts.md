@@ -125,6 +125,7 @@ Premium animated co-op toy-board.
 | Screen chrome | 5 pieces | PNG/WebP transparent | primary button, secondary button, content panel, dock, badge |
 | Combat VFX | 5 effects | PNG/WebP transparent | summon, merge, rescue, enemy hit, boss warning |
 | Navigation icons | 5 icons | PNG/WebP transparent | collection, shop, missions, season, home |
+| Hero squad | 1 overlay | PNG/WebP transparent | splash/lobby unit group |
 
 ## 런타임 아틀라스 계약
 
@@ -265,6 +266,18 @@ Premium animated co-op toy-board.
 | Center tolerance | x/y deviation <= 8px |
 | Transparency | transparent pixel ratio >= 35% per cell |
 | Margin | >= 14px clear margin on all sides |
+
+### Hero Squad Overlay
+
+| Field | Value |
+| --- | --- |
+| File | `src/client/assets/generated/reboot-hero-squad.png` |
+| Final size | 640x512 |
+| Runtime use | splash and lobby mid-screen hero art |
+| Subject bbox | 520-620px wide, 320-430px tall |
+| Center tolerance | x/y deviation <= 16px |
+| Transparency | transparent corners and clean alpha |
+| Margin | >= 18px clear margin on all sides |
 
 ## 런타임 소비 전환 계약
 
@@ -625,6 +638,20 @@ Style lock tokens: premium Korean mobile game app shell, cooperative toy-board t
 Style: shipped mobile game navigation icons, readable at 28px, 40px, and 64px, no UI-card framing.
 Constraints: transparent background, no text, no letters, no numbers, no watermark, no dice, no casino pips, no price tags, no generic emoji.
 Export target: subject bbox 160-220px longest side, pivot x 128 y 128, center deviation <= 8px, at least 14px margin around the subject.
+```
+
+## Runtime Prompt: Hero Squad
+
+```text
+Use case: stylized-concept
+Asset type: transparent splash/lobby hero squad overlay for ProjectAuto reboot mobile app shell.
+Primary request: Create one premium mobile game hero artwork showing the five ProjectAuto toy relay units posing together on a tiny command platform. No text.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background for background removal; no floor plane, no cast shadow on the background.
+Subjects: five cooperative toy-defense units with silhouettes matching the runtime unit roster: spark pin attacker, toktok amp support, slow coil controller, burst pin attacker, rescue coil support. Arrange as a compact triangular squad, front unit low center, taller units behind, all facing slightly toward camera.
+Style lock tokens: premium Korean mobile co-op tower defense, polished toy metal, teal glass cores, amber highlights, graphite trim, readable chunky shapes, friendly but battle-ready.
+Style: shipped mobile game splash art, crisp at phone width, high contrast but not noisy, no UI-card framing.
+Constraints: no text, no letters, no numbers, no watermark, no dice, no casino pips, no realistic humans, no weapon gore. Do not use #00ff00 anywhere in the subjects.
+Export target after processing: final transparent PNG 640x512, squad centered, subject bbox 520-620px wide and 320-430px tall, at least 18px margin around the subject.
 ```
 
 ## Runtime Prompt: Screen Chrome
