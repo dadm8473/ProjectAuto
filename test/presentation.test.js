@@ -144,7 +144,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-meta-badges">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-meta-title">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -356,6 +356,33 @@ test('meta row compact chips use generated mini badge frames', async () => {
   assert.equal(chipBlock.includes('background: rgba'), false);
   assert.equal(chipBlock.includes('border: 1px solid rgba'), false);
   assert.equal(css.includes('.role-pill::before'), false);
+});
+
+test('meta screen titles use generated header plates instead of browser default h1', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const html = await readFile('index.html', 'utf8');
+
+  for (const marker of [
+    '--meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title")',
+    '<h1>유닛 강화</h1>',
+    '<h1>상점</h1>',
+    '<h1>미션</h1>',
+    '<h1>시즌</h1>',
+    '.hub-screen h1',
+    'background-image: var(--meta-title-plate);',
+    'background-size: 100% 100%;',
+    'margin: 0 0 10px;',
+    '.hub-screen .screen-back',
+    'position: absolute;',
+    '.hub-screen .screen-back::before',
+    'opacity: 0;'
+  ]) {
+    assert.equal(`${css}\n${html}`.includes(marker), true, marker);
+  }
+
+  const titleBlock = css.slice(css.indexOf('.hub-screen h1'), css.indexOf('.screen-list'));
+  assert.equal(titleBlock.includes('font-size: 2em'), false);
+  assert.equal(titleBlock.includes('margin-block-start'), false);
 });
 
 test('result screen uses generated status badges for win and loss peaks', async () => {

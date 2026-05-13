@@ -249,6 +249,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     width: 768,
     height: 96,
     minRuntimeBytes: 70_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-meta-title-plate.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-meta-title-plate-imagegen.png',
+    width: 430,
+    height: 96,
+    minRuntimeBytes: 60_000
   }
 ];
 

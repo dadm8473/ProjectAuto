@@ -36,6 +36,7 @@
   --season-banner: url("/src/client/assets/generated/reboot-season-banner.png");
   --meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row");
   --meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges");
+  --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons");
@@ -987,6 +988,39 @@ body[data-app-screen="lobby"] .toast {
 .screen-overlay .play-button::before,
 .screen-overlay .match-button::before {
   background-image: none;
+}
+
+.hub-screen h1 {
+  min-height: clamp(60px, 17.67vw, 76px);
+  display: flex;
+  align-items: center;
+  margin: 0 0 10px;
+  padding: 10px clamp(24px, 7vw, 32px) 10px clamp(78px, 22.33vw, 96px);
+  background-image: var(--meta-title-plate);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  color: var(--ink);
+  font-size: clamp(23px, 6.8vw, 30px);
+  font-weight: 1000;
+  line-height: 1;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.72), 0 0 14px rgba(88, 215, 255, 0.24);
+}
+
+.hub-screen .screen-back {
+  position: absolute;
+  top: calc(var(--lobby-screen-top-pad) + env(safe-area-inset-top) + 7px);
+  left: 25px;
+  z-index: 3;
+  width: clamp(50px, 13.95vw, 60px);
+  min-height: clamp(50px, 13.95vw, 60px);
+  margin: 0;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+}
+
+.hub-screen .screen-back::before {
+  opacity: 0;
 }
 
 .screen-list {
