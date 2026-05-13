@@ -163,6 +163,17 @@ function handleShopPurchase(event) {
   showToast(`${item.name} 해금`);
 }
 
+function handleLobbyOpen(event) {
+  const button = event.target.closest('[data-lobby-open]');
+  if (!button) return;
+  const screen = button.dataset.lobbyOpen;
+  if (screen === 'battle') {
+    startBotRun();
+    return;
+  }
+  setScreen(screen);
+}
+
 function handleUnitUpgrade(event) {
   const button = event.target.closest('[data-unit-upgrade]');
   if (!button) return;
@@ -343,6 +354,7 @@ function bind() {
   dom.summonButton.addEventListener('click', () => command('summon'));
   dom.mergeButton.addEventListener('click', () => command('merge'));
   dom.rescueButton.addEventListener('click', () => command('rescue'));
+  dom.lobbyContent.addEventListener('click', handleLobbyOpen);
   dom.collectionList.addEventListener('click', handleUnitUpgrade);
   dom.shopList.addEventListener('click', handleShopPurchase);
   dom.missionsList.addEventListener('click', handleMissionClaim);

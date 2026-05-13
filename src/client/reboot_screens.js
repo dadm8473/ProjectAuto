@@ -80,8 +80,48 @@ export function missionProgress(profile, mission) {
   return Math.min(mission.target, mission.progress(profile));
 }
 
+function hasClaimableMission(profile = {}) {
+  const claimed = new Set(profile.claimedMissions ?? []);
+  return REBOOT_MISSIONS.some((mission) => !claimed.has(mission.id) && missionProgress(profile, mission) >= mission.target);
+}
+
+function hasClaimablePass(profile = {}) {
+  const claimed = new Set(profile.claimedPassTiers ?? []);
+  const xp = profile.xp ?? 0;
+  return SHOP.pass.tiers.some((tier, index) => xp >= tier.xp && !claimed.has(index));
+}
+
+function hasTrainableUnit(profile = {}) {
+  const xp = profile.xp ?? 0;
+  const unitLevels = profile.unitLevels ?? {};
+  return Object.values(REBOOT_UNITS).some((unit) => xp >= unitUpgradeCost(unitLevels[unit.id] ?? 1));
+}
+
+function hasAffordableCosmetic(profile = {}) {
+  const gems = profile.gems ?? 0;
+  const unlocks = new Set(profile.unlocks ?? []);
+  return SHOP.items.some((item) => item.category === 'cosmetic' && item.grant?.cosmetic && !unlocks.has(item.grant.cosmetic) && gems >= (item.price?.gems ?? 0));
+}
+
+export function nextLobbyAction(profile = {}) {
+  if (hasClaimableMission(profile)) {
+    return { label: '미션 보상', title: '받을 미션 보상', detail: '완료한 목표를 수령하세요', screen: 'missions', cta: '수령하기' };
+  }
+  if (hasClaimablePass(profile)) {
+    return { label: '시즌 보상', title: '시즌 보상 도착', detail: '경험치 보상을 열 수 있습니다', screen: 'season', cta: '열기' };
+  }
+  if (hasTrainableUnit(profile)) {
+    return { label: '훈련 가능', title: '유닛 강화 가능', detail: '경험치로 전투 유닛을 키우세요', screen: 'collection', cta: '훈련하기' };
+  }
+  if (hasAffordableCosmetic(profile)) {
+    return { label: '외형 해금', title: '외형 해금 가능', detail: '획득 젬으로 꾸미기를 여세요', screen: 'shop', cta: '상점가기' };
+  }
+  return { label: '다음 작전', title: '첫 구원 작전', detail: '보상을 모아 유닛과 외형을 여세요', screen: 'battle', cta: '출전' };
+}
+
 export function buildRebootLobby(model = {}) {
   const gems = model.gems ?? 0;
+  const nextAction = nextLobbyAction(model);
   return `
     <section class="lobby-card">
       <span>오늘의 협동</span>
@@ -92,6 +132,12 @@ export function buildRebootLobby(model = {}) {
       <span>보유 젬</span>
       <strong>${gems}</strong>
       <p>전투력 판매 없이 외형만 해금합니다</p>
+    </section>
+    <section class="lobby-card next-hook" data-next-action="${nextAction.label}">
+      <span>${nextAction.label}</span>
+      <strong>${nextAction.title}</strong>
+      <p>${nextAction.detail}</p>
+      <button type="button" data-lobby-open="${nextAction.screen}">${nextAction.cta}</button>
     </section>
   `;
 }

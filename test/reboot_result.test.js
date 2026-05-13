@@ -5,6 +5,7 @@ import { createGame, mergeRelays, serializeState, supplyRelay, tickGame, castLin
 import {
   buildMissionScreen,
   buildRebootCollection,
+  buildRebootLobby,
   buildRebootResultModel,
   buildRebootShop,
   buildSeasonScreen,
@@ -118,4 +119,39 @@ test('season screen renders pass tiers from profile XP and claim states', () => 
   assert.equal(season.includes('160 경험치'), true);
   assert.equal(season.includes('>받음<'), true);
   assert.equal(season.includes('>진행중<'), true);
+});
+
+test('lobby recommends the next profile action after rewards settle', () => {
+  const missionLobby = buildRebootLobby({
+    gems: 24,
+    xp: 60,
+    processedRuns: ['run-1'],
+    claimedMissions: [],
+    claimedPassTiers: []
+  });
+
+  assert.equal(missionLobby.includes('data-lobby-open="missions"'), true);
+  assert.equal(missionLobby.includes('미션 보상'), true);
+
+  const trainingLobby = buildRebootLobby({
+    gems: 24,
+    xp: 60,
+    processedRuns: ['run-1'],
+    claimedMissions: ['first-run'],
+    claimedPassTiers: [0]
+  });
+
+  assert.equal(trainingLobby.includes('data-lobby-open="collection"'), true);
+  assert.equal(trainingLobby.includes('훈련 가능'), true);
+
+  const shopLobby = buildRebootLobby({
+    gems: 90,
+    xp: 0,
+    processedRuns: ['run-1'],
+    claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic'],
+    claimedPassTiers: [0]
+  });
+
+  assert.equal(shopLobby.includes('data-lobby-open="shop"'), true);
+  assert.equal(shopLobby.includes('외형 해금'), true);
 });

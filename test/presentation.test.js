@@ -421,3 +421,20 @@ test('client wires missions and season pass claim loops', async () => {
     assert.equal(`${app}\n${screens}`.includes(marker), true, marker);
   }
 });
+
+test('lobby next-action card can navigate to profile screens', async () => {
+  const app = await readFile('src/client/app.js', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    'nextLobbyAction',
+    'data-lobby-open="${nextAction.screen}"',
+    'handleLobbyOpen',
+    'dom.lobbyContent.addEventListener',
+    '미션 보상',
+    '훈련 가능',
+    '외형 해금'
+  ]) {
+    assert.equal(`${app}\n${screens}`.includes(marker), true, marker);
+  }
+});

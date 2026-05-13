@@ -476,6 +476,18 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   padding: 14px;
 }
 
+.next-hook {
+  display: grid;
+  gap: 8px;
+}
+
+.next-hook button {
+  justify-self: start;
+  min-height: 36px;
+  min-width: 112px;
+  padding: 0 14px;
+}
+
 .screen-overlay button:not([data-nav-icon])::before,
 .result-overlay button::before {
   content: "";
