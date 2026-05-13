@@ -109,6 +109,20 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     width: 390,
     height: 112,
     minRuntimeBytes: 60_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-combat-hud-frame.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-shell-chrome-imagegen.png',
+    width: 430,
+    height: 96,
+    minRuntimeBytes: 60_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-combat-action-dock.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-shell-chrome-imagegen.png',
+    width: 430,
+    height: 128,
+    minRuntimeBytes: 70_000
   }
 ];
 

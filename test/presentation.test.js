@@ -705,6 +705,79 @@ test('combat resource HUD uses generated icons instead of text-only chips', asyn
   }
 });
 
+test('combat shell uses generated HUD and action dock chrome', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png")',
+    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png")',
+    'body[data-app-screen="battle"] .hud::before',
+    'body[data-app-screen="battle"] .action-panel::before',
+    'background-image: var(--combat-hud-frame)',
+    'background-image: var(--combat-action-dock)',
+    'background-size: 100% auto',
+    '.hud > *,',
+    '.action-panel > *'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
+test('combat shell chrome preserves generated asset ratios on phone widths', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--combat-hud-row: clamp(72px, 22.33vw, 96px);',
+    '--combat-action-row: clamp(112px, 29.77vw, 128px);',
+    'grid-template-rows: calc(var(--combat-hud-row) + env(safe-area-inset-top)) minmax(0, 1fr) calc(var(--combat-action-row) + env(safe-area-inset-bottom));',
+    'background-size: 100% auto;',
+    'background-position: center bottom;',
+    'background-position: center top;',
+    'min-height: clamp(48px, 13.02vw, 56px);'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  assert.equal(css.includes('background-size: 100% 100%;'), false);
+});
+
+test('combat HUD keeps three resource meters bounded on compact phones', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '.hud {\n  gap: 4px;',
+    'flex: 0 0 clamp(220px, 60vw, 258px);',
+    'grid-template-columns: repeat(3, minmax(0, 1fr));',
+    'white-space: nowrap;',
+    '@media (max-width: 360px)',
+    '.brand span {\n    display: none;',
+    '.meters span::before {\n    width: 14px;',
+    '#rescueMeter::before { background-position: -28px 0; }',
+    '#dangerMeter::before { background-position: -42px 0; }'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
+test('combat HUD meter labels stay compact enough for generated chrome sockets', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '>소10<',
+    '>구0%<',
+    '>위0<',
+    'dom.summonMeter.textContent = `소${resources.summon}`',
+    'dom.rescueMeter.textContent = `구${Math.round(resources.rescue)}%`',
+    'dom.dangerMeter.textContent = `위${Math.round(current.boards[partner]?.danger ?? 0)}`',
+    'margin-left: clamp(38px, 12vw, 56px);',
+    'padding: clamp(4px, 1.4vw, 6px) clamp(3px, 1.2vw, 5px);'
+  ]) {
+    assert.equal(`${html}\n${app}\n${css}`.includes(marker), true, marker);
+  }
+});
+
 test('install metadata uses dedicated generated app icons', async () => {
   const html = await readFile('index.html', 'utf8');
   const manifest = JSON.parse(await readFile('manifest.webmanifest', 'utf8'));

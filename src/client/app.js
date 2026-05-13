@@ -298,9 +298,9 @@ function command(actionName) {
 function updateMeters(current) {
   const resources = current.resources?.[localBoardId] ?? current.resources.p1;
   const partner = localBoardId === 'p1' ? 'p2' : 'p1';
-  dom.summonMeter.textContent = `소환 ${resources.summon}`;
-  dom.rescueMeter.textContent = `구원 ${Math.round(resources.rescue)}%`;
-  dom.dangerMeter.textContent = `위험 ${Math.round(current.boards[partner]?.danger ?? 0)}`;
+  dom.summonMeter.textContent = `소${resources.summon}`;
+  dom.rescueMeter.textContent = `구${Math.round(resources.rescue)}%`;
+  dom.dangerMeter.textContent = `위${Math.round(current.boards[partner]?.danger ?? 0)}`;
   dom.timeMeter.textContent = `${Math.floor(current.now)}초`;
   dom.bossMeter.textContent = current.now >= 92 && current.now < 120 ? '보스 경고' : '보스 대기';
 }
