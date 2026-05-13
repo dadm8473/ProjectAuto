@@ -21,6 +21,7 @@
   --title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png");
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
+  --lobby-operation-poster: url("/src/client/assets/generated/reboot-lobby-operation-poster.png?v=operation-poster");
   --lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips");
   --launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta");
   --training-banner: url("/src/client/assets/generated/reboot-training-banner.png");
@@ -31,6 +32,16 @@
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png");
   --combat-hud-row: clamp(72px, 22.33vw, 96px);
   --combat-action-row: clamp(112px, 29.77vw, 128px);
+  --lobby-screen-top-pad: 22px;
+  --lobby-screen-bottom-pad: 130px;
+  --lobby-screen-gap: 14px;
+  --lobby-operation-poster-height: 154px;
+  --lobby-intel-strip-height: 72px;
+  --lobby-launch-button-height: 54px;
+  --lobby-bottom-dock-button-height: 64px;
+  --lobby-bottom-dock-padding-y: 6px;
+  --lobby-bottom-dock-rendered-height: 80px;
+  --lobby-bottom-dock-bottom: 18px;
   --reward-burst: url("/src/client/assets/generated/reboot-reward-burst.png");
   --shop-cosmetics: url("/src/client/assets/generated/reboot-shop-cosmetics.png");
 }
@@ -465,7 +476,7 @@ body[data-app-screen="lobby"] .toast {
 .app-screen {
   position: relative;
   z-index: 1;
-  padding: calc(22px + env(safe-area-inset-top)) 18px calc(130px + env(safe-area-inset-bottom));
+  padding: calc(var(--lobby-screen-top-pad) + env(safe-area-inset-top)) 18px calc(var(--lobby-screen-bottom-pad) + env(safe-area-inset-bottom));
   overflow: hidden;
 }
 
@@ -478,7 +489,7 @@ body[data-app-screen="lobby"] .toast {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 14px;
+  gap: var(--lobby-screen-gap);
 }
 
 .splash-screen::before,
@@ -539,7 +550,7 @@ body[data-app-screen="lobby"] .toast {
 
 .play-button,
 .match-button {
-  min-height: 54px;
+  min-height: var(--lobby-launch-button-height);
   display: grid;
   place-items: center;
   background-color: transparent;
@@ -583,12 +594,12 @@ body[data-app-screen="lobby"] .toast {
   position: absolute;
   left: 12px;
   right: 12px;
-  bottom: calc(18px + env(safe-area-inset-bottom));
+  bottom: calc(var(--lobby-bottom-dock-bottom) + env(safe-area-inset-bottom));
   z-index: 3;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  padding: 6px;
+  padding: var(--lobby-bottom-dock-padding-y) 6px;
   isolation: isolate;
 }
 
@@ -596,7 +607,7 @@ body[data-app-screen="lobby"] .toast {
   display: grid;
   place-items: center;
   gap: 1px;
-  min-height: 64px;
+  min-height: var(--lobby-bottom-dock-button-height);
   padding: 7px 4px 6px;
   color: rgba(245, 240, 220, 0.86);
   font-size: 10px;
@@ -684,36 +695,56 @@ body[data-app-screen="lobby"] .toast {
 }
 
 .operation-card {
-  min-height: 156px;
+  position: relative;
+  min-height: var(--lobby-operation-poster-height);
   display: grid;
   align-content: end;
-  gap: 2px;
-  padding-top: 70px;
-  background:
-    linear-gradient(180deg, rgba(5, 8, 8, 0.12), rgba(5, 8, 8, 0.38) 48%, rgba(5, 8, 8, 0.9)),
-    rgba(10, 16, 16, 0.9);
+  overflow: hidden;
+  isolation: isolate;
+  padding: 0;
+  background-image: var(--lobby-operation-poster);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
 }
 
-.operation-card::before {
-  opacity: 0.72;
-}
-
-.operation-card::after {
-  content: "";
+.operation-poster-frame {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background-image: var(--lobby-operation);
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
   pointer-events: none;
 }
 
-.operation-card strong {
+.operation-copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 2px;
+  max-width: 66%;
+  padding: 0 0 18px 18px;
+}
+
+.operation-copy span {
+  color: rgba(244, 201, 93, 0.94);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.operation-copy strong {
   font-size: 22px;
   line-height: 1;
   text-shadow: 0 3px 14px rgba(0, 0, 0, 0.72);
+}
+
+.operation-copy p {
+  margin: 0;
+  color: rgba(245, 240, 220, 0.8);
+  font-size: 12px;
+  line-height: 1;
 }
 
 .screen-overlay button:not([data-nav-icon])::before,
@@ -737,7 +768,7 @@ body[data-app-screen="lobby"] .toast {
 
 .lobby-intel-strip {
   position: relative;
-  min-height: 72px;
+  min-height: var(--lobby-intel-strip-height);
   display: grid;
   align-content: center;
   gap: 1px;

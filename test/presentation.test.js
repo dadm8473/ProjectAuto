@@ -2,6 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
+function cssPxVar(css, name) {
+  const match = css.match(new RegExp(`${name}:\\s*(\\d+)px;`));
+  assert.ok(match, `${name} token is missing`);
+  return Number(match[1]);
+}
+
 test('client app is split into reboot modules and keeps app.js as bootstrap', async () => {
   const app = await readFile('src/client/app.js', 'utf8');
   const lines = app.split('\n').length;
@@ -138,7 +144,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-lobby-intel-strips">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-operation-poster">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -478,19 +484,66 @@ test('splash and lobby use generated hero squad art instead of empty landing spa
   }
 });
 
-test('lobby operation card uses a dedicated generated mission banner', async () => {
+test('lobby operation card uses a dedicated generated mission poster', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
   for (const marker of [
-    '--lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png")',
-    'class="lobby-card operation-card"',
+    '--lobby-operation-poster: url("/src/client/assets/generated/reboot-lobby-operation-poster.png?v=operation-poster")',
+    'class="operation-card"',
+    'class="operation-poster-frame"',
+    '/src/client/assets/generated/reboot-lobby-operation-poster.png?v=operation-poster',
     '.operation-card',
-    '.operation-card::after',
-    'background-image: var(--lobby-operation)',
-    'min-height: 156px'
+    '.operation-poster-frame',
+    'background-image: var(--lobby-operation-poster)',
+    '--lobby-operation-poster-height: 154px',
+    'min-height: var(--lobby-operation-poster-height);',
+    'class="operation-copy"',
+    '<p>파트너 구원 · 보스 저지</p>'
   ]) {
     assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+
+  for (const forbidden of [
+    'class="lobby-card operation-card"',
+    '세 버튼으로 파트너 라인을 살리고 보스를 막으세요',
+    '.operation-card::after'
+  ]) {
+    assert.equal(`${css}\n${screens}`.includes(forbidden), false, forbidden);
+  }
+});
+
+test('lobby portrait layout budget keeps poster actions and dock from overlapping', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const layout = {
+    topPad: cssPxVar(css, '--lobby-screen-top-pad'),
+    bottomPad: cssPxVar(css, '--lobby-screen-bottom-pad'),
+    gap: cssPxVar(css, '--lobby-screen-gap'),
+    poster: cssPxVar(css, '--lobby-operation-poster-height'),
+    intel: cssPxVar(css, '--lobby-intel-strip-height'),
+    launch: cssPxVar(css, '--lobby-launch-button-height'),
+    dockButton: cssPxVar(css, '--lobby-bottom-dock-button-height'),
+    dockPaddingY: cssPxVar(css, '--lobby-bottom-dock-padding-y'),
+    dockRendered: cssPxVar(css, '--lobby-bottom-dock-rendered-height'),
+    dockBottom: cssPxVar(css, '--lobby-bottom-dock-bottom')
+  };
+  const stackHeight = layout.poster + layout.intel * 2 + layout.launch * 2 + layout.gap * 2;
+  const dockHeight = layout.dockRendered;
+
+  for (const viewport of [
+    { width: 320, height: 720 },
+    { width: 390, height: 844 }
+  ]) {
+    const stackBottom = viewport.height - layout.bottomPad;
+    const stackTop = stackBottom - stackHeight;
+    const dockTop = viewport.height - layout.dockBottom - dockHeight;
+    const dockGap = dockTop - stackBottom;
+
+    assert.ok(stackTop >= layout.topPad + 104, `${viewport.width} stack starts too high: ${stackTop}`);
+    assert.ok(dockGap >= 32, `${viewport.width} dock overlaps lobby actions: ${dockGap}`);
+    assert.ok(layout.launch >= 54, `${viewport.width} launch CTA lost touch height`);
+    assert.ok(layout.dockButton >= 64, `${viewport.width} dock buttons lost touch height`);
+    assert.ok(layout.dockRendered >= layout.dockButton + layout.dockPaddingY * 2 + 4, `${viewport.width} dock render budget is too optimistic`);
   }
 });
 

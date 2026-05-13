@@ -125,10 +125,13 @@ export function buildRebootLobby(model = {}) {
   const gems = model.gems ?? 0;
   const nextAction = nextLobbyAction(model);
   return `
-    <section class="lobby-card operation-card">
-      <span>오늘의 협동</span>
-      <strong>첫 구원 작전</strong>
-      <p>세 버튼으로 파트너 라인을 살리고 보스를 막으세요</p>
+    <section class="operation-card">
+      <img class="operation-poster-frame" src="/src/client/assets/generated/reboot-lobby-operation-poster.png?v=operation-poster" alt="" aria-hidden="true">
+      <div class="operation-copy">
+        <span>협동 작전</span>
+        <strong>첫 구원 작전</strong>
+        <p>파트너 구원 · 보스 저지</p>
+      </div>
     </section>
     <section class="lobby-intel-strip reward-hook">
       <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-gems.png?v=intel-strips" alt="" aria-hidden="true">
