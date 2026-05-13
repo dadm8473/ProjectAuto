@@ -412,6 +412,25 @@ test('result reward strip uses generated reward burst art', async () => {
   }
 });
 
+test('result secondary action opens the recommended growth screen', async () => {
+  const app = await readFile('src/client/app.js', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    'buildRebootResultModel({ result: current.result, rewards, profile })',
+    'dom.resultLobbyButton.textContent = model.secondaryAction.label',
+    'dom.resultLobbyButton.dataset.resultOpen = model.secondaryAction.action',
+    'function handleResultSecondary()',
+    "setScreen(target === 'home' ? 'lobby' : target)",
+    'label: nextAction.cta',
+    'action: nextAction.screen',
+    'title: nextAction.title',
+    'nextLobbyAction(profile)'
+  ]) {
+    assert.equal(`${app}\n${screens}`.includes(marker), true, marker);
+  }
+});
+
 test('profile rewards use generated burst feedback instead of plain text toasts', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');

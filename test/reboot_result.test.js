@@ -45,6 +45,37 @@ test('result model prioritizes reason, next goal, rewards, retry, and home', () 
   assert.deepEqual(model.forbiddenActions, []);
 });
 
+test('result model routes secondary action to the next profile growth screen', () => {
+  const missionModel = buildRebootResultModel({
+    result: { status: 'won', reason: 'partner_rescued' },
+    profile: {
+      gems: 24,
+      xp: 60,
+      processedRuns: ['run-1'],
+      claimedMissions: [],
+      claimedPassTiers: []
+    }
+  });
+
+  assert.equal(missionModel.secondaryAction.action, 'missions');
+  assert.equal(missionModel.secondaryAction.label, '수령하기');
+  assert.equal(missionModel.secondaryAction.title, '받을 미션 보상');
+
+  const trainingModel = buildRebootResultModel({
+    result: { status: 'won', reason: 'partner_rescued' },
+    profile: {
+      gems: 24,
+      xp: 60,
+      processedRuns: ['run-1'],
+      claimedMissions: ['first-run'],
+      claimedPassTiers: [0]
+    }
+  });
+
+  assert.equal(trainingModel.secondaryAction.action, 'collection');
+  assert.equal(trainingModel.secondaryAction.label, '훈련하기');
+});
+
 test('result model exposes loss status for generated result badges', () => {
   const model = buildRebootResultModel({ result: { status: 'lost', reason: 'boss_leaked' } });
 

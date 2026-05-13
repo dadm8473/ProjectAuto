@@ -50,7 +50,9 @@ const dom = {
   resultReason: qs('#resultReason'),
   resultNextGoal: qs('#resultNextGoal'),
   resultHighlights: qs('#resultHighlights'),
-  resultReward: qs('#resultReward')
+  resultReward: qs('#resultReward'),
+  resultRetryButton: qs('#resultRetryButton'),
+  resultLobbyButton: qs('#resultLobbyButton')
 };
 
 const ctx = dom.canvas.getContext('2d');
@@ -320,13 +322,15 @@ function showResult(current) {
   if (!current.result || resultShownFor === current.runId) return;
   resultShownFor = current.runId;
   const rewards = settleResultRewards(current);
-  const model = buildRebootResultModel({ result: current.result, rewards });
+  const model = buildRebootResultModel({ result: current.result, rewards, profile });
   dom.resultOverlay.dataset.resultStatus = model.status;
   dom.resultTitle.textContent = model.title;
   dom.resultReason.textContent = model.reason.label;
   dom.resultNextGoal.textContent = model.nextGoal.label;
   dom.resultHighlights.innerHTML = `<span>${model.highlight.label}</span>`;
   dom.resultReward.textContent = model.rewards.map((reward) => `보상 ${reward.amount}`).join(' · ');
+  dom.resultLobbyButton.textContent = model.secondaryAction.label;
+  dom.resultLobbyButton.dataset.resultOpen = model.secondaryAction.action;
   dom.resultOverlay.hidden = false;
   setScreen('result');
 }
@@ -336,6 +340,12 @@ function retry() {
   resultShownFor = '';
   dom.resultOverlay.hidden = true;
   setScreen('battle');
+}
+
+function handleResultSecondary() {
+  const target = dom.resultLobbyButton.dataset.resultOpen || 'home';
+  dom.resultOverlay.hidden = true;
+  setScreen(target === 'home' ? 'lobby' : target);
 }
 
 function loop(now) {
@@ -362,11 +372,8 @@ function bind() {
   dom.shopList.addEventListener('click', handleShopPurchase);
   dom.missionsList.addEventListener('click', handleMissionClaim);
   dom.seasonList.addEventListener('click', handlePassClaim);
-  qs('#resultRetryButton').addEventListener('click', retry);
-  qs('#resultLobbyButton').addEventListener('click', () => {
-    dom.resultOverlay.hidden = true;
-    setScreen('lobby');
-  });
+  dom.resultRetryButton.addEventListener('click', retry);
+  dom.resultLobbyButton.addEventListener('click', handleResultSecondary);
   document.querySelectorAll('[data-open-screen]').forEach((button) => {
     button.addEventListener('click', () => setScreen(button.dataset.openScreen));
   });

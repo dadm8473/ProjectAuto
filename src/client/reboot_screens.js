@@ -257,9 +257,10 @@ export function buildSeasonScreen(profile = {}) {
   return `${summary}${tiers}`;
 }
 
-export function buildRebootResultModel({ result, rewards = [] }) {
+export function buildRebootResultModel({ result, rewards = [], profile } = {}) {
   const won = result?.status === 'won';
   const reason = result?.reason ?? 'partner_rescued';
+  const nextAction = profile ? nextLobbyAction(profile) : null;
   return {
     status: won ? 'won' : 'lost',
     title: won ? '승리' : '패배',
@@ -268,7 +269,9 @@ export function buildRebootResultModel({ result, rewards = [] }) {
     nextGoal: { label: GOAL_LABELS[result?.nextGoal] ?? '다시 도전해 핵심 타이밍을 익히세요', goal: result?.nextGoal ?? 'retry' },
     rewards,
     primaryAction: { label: '다시 도전', action: 'retry' },
-    secondaryAction: { label: '홈', action: 'home' },
+    secondaryAction: nextAction && nextAction.screen !== 'battle'
+      ? { label: nextAction.cta, action: nextAction.screen, title: nextAction.title }
+      : { label: '홈', action: 'home' },
     forbiddenActions: []
   };
 }
