@@ -293,7 +293,7 @@ function command(actionName) {
     return;
   }
   softFeedback(actionName);
-  showToast({ summon: '소환 완료', merge: '합성 완료', rescue: '구원 성공' }[actionName]);
+  showToast({ summon: '소환 완료', merge: '합성 완료', rescue: '구원 성공' }[actionName], 'combat');
 }
 
 function updateMeters(current) {

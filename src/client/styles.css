@@ -17,6 +17,7 @@
   --result-action-buttons: url("/src/client/assets/generated/reboot-result-action-buttons.png?v=result-actions");
   --result-detail-strips: url("/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail");
   --result-copy-plates: url("/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy");
+  --toast-callouts: url("/src/client/assets/generated/reboot-toast-callouts.png?v=toast-callouts");
   --result-panel-width: min(calc(100vw - 28px), calc((100dvh - 52px) * 0.6964), 390px);
   --result-panel-top-pad: clamp(108px, calc(var(--result-panel-width) * 0.31), 128px);
   --screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png");
@@ -279,13 +280,28 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   transform: translateX(-50%);
   z-index: 12;
   isolation: isolate;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: rgba(12, 18, 18, 0.92);
-  border: 1px solid var(--line);
+  min-height: 48px;
+  min-width: 168px;
+  display: grid;
+  place-items: center;
+  padding: 8px 18px;
+  border-color: transparent;
+  border-radius: 0;
+  background: transparent;
+  background-image: var(--toast-callouts);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  background-position: 0 0;
   color: var(--ink);
   font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
   overflow: visible;
+}
+
+.toast[data-toast-kind="combat"] {
+  background-position: 0 0;
 }
 
 body[data-app-screen="battle"] .toast {
@@ -300,10 +316,8 @@ body[data-app-screen="lobby"] .toast {
   min-height: 46px;
   min-width: 188px;
   padding: 10px 46px 10px 44px;
-  border-color: rgba(244, 201, 93, 0.72);
-  background:
-    linear-gradient(180deg, rgba(52, 42, 16, 0.98), rgba(12, 18, 18, 0.94)),
-    rgba(12, 18, 18, 0.94);
+  background-image: var(--toast-callouts);
+  background-position: 100% 0;
   box-shadow:
     inset 0 1px rgba(245, 240, 220, 0.18),
     0 12px 30px rgba(244, 201, 93, 0.2),

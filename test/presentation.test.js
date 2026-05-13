@@ -144,7 +144,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-result-copy-plates">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-toast-callouts">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -825,11 +825,38 @@ test('profile rewards use generated burst feedback instead of plain text toasts'
     '.toast[data-toast-kind="reward"]',
     '.toast[data-toast-kind="reward"]::before',
     '.toast[data-toast-kind="reward"]::after',
+    'background-image: var(--toast-callouts);',
+    'background-position: 100% 0;',
     'background-image: var(--reward-burst)',
     'reboot-reward-icons.png'
   ]) {
     assert.equal(`${css}\n${app}`.includes(marker), true, marker);
   }
+});
+
+test('combat action toasts use generated callout frames instead of web alert boxes', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    '--toast-callouts: url("/src/client/assets/generated/reboot-toast-callouts.png?v=toast-callouts")',
+    "showToast({ summon: '소환 완료', merge: '합성 완료', rescue: '구원 성공' }[actionName], 'combat')",
+    '.toast {\n  position: absolute;',
+    'background-image: var(--toast-callouts);',
+    'background-size: 200% 100%;',
+    'background-position: 0 0;',
+    'border-color: transparent;',
+    'border-radius: 0;',
+    '.toast[data-toast-kind="combat"]',
+    'min-width: 168px;',
+    'body[data-app-screen="battle"] .toast {\n  bottom: calc(126px + env(safe-area-inset-bottom));'
+  ]) {
+    assert.equal(`${css}\n${app}`.includes(marker), true, marker);
+  }
+
+  const toastBlock = css.slice(css.indexOf('.toast {'), css.indexOf('body[data-app-screen="battle"] .toast'));
+  assert.equal(toastBlock.includes('background: rgba(12, 18, 18, 0.92);'), false);
+  assert.equal(toastBlock.includes('border: 1px solid var(--line);'), false);
 });
 
 test('reward toast sits above app overlays instead of inside the blurred battle stage', async () => {

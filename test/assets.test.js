@@ -160,6 +160,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 80_000
   },
   {
+    path: 'src/client/assets/generated/reboot-toast-callouts.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-toast-callouts-imagegen.png',
+    width: 1024,
+    height: 128,
+    minRuntimeBytes: 90_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-launch-buttons.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-launch-buttons-imagegen.png',
     width: 860,
