@@ -17,6 +17,7 @@
   --nav-icons: url("/src/client/assets/generated/reboot-nav-icons.png");
   --title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png");
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
+  --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
   --reward-burst: url("/src/client/assets/generated/reboot-reward-burst.png");
   --shop-cosmetics: url("/src/client/assets/generated/reboot-shop-cosmetics.png");
 }
@@ -510,6 +511,39 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 .lobby-card,
 .screen-card {
   padding: 14px;
+}
+
+.operation-card {
+  min-height: 156px;
+  display: grid;
+  align-content: end;
+  gap: 2px;
+  padding-top: 70px;
+  background:
+    linear-gradient(180deg, rgba(5, 8, 8, 0.12), rgba(5, 8, 8, 0.38) 48%, rgba(5, 8, 8, 0.9)),
+    rgba(10, 16, 16, 0.9);
+}
+
+.operation-card::before {
+  opacity: 0.72;
+}
+
+.operation-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--lobby-operation);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  pointer-events: none;
+}
+
+.operation-card strong {
+  font-size: 22px;
+  line-height: 1;
+  text-shadow: 0 3px 14px rgba(0, 0, 0, 0.72);
 }
 
 .next-hook {

@@ -125,7 +125,7 @@ export function buildRebootLobby(model = {}) {
   const gems = model.gems ?? 0;
   const nextAction = nextLobbyAction(model);
   return `
-    <section class="lobby-card">
+    <section class="lobby-card operation-card">
       <span>오늘의 협동</span>
       <strong>첫 구원 작전</strong>
       <p>세 버튼으로 파트너 라인을 살리고 보스를 막으세요</p>

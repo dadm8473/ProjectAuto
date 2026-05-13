@@ -348,6 +348,22 @@ test('splash and lobby use generated hero squad art instead of empty landing spa
   }
 });
 
+test('lobby operation card uses a dedicated generated mission banner', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    '--lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png")',
+    'class="lobby-card operation-card"',
+    '.operation-card',
+    '.operation-card::after',
+    'background-image: var(--lobby-operation)',
+    'min-height: 156px'
+  ]) {
+    assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+});
+
 test('splash uses a generated title emblem instead of plain text only branding', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');

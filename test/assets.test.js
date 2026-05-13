@@ -60,6 +60,16 @@ const IMAGEGEN_REBOOT_OVERLAYS = [
   }
 ];
 
+const IMAGEGEN_REBOOT_UI_SCENES = [
+  {
+    path: 'src/client/assets/generated/reboot-lobby-operation-banner.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260513-lobby-operation-banner-imagegen.png',
+    width: 430,
+    height: 180,
+    minRuntimeBytes: 80_000
+  }
+];
+
 const IMAGEGEN_REBOOT_APP_ICONS = [
   {
     path: 'src/client/assets/generated/reboot-app-icon-192.png',
@@ -336,6 +346,19 @@ test('reboot runtime visual atlases are promoted from imagegen sources instead o
 
 test('reboot runtime overlay art is promoted from imagegen sources', async () => {
   for (const asset of IMAGEGEN_REBOOT_OVERLAYS) {
+    const source = await readFile(asset.source);
+    const runtime = await readFile(asset.path);
+    assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+    assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+    assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+    assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+    assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+    assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+  }
+});
+
+test('reboot lobby UI scene art is promoted from imagegen sources', async () => {
+  for (const asset of IMAGEGEN_REBOOT_UI_SCENES) {
     const source = await readFile(asset.source);
     const runtime = await readFile(asset.path);
     assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
