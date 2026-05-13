@@ -58,6 +58,12 @@ export const REBOOT_CUTIN_MANIFEST = {
     width: 390,
     height: 128,
     source: 'imagegen'
+  },
+  partnerDanger: {
+    src: '/src/client/assets/generated/reboot-rescue-cutin.png',
+    width: 390,
+    height: 112,
+    source: 'imagegen'
   }
 };
 
@@ -97,11 +103,13 @@ export function createRebootAssetImages() {
   backdrop.src = REBOOT_BACKDROP_MANIFEST.battle.src;
   const bossCutin = new Image();
   bossCutin.src = REBOOT_CUTIN_MANIFEST.bossWarning.src;
+  const rescueCutin = new Image();
+  rescueCutin.src = REBOOT_CUTIN_MANIFEST.partnerDanger.src;
   const killBurst = new Image();
   killBurst.src = REBOOT_EFFECT_MANIFEST.killBurst.src;
   const hitBeam = new Image();
   hitBeam.src = REBOOT_EFFECT_MANIFEST.hitBeam.src;
-  return { ...atlases, backdrop, bossCutin, killBurst, hitBeam };
+  return { ...atlases, backdrop, bossCutin, rescueCutin, killBurst, hitBeam };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -272,6 +280,31 @@ function drawBossWarningCutin(ctx, state, assets = {}) {
   ctx.fillStyle = 'rgba(245, 240, 220, 0.82)';
   ctx.font = '800 11px system-ui';
   ctx.fillText('마지막 소환·합성 타이밍', 92, 286);
+  ctx.restore();
+  return true;
+}
+
+function drawPartnerDangerCutin(ctx, state, assets = {}) {
+  const partnerDanger = state.boards.p2.danger >= 80;
+  if (!partnerDanger) return false;
+  const image = assets?.rescueCutin;
+  ctx.save();
+  const alpha = 0.74 + Math.max(0, Math.sin(state.now * 7)) * 0.08;
+  if (!drawImageCover(ctx, image, 0, 160, 390, 112, alpha)) {
+    ctx.fillStyle = 'rgba(255, 111, 89, 0.16)';
+    roundedRect(ctx, 38, 170, 314, 92, 8);
+    ctx.fill();
+  }
+  drawAtlasSprite(ctx, assets, 'ui', 'partner_danger', 62, 218, 42, 0.95);
+  ctx.fillStyle = '#ffdfd8';
+  ctx.shadowColor = '#ff6f59';
+  ctx.shadowBlur = 14;
+  ctx.font = '900 19px system-ui';
+  ctx.fillText('파트너 위험', 90, 216);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(245, 240, 220, 0.82)';
+  ctx.font = '800 11px system-ui';
+  ctx.fillText('구원 타이밍 준비', 90, 234);
   ctx.restore();
   return true;
 }
@@ -464,6 +497,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
 
   drawBoard(ctx, state.boards.p2, 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
   drawTrack(ctx, state, assets, imageBackdrop);
+  drawPartnerDangerCutin(ctx, state, assets);
   drawBoard(ctx, state.boards.p1, 24, 438, 342, 138, '내 보드', false, assets, imageBackdrop);
   drawRescueBeam(ctx, state, assets);
   drawCombatVfx(ctx, state, assets);

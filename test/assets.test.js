@@ -102,6 +102,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     width: 390,
     height: 128,
     minRuntimeBytes: 70_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-rescue-cutin.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-rescue-cutin-imagegen.png',
+    width: 390,
+    height: 112,
+    minRuntimeBytes: 60_000
   }
 ];
 

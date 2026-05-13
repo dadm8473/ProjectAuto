@@ -325,6 +325,21 @@ test('boss warning uses a dedicated generated combat cutin', async () => {
   }
 });
 
+test('partner danger uses a dedicated generated rescue cutin', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'reboot-rescue-cutin.png',
+    'rescueCutin',
+    'drawPartnerDangerCutin',
+    'state.boards.p2.danger >= 80',
+    'drawImageCover(ctx, image, 0, 160, 390, 112',
+    'drawPartnerDangerCutin(ctx, state, assets)'
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});
+
 test('death burst effects use a dedicated transparent generated VFX asset', async () => {
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
