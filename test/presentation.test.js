@@ -144,7 +144,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-buttons">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-meta-badges">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -331,6 +331,31 @@ test('meta list rows use dedicated generated game row frames', async () => {
   }
 
   assert.equal(css.includes('min-height: 34px;'), false);
+});
+
+test('meta row compact chips use generated mini badge frames', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    '--meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges")',
+    'class="role-pill"',
+    'class="unit-cost"',
+    'class="shop-price"',
+    '.role-pill,\n.unit-cost,\n.shop-price',
+    'background-image: var(--meta-mini-badges);',
+    'background-size: 300% 100%;',
+    '.role-pill { background-position: 0 0; }',
+    '.unit-cost { background-position: 50% 0; }',
+    '.shop-price { background-position: 100% 0; }'
+  ]) {
+    assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+
+  const chipBlock = css.slice(css.indexOf('.role-pill,\n.unit-cost,\n.shop-price'), css.indexOf('.role-pill { background-position: 0 0; }'));
+  assert.equal(chipBlock.includes('background: rgba'), false);
+  assert.equal(chipBlock.includes('border: 1px solid rgba'), false);
+  assert.equal(css.includes('.role-pill::before'), false);
 });
 
 test('result screen uses generated status badges for win and loss peaks', async () => {

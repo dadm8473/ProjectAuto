@@ -242,6 +242,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     width: 1720,
     height: 120,
     minRuntimeBytes: 120_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-meta-mini-badges.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-meta-mini-badges-imagegen.png',
+    width: 768,
+    height: 96,
+    minRuntimeBytes: 70_000
   }
 ];
 
