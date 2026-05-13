@@ -144,7 +144,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-meta-title">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-meta-actions">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -204,6 +204,21 @@ test('meta screen lists can scroll after larger imagegen unit sprites', async ()
     '.screen-list::-webkit-scrollbar'
   ]) {
     assert.equal(css.includes(marker), true, marker);
+  }
+});
+
+test('meta screen lists fade clipped rows instead of showing detached partial frames', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  const listBlock = css.slice(css.indexOf('.screen-list {'), css.indexOf('.screen-list::-webkit-scrollbar'));
+  for (const marker of [
+    '-webkit-mask-image: linear-gradient(',
+    'mask-image: linear-gradient(',
+    'calc(100% - 96px)',
+    'padding-bottom: 48px;',
+    'transparent 100%'
+  ]) {
+    assert.equal(listBlock.includes(marker), true, marker);
   }
 });
 
@@ -383,6 +398,37 @@ test('meta screen titles use generated header plates instead of browser default 
   const titleBlock = css.slice(css.indexOf('.hub-screen h1'), css.indexOf('.screen-list'));
   assert.equal(titleBlock.includes('font-size: 2em'), false);
   assert.equal(titleBlock.includes('margin-block-start'), false);
+});
+
+test('meta row actions use generated state buttons instead of generic web buttons', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions")',
+    '.shop-card button,\n.unit-card button,\n.mission-card button,\n.season-card button',
+    'background-image: var(--meta-action-buttons);',
+    'background-size: 300% 100%;',
+    'border-color: transparent;',
+    'box-shadow: none;',
+    '.unit-card button::before,\n.shop-card button::before,\n.mission-card button::before,\n.season-card button::before',
+    'background-image: none;',
+    '.shop-card button:not(:disabled),\n.unit-card button:not(:disabled),\n.mission-card button:not(:disabled),\n.season-card button:not(:disabled)',
+    'background-position: 0 0;',
+    '.shop-card[data-owned="true"] button,\n.mission-card[data-owned="true"] button,\n.season-card[data-owned="true"] button',
+    'background-position: 50% 0;',
+    '.shop-card button:disabled,\n.unit-card button:disabled,\n.mission-card button:disabled,\n.season-card button:disabled',
+    'background-position: 100% 0;',
+    'opacity: 0.92;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const actionBlock = css.slice(
+    css.indexOf('.shop-card button,\n.unit-card button,\n.mission-card button,\n.season-card button'),
+    css.indexOf('.unit-card button')
+  );
+  assert.equal(actionBlock.includes('background: linear-gradient'), false);
+  assert.equal(actionBlock.includes('background-image: var(--screen-chrome);'), false);
 });
 
 test('result screen uses generated status badges for win and loss peaks', async () => {

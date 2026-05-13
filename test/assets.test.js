@@ -256,6 +256,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     width: 430,
     height: 96,
     minRuntimeBytes: 60_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-meta-action-buttons.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-meta-action-buttons-imagegen.png',
+    width: 720,
+    height: 96,
+    minRuntimeBytes: 70_000
   }
 ];
 

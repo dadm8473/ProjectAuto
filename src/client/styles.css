@@ -37,6 +37,7 @@
   --meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row");
   --meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges");
   --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
+  --meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons");
@@ -1029,9 +1030,11 @@ body[data-app-screen="lobby"] .toast {
   max-height: calc(100dvh - 220px);
   overflow-x: hidden;
   overflow-y: auto;
-  padding-bottom: 18px;
+  padding-bottom: 48px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 96px), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 96px), transparent 100%);
 }
 
 .screen-list::-webkit-scrollbar {
@@ -1323,6 +1326,31 @@ body[data-app-screen="lobby"] .toast {
   min-width: 88px;
   min-height: 44px;
   padding: 0 8px;
+  border-color: transparent;
+  border-radius: 0;
+  background: transparent;
+  background-image: var(--meta-action-buttons);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  background-position: 0 0;
+  box-shadow: none;
+  color: #fff2b4;
+  opacity: 1;
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.72);
+}
+
+.unit-card button::before,
+.shop-card button::before,
+.mission-card button::before,
+.season-card button::before {
+  background-image: none;
+}
+
+.shop-card button:not(:disabled),
+.unit-card button:not(:disabled),
+.mission-card button:not(:disabled),
+.season-card button:not(:disabled) {
+  background-position: 0 0;
 }
 
 .unit-card button {
@@ -1330,10 +1358,21 @@ body[data-app-screen="lobby"] .toast {
   white-space: nowrap;
 }
 
+.shop-card button:disabled,
+.unit-card button:disabled,
+.mission-card button:disabled,
+.season-card button:disabled {
+  background-position: 100% 0;
+  color: rgba(245, 240, 220, 0.72);
+  opacity: 0.92;
+}
+
 .shop-card[data-owned="true"] button,
 .mission-card[data-owned="true"] button,
 .season-card[data-owned="true"] button {
+  background-position: 50% 0;
   color: var(--mint);
+  opacity: 1;
 }
 
 .result-overlay {
