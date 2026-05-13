@@ -532,6 +532,50 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   display: none;
 }
 
+.meta-summary {
+  min-height: 96px;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding-right: 82px;
+}
+
+.meta-summary span {
+  color: var(--mint);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.meta-summary strong {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.meta-summary::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  z-index: 1;
+  width: 48px;
+  height: 48px;
+  transform: translateY(-50%);
+  background-image: url("/src/client/assets/generated/reboot-ui-icons.png");
+  background-repeat: no-repeat;
+  background-size: 288px 48px;
+  filter: drop-shadow(0 7px 13px rgba(0, 0, 0, 0.52));
+  pointer-events: none;
+}
+
+.meta-summary[data-summary-kind="collection"]::after { background-position: 0 0; }
+.meta-summary[data-summary-kind="shop"]::after { background-position: -240px 0; }
+.meta-summary[data-summary-kind="missions"]::after { background-position: -96px 0; }
+.meta-summary[data-summary-kind="season"]::after {
+  background-image: url("/src/client/assets/generated/reboot-reward-icons.png");
+  background-size: 192px 48px;
+  background-position: -96px 0;
+}
+
 .screen-back {
   width: 50px;
   min-height: 50px;

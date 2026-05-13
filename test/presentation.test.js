@@ -438,3 +438,21 @@ test('lobby next-action card can navigate to profile screens', async () => {
     assert.equal(`${app}\n${screens}`.includes(marker), true, marker);
   }
 });
+
+test('meta screens expose game-like status headers before scroll lists', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    'buildMetaSummary',
+    'class="meta-summary screen-card"',
+    'data-summary-kind="collection"',
+    'data-summary-kind="shop"',
+    'data-summary-kind="missions"',
+    'data-summary-kind="season"',
+    '.meta-summary',
+    '.meta-summary::after'
+  ]) {
+    assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+});

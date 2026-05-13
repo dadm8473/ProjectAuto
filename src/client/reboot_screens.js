@@ -80,40 +80,50 @@ export function missionProgress(profile, mission) {
   return Math.min(mission.target, mission.progress(profile));
 }
 
-function hasClaimableMission(profile = {}) {
+function countClaimableMissions(profile = {}) {
   const claimed = new Set(profile.claimedMissions ?? []);
-  return REBOOT_MISSIONS.some((mission) => !claimed.has(mission.id) && missionProgress(profile, mission) >= mission.target);
+  return REBOOT_MISSIONS.filter((mission) => !claimed.has(mission.id) && missionProgress(profile, mission) >= mission.target).length;
 }
 
-function hasClaimablePass(profile = {}) {
+function countClaimablePassTiers(profile = {}) {
   const claimed = new Set(profile.claimedPassTiers ?? []);
   const xp = profile.xp ?? 0;
-  return SHOP.pass.tiers.some((tier, index) => xp >= tier.xp && !claimed.has(index));
+  return SHOP.pass.tiers.filter((tier, index) => xp >= tier.xp && !claimed.has(index)).length;
 }
 
-function hasTrainableUnit(profile = {}) {
+function countTrainableUnits(profile = {}) {
   const xp = profile.xp ?? 0;
   const unitLevels = profile.unitLevels ?? {};
-  return Object.values(REBOOT_UNITS).some((unit) => xp >= unitUpgradeCost(unitLevels[unit.id] ?? 1));
+  return Object.values(REBOOT_UNITS).filter((unit) => xp >= unitUpgradeCost(unitLevels[unit.id] ?? 1)).length;
 }
 
-function hasAffordableCosmetic(profile = {}) {
+function countAffordableCosmetics(profile = {}) {
   const gems = profile.gems ?? 0;
   const unlocks = new Set(profile.unlocks ?? []);
-  return SHOP.items.some((item) => item.category === 'cosmetic' && item.grant?.cosmetic && !unlocks.has(item.grant.cosmetic) && gems >= (item.price?.gems ?? 0));
+  return SHOP.items.filter((item) => item.category === 'cosmetic' && item.grant?.cosmetic && !unlocks.has(item.grant.cosmetic) && gems >= (item.price?.gems ?? 0)).length;
+}
+
+function buildMetaSummary(kind, label, value, detail) {
+  return `
+    <article class="meta-summary screen-card" data-summary-kind="${kind}">
+      <span>${label}</span>
+      <strong>${value}</strong>
+      <p>${detail}</p>
+    </article>
+  `;
 }
 
 export function nextLobbyAction(profile = {}) {
-  if (hasClaimableMission(profile)) {
+  if (countClaimableMissions(profile) > 0) {
     return { label: '미션 보상', title: '받을 미션 보상', detail: '완료한 목표를 수령하세요', screen: 'missions', cta: '수령하기' };
   }
-  if (hasClaimablePass(profile)) {
+  if (countClaimablePassTiers(profile) > 0) {
     return { label: '시즌 보상', title: '시즌 보상 도착', detail: '경험치 보상을 열 수 있습니다', screen: 'season', cta: '열기' };
   }
-  if (hasTrainableUnit(profile)) {
+  if (countTrainableUnits(profile) > 0) {
     return { label: '훈련 가능', title: '유닛 강화 가능', detail: '경험치로 전투 유닛을 키우세요', screen: 'collection', cta: '훈련하기' };
   }
-  if (hasAffordableCosmetic(profile)) {
+  if (countAffordableCosmetics(profile) > 0) {
     return { label: '외형 해금', title: '외형 해금 가능', detail: '획득 젬으로 꾸미기를 여세요', screen: 'shop', cta: '상점가기' };
   }
   return { label: '다음 작전', title: '첫 구원 작전', detail: '보상을 모아 유닛과 외형을 여세요', screen: 'battle', cta: '출전' };
@@ -145,7 +155,8 @@ export function buildRebootLobby(model = {}) {
 export function buildRebootCollection(profile = {}) {
   const xp = profile.xp ?? 0;
   const unitLevels = profile.unitLevels ?? {};
-  return Object.values(REBOOT_UNITS).map((unit) => {
+  const summary = buildMetaSummary('collection', '훈련 가능', `${countTrainableUnits(profile)}명`, `${xp} 경험치 보유`);
+  const units = Object.values(REBOOT_UNITS).map((unit) => {
     const level = unitLevels[unit.id] ?? 1;
     const cost = unitUpgradeCost(level);
     const ready = xp >= cost;
@@ -162,13 +173,15 @@ export function buildRebootCollection(profile = {}) {
     </article>
   `;
   }).join('');
+  return `${summary}${units}`;
 }
 
 export function buildRebootShop(profile = {}) {
   const gems = profile.gems ?? 0;
   const unlocks = Array.isArray(profile.unlocks) ? profile.unlocks : [];
   const items = SHOP.items.filter((item) => item.category === 'cosmetic' && item.grant?.cosmetic);
-  return items.map((item) => {
+  const summary = buildMetaSummary('shop', '해금 가능', `${countAffordableCosmetics(profile)}개`, `${gems} 젬 보유`);
+  const shopItems = items.map((item) => {
     const cosmetic = item.grant.cosmetic;
     const owned = unlocks.includes(cosmetic);
     const price = item.price?.gems ?? 0;
@@ -188,11 +201,13 @@ export function buildRebootShop(profile = {}) {
     </article>
   `;
   }).join('');
+  return `${summary}${shopItems}`;
 }
 
 export function buildMissionScreen(profile = {}) {
   const claimed = new Set(profile.claimedMissions ?? []);
-  return REBOOT_MISSIONS.map((mission) => {
+  const summary = buildMetaSummary('missions', '수령 가능', `${countClaimableMissions(profile)}개`, '완료한 목표를 바로 보상으로 전환');
+  const missions = REBOOT_MISSIONS.map((mission) => {
     const progress = missionProgress(profile, mission);
     const done = progress >= mission.target;
     const received = claimed.has(mission.id);
@@ -209,6 +224,7 @@ export function buildMissionScreen(profile = {}) {
     </article>
   `;
   }).join('');
+  return `${summary}${missions}`;
 }
 
 function seasonRewardLabel(grant = {}) {
@@ -220,7 +236,8 @@ function seasonRewardLabel(grant = {}) {
 export function buildSeasonScreen(profile = {}) {
   const claimed = new Set(profile.claimedPassTiers ?? []);
   const xp = profile.xp ?? 0;
-  return SHOP.pass.tiers.map((tier, index) => {
+  const summary = buildMetaSummary('season', '시즌 경험치', `${xp} 경험치`, `${countClaimablePassTiers(profile)}개 보상 가능`);
+  const tiers = SHOP.pass.tiers.map((tier, index) => {
     const done = xp >= tier.xp;
     const received = claimed.has(index);
     const label = received ? '받음' : done ? '수령' : '진행중';
@@ -237,6 +254,7 @@ export function buildSeasonScreen(profile = {}) {
     </article>
   `;
   }).join('');
+  return `${summary}${tiers}`;
 }
 
 export function buildRebootResultModel({ result, rewards = [] }) {

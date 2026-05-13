@@ -94,6 +94,33 @@ test('reboot collection renders unit training state from profile XP and levels',
   assert.equal(collection.includes('>경험치 부족<'), true);
 });
 
+test('meta screens start with compact actionable status headers', () => {
+  const collection = buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 2 } });
+  assert.equal(collection.includes('meta-summary'), true);
+  assert.equal(collection.includes('훈련 가능'), true);
+  assert.equal(collection.includes('80 경험치'), true);
+
+  const shop = buildRebootShop({ gems: 100, unlocks: [] });
+  assert.equal(shop.includes('meta-summary'), true);
+  assert.equal(shop.includes('해금 가능'), true);
+  assert.equal(shop.includes('100 젬'), true);
+
+  const missions = buildMissionScreen({
+    processedRuns: ['run-1'],
+    claimedMissions: []
+  });
+  assert.equal(missions.includes('meta-summary'), true);
+  assert.equal(missions.includes('수령 가능'), true);
+
+  const season = buildSeasonScreen({
+    xp: 60,
+    claimedPassTiers: []
+  });
+  assert.equal(season.includes('meta-summary'), true);
+  assert.equal(season.includes('시즌 경험치'), true);
+  assert.equal(season.includes('보상 가능'), true);
+});
+
 test('mission screen renders profile progress and claim states', () => {
   const missions = buildMissionScreen({
     processedRuns: ['run-1'],
