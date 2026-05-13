@@ -292,6 +292,43 @@ test('result screen uses generated status badges for win and loss peaks', async 
   }
 });
 
+test('result screen uses a dedicated generated debrief panel frame', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--result-panel-frame: url("/src/client/assets/generated/reboot-result-panel-frame.png")',
+    '--result-panel-width: min(calc(100vw - 28px), calc((100dvh - 52px) * 0.6964), 390px);',
+    '--result-panel-top-pad: clamp(108px, calc(var(--result-panel-width) * 0.31), 128px);',
+    '.result-panel::before',
+    'background-image: var(--result-panel-frame)',
+    'width: var(--result-panel-width);',
+    'aspect-ratio: 39 / 56;',
+    'padding: var(--result-panel-top-pad) clamp(16px, calc(var(--result-panel-width) * 0.056), 22px) clamp(16px, calc(var(--result-panel-width) * 0.056), 22px);',
+    'border-color: transparent;',
+    'backdrop-filter: none;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
+test('result debrief stays usable on short portrait phones', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--result-panel-top-pad: clamp(108px, calc(var(--result-panel-width) * 0.31), 128px);',
+    '@media (max-height: 620px)',
+    '.result-panel {\n    gap: 6px;',
+    '.result-panel strong {\n    font-size: 24px;',
+    '.result-panel p {\n    line-height: 1.12;',
+    '.result-highlights span,\n  .result-reward {\n    padding: 6px;',
+    '.result-reward::before {\n    width: 28px;',
+    '.result-reward::after {\n    width: 38px;',
+    '.result-actions button {\n    min-height: 40px;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
 test('combat renderer uses generated VFX atlas for action feedback', async () => {
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
@@ -738,7 +775,7 @@ test('combat shell chrome preserves generated asset ratios on phone widths', asy
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(css.includes('background-size: 100% 100%;'), false);
+  assert.equal(css.includes('body[data-app-screen="battle"] .hud::before {\n  background-image: var(--combat-hud-frame);'), true);
 });
 
 test('combat HUD keeps three resource meters bounded on compact phones', async () => {

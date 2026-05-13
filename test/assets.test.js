@@ -123,6 +123,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     width: 430,
     height: 128,
     minRuntimeBytes: 70_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-result-panel-frame.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-result-panel-frame-imagegen.png',
+    width: 390,
+    height: 560,
+    minRuntimeBytes: 90_000
   }
 ];
 

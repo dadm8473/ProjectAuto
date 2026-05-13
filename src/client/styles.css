@@ -13,6 +13,9 @@
   --meta-backdrop: url("/src/client/assets/generated/reboot-meta-backdrop.png");
   --result-backdrop: url("/src/client/assets/generated/reboot-result-backdrop.png");
   --result-badges: url("/src/client/assets/generated/reboot-result-badges.png");
+  --result-panel-frame: url("/src/client/assets/generated/reboot-result-panel-frame.png");
+  --result-panel-width: min(calc(100vw - 28px), calc((100dvh - 52px) * 0.6964), 390px);
+  --result-panel-top-pad: clamp(108px, calc(var(--result-panel-width) * 0.31), 128px);
   --screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png");
   --nav-icons: url("/src/client/assets/generated/reboot-nav-icons.png");
   --title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png");
@@ -1025,7 +1028,7 @@ body[data-app-screen="lobby"] .toast {
 
 .result-overlay {
   z-index: 9;
-  padding: 26px 18px;
+  padding: 26px 14px;
   align-items: center;
 }
 
@@ -1033,9 +1036,24 @@ body[data-app-screen="lobby"] .toast {
   position: relative;
   z-index: 1;
   align-self: center;
-  padding: 104px 18px 18px;
+  width: var(--result-panel-width);
+  aspect-ratio: 39 / 56;
+  justify-self: center;
+  padding: var(--result-panel-top-pad) clamp(16px, calc(var(--result-panel-width) * 0.056), 22px) clamp(16px, calc(var(--result-panel-width) * 0.056), 22px);
   display: grid;
   gap: 10px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.result-panel::before {
+  inset: 0;
+  background-image: var(--result-panel-frame);
+  background-size: 100% 100%;
+  background-position: center;
+  opacity: 1;
 }
 
 .result-panel::after {
@@ -1119,4 +1137,50 @@ body[data-app-screen="lobby"] .toast {
 
 .result-overlay[data-result-status="lost"] .result-reward::after {
   background-position: -56px 0;
+}
+
+@media (max-height: 620px) {
+  .result-panel {
+    gap: 6px;
+  }
+
+  .result-panel strong {
+    font-size: 24px;
+  }
+
+  .result-panel p {
+    line-height: 1.12;
+  }
+
+  .result-highlights span,
+  .result-reward {
+    padding: 6px;
+  }
+
+  .result-reward::before {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+    background-size: 112px 28px;
+  }
+
+  .result-reward::after {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+    background-size: 152px 38px;
+    background-position: -76px 0;
+  }
+
+  .result-overlay[data-result-status="won"] .result-reward::after {
+    background-position: 0 0;
+  }
+
+  .result-overlay[data-result-status="lost"] .result-reward::after {
+    background-position: -38px 0;
+  }
+
+  .result-actions button {
+    min-height: 40px;
+  }
 }
