@@ -52,6 +52,15 @@ export const REBOOT_BACKDROP_MANIFEST = {
   }
 };
 
+export const REBOOT_CUTIN_MANIFEST = {
+  bossWarning: {
+    src: '/src/client/assets/generated/reboot-boss-cutin.png',
+    width: 390,
+    height: 128,
+    source: 'imagegen'
+  }
+};
+
 const UNIT_COLORS = {
   spark_pin: '#58d7ff',
   toktok_amp: '#f4c95d',
@@ -71,7 +80,9 @@ export function createRebootAssetImages() {
   );
   const backdrop = new Image();
   backdrop.src = REBOOT_BACKDROP_MANIFEST.battle.src;
-  return { ...atlases, backdrop };
+  const bossCutin = new Image();
+  bossCutin.src = REBOOT_CUTIN_MANIFEST.bossWarning.src;
+  return { ...atlases, backdrop, bossCutin };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -112,6 +123,28 @@ export function drawBattleBackdrop(ctx, layout, assets = {}) {
   const image = assets?.backdrop;
   if (!image?.complete || image.naturalWidth <= 0) return false;
   ctx.drawImage(image, 0, 0, layout.width, layout.height);
+  return true;
+}
+
+function drawImageCover(ctx, image, x, y, w, h, alpha = 1) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const sourceRatio = image.naturalWidth / image.naturalHeight;
+  const targetRatio = w / h;
+  let sx = 0;
+  let sy = 0;
+  let sw = image.naturalWidth;
+  let sh = image.naturalHeight;
+  if (sourceRatio > targetRatio) {
+    sw = image.naturalHeight * targetRatio;
+    sx = (image.naturalWidth - sw) / 2;
+  } else if (sourceRatio < targetRatio) {
+    sh = image.naturalWidth / targetRatio;
+    sy = (image.naturalHeight - sh) / 2;
+  }
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, sx, sy, sw, sh, x, y, w, h);
+  ctx.restore();
   return true;
 }
 
@@ -183,6 +216,31 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
   }
 }
 
+function drawBossWarningCutin(ctx, state, assets = {}) {
+  if (state.now < 92 || state.now >= 102) return false;
+  const image = assets?.bossCutin;
+  ctx.save();
+  const alpha = 0.78 + Math.sin(state.now * 10) * 0.06;
+  if (!drawImageCover(ctx, image, 0, 205, 390, 128, alpha)) {
+    ctx.fillStyle = 'rgba(255, 111, 89, 0.18)';
+    roundedRect(ctx, 42, 220, 306, 106, 8);
+    ctx.fill();
+  }
+  const alarmAlpha = 0.84 + Math.max(0, Math.sin(state.now * 8)) * 0.16;
+  drawAtlasSprite(ctx, assets, 'ui', 'boss_warning', 66, 270, 42, alarmAlpha);
+  ctx.fillStyle = '#ffdfd8';
+  ctx.shadowColor = '#ff6f59';
+  ctx.shadowBlur = 16;
+  ctx.font = '900 20px system-ui';
+  ctx.fillText('보스 접근', 92, 268);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(245, 240, 220, 0.82)';
+  ctx.font = '800 11px system-ui';
+  ctx.fillText('마지막 소환·합성 타이밍', 92, 286);
+  ctx.restore();
+  return true;
+}
+
 function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
   ctx.save();
   ctx.translate(0, 0);
@@ -221,13 +279,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
 
   const warning = state.now >= 92 && state.now < 102;
   if (warning) {
-    ctx.fillStyle = 'rgba(255, 111, 89, 0.16)';
-    roundedRect(ctx, 58, 218, 274, 138, 8);
-    ctx.fill();
-    drawAtlasSprite(ctx, assets, 'ui', 'boss_warning', 138, 286, 38, 0.95);
-    ctx.fillStyle = '#ffdfd8';
-    ctx.font = '900 18px system-ui';
-    ctx.fillText('보스 접근', 150, 292);
+    drawBossWarningCutin(ctx, state, assets);
   }
   ctx.restore();
 }

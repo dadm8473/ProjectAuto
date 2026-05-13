@@ -310,6 +310,21 @@ test('combat renderer uses generated VFX atlas for action feedback', async () =>
   }
 });
 
+test('boss warning uses a dedicated generated combat cutin', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'REBOOT_CUTIN_MANIFEST',
+    'reboot-boss-cutin.png',
+    'bossCutin',
+    'drawImageCover(ctx, image, 0, 205, 390, 128',
+    'drawBossWarningCutin',
+    'drawBossWarningCutin(ctx, state, assets)'
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});
+
 test('home navigation uses generated app-game icons instead of plain text buttons', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
