@@ -276,3 +276,19 @@ test('meta screens use generated game chrome instead of css-only panels', async 
     assert.equal(css.includes(marker), true, marker);
   }
 });
+
+test('result screen uses generated status badges for win and loss peaks', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    '--result-badges: url("/src/client/assets/generated/reboot-result-badges.png")',
+    '.result-panel::after',
+    'background-image: var(--result-badges)',
+    '.result-overlay[data-result-status="won"] .result-panel::after',
+    '.result-overlay[data-result-status="lost"] .result-panel::after',
+    'dom.resultOverlay.dataset.resultStatus = model.status'
+  ]) {
+    assert.equal(`${css}\n${app}`.includes(marker), true, marker);
+  }
+});

@@ -170,6 +170,7 @@ function showResult(current) {
   if (!current.result || resultShownFor === current.runId) return;
   resultShownFor = current.runId;
   const model = buildRebootResultModel({ result: current.result, rewards: [{ type: 'soft', amount: 20 }] });
+  dom.resultOverlay.dataset.resultStatus = model.status;
   dom.resultTitle.textContent = model.title;
   dom.resultReason.textContent = model.reason.label;
   dom.resultNextGoal.textContent = model.nextGoal.label;

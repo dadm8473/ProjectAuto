@@ -120,6 +120,7 @@ Premium animated co-op toy-board.
 | Enemy atlas | 4 enemies | PNG/WebP transparent | 4 cells, equal size |
 | UI/action icons | 6+ icons | PNG/WebP transparent | summon, merge, rescue, danger, reward |
 | Reward icons | 3+ icons | PNG/WebP transparent | soft currency, shard, season progress |
+| Result badges | 4 badges | PNG/WebP transparent | victory, defeat, reward chest, retry |
 | Board frame accents | 3-5 pieces | PNG/WebP transparent | sockets, warning frame, rescue beam |
 | Screen chrome | 5 pieces | PNG/WebP transparent | primary button, secondary button, content panel, dock, badge |
 
@@ -217,6 +218,21 @@ Premium animated co-op toy-board.
 | Center tolerance | each piece centered in its cell |
 | Transparency | straight alpha; chroma-key source archived under `docs/design/generation/source/reboot/style-lock/` |
 | Margin | visible frame edges must stay inside cell bounds |
+
+### Result Badge Atlas
+
+| Field | Value |
+| --- | --- |
+| File | `src/client/assets/generated/reboot-result-badges.png` |
+| Final size | 1024x256 |
+| Grid | 4 columns x 1 row |
+| Cell size | 256x256 |
+| Cell order | `victory_badge`, `defeat_badge`, `reward_chest`, `retry_core` |
+| Runtime use | CSS result status badge and reward flourish |
+| Subject bbox | 170-232px on longest side |
+| Center tolerance | x/y deviation <= 8px |
+| Transparency | transparent pixel ratio >= 30% per cell |
+| Margin | >= 12px clear margin on all sides |
 
 ## 런타임 소비 전환 계약
 
@@ -521,6 +537,24 @@ Style: premium mobile game reward icons, chunky symbolic silhouettes, polished m
 Palette: gold/ivory reward, teal signal accent, amber progress, cyan unlock core, graphite outline.
 Constraints: transparent background, no text, no letters, no numbers, no watermark, no casino chips, no dice, no generic emojis, no copied app icons.
 Export target: icon bbox 148-190px longest side, pivot x 128 y 128, center deviation <= 6px, at least 24px margin around the subject.
+```
+
+## Runtime Prompt: Result Badges
+
+```text
+Use case: sprite-atlas
+Asset type: transparent result status badge atlas for ProjectAuto reboot result screen.
+Primary request: Create 4 premium mobile game result/reward badges in a single horizontal transparent atlas. Equal cells. No text.
+Output contract: final atlas 1024x256, 4 columns x 1 row, each cell exactly 256x256, straight alpha, no premultiplied alpha bleed.
+Subjects left to right:
+1. Victory badge: gold and teal signal crest, triumphant but compact, polished toy-board metal, glass core, celebratory spark rays.
+2. Defeat badge: cracked coral/graphite signal core, broken gate silhouette, readable loss icon but not scary.
+3. Reward chest badge: small premium toy chest/capsule with gold shard glow and teal glass highlight, not a gacha machine.
+4. Retry badge: circular reset signal core with amber/teal loop arrow shape made from metal and glass, no actual text.
+Style lock tokens: premium Korean mobile game result UI, cooperative toy-board tower defense, three-quarter top-down 25-30 degree icon view, top-left warm key light, lower-right soft fill, polished painted metal, dark graphite 3-5px outline, 1-2px colored inner rim, soft glass core, one controlled glow per badge.
+Style: shipped mobile game result feedback, readable at 48px and 92px, tactile, celebratory, not a website modal.
+Constraints: transparent background, no text, no letters, no numbers, no watermark, no dice, no casino pips, no generic emoji, no copied app icons.
+Export target: subject bbox 170-232px longest side, pivot x 128 y 128, center deviation <= 8px, at least 12px margin around the subject.
 ```
 
 ## Runtime Prompt: Screen Chrome

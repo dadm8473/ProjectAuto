@@ -12,6 +12,7 @@
   --lobby-backdrop: url("/src/client/assets/generated/reboot-lobby-backdrop.png");
   --meta-backdrop: url("/src/client/assets/generated/reboot-meta-backdrop.png");
   --result-backdrop: url("/src/client/assets/generated/reboot-result-backdrop.png");
+  --result-badges: url("/src/client/assets/generated/reboot-result-badges.png");
   --screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png");
 }
 
@@ -576,9 +577,34 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   position: relative;
   z-index: 1;
   align-self: center;
-  padding: 18px;
+  padding: 104px 18px 18px;
   display: grid;
   gap: 10px;
+}
+
+.result-panel::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  z-index: 1;
+  width: 92px;
+  height: 92px;
+  transform: translateX(-50%);
+  background-image: var(--result-badges);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 0 0;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.52));
+  pointer-events: none;
+}
+
+.result-overlay[data-result-status="won"] .result-panel::after {
+  background-position: 0 0;
+}
+
+.result-overlay[data-result-status="lost"] .result-panel::after {
+  background-position: 33.333% 0;
 }
 
 .result-panel strong {
@@ -615,5 +641,18 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   background-repeat: no-repeat;
   background-size: 136px 34px;
   background-position: 0 0;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.42));
+}
+
+.result-reward::after {
+  content: "";
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  margin-left: auto;
+  background-image: var(--result-badges);
+  background-repeat: no-repeat;
+  background-size: 136px 34px;
+  background-position: -68px 0;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.42));
 }

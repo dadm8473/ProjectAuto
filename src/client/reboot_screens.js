@@ -98,6 +98,7 @@ export function buildRebootResultModel({ result, rewards = [] }) {
   const won = result?.status === 'won';
   const reason = result?.reason ?? 'partner_rescued';
   return {
+    status: won ? 'won' : 'lost',
     title: won ? '승리' : '패배',
     highlight: { label: REASON_LABELS[reason] ?? '전투 완료', kind: won ? 'success' : 'danger' },
     reason: { label: REASON_LABELS[reason] ?? '전투 완료', reason },

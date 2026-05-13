@@ -27,6 +27,7 @@ test('result model prioritizes reason, next goal, rewards, retry, and home', () 
   const game = runTutorial();
   const model = buildRebootResultModel({ result: game.result, rewards: [{ type: 'soft', amount: 20 }] });
 
+  assert.equal(model.status, 'won');
   assert.equal(model.title, '승리');
   assert.equal(model.reason.reason, 'partner_rescued');
   assert.equal(model.nextGoal.goal, 'time_next_rescue');
@@ -34,6 +35,14 @@ test('result model prioritizes reason, next goal, rewards, retry, and home', () 
   assert.deepEqual(model.primaryAction, { label: '다시 도전', action: 'retry' });
   assert.deepEqual(model.secondaryAction, { label: '홈', action: 'home' });
   assert.deepEqual(model.forbiddenActions, []);
+});
+
+test('result model exposes loss status for generated result badges', () => {
+  const model = buildRebootResultModel({ result: { status: 'lost', reason: 'boss_leaked' } });
+
+  assert.equal(model.status, 'lost');
+  assert.equal(model.title, '패배');
+  assert.equal(model.highlight.kind, 'danger');
 });
 
 test('retry creates a fresh run without opening monetization paths', () => {
