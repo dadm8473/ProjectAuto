@@ -635,6 +635,21 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 .shop-cosmetic[data-shop-cosmetic="rescue-effect"] { background-position: -174px 0; }
 .shop-cosmetic[data-shop-cosmetic="profile-frame"] { background-position: -232px 0; }
 
+.reward-token {
+  width: 48px;
+  height: 48px;
+  align-self: center;
+  background-image: url("/src/client/assets/generated/reboot-reward-icons.png");
+  background-repeat: no-repeat;
+  background-size: 192px 48px;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.44));
+}
+
+.reward-token[data-reward-icon="soft_currency"] { background-position: 0 0; }
+.reward-token[data-reward-icon="cosmetic_shard"] { background-position: -48px 0; }
+.reward-token[data-reward-icon="season_progress"] { background-position: -96px 0; }
+.reward-token[data-reward-icon="unlock_capsule"] { background-position: -144px 0; }
+
 .unit-card,
 .shop-card,
 .mission-card,
@@ -656,7 +671,7 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 
 .mission-card,
 .season-card {
-  grid-template-columns: 1fr 82px;
+  grid-template-columns: 52px 1fr 82px;
 }
 
 .shop-card[data-owned="true"],

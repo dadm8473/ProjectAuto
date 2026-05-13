@@ -470,3 +470,21 @@ test('shop cosmetics use a dedicated imagegen item atlas', async () => {
     assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
   }
 });
+
+test('mission and season rows show generated reward tokens', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    'class="reward-token mission-reward-token"',
+    'class="reward-token season-reward-token"',
+    'data-reward-icon="${rewardIconForGrant(mission.reward, \'mission\')}"',
+    'data-reward-icon="${rewardIconForGrant(tier.grant, \'season\')}"',
+    '.reward-token',
+    '[data-reward-icon="soft_currency"]',
+    '[data-reward-icon="cosmetic_shard"]',
+    'reboot-reward-icons.png'
+  ]) {
+    assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+});

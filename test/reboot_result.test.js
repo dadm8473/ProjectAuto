@@ -133,6 +133,8 @@ test('mission screen renders profile progress and claim states', () => {
 
   assert.equal(missions.includes('data-mission-claim="first-run"'), true);
   assert.equal(missions.includes('data-mission-claim="train-unit"'), true);
+  assert.equal(missions.includes('class="reward-token mission-reward-token"'), true);
+  assert.equal(missions.includes('data-reward-icon="soft_currency"'), true);
   assert.equal(missions.includes('첫 작전 완료'), true);
   assert.equal(missions.includes('유닛 훈련'), true);
   assert.equal(missions.includes('>받음<'), true);
@@ -144,6 +146,9 @@ test('season screen renders pass tiers from profile XP and claim states', () => 
 
   assert.equal(season.includes('data-pass-claim="0"'), true);
   assert.equal(season.includes('data-pass-claim="1"'), true);
+  assert.equal(season.includes('class="reward-token season-reward-token"'), true);
+  assert.equal(season.includes('data-reward-icon="season_progress"'), true);
+  assert.equal(season.includes('data-reward-icon="cosmetic_shard"'), true);
   assert.equal(season.includes('60 경험치'), true);
   assert.equal(season.includes('160 경험치'), true);
   assert.equal(season.includes('>받음<'), true);

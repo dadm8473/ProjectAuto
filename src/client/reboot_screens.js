@@ -205,6 +205,7 @@ export function buildMissionScreen(profile = {}) {
     const label = received ? '받음' : done ? '수령' : '진행중';
     return `
     <article class="screen-card mission-card" data-mission="${mission.id}" data-owned="${received}">
+      <span class="reward-token mission-reward-token" data-reward-icon="${rewardIconForGrant(mission.reward, 'mission')}"></span>
       <div class="card-copy">
         <span class="role-pill">미션</span>
         <strong>${mission.title}</strong>
@@ -224,6 +225,13 @@ function seasonRewardLabel(grant = {}) {
   return '보상';
 }
 
+function rewardIconForGrant(grant = {}, source = 'mission') {
+  if (grant.cosmetic) return 'cosmetic_shard';
+  if (grant.gems && source === 'season') return 'season_progress';
+  if (grant.gems) return 'soft_currency';
+  return 'unlock_capsule';
+}
+
 export function buildSeasonScreen(profile = {}) {
   const claimed = new Set(profile.claimedPassTiers ?? []);
   const xp = profile.xp ?? 0;
@@ -235,6 +243,7 @@ export function buildSeasonScreen(profile = {}) {
     const progress = Math.min(tier.xp, xp);
     return `
     <article class="screen-card season-card" data-pass-tier="${index}" data-owned="${received}">
+      <span class="reward-token season-reward-token" data-reward-icon="${rewardIconForGrant(tier.grant, 'season')}"></span>
       <div class="card-copy">
         <span class="role-pill">시즌</span>
         <strong>${index + 1}단계 · ${seasonRewardLabel(tier.grant)}</strong>
