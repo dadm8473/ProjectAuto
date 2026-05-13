@@ -368,3 +368,17 @@ test('client settles result rewards into profile and wires shop purchases', asyn
     assert.equal(`${app}\n${screens}`.includes(marker), true, marker);
   }
 });
+
+test('result reward strip uses generated reward burst art', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--reward-burst: url("/src/client/assets/generated/reboot-reward-burst.png")',
+    '.result-reward::after',
+    'background-image: var(--reward-burst)',
+    '.result-overlay[data-result-status="won"] .result-reward::after',
+    '.result-overlay[data-result-status="lost"] .result-reward::after'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});

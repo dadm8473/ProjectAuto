@@ -16,6 +16,7 @@
   --screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png");
   --nav-icons: url("/src/client/assets/generated/reboot-nav-icons.png");
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
+  --reward-burst: url("/src/client/assets/generated/reboot-reward-burst.png");
 }
 
 * {
@@ -746,13 +747,21 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 
 .result-reward::after {
   content: "";
-  width: 34px;
-  height: 34px;
-  flex: 0 0 34px;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
   margin-left: auto;
-  background-image: var(--result-badges);
+  background-image: var(--reward-burst);
   background-repeat: no-repeat;
-  background-size: 136px 34px;
-  background-position: -68px 0;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.42));
+  background-size: 224px 56px;
+  background-position: -112px 0;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.48));
+}
+
+.result-overlay[data-result-status="won"] .result-reward::after {
+  background-position: 0 0;
+}
+
+.result-overlay[data-result-status="lost"] .result-reward::after {
+  background-position: -56px 0;
 }

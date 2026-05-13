@@ -126,6 +126,7 @@ Premium animated co-op toy-board.
 | Combat VFX | 5 effects | PNG/WebP transparent | summon, merge, rescue, enemy hit, boss warning |
 | Navigation icons | 5 icons | PNG/WebP transparent | collection, shop, missions, season, home |
 | Hero squad | 1 overlay | PNG/WebP transparent | splash/lobby unit group |
+| Reward burst | 4 effects | PNG/WebP transparent | win reward, loss reward, gem burst, claim capsule |
 
 ## 런타임 아틀라스 계약
 
@@ -278,6 +279,21 @@ Premium animated co-op toy-board.
 | Center tolerance | x/y deviation <= 16px |
 | Transparency | transparent corners and clean alpha |
 | Margin | >= 18px clear margin on all sides |
+
+### Reward Burst Atlas
+
+| Field | Value |
+| --- | --- |
+| File | `src/client/assets/generated/reboot-reward-burst.png` |
+| Final size | 1024x256 |
+| Grid | 4 columns x 1 row |
+| Cell size | 256x256 |
+| Cell order | `win_reward_burst`, `loss_reward_burst`, `gem_burst`, `claim_capsule` |
+| Runtime use | result reward strip and reward claim feedback |
+| Subject bbox | 168-236px on longest side |
+| Center tolerance | x/y deviation <= 8px |
+| Transparency | transparent pixel ratio >= 35% per cell |
+| Margin | >= 12px clear margin on all sides |
 
 ## 런타임 소비 전환 계약
 
@@ -652,6 +668,24 @@ Style lock tokens: premium Korean mobile co-op tower defense, polished toy metal
 Style: shipped mobile game splash art, crisp at phone width, high contrast but not noisy, no UI-card framing.
 Constraints: no text, no letters, no numbers, no watermark, no dice, no casino pips, no realistic humans, no weapon gore. Do not use #00ff00 anywhere in the subjects.
 Export target after processing: final transparent PNG 640x512, squad centered, subject bbox 520-620px wide and 320-430px tall, at least 18px margin around the subject.
+```
+
+## Runtime Prompt: Reward Burst
+
+```text
+Use case: sprite-atlas
+Asset type: transparent result reward burst atlas for ProjectAuto reboot result screen.
+Primary request: Create 4 premium mobile game reward VFX icons in a single horizontal transparent atlas. Equal cells. No text.
+Output contract: final atlas 1024x256, 4 columns x 1 row, each cell exactly 256x256, straight alpha, no premultiplied alpha bleed.
+Subjects left to right:
+1. Win reward burst: bright teal-gold capsule opening with gem shards and warm victory rays.
+2. Loss reward burst: smaller cyan consolation capsule with gentle glow, still rewarding but restrained.
+3. Gem burst: cluster of soft currency gems flying outward with spark particles.
+4. Claim capsule: closed cosmetic unlock capsule with teal glass core and amber latch.
+Style lock tokens: premium Korean mobile game reward reveal, cooperative toy-board tower defense, polished toy metal, teal glass, amber highlights, chunky readable shapes, controlled glow.
+Style: shipped mobile game reward feedback, readable at 34px, 64px, and 110px, no UI-card framing.
+Constraints: transparent background, no text, no letters, no numbers, no watermark, no dice, no casino pips, no price tags, no generic emoji.
+Export target: subject bbox 168-236px longest side, pivot x 128 y 128, center deviation <= 8px, at least 12px margin around the subject.
 ```
 
 ## Runtime Prompt: Screen Chrome
