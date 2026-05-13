@@ -30,7 +30,8 @@ const REBOOT_GRID_ASSETS = [
   { path: 'src/client/assets/generated/reboot-result-badges.png', width: 1024, height: 256, columns: 4, rows: 1 },
   { path: 'src/client/assets/generated/reboot-board-accents.png', width: 1280, height: 256, columns: 5, rows: 1 },
   { path: 'src/client/assets/generated/reboot-screen-chrome.png', width: 1280, height: 256, columns: 5, rows: 1 },
-  { path: 'src/client/assets/generated/reboot-combat-vfx.png', width: 1280, height: 256, columns: 5, rows: 1 }
+  { path: 'src/client/assets/generated/reboot-combat-vfx.png', width: 1280, height: 256, columns: 5, rows: 1 },
+  { path: 'src/client/assets/generated/reboot-nav-icons.png', width: 1280, height: 256, columns: 5, rows: 1 }
 ];
 
 const IMAGEGEN_REBOOT_BACKDROPS = [
@@ -93,6 +94,13 @@ const IMAGEGEN_REBOOT_ATLASES = [
   {
     path: 'src/client/assets/generated/reboot-combat-vfx.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260513-combat-vfx-imagegen.png',
+    width: 1280,
+    height: 256,
+    minRuntimeBytes: 70_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-nav-icons.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260513-nav-icons-imagegen.png',
     width: 1280,
     height: 256,
     minRuntimeBytes: 70_000

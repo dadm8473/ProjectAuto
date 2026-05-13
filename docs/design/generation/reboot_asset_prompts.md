@@ -124,6 +124,7 @@ Premium animated co-op toy-board.
 | Board frame accents | 3-5 pieces | PNG/WebP transparent | sockets, warning frame, rescue beam |
 | Screen chrome | 5 pieces | PNG/WebP transparent | primary button, secondary button, content panel, dock, badge |
 | Combat VFX | 5 effects | PNG/WebP transparent | summon, merge, rescue, enemy hit, boss warning |
+| Navigation icons | 5 icons | PNG/WebP transparent | collection, shop, missions, season, home |
 
 ## 런타임 아틀라스 계약
 
@@ -249,6 +250,21 @@ Premium animated co-op toy-board.
 | Center tolerance | x/y deviation <= 8px |
 | Transparency | transparent pixel ratio >= 30% per cell |
 | Margin | >= 10px clear margin on all sides |
+
+### Navigation Icon Atlas
+
+| Field | Value |
+| --- | --- |
+| File | `src/client/assets/generated/reboot-nav-icons.png` |
+| Final size | 1280x256 |
+| Grid | 5 columns x 1 row |
+| Cell size | 256x256 |
+| Cell order | `collection`, `shop`, `missions`, `season`, `home` |
+| Runtime use | bottom dock and home/back buttons |
+| Subject bbox | 160-220px on longest side |
+| Center tolerance | x/y deviation <= 8px |
+| Transparency | transparent pixel ratio >= 35% per cell |
+| Margin | >= 14px clear margin on all sides |
 
 ## 런타임 소비 전환 계약
 
@@ -590,6 +606,25 @@ Style lock tokens: premium Korean mobile game combat effects, cooperative toy-bo
 Style: shipped mobile game combat juice, readable at 40px, 64px, and 110px, no UI-card framing.
 Constraints: transparent background, no text, no letters, no numbers, no watermark, no dice, no casino pips, no generic emoji, no copied app icons.
 Export target: subject bbox 170-236px longest side, pivot x 128 y 128, center deviation <= 8px, at least 10px margin around the subject.
+```
+
+## Runtime Prompt: Navigation Icons
+
+```text
+Use case: sprite-atlas
+Asset type: transparent navigation icon atlas for ProjectAuto reboot mobile app shell.
+Primary request: Create 5 premium mobile game navigation icons in a single horizontal transparent atlas. Equal cells. No text.
+Output contract: final atlas 1280x256, 5 columns x 1 row, each cell exactly 256x256, straight alpha, no premultiplied alpha bleed.
+Subjects left to right:
+1. Collection: heroic toy relay unit badge, small character pedestal, reads as unit roster.
+2. Shop: gem capsule chest with cosmetic sparkles, clearly store/cosmetic unlock, no money symbol.
+3. Missions: sealed mission scroll and check emblem, readable daily quest icon.
+4. Season: progress medal with orbit ring and star shard, readable season pass/progression without paid implication.
+5. Home: compact command base house icon with teal dome, reads as return home.
+Style lock tokens: premium Korean mobile game app shell, cooperative toy-board tower defense, polished toy metal, teal glass cores, amber highlights, graphite trim, chunky readable silhouettes.
+Style: shipped mobile game navigation icons, readable at 28px, 40px, and 64px, no UI-card framing.
+Constraints: transparent background, no text, no letters, no numbers, no watermark, no dice, no casino pips, no price tags, no generic emoji.
+Export target: subject bbox 160-220px longest side, pivot x 128 y 128, center deviation <= 8px, at least 14px margin around the subject.
 ```
 
 ## Runtime Prompt: Screen Chrome

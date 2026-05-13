@@ -14,6 +14,7 @@
   --result-backdrop: url("/src/client/assets/generated/reboot-result-backdrop.png");
   --result-badges: url("/src/client/assets/generated/reboot-result-badges.png");
   --screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png");
+  --nav-icons: url("/src/client/assets/generated/reboot-nav-icons.png");
 }
 
 * {
@@ -353,6 +354,40 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   isolation: isolate;
 }
 
+.bottom-dock button {
+  display: grid;
+  place-items: center;
+  gap: 1px;
+  min-height: 64px;
+  padding: 7px 4px 6px;
+  color: rgba(245, 240, 220, 0.86);
+  font-size: 10px;
+  line-height: 1;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.62);
+}
+
+.bottom-dock button::before,
+.screen-back::before {
+  content: "";
+  display: block;
+  flex: 0 0 auto;
+  background-image: var(--nav-icons);
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.46));
+}
+
+.bottom-dock button::before {
+  width: 42px;
+  height: 42px;
+  background-size: 210px 42px;
+}
+
+[data-nav-icon="collection"]::before { background-position: 0 0; }
+[data-nav-icon="shop"]::before { background-position: -42px 0; }
+[data-nav-icon="missions"]::before { background-position: -84px 0; }
+[data-nav-icon="season"]::before { background-position: -126px 0; }
+[data-nav-icon="home"]::before { background-position: -168px 0; }
+
 .bottom-dock::before {
   content: "";
   position: absolute;
@@ -410,7 +445,7 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   padding: 14px;
 }
 
-.screen-overlay button::before,
+.screen-overlay button:not([data-nav-icon])::before,
 .result-overlay button::before {
   content: "";
   position: absolute;
@@ -455,9 +490,24 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 }
 
 .screen-back {
-  width: 74px;
-  min-height: 34px;
+  width: 50px;
+  min-height: 50px;
   margin-bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  font-size: 0;
+}
+
+.screen-back::before {
+  width: 34px;
+  height: 34px;
+  background-size: 170px 34px;
+}
+
+.screen-back[data-nav-icon="home"]::before {
+  background-position: -136px 0;
 }
 
 .sprite-token {

@@ -310,3 +310,27 @@ test('combat renderer uses generated VFX atlas for action feedback', async () =>
     assert.equal(render.includes(marker), true, marker);
   }
 });
+
+test('home navigation uses generated app-game icons instead of plain text buttons', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    'reboot-nav-icons.png',
+    '.bottom-dock button::before',
+    '.screen-back::before',
+    'data-nav-icon="collection"',
+    'data-nav-icon="shop"',
+    'data-nav-icon="missions"',
+    'data-nav-icon="season"',
+    'data-nav-icon="home"',
+    '[data-nav-icon="collection"]::before',
+    '[data-nav-icon="shop"]::before',
+    '[data-nav-icon="missions"]::before',
+    '[data-nav-icon="season"]::before',
+    '[data-nav-icon="home"]::before',
+    '.screen-back[data-nav-icon="home"]::before'
+  ]) {
+    assert.equal(`${html}\n${css}`.includes(marker), true, marker);
+  }
+});
