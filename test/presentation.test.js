@@ -144,7 +144,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-toast-callouts">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-meter-sockets">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -1034,16 +1034,27 @@ test('combat resource HUD uses generated icons instead of text-only chips', asyn
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
+    '--combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets")',
     '#summonMeter::before',
     '#rescueMeter::before',
     '#dangerMeter::before',
     'background-image: url("/src/client/assets/generated/reboot-ui-icons.png")',
+    '.meters span {\n  display: inline-flex;',
+    'background-image: var(--combat-meter-sockets);',
+    'background-size: 300% 100%;',
     '#summonMeter::before { background-position: 0 0; }',
     '#rescueMeter::before { background-position: -36px 0; }',
-    '#dangerMeter::before { background-position: -54px 0; }'
+    '#dangerMeter::before { background-position: -54px 0; }',
+    '#summonMeter { background-position: 0 0; }',
+    '#rescueMeter { background-position: 50% 0; }',
+    '#dangerMeter { background-position: 100% 0; }'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
+
+  const meterBlock = css.slice(css.indexOf('.meters span {\n  display: inline-flex;'), css.indexOf('.meters span::before'));
+  assert.equal(meterBlock.includes('background: rgba(3, 9, 10, 0.34);'), false);
+  assert.equal(meterBlock.includes('border: 1px solid rgba(245, 240, 220, 0.1);'), false);
 });
 
 test('combat shell uses generated HUD and action dock chrome', async () => {

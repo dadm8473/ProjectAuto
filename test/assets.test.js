@@ -132,6 +132,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 70_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-meter-sockets.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-meter-sockets-imagegen.png',
+    width: 768,
+    height: 96,
+    minRuntimeBytes: 80_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-result-panel-frame.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-result-panel-frame-imagegen.png',
     width: 390,

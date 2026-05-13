@@ -37,6 +37,7 @@
   --meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png");
+  --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets");
   --combat-hud-row: clamp(72px, 22.33vw, 96px);
   --combat-action-row: clamp(112px, 29.77vw, 128px);
   --lobby-screen-top-pad: 22px;
@@ -206,10 +207,22 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: clamp(24px, 7.44vw, 32px);
   min-width: 0;
   gap: 4px;
+  border-color: transparent;
+  border-radius: 0;
+  background: transparent;
+  background-image: var(--combat-meter-sockets);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
   white-space: nowrap;
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.68);
 }
+
+#summonMeter { background-position: 0 0; }
+#rescueMeter { background-position: 50% 0; }
+#dangerMeter { background-position: 100% 0; }
 
 .meters span::before {
   content: "";
