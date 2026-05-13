@@ -12,6 +12,7 @@
   --lobby-backdrop: url("/src/client/assets/generated/reboot-lobby-backdrop.png");
   --meta-backdrop: url("/src/client/assets/generated/reboot-meta-backdrop.png");
   --result-backdrop: url("/src/client/assets/generated/reboot-result-backdrop.png");
+  --screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png");
 }
 
 * {
@@ -34,6 +35,9 @@ body {
 }
 
 button {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   border: 1px solid var(--line);
   border-radius: 8px;
   min-height: 44px;
@@ -180,6 +184,10 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   align-items: center;
   justify-content: center;
   gap: 7px;
+  background-image: var(--screen-chrome);
+  background-repeat: no-repeat;
+  background-size: 500% 100%;
+  background-position: 25% 0;
 }
 
 .primary-actions button::before {
@@ -204,6 +212,7 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 
 #summonButton[data-ready="true"] {
   border-color: var(--amber);
+  background-position: 0 0;
 }
 
 #mergeButton[data-ready="true"] {
@@ -334,15 +343,33 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   position: absolute;
   left: 12px;
   right: 12px;
-  bottom: calc(128px + env(safe-area-inset-bottom));
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  z-index: 3;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
+  padding: 6px;
+  isolation: isolate;
+}
+
+.bottom-dock::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--screen-chrome);
+  background-repeat: no-repeat;
+  background-size: 500% 100%;
+  background-position: 75% 0;
+  pointer-events: none;
 }
 
 .lobby-card,
 .screen-card,
 .result-panel {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   border: 1px solid rgba(245, 240, 220, 0.2);
   border-radius: 8px;
   background:
@@ -355,9 +382,60 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   backdrop-filter: blur(8px);
 }
 
+.lobby-card::before,
+.screen-card::before,
+.result-panel::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  background-image: var(--screen-chrome);
+  background-repeat: no-repeat;
+  background-size: 500% 100%;
+  background-position: 50% 0;
+  opacity: 0.96;
+  pointer-events: none;
+}
+
+.lobby-card > *,
+.screen-card > *,
+.result-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
 .lobby-card,
 .screen-card {
   padding: 14px;
+}
+
+.screen-overlay button::before,
+.result-overlay button::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  background-image: var(--screen-chrome);
+  background-repeat: no-repeat;
+  background-size: 500% 100%;
+  background-position: 25% 0;
+  pointer-events: none;
+}
+
+.screen-overlay button,
+.result-overlay button {
+  border-color: transparent;
+  background: rgba(10, 16, 16, 0.28);
+}
+
+.screen-overlay .play-button::before {
+  background-image: var(--screen-chrome);
+  background-position: 0 0;
+}
+
+.screen-overlay .match-button::before {
+  background-image: var(--screen-chrome);
+  background-position: 25% 0;
 }
 
 .screen-list {
@@ -458,6 +536,9 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 }
 
 .role-pill {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   width: fit-content;
   padding: 3px 7px;
   border-radius: 8px;
@@ -466,6 +547,19 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   border: 1px solid rgba(142, 230, 210, 0.22);
   font-size: 11px;
   font-weight: 900;
+}
+
+.role-pill::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  background-image: var(--screen-chrome);
+  background-repeat: no-repeat;
+  background-size: 500% 100%;
+  background-position: 100% 0;
+  opacity: 0.9;
+  pointer-events: none;
 }
 
 .shop-card button {

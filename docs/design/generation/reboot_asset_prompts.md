@@ -121,6 +121,7 @@ Premium animated co-op toy-board.
 | UI/action icons | 6+ icons | PNG/WebP transparent | summon, merge, rescue, danger, reward |
 | Reward icons | 3+ icons | PNG/WebP transparent | soft currency, shard, season progress |
 | Board frame accents | 3-5 pieces | PNG/WebP transparent | sockets, warning frame, rescue beam |
+| Screen chrome | 5 pieces | PNG/WebP transparent | primary button, secondary button, content panel, dock, badge |
 
 ## 런타임 아틀라스 계약
 
@@ -203,6 +204,20 @@ Premium animated co-op toy-board.
 | Transparency | transparent pixel ratio >= 35% per cell |
 | Margin | >= 24px clear margin on all sides |
 
+### Screen Chrome Atlas
+
+| Field | Value |
+| --- | --- |
+| File | `src/client/assets/generated/reboot-screen-chrome.png` |
+| Final size | 1280x256 |
+| Grid | 5 columns x 1 row |
+| Cell size | 256x256 |
+| Cell order | `primary_play_button`, `secondary_match_button`, `content_panel`, `bottom_dock`, `compact_badge` |
+| Runtime use | CSS-scaled game UI skin for meta buttons, cards, docks, and badges |
+| Center tolerance | each piece centered in its cell |
+| Transparency | straight alpha; chroma-key source archived under `docs/design/generation/source/reboot/style-lock/` |
+| Margin | visible frame edges must stay inside cell bounds |
+
 ## 런타임 소비 전환 계약
 
 현재 앱은 기존 `Signal Relay` 자산을 다음 방식으로 소비한다.
@@ -214,7 +229,7 @@ Premium animated co-op toy-board.
 | `src/client/assets/generated/noise-world-sprites.png` | 4 columns x 2 rows | legacy enemy/world sprites |
 | `src/client/assets/generated/ui-icon-atlas.png` | legacy UI grid | legacy UI icons |
 
-리부트 구현은 위 파일과 grid를 재사용하지 않는다. `src/client/reboot_render.js`는 아래 manifest만 통해 새 자산을 slice한다.
+리부트 구현은 위 파일과 grid를 재사용하지 않는다. `src/client/reboot_render.js`는 아래 manifest만 통해 전투 자산을 slice하고, 메타 화면 CSS는 `reboot-screen-chrome.png`를 UI skin으로만 소비한다.
 
 ```js
 export const REBOOT_ATLAS_MANIFEST = {
@@ -269,6 +284,7 @@ export const REBOOT_ATLAS_MANIFEST = {
 - `test/assets.test.js`는 리부트 manifest의 `columns`, `rows`, `cell`, `order`와 실제 PNG 크기가 일치하는지 검증한다.
 - 리부트 적은 `noise-world-sprites.png`의 4x2 grid로 slice하면 실패다.
 - 기존 레거시 파일은 fallback으로도 쓰지 않는다. 임시 이미지가 필요하면 리부트 manifest에 맞는 임시 silhouette atlas를 만든다.
+- 홈/상점/유닛/결과 화면의 카드와 버튼은 CSS gradient만으로 만들지 않고 `reboot-screen-chrome.png`를 배경 프레임으로 사용한다.
 
 ### Metadata Manifest
 
@@ -505,6 +521,25 @@ Style: premium mobile game reward icons, chunky symbolic silhouettes, polished m
 Palette: gold/ivory reward, teal signal accent, amber progress, cyan unlock core, graphite outline.
 Constraints: transparent background, no text, no letters, no numbers, no watermark, no casino chips, no dice, no generic emojis, no copied app icons.
 Export target: icon bbox 148-190px longest side, pivot x 128 y 128, center deviation <= 6px, at least 24px margin around the subject.
+```
+
+## Runtime Prompt: Screen Chrome
+
+```text
+Use case: sprite-atlas
+Asset type: transparent UI chrome atlas for ProjectAuto reboot home, shop, collection, mission, season, and result screens.
+Primary request: Create 5 premium mobile game UI chrome pieces in a single horizontal atlas. Equal cells. No text.
+Output contract: final atlas 1280x256, 5 columns x 1 row, each cell exactly 256x256, straight alpha, no premultiplied alpha bleed.
+Subjects left to right:
+1. Primary play button plate: wide chunky gold/amber painted-metal button frame with glass inset.
+2. Secondary match button plate: wide graphite/teal painted-metal button frame with glass inset.
+3. Content panel frame: portrait-friendly game info card frame, graphite metal, teal inner rim.
+4. Bottom dock bar frame: low navigation dock with four subtle icon wells, graphite metal and teal glow.
+5. Compact HUD badge frame: pill-shaped status badge, ivory edge, teal glass shine.
+Style lock tokens: premium Korean mobile game UI, cooperative toy-board tower defense, polished painted metal, dark graphite 3-5px outline, 1-2px colored inner rim, glass wells, top-left warm key light, lower-right soft fill, one controlled glow per piece, runtime frame radius 8px or less.
+Style: shipped mobile game UI skin, tactile, compact, thumb-first, not a website card or dashboard.
+Constraints: transparent background, no text, no letters, no numbers, no watermark, no icons, no characters, no dice, no SaaS dashboard cards.
+Export target: each piece centered in its 256x256 cell and usable as a CSS-scaled background skin.
 ```
 
 ## 후처리 기준

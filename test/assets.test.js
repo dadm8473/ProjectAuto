@@ -27,7 +27,8 @@ const REBOOT_GRID_ASSETS = [
   { path: 'src/client/assets/generated/reboot-enemy-atlas.png', width: 1024, height: 256, columns: 4, rows: 1 },
   { path: 'src/client/assets/generated/reboot-ui-icons.png', width: 1536, height: 256, columns: 6, rows: 1 },
   { path: 'src/client/assets/generated/reboot-reward-icons.png', width: 1024, height: 256, columns: 4, rows: 1 },
-  { path: 'src/client/assets/generated/reboot-board-accents.png', width: 1280, height: 256, columns: 5, rows: 1 }
+  { path: 'src/client/assets/generated/reboot-board-accents.png', width: 1280, height: 256, columns: 5, rows: 1 },
+  { path: 'src/client/assets/generated/reboot-screen-chrome.png', width: 1280, height: 256, columns: 5, rows: 1 }
 ];
 
 const IMAGEGEN_REBOOT_BACKDROPS = [
@@ -69,6 +70,13 @@ const IMAGEGEN_REBOOT_ATLASES = [
   {
     path: 'src/client/assets/generated/reboot-board-accents.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260513-board-accents-imagegen.png',
+    width: 1280,
+    height: 256,
+    minRuntimeBytes: 70_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-screen-chrome.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260513-screen-chrome-imagegen.png',
     width: 1280,
     height: 256,
     minRuntimeBytes: 70_000

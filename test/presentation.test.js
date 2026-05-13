@@ -260,3 +260,19 @@ test('combat board renderer uses generated merge and danger accent frames', asyn
     assert.equal(render.includes(marker), true, marker);
   }
 });
+
+test('meta screens use generated game chrome instead of css-only panels', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png")',
+    'background-image: var(--screen-chrome)',
+    '.lobby-card::before',
+    '.screen-card::before',
+    '.bottom-dock::before',
+    '.play-button::before',
+    '.match-button::before'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
