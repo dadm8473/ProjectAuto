@@ -325,6 +325,23 @@ test('boss warning uses a dedicated generated combat cutin', async () => {
   }
 });
 
+test('death burst effects use a dedicated transparent generated VFX asset', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'REBOOT_EFFECT_MANIFEST',
+    'reboot-kill-burst.png',
+    'killBurst',
+    'drawDeathBursts',
+    "effect.type === 'death_burst'",
+    'trackPointFromProgress(effect.targetProgress, effect.targetLane)',
+    'drawImageCover(ctx, assets.killBurst',
+    "drawAtlasSprite(ctx, assets, 'rewards'"
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});
+
 test('home navigation uses generated app-game icons instead of plain text buttons', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');

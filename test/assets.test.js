@@ -122,6 +122,16 @@ const IMAGEGEN_REBOOT_APP_ICONS = [
   }
 ];
 
+const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
+  {
+    path: 'src/client/assets/generated/reboot-kill-burst.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-kill-burst-chromakey-imagegen.png',
+    width: 256,
+    height: 256,
+    minRuntimeBytes: 20_000
+  }
+];
+
 const IMAGEGEN_REBOOT_ATLASES = [
   {
     path: 'src/client/assets/generated/reboot-unit-atlas.png',
@@ -415,5 +425,34 @@ test('reboot app icons are promoted from a dedicated imagegen source', async () 
     assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
     assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
     assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+  }
+});
+
+test('reboot transparent combat effects are promoted from imagegen sources', async () => {
+  for (const asset of IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS) {
+    const source = await readFile(asset.source);
+    const runtime = await readFile(asset.path);
+    assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+    assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+    assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+    assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+    assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+    assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+    const image = parsePng(runtime);
+    const corners = [
+      alphaAt(image, 2, 2),
+      alphaAt(image, image.width - 3, 2),
+      alphaAt(image, 2, image.height - 3),
+      alphaAt(image, image.width - 3, image.height - 3)
+    ];
+    assert.equal(corners.every((alpha) => alpha < 10), true, `${asset.path} keeps chroma-key corners`);
+    let visiblePixels = 0;
+    for (let y = 0; y < image.height; y += 1) {
+      for (let x = 0; x < image.width; x += 1) {
+        if (alphaAt(image, x, y) > 48) visiblePixels += 1;
+      }
+    }
+    assert.equal(visiblePixels > 2_000, true, `${asset.path} has no readable VFX subject`);
   }
 });

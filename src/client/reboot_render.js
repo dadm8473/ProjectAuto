@@ -61,6 +61,15 @@ export const REBOOT_CUTIN_MANIFEST = {
   }
 };
 
+export const REBOOT_EFFECT_MANIFEST = {
+  killBurst: {
+    src: '/src/client/assets/generated/reboot-kill-burst.png',
+    width: 256,
+    height: 256,
+    source: 'imagegen'
+  }
+};
+
 const UNIT_COLORS = {
   spark_pin: '#58d7ff',
   toktok_amp: '#f4c95d',
@@ -82,7 +91,9 @@ export function createRebootAssetImages() {
   backdrop.src = REBOOT_BACKDROP_MANIFEST.battle.src;
   const bossCutin = new Image();
   bossCutin.src = REBOOT_CUTIN_MANIFEST.bossWarning.src;
-  return { ...atlases, backdrop, bossCutin };
+  const killBurst = new Image();
+  killBurst.src = REBOOT_EFFECT_MANIFEST.killBurst.src;
+  return { ...atlases, backdrop, bossCutin, killBurst };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -292,6 +303,15 @@ function enemyScreenPoint(state, index) {
   };
 }
 
+function trackPointFromProgress(progress = 0, lane = 0) {
+  const p = Math.max(0, Math.min(1, Number(progress) || 0));
+  const laneOffset = Math.max(-1, Math.min(1, Number(lane) || 0)) * 10;
+  return {
+    x: 70 + p * 250,
+    y: 285 + Math.sin(p * Math.PI * 2) * 34 + laneOffset
+  };
+}
+
 function recentEvents(state, type, windowSeconds = 0.9) {
   return state.events
     .filter((event) => event.type === type && state.now >= event.at && state.now - event.at <= windowSeconds)
@@ -339,6 +359,22 @@ function drawRescueBeam(ctx, state, assets = {}) {
   ctx.restore();
 }
 
+function drawDeathBursts(ctx, state, assets = {}) {
+  const bursts = (state.effects ?? [])
+    .filter((effect) => effect.type === 'death_burst')
+    .slice(-5);
+  for (const effect of bursts) {
+    const point = trackPointFromProgress(effect.targetProgress, effect.targetLane);
+    const boss = effect.targetType === 'boss';
+    const size = boss ? 120 : 78;
+    const ttlMax = boss ? 1.25 : 0.78;
+    const alpha = Math.max(0.18, Math.min(0.92, (effect.ttl ?? ttlMax) / ttlMax));
+    drawImageCover(ctx, assets.killBurst, point.x - size / 2, point.y - size / 2, size, size, alpha);
+    const rewardSprite = boss ? 'unlock_capsule' : 'soft_currency';
+    drawAtlasSprite(ctx, assets, 'rewards', rewardSprite, point.x + size * 0.34, point.y - size * 0.26, boss ? 34 : 24, alpha);
+  }
+}
+
 function drawCombatVfx(ctx, state, assets = {}) {
   for (const event of recentEvents(state, 'summon')) {
     const point = boardVfxPoint(state, event);
@@ -351,6 +387,7 @@ function drawCombatVfx(ctx, state, assets = {}) {
   for (const event of recentEvents(state, 'rescue')) {
     drawAtlasSprite(ctx, assets, 'vfx', 'rescue_flare', 195, 328, 132, eventAlpha(state, event));
   }
+  drawDeathBursts(ctx, state, assets);
   if (state.enemies.length > 0) {
     const point = enemyScreenPoint(state, 0);
     const alpha = 0.34 + Math.max(0, Math.sin(state.now * 12)) * 0.22;
