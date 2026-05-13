@@ -18,6 +18,8 @@
   --result-panel-top-pad: clamp(108px, calc(var(--result-panel-width) * 0.31), 128px);
   --screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png");
   --nav-icons: url("/src/client/assets/generated/reboot-nav-icons.png");
+  --nav-button-glow: url("/src/client/assets/generated/reboot-nav-button-glow.png?v=nav-glow");
+  --nav-button-glow-size: clamp(62px, 18vw, 76px);
   --title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png");
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
@@ -609,10 +611,42 @@ body[data-app-screen="lobby"] .toast {
   gap: 1px;
   min-height: var(--lobby-bottom-dock-button-height);
   padding: 7px 4px 6px;
+  border-color: transparent;
   color: rgba(245, 240, 220, 0.86);
+  background-color: transparent;
+  background-image: none;
   font-size: 10px;
   line-height: 1;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.62);
+  transition: transform 120ms ease, filter 120ms ease;
+}
+
+.bottom-dock button::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--nav-button-glow-size);
+  height: var(--nav-button-glow-size);
+  z-index: 0;
+  background-image: var(--nav-button-glow);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  opacity: 0.54;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.bottom-dock button:active,
+.bottom-dock button:focus-visible {
+  transform: translateY(1px);
+  filter: saturate(1.14) brightness(1.1);
+}
+
+.bottom-dock button:active::after,
+.bottom-dock button:focus-visible::after {
+  opacity: 0.9;
 }
 
 .bottom-dock button::before,
@@ -626,9 +660,16 @@ body[data-app-screen="lobby"] .toast {
 }
 
 .bottom-dock button::before {
+  position: relative;
+  z-index: 1;
   width: 42px;
   height: 42px;
   background-size: 210px 42px;
+}
+
+.bottom-dock button > span {
+  position: relative;
+  z-index: 1;
 }
 
 [data-nav-icon="collection"]::before { background-position: 0 0; }
@@ -636,6 +677,11 @@ body[data-app-screen="lobby"] .toast {
 [data-nav-icon="missions"]::before { background-position: -84px 0; }
 [data-nav-icon="season"]::before { background-position: -126px 0; }
 [data-nav-icon="home"]::before { background-position: -168px 0; }
+
+[data-nav-icon="collection"]::after { background-position: 0 0; }
+[data-nav-icon="shop"]::after { background-position: 33.333% 0; }
+[data-nav-icon="missions"]::after { background-position: 66.666% 0; }
+[data-nav-icon="season"]::after { background-position: 100% 0; }
 
 .bottom-dock::before {
   content: "";
@@ -764,6 +810,11 @@ body[data-app-screen="lobby"] .toast {
 .result-overlay button {
   border-color: transparent;
   background: rgba(10, 16, 16, 0.28);
+}
+
+.screen-overlay .bottom-dock button {
+  background: transparent;
+  background-image: none;
 }
 
 .lobby-intel-strip {

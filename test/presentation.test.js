@@ -144,7 +144,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-operation-poster">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-nav-glow">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -444,6 +444,46 @@ test('home navigation uses generated app-game icons instead of plain text button
   ]) {
     assert.equal(`${html}\n${css}`.includes(marker), true, marker);
   }
+});
+
+test('home navigation buttons use generated tactile selector pads', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--nav-button-glow: url("/src/client/assets/generated/reboot-nav-button-glow.png?v=nav-glow")',
+    '.bottom-dock button::after',
+    '.screen-overlay .bottom-dock button',
+    'background-image: var(--nav-button-glow)',
+    'background-size: 400% 100%',
+    'width: var(--nav-button-glow-size);',
+    'height: var(--nav-button-glow-size);',
+    'left: 50%;',
+    'top: 50%;',
+    'transform: translate(-50%, -50%);',
+    'mix-blend-mode: screen',
+    'pointer-events: none;',
+    '.bottom-dock button > span',
+    'position: relative;\n  z-index: 1;',
+    '[data-nav-icon="collection"]::after { background-position: 0 0; }',
+    '[data-nav-icon="shop"]::after { background-position: 33.333% 0; }',
+    '[data-nav-icon="missions"]::after { background-position: 66.666% 0; }',
+    '[data-nav-icon="season"]::after { background-position: 100% 0; }',
+    '.bottom-dock button:active,\n.bottom-dock button:focus-visible',
+    'transform: translateY(1px);',
+    '.bottom-dock button:active::after,\n.bottom-dock button:focus-visible::after',
+    'opacity: 0.9;'
+  ]) {
+    assert.equal(`${html}\n${css}`.includes(marker), true, marker);
+  }
+
+  assert.equal(html.includes('<button data-open-screen="collection" data-nav-icon="collection"><span>유닛</span></button>'), true);
+  assert.equal(html.includes('<button data-open-screen="shop" data-nav-icon="shop"><span>상점</span></button>'), true);
+  assert.equal(html.includes('<button data-open-screen="missions" data-nav-icon="missions"><span>미션</span></button>'), true);
+  assert.equal(html.includes('<button data-open-screen="season" data-nav-icon="season"><span>시즌</span></button>'), true);
+  assert.equal(css.includes('.bottom-dock button {\n  background: linear-gradient'), false);
+  assert.equal(css.includes('inset: -2px -3px;'), false);
+  assert.equal(css.includes('.screen-overlay .bottom-dock button {\n  background: transparent;\n  background-image: none;'), true);
 });
 
 test('lobby launch actions use dedicated generated button frames', async () => {

@@ -179,6 +179,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     width: 430,
     height: 112,
     minRuntimeBytes: 45_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-nav-button-glow.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-nav-button-glow-imagegen.png',
+    width: 512,
+    height: 128,
+    minRuntimeBytes: 28_000
   }
 ];
 
