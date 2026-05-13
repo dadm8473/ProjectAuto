@@ -45,6 +45,13 @@ const IMAGEGEN_REBOOT_BACKDROPS = [
 
 const IMAGEGEN_REBOOT_OVERLAYS = [
   {
+    path: 'src/client/assets/generated/reboot-title-emblem.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260513-title-emblem-imagegen.png',
+    width: 512,
+    height: 256,
+    minRuntimeBytes: 30_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-hero-squad.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260513-hero-squad-imagegen.png',
     width: 640,

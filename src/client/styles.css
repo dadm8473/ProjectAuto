@@ -15,6 +15,7 @@
   --result-badges: url("/src/client/assets/generated/reboot-result-badges.png");
   --screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png");
   --nav-icons: url("/src/client/assets/generated/reboot-nav-icons.png");
+  --title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png");
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
   --reward-burst: url("/src/client/assets/generated/reboot-reward-burst.png");
   --shop-cosmetics: url("/src/client/assets/generated/reboot-shop-cosmetics.png");
@@ -374,6 +375,19 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   font-size: 42px;
   line-height: 0.95;
   text-shadow: 0 5px 18px rgba(0, 0, 0, 0.72), 0 0 18px rgba(88, 215, 255, 0.28);
+}
+
+.splash-title-emblem {
+  width: min(326px, 82vw);
+  aspect-ratio: 2 / 1;
+  margin-bottom: -18px;
+  align-self: center;
+  background-image: var(--title-emblem);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.62));
+  pointer-events: none;
 }
 
 .splash-screen p,

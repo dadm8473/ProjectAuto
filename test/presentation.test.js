@@ -348,6 +348,20 @@ test('splash and lobby use generated hero squad art instead of empty landing spa
   }
 });
 
+test('splash uses a generated title emblem instead of plain text only branding', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png")',
+    'class="splash-title-emblem"',
+    '.splash-title-emblem',
+    'background-image: var(--title-emblem)'
+  ]) {
+    assert.equal(`${html}\n${css}`.includes(marker), true, marker);
+  }
+});
+
 test('client settles result rewards into profile and wires shop purchases', async () => {
   const app = await readFile('src/client/app.js', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
