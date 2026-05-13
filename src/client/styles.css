@@ -606,6 +606,10 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   grid-template-columns: 64px 1fr 72px;
 }
 
+.shop-card[data-owned="true"] {
+  border-color: rgba(142, 230, 210, 0.42);
+}
+
 .card-copy {
   display: grid;
   gap: 3px;
@@ -614,6 +618,18 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 .card-copy strong {
   font-size: 17px;
   line-height: 1.12;
+}
+
+.shop-price {
+  width: fit-content;
+  margin-top: 2px;
+  padding: 3px 7px;
+  border-radius: 8px;
+  color: var(--amber);
+  background: rgba(244, 201, 93, 0.1);
+  border: 1px solid rgba(244, 201, 93, 0.24);
+  font-size: 11px;
+  font-weight: 900;
 }
 
 .role-pill {
@@ -645,6 +661,10 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 
 .shop-card button {
   min-height: 34px;
+}
+
+.shop-card[data-owned="true"] button {
+  color: var(--mint);
 }
 
 .result-overlay {

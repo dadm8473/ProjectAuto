@@ -1,4 +1,5 @@
 import { createGame } from '../shared/game.js';
+import { SHOP } from '../shared/content.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 
 const REASON_LABELS = {
@@ -30,6 +31,14 @@ const ROLE_LABELS = {
   rescue: '구원'
 };
 
+const SHOP_ICON_BY_ITEM = {
+  'mythic-aura': 'boss_warning',
+  'founder-board': 'partner_danger',
+  'merge-effect': 'merge_action',
+  'rescue-effect': 'rescue_action',
+  'profile-frame': 'soft_currency'
+};
+
 export function buildRebootLobby(model = {}) {
   const gems = model.gems ?? 0;
   return `
@@ -59,25 +68,30 @@ export function buildRebootCollection() {
   `).join('');
 }
 
-export function buildRebootShop() {
-  const items = [
-    ['board_theme', '보드 테마', '전장 외형', 'partner_danger'],
-    ['merge_effect', '합성 효과', '연출 외형', 'merge_action'],
-    ['rescue_effect', '구원 효과', '구원 빔 외형', 'rescue_action'],
-    ['emote', '협동 이모트', '파트너 반응', 'reward_shard'],
-    ['profile_frame', '프로필 프레임', '홈 외형', 'soft_currency']
-  ];
-  return items.map(([id, name, desc, icon]) => `
-    <article class="screen-card shop-card" data-item="${id}">
+export function buildRebootShop(profile = {}) {
+  const gems = profile.gems ?? 0;
+  const unlocks = Array.isArray(profile.unlocks) ? profile.unlocks : [];
+  const items = SHOP.items.filter((item) => item.category === 'cosmetic' && item.grant?.cosmetic);
+  return items.map((item) => {
+    const cosmetic = item.grant.cosmetic;
+    const owned = unlocks.includes(cosmetic);
+    const price = item.price?.gems ?? 0;
+    const locked = gems < price;
+    const icon = SHOP_ICON_BY_ITEM[item.id] ?? 'reward_shard';
+    const actionLabel = owned ? '보유' : locked ? '젬 부족' : '해금';
+    return `
+    <article class="screen-card shop-card" data-item="${item.id}" data-owned="${owned}">
       <span class="sprite-token shop-token" data-shop-icon="${icon}"></span>
       <div class="card-copy">
         <span class="role-pill">외형</span>
-        <strong>${name}</strong>
-        <p>${desc}</p>
+        <strong>${item.name}</strong>
+        <p>${item.description}</p>
+        <span class="shop-price">${price} 젬</span>
       </div>
-      <button type="button">해금</button>
+      <button type="button" data-shop-buy="${item.id}"${owned || locked ? ' disabled' : ''}>${actionLabel}</button>
     </article>
-  `).join('');
+  `;
+  }).join('');
 }
 
 export function buildMissionScreen() {

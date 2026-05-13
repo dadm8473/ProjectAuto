@@ -1,4 +1,6 @@
 import { castLinkPulse, createGame, mergeRelays, serializeState, supplyRelay, tickGame } from '../shared/game.js';
+import { SHOP } from '../shared/content.js';
+import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js';
 import {
@@ -49,12 +51,32 @@ const dom = {
 
 const ctx = dom.canvas.getContext('2d');
 const rebootAssets = createRebootAssetImages();
+const PROFILE_STORAGE_KEY = 'projectauto.reboot.profile.v1';
 let appScreen = 'splash';
 let game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
 let localBoardId = 'p1';
 let online = null;
 let lastTime = performance.now();
 let resultShownFor = '';
+let profile = loadProfile();
+
+function loadProfile() {
+  const base = createMetaProfile();
+  try {
+    const raw = globalThis.localStorage?.getItem(PROFILE_STORAGE_KEY);
+    return raw ? normalizeMetaProfile(JSON.parse(raw)) : base;
+  } catch {
+    return base;
+  }
+}
+
+function saveProfile() {
+  try {
+    globalThis.localStorage?.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+  } catch {
+    // Storage can be blocked in private browser modes; keep the in-memory profile.
+  }
+}
 
 function state() {
   return serializeState(game);
@@ -85,11 +107,56 @@ function setScreen(screen) {
 }
 
 function renderHomeScreens() {
-  dom.lobbyContent.innerHTML = buildRebootLobby({ gems: 0 });
+  dom.lobbyContent.innerHTML = buildRebootLobby(profile);
   dom.collectionList.innerHTML = buildRebootCollection();
-  dom.shopList.innerHTML = buildRebootShop();
+  dom.shopList.innerHTML = buildRebootShop(profile);
   dom.missionsList.innerHTML = buildMissionScreen();
   dom.seasonList.innerHTML = buildSeasonScreen();
+}
+
+function resultRewards(current) {
+  if (!current.result) return [];
+  return [{ type: 'soft', amount: current.result.status === 'won' ? 24 : 8 }];
+}
+
+function settleResultRewards(current) {
+  const rewards = resultRewards(current);
+  if (!current.result || profile.processedRuns.includes(current.runId)) return rewards;
+  const gemReward = rewards.reduce((sum, reward) => sum + (reward.type === 'soft' ? reward.amount : 0), 0);
+  profile = normalizeMetaProfile({
+    ...profile,
+    gems: profile.gems + gemReward,
+    xp: profile.xp + (current.result.status === 'won' ? 60 : 20),
+    processedRuns: [...profile.processedRuns, current.runId]
+  });
+  saveProfile();
+  renderHomeScreens();
+  return rewards;
+}
+
+function handleShopPurchase(event) {
+  const button = event.target.closest('[data-shop-buy]');
+  if (!button) return;
+  const item = SHOP.items.find((entry) => entry.id === button.dataset.shopBuy && entry.category === 'cosmetic' && entry.grant?.cosmetic);
+  if (!item) return;
+  const cosmetic = item.grant.cosmetic;
+  if (profile.unlocks.includes(cosmetic)) {
+    showToast('이미 보유 중입니다');
+    return;
+  }
+  const price = item.price?.gems ?? 0;
+  if (profile.gems < price) {
+    showToast('젬이 부족합니다');
+    return;
+  }
+  profile = normalizeMetaProfile({
+    ...profile,
+    gems: profile.gems - price,
+    unlocks: [...profile.unlocks, cosmetic]
+  });
+  saveProfile();
+  renderHomeScreens();
+  showToast(`${item.name} 해금`);
 }
 
 function startBotRun() {
@@ -169,7 +236,8 @@ function updateButtons(current) {
 function showResult(current) {
   if (!current.result || resultShownFor === current.runId) return;
   resultShownFor = current.runId;
-  const model = buildRebootResultModel({ result: current.result, rewards: [{ type: 'soft', amount: 20 }] });
+  const rewards = settleResultRewards(current);
+  const model = buildRebootResultModel({ result: current.result, rewards });
   dom.resultOverlay.dataset.resultStatus = model.status;
   dom.resultTitle.textContent = model.title;
   dom.resultReason.textContent = model.reason.label;
@@ -206,6 +274,7 @@ function bind() {
   dom.summonButton.addEventListener('click', () => command('summon'));
   dom.mergeButton.addEventListener('click', () => command('merge'));
   dom.rescueButton.addEventListener('click', () => command('rescue'));
+  dom.shopList.addEventListener('click', handleShopPurchase);
   qs('#resultRetryButton').addEventListener('click', retry);
   qs('#resultLobbyButton').addEventListener('click', () => {
     dom.resultOverlay.hidden = true;

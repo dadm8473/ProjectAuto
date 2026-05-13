@@ -348,3 +348,23 @@ test('splash and lobby use generated hero squad art instead of empty landing spa
     assert.equal(css.includes(marker), true, marker);
   }
 });
+
+test('client settles result rewards into profile and wires shop purchases', async () => {
+  const app = await readFile('src/client/app.js', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    "from '../shared/meta.js'",
+    'PROFILE_STORAGE_KEY',
+    'loadProfile',
+    'saveProfile',
+    'settleResultRewards',
+    'handleShopPurchase',
+    'profile.processedRuns.includes(current.runId)',
+    'buildRebootShop(profile)',
+    'data-shop-buy="${item.id}"',
+    'dom.shopList.addEventListener'
+  ]) {
+    assert.equal(`${app}\n${screens}`.includes(marker), true, marker);
+  }
+});

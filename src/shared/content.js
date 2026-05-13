@@ -497,6 +497,33 @@ export const SHOP = {
       category: 'cosmetic',
       realMoney: false,
       description: '협동 신호장 보드 스킨.'
+    },
+    {
+      id: 'merge-effect',
+      name: '합성 플레어',
+      price: { gems: 55 },
+      grant: { cosmetic: 'merge-effect' },
+      category: 'cosmetic',
+      realMoney: false,
+      description: '합성 순간의 장난감 에너지 연출.'
+    },
+    {
+      id: 'rescue-effect',
+      name: '구원 빔',
+      price: { gems: 65 },
+      grant: { cosmetic: 'rescue-effect' },
+      category: 'cosmetic',
+      realMoney: false,
+      description: '파트너를 구할 때 터지는 보호광 연출.'
+    },
+    {
+      id: 'profile-frame',
+      name: '파일럿 프레임',
+      price: { gems: 75 },
+      grant: { cosmetic: 'profile-frame' },
+      category: 'cosmetic',
+      realMoney: false,
+      description: '홈과 매칭 화면에 쓰는 프로필 외형.'
     }
   ],
   pass: {
