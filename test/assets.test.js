@@ -33,7 +33,8 @@ const REBOOT_GRID_ASSETS = [
 const IMAGEGEN_REBOOT_BACKDROPS = [
   { path: 'src/client/assets/generated/reboot-battle-backdrop.png', width: 390, height: 620 },
   { path: 'src/client/assets/generated/reboot-lobby-backdrop.png', width: 430, height: 932 },
-  { path: 'src/client/assets/generated/reboot-meta-backdrop.png', width: 430, height: 932 }
+  { path: 'src/client/assets/generated/reboot-meta-backdrop.png', width: 430, height: 932 },
+  { path: 'src/client/assets/generated/reboot-result-backdrop.png', width: 430, height: 932 }
 ];
 
 const IMAGEGEN_REBOOT_ATLASES = [

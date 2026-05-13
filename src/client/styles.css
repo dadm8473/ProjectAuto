@@ -11,6 +11,7 @@
   --mint: #8ee6d2;
   --lobby-backdrop: url("/src/client/assets/generated/reboot-lobby-backdrop.png");
   --meta-backdrop: url("/src/client/assets/generated/reboot-meta-backdrop.png");
+  --result-backdrop: url("/src/client/assets/generated/reboot-result-backdrop.png");
 }
 
 * {
@@ -236,6 +237,17 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   filter: saturate(1.05);
 }
 
+.result-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--result-backdrop);
+  background-size: cover;
+  background-position: center;
+  filter: saturate(1.06);
+}
+
 .screen-overlay::after {
   content: "";
   position: absolute;
@@ -244,6 +256,17 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   background:
     linear-gradient(180deg, rgba(5, 8, 8, 0.16), rgba(5, 8, 8, 0.18) 52%, rgba(5, 8, 8, 0.44)),
     radial-gradient(circle at 50% 44%, rgba(88, 215, 255, 0.12), transparent 38%);
+  pointer-events: none;
+}
+
+.result-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(5, 8, 8, 0.1), rgba(5, 8, 8, 0.26) 48%, rgba(5, 8, 8, 0.42)),
+    radial-gradient(circle at 50% 65%, rgba(244, 201, 93, 0.14), transparent 34%);
   pointer-events: none;
 }
 
@@ -456,6 +479,8 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 }
 
 .result-panel {
+  position: relative;
+  z-index: 1;
   align-self: center;
   padding: 18px;
   display: grid;
@@ -479,4 +504,22 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   border-radius: 8px;
   background: rgba(88, 215, 255, 0.1);
   border: 1px solid rgba(88, 215, 255, 0.22);
+}
+
+.result-reward {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.result-reward::before {
+  content: "";
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  background-image: url("/src/client/assets/generated/reboot-reward-icons.png");
+  background-repeat: no-repeat;
+  background-size: 136px 34px;
+  background-position: 0 0;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.42));
 }

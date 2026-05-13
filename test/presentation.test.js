@@ -232,3 +232,18 @@ test('combat action buttons use generated icons instead of text-only web buttons
     assert.equal(css.includes(marker), true, marker);
   }
 });
+
+test('result screen uses imagegen reward backdrop instead of a plain overlay', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--result-backdrop: url("/src/client/assets/generated/reboot-result-backdrop.png")',
+    '.result-overlay::before',
+    '.result-overlay::after',
+    'background-image: var(--result-backdrop)',
+    '.result-reward::before',
+    'background-image: url("/src/client/assets/generated/reboot-reward-icons.png")'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
