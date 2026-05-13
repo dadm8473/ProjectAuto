@@ -36,6 +36,15 @@ export const REBOOT_ATLAS_MANIFEST = {
   }
 };
 
+export const REBOOT_BACKDROP_MANIFEST = {
+  battle: {
+    src: '/src/client/assets/generated/reboot-battle-backdrop.png',
+    width: 390,
+    height: 620,
+    source: 'imagegen'
+  }
+};
+
 const UNIT_COLORS = {
   spark_pin: '#58d7ff',
   toktok_amp: '#f4c95d',
@@ -46,13 +55,16 @@ const UNIT_COLORS = {
 
 export function createRebootAssetImages() {
   if (typeof Image === 'undefined') return {};
-  return Object.fromEntries(
+  const atlases = Object.fromEntries(
     Object.entries(REBOOT_ATLAS_MANIFEST).map(([key, manifest]) => {
       const image = new Image();
       image.src = manifest.src;
       return [key, image];
     })
   );
+  const backdrop = new Image();
+  backdrop.src = REBOOT_BACKDROP_MANIFEST.battle.src;
+  return { ...atlases, backdrop };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -89,13 +101,27 @@ function roundedRect(ctx, x, y, w, h, r = 8) {
   ctx.roundRect(x, y, w, h, r);
 }
 
-function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}) {
-  roundedRect(ctx, x, y, w, h, 8);
-  ctx.fillStyle = compact ? 'rgba(21, 30, 30, 0.82)' : 'rgba(18, 27, 26, 0.9)';
-  ctx.fill();
-  ctx.strokeStyle = board.danger >= 80 ? '#ff6f59' : 'rgba(245, 240, 220, 0.18)';
-  ctx.lineWidth = board.danger >= 80 ? 3 : 1;
-  ctx.stroke();
+export function drawBattleBackdrop(ctx, layout, assets = {}) {
+  const image = assets?.backdrop;
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  ctx.drawImage(image, 0, 0, layout.width, layout.height);
+  return true;
+}
+
+function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, imageBackdrop = false) {
+  if (!imageBackdrop) {
+    roundedRect(ctx, x, y, w, h, 8);
+    ctx.fillStyle = compact ? 'rgba(21, 30, 30, 0.82)' : 'rgba(18, 27, 26, 0.9)';
+    ctx.fill();
+    ctx.strokeStyle = board.danger >= 80 ? '#ff6f59' : 'rgba(245, 240, 220, 0.18)';
+    ctx.lineWidth = board.danger >= 80 ? 3 : 1;
+    ctx.stroke();
+  } else if (board.danger >= 80) {
+    roundedRect(ctx, x, y, w, h, 8);
+    ctx.strokeStyle = '#ff6f59';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
   ctx.fillStyle = '#f5f0dc';
   ctx.font = '700 12px system-ui';
   ctx.fillText(title, x + 12, y + 18);
@@ -109,7 +135,7 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}) 
     const sx = x + 12 + i * (size + gap);
     const sy = y + h - size - 12;
     const socketKey = compact ? 'partner_socket' : 'player_socket';
-    if (!drawAtlasSprite(ctx, assets, 'board', socketKey, sx + size / 2, sy + size / 2, size * 1.08, 0.7)) {
+    if (!imageBackdrop && !drawAtlasSprite(ctx, assets, 'board', socketKey, sx + size / 2, sy + size / 2, size * 1.08, 0.7)) {
       roundedRect(ctx, sx, sy, size, size, 7);
       ctx.fillStyle = 'rgba(245, 240, 220, 0.08)';
       ctx.fill();
@@ -136,25 +162,26 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}) 
   }
 }
 
-function drawTrack(ctx, state, assets = {}) {
-  const t = state.now;
+function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
   ctx.save();
   ctx.translate(0, 0);
-  roundedRect(ctx, 42, 202, 306, 170, 8);
-  ctx.fillStyle = 'rgba(7, 13, 14, 0.84)';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(88, 215, 255, 0.45)';
-  ctx.lineWidth = 4;
-  ctx.stroke();
+  if (!imageBackdrop) {
+    roundedRect(ctx, 42, 202, 306, 170, 8);
+    ctx.fillStyle = 'rgba(7, 13, 14, 0.84)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(88, 215, 255, 0.45)';
+    ctx.lineWidth = 4;
+    ctx.stroke();
 
-  ctx.beginPath();
-  ctx.moveTo(70, 285);
-  ctx.bezierCurveTo(150, 218, 245, 355, 320, 282);
-  ctx.strokeStyle = '#58d7ff';
-  ctx.lineWidth = 8;
-  ctx.globalAlpha = 0.45;
-  ctx.stroke();
-  ctx.globalAlpha = 1;
+    ctx.beginPath();
+    ctx.moveTo(70, 285);
+    ctx.bezierCurveTo(150, 218, 245, 355, 320, 282);
+    ctx.strokeStyle = '#58d7ff';
+    ctx.lineWidth = 8;
+    ctx.globalAlpha = 0.45;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
 
   const enemies = state.enemies.slice(0, 8);
   enemies.forEach((enemy, index) => {
@@ -204,24 +231,20 @@ function drawRescueBeam(ctx, state, assets = {}) {
 
 export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 }, assets = {}) {
   ctx.clearRect(0, 0, layout.width, layout.height);
-  const bg = ctx.createLinearGradient(0, 0, 0, layout.height);
-  bg.addColorStop(0, '#111817');
-  bg.addColorStop(1, '#060a0b');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, layout.width, layout.height);
+  const imageBackdrop = drawBattleBackdrop(ctx, layout, assets);
+  if (!imageBackdrop) {
+    const bg = ctx.createLinearGradient(0, 0, 0, layout.height);
+    bg.addColorStop(0, '#111817');
+    bg.addColorStop(1, '#060a0b');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, layout.width, layout.height);
 
-  ctx.fillStyle = 'rgba(245, 240, 220, 0.05)';
-  for (let y = 40; y < layout.height; y += 46) ctx.fillRect(24, y, layout.width - 48, 1);
+    ctx.fillStyle = 'rgba(245, 240, 220, 0.05)';
+    for (let y = 40; y < layout.height; y += 46) ctx.fillRect(24, y, layout.width - 48, 1);
+  }
 
-  drawBoard(ctx, state.boards.p2, 28, 48, 334, 112, '파트너 보드', true, assets);
-  drawTrack(ctx, state, assets);
-  drawBoard(ctx, state.boards.p1, 24, 438, 342, 138, '내 보드', false, assets);
+  drawBoard(ctx, state.boards.p2, 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
+  drawTrack(ctx, state, assets, imageBackdrop);
+  drawBoard(ctx, state.boards.p1, 24, 438, 342, 138, '내 보드', false, assets, imageBackdrop);
   drawRescueBeam(ctx, state, assets);
-
-  ctx.fillStyle = '#f5f0dc';
-  ctx.font = '800 13px system-ui';
-  ctx.fillText(`소환 ${state.resources.p1.summon}`, 28, 30);
-  ctx.fillText(`구원 ${Math.round(state.resources.p1.rescue)}%`, 120, 30);
-  ctx.fillStyle = state.boards.p2.danger >= 80 ? '#ff6f59' : '#a8b4a7';
-  ctx.fillText(`파트너 위험 ${Math.round(state.boards.p2.danger)}`, 230, 30);
 }

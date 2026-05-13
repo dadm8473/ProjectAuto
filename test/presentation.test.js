@@ -63,6 +63,8 @@ test('reboot render uses only reboot atlases and manifest keys', async () => {
 
   for (const marker of [
     'REBOOT_ATLAS_MANIFEST',
+    'REBOOT_BACKDROP_MANIFEST',
+    'reboot-battle-backdrop.png',
     'reboot-unit-atlas.png',
     'reboot-enemy-atlas.png',
     'reboot-ui-icons.png',
@@ -70,7 +72,8 @@ test('reboot render uses only reboot atlases and manifest keys', async () => {
     'reboot-board-accents.png',
     'order.indexOf(spriteKey)',
     'createRebootAssetImages',
-    'drawAtlasSprite'
+    'drawAtlasSprite',
+    'drawBattleBackdrop'
   ]) {
     assert.equal(render.includes(marker), true, marker);
   }
@@ -161,4 +164,16 @@ test('meta screens use reboot sprite tokens instead of placeholder swatches', as
 
   assert.equal(css.includes('.unit-card i'), false);
   assert.equal(css.includes('linear-gradient(90deg, var(--teal), var(--amber))'), false);
+});
+
+test('canvas renderer does not duplicate shell resource HUD text', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const forbidden of [
+    'fillText(`소환',
+    'fillText(`구원',
+    'fillText(`파트너 위험'
+  ]) {
+    assert.equal(render.includes(forbidden), false, forbidden);
+  }
 });

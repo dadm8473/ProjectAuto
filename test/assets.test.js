@@ -30,6 +30,10 @@ const REBOOT_GRID_ASSETS = [
   { path: 'src/client/assets/generated/reboot-board-accents.png', width: 1280, height: 256, columns: 5, rows: 1 }
 ];
 
+const IMAGEGEN_REBOOT_BACKDROPS = [
+  { path: 'src/client/assets/generated/reboot-battle-backdrop.png', width: 390, height: 620 }
+];
+
 const WORLD_SPRITE_ASSETS = [
   { path: 'src/client/assets/generated/noise-world-sprites.png', columns: 4, rows: 2 },
   { path: 'src/client/assets/generated/relay-world-sprites.png', columns: 4, rows: 5 }
@@ -182,5 +186,15 @@ test('reboot runtime atlases exist with exact transparent manifest dimensions', 
     assert.equal(asset.width % asset.columns, 0, asset.path);
     assert.equal(asset.height % asset.rows, 0, asset.path);
     assert.equal(bytes.length > 1000, true, asset.path);
+  }
+});
+
+test('reboot battle uses a committed imagegen backdrop at canvas size', async () => {
+  for (const asset of IMAGEGEN_REBOOT_BACKDROPS) {
+    const bytes = await readFile(asset.path);
+    assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+    assert.equal(bytes.readUInt32BE(16), asset.width, asset.path);
+    assert.equal(bytes.readUInt32BE(20), asset.height, asset.path);
+    assert.equal(bytes.length > 100_000, true, asset.path);
   }
 });
