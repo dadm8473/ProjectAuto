@@ -6,5 +6,18 @@
   "orientation": "portrait",
   "background_color": "#101312",
   "theme_color": "#101312",
-  "icons": []
+  "icons": [
+    {
+      "src": "/src/client/assets/generated/reboot-app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/src/client/assets/generated/reboot-app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }

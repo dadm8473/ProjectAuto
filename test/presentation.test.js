@@ -518,3 +518,28 @@ test('combat resource HUD uses generated icons instead of text-only chips', asyn
     assert.equal(css.includes(marker), true, marker);
   }
 });
+
+test('install metadata uses dedicated generated app icons', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const manifest = JSON.parse(await readFile('manifest.webmanifest', 'utf8'));
+
+  assert.equal(html.includes('<link rel="icon" href="/src/client/assets/generated/reboot-app-icon-192.png">'), true);
+  assert.equal(html.includes('ui-icon-atlas.png'), false);
+  assert.deepEqual(
+    manifest.icons,
+    [
+      {
+        src: '/src/client/assets/generated/reboot-app-icon-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any maskable'
+      },
+      {
+        src: '/src/client/assets/generated/reboot-app-icon-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any maskable'
+      }
+    ]
+  );
+});
