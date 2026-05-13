@@ -1,6 +1,7 @@
 import { castLinkPulse, createGame, mergeRelays, serializeState, supplyRelay, tickGame } from '../shared/game.js';
 import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
+import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js';
 import {
@@ -10,7 +11,8 @@ import {
   buildRebootResultModel,
   buildRebootShop,
   buildSeasonScreen,
-  startRebootRetry
+  startRebootRetry,
+  unitUpgradeCost
 } from './reboot_screens.js';
 import { createRebootOnlineClient } from './reboot_online.js';
 
@@ -108,7 +110,7 @@ function setScreen(screen) {
 
 function renderHomeScreens() {
   dom.lobbyContent.innerHTML = buildRebootLobby(profile);
-  dom.collectionList.innerHTML = buildRebootCollection();
+  dom.collectionList.innerHTML = buildRebootCollection(profile);
   dom.shopList.innerHTML = buildRebootShop(profile);
   dom.missionsList.innerHTML = buildMissionScreen();
   dom.seasonList.innerHTML = buildSeasonScreen();
@@ -157,6 +159,30 @@ function handleShopPurchase(event) {
   saveProfile();
   renderHomeScreens();
   showToast(`${item.name} 해금`);
+}
+
+function handleUnitUpgrade(event) {
+  const button = event.target.closest('[data-unit-upgrade]');
+  if (!button) return;
+  const unit = REBOOT_UNITS[button.dataset.unitUpgrade];
+  if (!unit) return;
+  const currentLevel = profile.unitLevels?.[unit.id] ?? 1;
+  const cost = unitUpgradeCost(currentLevel);
+  if (profile.xp < cost) {
+    showToast('경험치가 부족합니다');
+    return;
+  }
+  profile = normalizeMetaProfile({
+    ...profile,
+    xp: profile.xp - cost,
+    unitLevels: {
+      ...profile.unitLevels,
+      [unit.id]: currentLevel + 1
+    }
+  });
+  saveProfile();
+  renderHomeScreens();
+  showToast(`${unit.name} Lv.${currentLevel + 1}`);
 }
 
 function startBotRun() {
@@ -274,6 +300,7 @@ function bind() {
   dom.summonButton.addEventListener('click', () => command('summon'));
   dom.mergeButton.addEventListener('click', () => command('merge'));
   dom.rescueButton.addEventListener('click', () => command('rescue'));
+  dom.collectionList.addEventListener('click', handleUnitUpgrade);
   dom.shopList.addEventListener('click', handleShopPurchase);
   qs('#resultRetryButton').addEventListener('click', retry);
   qs('#resultLobbyButton').addEventListener('click', () => {

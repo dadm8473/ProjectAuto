@@ -150,7 +150,7 @@ test('meta screens use reboot sprite tokens instead of placeholder swatches', as
     'reboot-unit-atlas.png',
     'reboot-ui-icons.png',
     'reboot-reward-icons.png',
-    'grid-template-columns: 88px 1fr'
+    'grid-template-columns: 78px 1fr 96px'
   ]) {
     assert.equal(`${screens}\n${css}`.includes(marker), true, marker);
   }
@@ -380,5 +380,23 @@ test('result reward strip uses generated reward burst art', async () => {
     '.result-overlay[data-result-status="lost"] .result-reward::after'
   ]) {
     assert.equal(css.includes(marker), true, marker);
+  }
+});
+
+test('client wires unit training to profile XP and collection rerender', async () => {
+  const app = await readFile('src/client/app.js', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    'unitLevels',
+    'unitUpgradeCost',
+    'data-unit-upgrade="${unit.id}"',
+    'handleUnitUpgrade',
+    'profile.xp < cost',
+    'profile.unitLevels?.[unit.id]',
+    'dom.collectionList.addEventListener',
+    'buildRebootCollection(profile)'
+  ]) {
+    assert.equal(`${app}\n${screens}`.includes(marker), true, marker);
   }
 });

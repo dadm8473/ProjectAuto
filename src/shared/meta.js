@@ -1,4 +1,5 @@
 import { SHOP } from './content.js';
+import { REBOOT_UNITS } from './reboot_content.js';
 
 export const META_PROFILE_VERSION = 1;
 
@@ -18,6 +19,13 @@ function safeTierList(value) {
   return Array.isArray(value) ? unique(value.filter((item) => Number.isInteger(item) && item >= 0)) : [];
 }
 
+function safeUnitLevels(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value)
+    .filter(([unitId, level]) => REBOOT_UNITS[unitId] && Number.isFinite(level) && level >= 1)
+    .map(([unitId, level]) => [unitId, Math.floor(level)]));
+}
+
 export function createMetaProfile() {
   return {
     version: META_PROFILE_VERSION,
@@ -26,7 +34,8 @@ export function createMetaProfile() {
     claimedMissions: [],
     claimedPassTiers: [],
     unlocks: [],
-    processedRuns: []
+    processedRuns: [],
+    unitLevels: {}
   };
 }
 
@@ -40,7 +49,8 @@ export function normalizeMetaProfile(value) {
     claimedMissions: safeStringList(value.claimedMissions),
     claimedPassTiers: safeTierList(value.claimedPassTiers),
     unlocks: safeStringList(value.unlocks),
-    processedRuns: safeStringList(value.processedRuns)
+    processedRuns: safeStringList(value.processedRuns),
+    unitLevels: safeUnitLevels(value.unitLevels)
   };
 }
 

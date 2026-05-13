@@ -95,7 +95,8 @@ test('meta profile normalization rejects malformed storage without losing shape'
     claimedMissions: ['merge-three', 42],
     claimedPassTiers: [0, 'x'],
     unlocks: ['founder-board'],
-    processedRuns: ['run-1', 7]
+    processedRuns: ['run-1', 7],
+    unitLevels: { spark_pin: 3.8, slow_coil: -1, bad: 'x' }
   });
 
   assert.equal(profile.gems, 0);
@@ -104,4 +105,5 @@ test('meta profile normalization rejects malformed storage without losing shape'
   assert.deepEqual(profile.claimedPassTiers, [0]);
   assert.deepEqual(profile.unlocks, ['founder-board']);
   assert.deepEqual(profile.processedRuns, ['run-1']);
+  assert.deepEqual(profile.unitLevels, { spark_pin: 3 });
 });

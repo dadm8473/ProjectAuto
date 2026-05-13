@@ -39,6 +39,10 @@ const SHOP_ICON_BY_ITEM = {
   'profile-frame': 'soft_currency'
 };
 
+export function unitUpgradeCost(level = 1) {
+  return 40 + Math.max(0, level - 1) * 20;
+}
+
 export function buildRebootLobby(model = {}) {
   const gems = model.gems ?? 0;
   return `
@@ -55,17 +59,26 @@ export function buildRebootLobby(model = {}) {
   `;
 }
 
-export function buildRebootCollection() {
-  return Object.values(REBOOT_UNITS).map((unit) => `
+export function buildRebootCollection(profile = {}) {
+  const xp = profile.xp ?? 0;
+  const unitLevels = profile.unitLevels ?? {};
+  return Object.values(REBOOT_UNITS).map((unit) => {
+    const level = unitLevels[unit.id] ?? 1;
+    const cost = unitUpgradeCost(level);
+    const ready = xp >= cost;
+    return `
     <article class="screen-card unit-card" data-role="${unit.role}">
       <span class="sprite-token unit-sprite" data-sprite="${unit.spriteKey}"></span>
       <div class="card-copy">
         <span class="role-pill">${ROLE_LABELS[unit.role] ?? unit.role}</span>
         <strong>${unit.name}</strong>
-        <p>등급 ${unit.grade}</p>
+        <p>등급 ${unit.grade} · <span class="unit-level">Lv.${level}</span></p>
+        <span class="unit-cost">${cost} 경험치</span>
       </div>
+      <button type="button" data-unit-upgrade="${unit.id}"${ready ? '' : ' disabled'}>${ready ? '훈련' : '경험치 부족'}</button>
     </article>
-  `).join('');
+  `;
+  }).join('');
 }
 
 export function buildRebootShop(profile = {}) {

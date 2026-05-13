@@ -600,7 +600,7 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 
 .unit-card {
   min-height: 122px;
-  grid-template-columns: 88px 1fr;
+  grid-template-columns: 78px 1fr 96px;
 }
 
 .shop-card {
@@ -633,6 +633,23 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   font-weight: 900;
 }
 
+.unit-level {
+  color: var(--amber);
+  font-weight: 900;
+}
+
+.unit-cost {
+  width: fit-content;
+  margin-top: 2px;
+  padding: 3px 7px;
+  border-radius: 8px;
+  color: var(--teal);
+  background: rgba(88, 215, 255, 0.1);
+  border: 1px solid rgba(88, 215, 255, 0.24);
+  font-size: 11px;
+  font-weight: 900;
+}
+
 .role-pill {
   position: relative;
   overflow: hidden;
@@ -660,8 +677,15 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   pointer-events: none;
 }
 
-.shop-card button {
+.shop-card button,
+.unit-card button {
   min-height: 34px;
+}
+
+.unit-card button {
+  padding: 0 6px;
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 .shop-card[data-owned="true"] button {

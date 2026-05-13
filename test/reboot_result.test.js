@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createGame, mergeRelays, serializeState, supplyRelay, tickGame, castLinkPulse } from '../src/shared/game.js';
-import { buildRebootResultModel, buildRebootShop, startRebootRetry } from '../src/client/reboot_screens.js';
+import { buildRebootCollection, buildRebootResultModel, buildRebootShop, startRebootRetry } from '../src/client/reboot_screens.js';
 
 function advanceTo(game, time) {
   while (game.now < time) tickGame(game, Math.min(0.25, time - game.now));
@@ -72,4 +72,16 @@ test('reboot shop renders earned-gem cosmetic purchases with owned and locked st
   assert.equal(shop.includes('>보유<'), true);
   assert.equal(shop.includes('lucky-cache'), false);
   assert.equal(shop.includes('run_boost'), false);
+});
+
+test('reboot collection renders unit training state from profile XP and levels', () => {
+  const collection = buildRebootCollection({ xp: 50, unitLevels: { spark_pin: 2 } });
+
+  assert.equal(collection.includes('data-unit-upgrade="spark_pin"'), true);
+  assert.equal(collection.includes('Lv.2'), true);
+  assert.equal(collection.includes('60 경험치'), true);
+  assert.equal(collection.includes('>훈련<'), true);
+  assert.equal(collection.includes('data-unit-upgrade="burst_pin"'), true);
+  assert.equal(collection.includes('40 경험치'), true);
+  assert.equal(collection.includes('>경험치 부족<'), true);
 });
