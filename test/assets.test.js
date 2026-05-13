@@ -153,6 +153,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 70_000
   },
   {
+    path: 'src/client/assets/generated/reboot-result-copy-plates.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-result-copy-plates-imagegen.png',
+    width: 780,
+    height: 112,
+    minRuntimeBytes: 80_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-launch-buttons.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-launch-buttons-imagegen.png',
     width: 860,

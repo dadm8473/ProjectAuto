@@ -144,7 +144,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-result-detail-strips">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-result-copy-plates">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -432,6 +432,30 @@ test('result highlights and reward use generated strip frames', async () => {
   );
   assert.equal(stripBlock.includes('background: rgba(88, 215, 255, 0.1);'), false);
   assert.equal(stripBlock.includes('border: 1px solid rgba(88, 215, 255, 0.22);'), false);
+});
+
+test('result title and guidance copy use generated plate frames', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--result-copy-plates: url("/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy")',
+    '#resultTitle',
+    'background-image: var(--result-copy-plates);',
+    'background-size: 200% 100%;',
+    'background-position: 0 0;',
+    '#resultReason,\n#resultNextGoal',
+    'background-position: 100% 0;',
+    'min-height: 36px;',
+    '#resultCode',
+    '#resultTitle {\n    min-height: 52px;',
+    '#resultReason,\n  #resultNextGoal {\n    min-height: 30px;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const copyBlock = css.slice(css.indexOf('#resultTitle'), css.indexOf('.result-actions'));
+  assert.equal(copyBlock.includes('border: 1px solid'), false);
+  assert.equal(copyBlock.includes('linear-gradient'), false);
 });
 
 test('combat renderer uses generated VFX atlas for action feedback', async () => {
