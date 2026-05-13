@@ -292,3 +292,21 @@ test('result screen uses generated status badges for win and loss peaks', async 
     assert.equal(`${css}\n${app}`.includes(marker), true, marker);
   }
 });
+
+test('combat renderer uses generated VFX atlas for action feedback', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'reboot-combat-vfx.png',
+    'drawCombatVfx',
+    'recentEvents',
+    "'summon_flash'",
+    "'merge_burst'",
+    "'rescue_flare'",
+    "'enemy_hit_spark'",
+    "'boss_warning_flare'",
+    "drawAtlasSprite(ctx, assets, 'vfx'"
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});

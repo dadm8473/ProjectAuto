@@ -123,6 +123,7 @@ Premium animated co-op toy-board.
 | Result badges | 4 badges | PNG/WebP transparent | victory, defeat, reward chest, retry |
 | Board frame accents | 3-5 pieces | PNG/WebP transparent | sockets, warning frame, rescue beam |
 | Screen chrome | 5 pieces | PNG/WebP transparent | primary button, secondary button, content panel, dock, badge |
+| Combat VFX | 5 effects | PNG/WebP transparent | summon, merge, rescue, enemy hit, boss warning |
 
 ## 런타임 아틀라스 계약
 
@@ -233,6 +234,21 @@ Premium animated co-op toy-board.
 | Center tolerance | x/y deviation <= 8px |
 | Transparency | transparent pixel ratio >= 30% per cell |
 | Margin | >= 12px clear margin on all sides |
+
+### Combat VFX Atlas
+
+| Field | Value |
+| --- | --- |
+| File | `src/client/assets/generated/reboot-combat-vfx.png` |
+| Final size | 1280x256 |
+| Grid | 5 columns x 1 row |
+| Cell size | 256x256 |
+| Cell order | `summon_flash`, `merge_burst`, `rescue_flare`, `enemy_hit_spark`, `boss_warning_flare` |
+| Runtime use | recent combat action feedback and live track impact VFX |
+| Subject bbox | 170-236px on longest side |
+| Center tolerance | x/y deviation <= 8px |
+| Transparency | transparent pixel ratio >= 30% per cell |
+| Margin | >= 10px clear margin on all sides |
 
 ## 런타임 소비 전환 계약
 
@@ -555,6 +571,25 @@ Style lock tokens: premium Korean mobile game result UI, cooperative toy-board t
 Style: shipped mobile game result feedback, readable at 48px and 92px, tactile, celebratory, not a website modal.
 Constraints: transparent background, no text, no letters, no numbers, no watermark, no dice, no casino pips, no generic emoji, no copied app icons.
 Export target: subject bbox 170-232px longest side, pivot x 128 y 128, center deviation <= 8px, at least 12px margin around the subject.
+```
+
+## Runtime Prompt: Combat VFX
+
+```text
+Use case: sprite-atlas
+Asset type: transparent combat VFX atlas for ProjectAuto reboot battle screen.
+Primary request: Create 5 premium mobile game combat VFX pieces in a single horizontal transparent atlas. Equal cells. No text.
+Output contract: final atlas 1280x256, 5 columns x 1 row, each cell exactly 256x256, straight alpha, no premultiplied alpha bleed.
+Subjects left to right:
+1. Summon flash: amber-gold energy ring and tiny toy spark burst, compact radial flash for a newly summoned unit.
+2. Merge burst: teal and gold two-core fusion burst, chunky toy energy petals, reads as units combining.
+3. Rescue flare: cyan-white rescue beam impact flare with soft glass core and protective halo.
+4. Enemy hit spark: coral and teal hit spark slash on a toy corruption enemy, small punchy impact flash.
+5. Boss warning flare: larger coral danger shockwave ring with graphite fragments, readable warning pulse, not a skull.
+Style lock tokens: premium Korean mobile game combat effects, cooperative toy-board tower defense, polished toy energy, chunky readable shapes, graphite fragments, controlled glow per VFX.
+Style: shipped mobile game combat juice, readable at 40px, 64px, and 110px, no UI-card framing.
+Constraints: transparent background, no text, no letters, no numbers, no watermark, no dice, no casino pips, no generic emoji, no copied app icons.
+Export target: subject bbox 170-236px longest side, pivot x 128 y 128, center deviation <= 8px, at least 10px margin around the subject.
 ```
 
 ## Runtime Prompt: Screen Chrome

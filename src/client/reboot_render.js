@@ -33,6 +33,13 @@ export const REBOOT_ATLAS_MANIFEST = {
     rows: 1,
     cell: { width: 256, height: 256 },
     order: ['player_socket', 'partner_socket', 'merge_ready_frame', 'rescue_beam_segment', 'danger_pulse_frame']
+  },
+  vfx: {
+    src: '/src/client/assets/generated/reboot-combat-vfx.png',
+    columns: 5,
+    rows: 1,
+    cell: { width: 256, height: 256 },
+    order: ['summon_flash', 'merge_burst', 'rescue_flare', 'enemy_hit_spark', 'boss_warning_flare']
   }
 };
 
@@ -199,9 +206,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
 
   const enemies = state.enemies.slice(0, 8);
   enemies.forEach((enemy, index) => {
-    const p = ((state.now * 0.045 + index * 0.12) % 1);
-    const x = 70 + p * 250;
-    const y = 285 + Math.sin(p * Math.PI * 2) * 34;
+    const { x, y } = enemyScreenPoint(state, index);
     const size = enemy.enemyId === 'mini_boss' ? 54 : 36;
     if (drawAtlasSprite(ctx, assets, 'enemies', enemy.spriteKey ?? enemy.enemyId, x, y, size)) {
       return;
@@ -227,6 +232,45 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
   ctx.restore();
 }
 
+function enemyScreenPoint(state, index) {
+  const p = ((state.now * 0.045 + index * 0.12) % 1);
+  return {
+    x: 70 + p * 250,
+    y: 285 + Math.sin(p * Math.PI * 2) * 34
+  };
+}
+
+function recentEvents(state, type, windowSeconds = 0.9) {
+  return state.events
+    .filter((event) => event.type === type && state.now >= event.at && state.now - event.at <= windowSeconds)
+    .slice(-2);
+}
+
+function eventAlpha(state, event, windowSeconds = 0.9) {
+  return Math.max(0, 1 - (state.now - event.at) / windowSeconds);
+}
+
+function boardSlotPoint(playerId, slotIndex = 0) {
+  const compact = playerId === 'p2';
+  const x = compact ? 28 : 24;
+  const y = compact ? 48 : 438;
+  const w = compact ? 334 : 342;
+  const h = compact ? 112 : 138;
+  const count = compact ? 4 : 5;
+  const gap = 8;
+  const size = (w - 24 - gap * (count - 1)) / count;
+  const index = Math.max(0, Math.min(count - 1, slotIndex));
+  return {
+    x: x + 12 + index * (size + gap) + size / 2,
+    y: y + h - size - 12 + size / 2
+  };
+}
+
+function boardVfxPoint(state, event) {
+  const board = state.boards[event.playerId] ?? state.boards.p1;
+  return boardSlotPoint(event.playerId, Math.max(0, board.units.length - 1));
+}
+
 function drawRescueBeam(ctx, state, assets = {}) {
   const rescued = state.events.some((event) => event.type === 'rescue');
   if (!rescued) return;
@@ -241,6 +285,28 @@ function drawRescueBeam(ctx, state, assets = {}) {
   ctx.bezierCurveTo(135, 230, 250, 395, 312, 500);
   ctx.stroke();
   ctx.restore();
+}
+
+function drawCombatVfx(ctx, state, assets = {}) {
+  for (const event of recentEvents(state, 'summon')) {
+    const point = boardVfxPoint(state, event);
+    drawAtlasSprite(ctx, assets, 'vfx', 'summon_flash', point.x, point.y, 84, eventAlpha(state, event));
+  }
+  for (const event of recentEvents(state, 'merge')) {
+    const point = boardVfxPoint(state, event);
+    drawAtlasSprite(ctx, assets, 'vfx', 'merge_burst', point.x, point.y, 112, eventAlpha(state, event));
+  }
+  for (const event of recentEvents(state, 'rescue')) {
+    drawAtlasSprite(ctx, assets, 'vfx', 'rescue_flare', 195, 328, 132, eventAlpha(state, event));
+  }
+  if (state.enemies.length > 0) {
+    const point = enemyScreenPoint(state, 0);
+    const alpha = 0.34 + Math.max(0, Math.sin(state.now * 12)) * 0.22;
+    drawAtlasSprite(ctx, assets, 'vfx', 'enemy_hit_spark', point.x + 7, point.y - 7, 46, alpha);
+  }
+  if (state.now >= 92 && state.now < 102) {
+    drawAtlasSprite(ctx, assets, 'vfx', 'boss_warning_flare', 195, 286, 146, 0.54);
+  }
 }
 
 export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 }, assets = {}) {
@@ -261,4 +327,5 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawTrack(ctx, state, assets, imageBackdrop);
   drawBoard(ctx, state.boards.p1, 24, 438, 342, 138, '내 보드', false, assets, imageBackdrop);
   drawRescueBeam(ctx, state, assets);
+  drawCombatVfx(ctx, state, assets);
 }
