@@ -151,6 +151,27 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     width: 430,
     height: 112,
     minRuntimeBytes: 45_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-lobby-intel-strips.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-lobby-intel-strips-imagegen.png',
+    width: 860,
+    height: 112,
+    minRuntimeBytes: 90_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-lobby-intel-gems.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-lobby-intel-strips-imagegen.png',
+    width: 430,
+    height: 112,
+    minRuntimeBytes: 45_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-lobby-intel-next.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-lobby-intel-strips-imagegen.png',
+    width: 430,
+    height: 112,
+    minRuntimeBytes: 45_000
   }
 ];
 

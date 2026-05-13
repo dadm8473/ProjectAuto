@@ -107,18 +107,18 @@ function buildMetaSummary(kind, label, value, detail) {
 
 export function nextLobbyAction(profile = {}) {
   if (countClaimableMissions(profile) > 0) {
-    return { label: '미션 보상', title: '받을 미션 보상', detail: '완료한 목표를 수령하세요', screen: 'missions', cta: '수령하기' };
+    return { label: '미션 보상', title: '받을 미션 보상', detail: '완료 목표 수령', screen: 'missions', cta: '수령하기' };
   }
   if (countClaimablePassTiers(profile) > 0) {
-    return { label: '시즌 보상', title: '시즌 보상 도착', detail: '경험치 보상을 열 수 있습니다', screen: 'season', cta: '열기' };
+    return { label: '시즌 보상', title: '시즌 보상 도착', detail: '시즌 보상 열기', screen: 'season', cta: '열기' };
   }
   if (countTrainableUnits(profile) > 0) {
-    return { label: '훈련 가능', title: '유닛 강화 가능', detail: '경험치로 전투 유닛을 키우세요', screen: 'collection', cta: '훈련하기' };
+    return { label: '훈련 가능', title: '유닛 강화 가능', detail: '전투 유닛 성장', screen: 'collection', cta: '훈련하기' };
   }
   if (countAffordableCosmetics(profile) > 0) {
-    return { label: '외형 해금', title: '외형 해금 가능', detail: '획득 젬으로 꾸미기를 여세요', screen: 'shop', cta: '상점가기' };
+    return { label: '외형 해금', title: '외형 해금 가능', detail: '젬으로 외형 해금', screen: 'shop', cta: '상점가기' };
   }
-  return { label: '다음 작전', title: '첫 구원 작전', detail: '보상을 모아 유닛과 외형을 여세요', screen: 'battle', cta: '출전' };
+  return { label: '다음 작전', title: '첫 구원 작전', detail: '유닛/외형 성장', screen: 'battle', cta: '출전' };
 }
 
 export function buildRebootLobby(model = {}) {
@@ -130,12 +130,14 @@ export function buildRebootLobby(model = {}) {
       <strong>첫 구원 작전</strong>
       <p>세 버튼으로 파트너 라인을 살리고 보스를 막으세요</p>
     </section>
-    <section class="lobby-card reward-hook">
+    <section class="lobby-intel-strip reward-hook">
+      <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-gems.png?v=intel-strips" alt="" aria-hidden="true">
       <span>보유 젬</span>
       <strong>${gems}</strong>
-      <p>전투력 판매 없이 외형만 해금합니다</p>
+      <p>외형만 해금</p>
     </section>
-    <section class="lobby-card next-hook" data-next-action="${nextAction.label}">
+    <section class="lobby-intel-strip next-hook" data-next-action="${nextAction.label}">
+      <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-next.png?v=intel-strips" alt="" aria-hidden="true">
       <span>${nextAction.label}</span>
       <strong>${nextAction.title}</strong>
       <p>${nextAction.detail}</p>

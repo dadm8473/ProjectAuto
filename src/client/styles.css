@@ -21,6 +21,7 @@
   --title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png");
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
+  --lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips");
   --launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta");
   --training-banner: url("/src/client/assets/generated/reboot-training-banner.png");
   --shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png");
@@ -715,18 +716,6 @@ body[data-app-screen="lobby"] .toast {
   text-shadow: 0 3px 14px rgba(0, 0, 0, 0.72);
 }
 
-.next-hook {
-  display: grid;
-  gap: 8px;
-}
-
-.next-hook button {
-  justify-self: start;
-  min-height: 36px;
-  min-width: 112px;
-  padding: 0 14px;
-}
-
 .screen-overlay button:not([data-nav-icon])::before,
 .result-overlay button::before {
   content: "";
@@ -744,6 +733,81 @@ body[data-app-screen="lobby"] .toast {
 .result-overlay button {
   border-color: transparent;
   background: rgba(10, 16, 16, 0.28);
+}
+
+.lobby-intel-strip {
+  position: relative;
+  min-height: 72px;
+  display: grid;
+  align-content: center;
+  gap: 1px;
+  padding: 12px 104px 12px 76px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.lobby-intel-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.reward-hook .lobby-intel-frame {
+  object-position: center;
+}
+
+.next-hook .lobby-intel-frame {
+  object-position: center;
+}
+
+.lobby-intel-strip > span,
+.lobby-intel-strip > strong,
+.lobby-intel-strip > p,
+.lobby-intel-strip > button {
+  position: relative;
+  z-index: 1;
+}
+
+.lobby-intel-strip > span {
+  color: rgba(244, 201, 93, 0.92);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.lobby-intel-strip > strong {
+  font-size: 18px;
+  line-height: 1;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.68);
+}
+
+.lobby-intel-strip > p {
+  margin: 0;
+  overflow: hidden;
+  color: rgba(245, 240, 220, 0.76);
+  font-size: 12px;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.next-hook > p {
+  display: none;
+}
+
+.lobby-intel-strip > button {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  min-width: 76px;
+  min-height: 44px;
+  padding: 0 10px;
+  transform: translateY(-50%);
+  font-size: 12px;
 }
 
 .screen-overlay .play-button,

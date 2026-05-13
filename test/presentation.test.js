@@ -138,7 +138,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-launch-buttons">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-lobby-intel-strips">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -491,6 +491,43 @@ test('lobby operation card uses a dedicated generated mission banner', async () 
     'min-height: 156px'
   ]) {
     assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+});
+
+test('lobby reward and next hooks use generated intel strips instead of web cards', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    '--lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips")',
+    'class="lobby-intel-strip reward-hook"',
+    'class="lobby-intel-strip next-hook"',
+    'class="lobby-intel-frame"',
+    '/src/client/assets/generated/reboot-lobby-intel-gems.png?v=intel-strips',
+    '/src/client/assets/generated/reboot-lobby-intel-next.png?v=intel-strips',
+    '.lobby-intel-strip',
+    '.lobby-intel-frame',
+    '.lobby-intel-strip > span,\n.lobby-intel-strip > strong,\n.lobby-intel-strip > p,\n.lobby-intel-strip > button',
+    '.reward-hook .lobby-intel-frame',
+    '.next-hook .lobby-intel-frame',
+    'pointer-events: none;',
+    'min-width: 76px;',
+    'min-height: 44px;',
+    'right: 14px;',
+    '.next-hook > p {\n  display: none;'
+  ]) {
+    assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+
+  assert.equal(css.includes('min-height: 32px;'), false);
+
+  for (const forbidden of [
+    'class="lobby-card reward-hook"',
+    'class="lobby-card next-hook"',
+    '전투력 판매 없이 외형만 해금합니다',
+    '보상을 모아 유닛과 외형을 여세요'
+  ]) {
+    assert.equal(screens.includes(forbidden), false, forbidden);
   }
 });
 
