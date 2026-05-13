@@ -129,6 +129,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     width: 256,
     height: 256,
     minRuntimeBytes: 20_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-hit-beam.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-hit-beam-chromakey-imagegen.png',
+    width: 320,
+    height: 64,
+    minRuntimeBytes: 8_000
   }
 ];
 

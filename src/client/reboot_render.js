@@ -67,6 +67,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     width: 256,
     height: 256,
     source: 'imagegen'
+  },
+  hitBeam: {
+    src: '/src/client/assets/generated/reboot-hit-beam.png',
+    width: 320,
+    height: 64,
+    source: 'imagegen'
   }
 };
 
@@ -93,7 +99,9 @@ export function createRebootAssetImages() {
   bossCutin.src = REBOOT_CUTIN_MANIFEST.bossWarning.src;
   const killBurst = new Image();
   killBurst.src = REBOOT_EFFECT_MANIFEST.killBurst.src;
-  return { ...atlases, backdrop, bossCutin, killBurst };
+  const hitBeam = new Image();
+  hitBeam.src = REBOOT_EFFECT_MANIFEST.hitBeam.src;
+  return { ...atlases, backdrop, bossCutin, killBurst, hitBeam };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -155,6 +163,22 @@ function drawImageCover(ctx, image, x, y, w, h, alpha = 1) {
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.drawImage(image, sx, sy, sw, sh, x, y, w, h);
+  ctx.restore();
+  return true;
+}
+
+function drawBeamSprite(ctx, image, from, to, alpha = 1) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.hypot(dx, dy);
+  if (length < 4) return false;
+  const height = Math.max(16, Math.min(32, length * 0.13));
+  ctx.save();
+  ctx.translate(from.x, from.y);
+  ctx.rotate(Math.atan2(dy, dx));
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, 0, -height / 2, length, height);
   ctx.restore();
   return true;
 }
@@ -375,6 +399,31 @@ function drawDeathBursts(ctx, state, assets = {}) {
   }
 }
 
+function drawHitBeams(ctx, state, assets = {}) {
+  const hits = (state.effects ?? [])
+    .filter((effect) => effect.type === 'hit')
+    .slice(-6);
+  for (const effect of hits) {
+    const from = boardSlotPoint(effect.playerId, effect.slot);
+    const to = trackPointFromProgress(effect.targetProgress, effect.targetLane);
+    const alpha = Math.max(0.16, Math.min(0.86, (effect.ttl ?? 0.62) / 0.62));
+    if (!drawBeamSprite(ctx, assets.hitBeam, from, to, alpha)) {
+      ctx.save();
+      ctx.globalAlpha *= alpha;
+      ctx.strokeStyle = '#58d7ff';
+      ctx.lineWidth = 4;
+      ctx.shadowColor = '#58d7ff';
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+    drawAtlasSprite(ctx, assets, 'vfx', 'enemy_hit_spark', to.x, to.y, effect.targetType === 'boss' ? 58 : 42, alpha);
+  }
+}
+
 function drawCombatVfx(ctx, state, assets = {}) {
   for (const event of recentEvents(state, 'summon')) {
     const point = boardVfxPoint(state, event);
@@ -387,6 +436,7 @@ function drawCombatVfx(ctx, state, assets = {}) {
   for (const event of recentEvents(state, 'rescue')) {
     drawAtlasSprite(ctx, assets, 'vfx', 'rescue_flare', 195, 328, 132, eventAlpha(state, event));
   }
+  drawHitBeams(ctx, state, assets);
   drawDeathBursts(ctx, state, assets);
   if (state.enemies.length > 0) {
     const point = enemyScreenPoint(state, 0);

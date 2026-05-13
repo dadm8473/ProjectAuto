@@ -342,6 +342,23 @@ test('death burst effects use a dedicated transparent generated VFX asset', asyn
   }
 });
 
+test('hit effects draw generated beam sprites from unit sockets to targets', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'reboot-hit-beam.png',
+    'hitBeam',
+    'drawBeamSprite',
+    'drawHitBeams',
+    "effect.type === 'hit'",
+    'boardSlotPoint(effect.playerId, effect.slot)',
+    'trackPointFromProgress(effect.targetProgress, effect.targetLane)',
+    'drawBeamSprite(ctx, assets.hitBeam'
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});
+
 test('home navigation uses generated app-game icons instead of plain text buttons', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
