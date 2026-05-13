@@ -577,6 +577,19 @@ test('shop cosmetics use a dedicated imagegen item atlas', async () => {
   }
 });
 
+test('shop screen uses a dedicated generated storefront banner', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png")',
+    '.meta-summary[data-summary-kind="shop"]',
+    'var(--shop-banner)',
+    '.meta-summary[data-summary-kind="shop"]::before'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
 test('mission and season rows show generated reward tokens', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');

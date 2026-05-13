@@ -19,6 +19,7 @@
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
   --training-banner: url("/src/client/assets/generated/reboot-training-banner.png");
+  --shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png");
   --reward-burst: url("/src/client/assets/generated/reboot-reward-burst.png");
   --shop-cosmetics: url("/src/client/assets/generated/reboot-shop-cosmetics.png");
 }
@@ -679,6 +680,21 @@ body[data-app-screen="lobby"] .toast {
 }
 
 .meta-summary[data-summary-kind="collection"]::before {
+  opacity: 0.52;
+}
+
+.meta-summary[data-summary-kind="shop"] {
+  min-height: 132px;
+  align-content: end;
+  background-image:
+    linear-gradient(180deg, rgba(5, 8, 8, 0.08), rgba(5, 8, 8, 0.48) 48%, rgba(5, 8, 8, 0.9)),
+    var(--shop-banner);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+.meta-summary[data-summary-kind="shop"]::before {
   opacity: 0.52;
 }
 
