@@ -21,6 +21,7 @@
   --title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png");
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
+  --launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta");
   --training-banner: url("/src/client/assets/generated/reboot-training-banner.png");
   --shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png");
   --missions-banner: url("/src/client/assets/generated/reboot-missions-banner.png");
@@ -538,11 +539,43 @@ body[data-app-screen="lobby"] .toast {
 .play-button,
 .match-button {
   min-height: 54px;
+  display: grid;
+  place-items: center;
+  background-color: transparent;
+  background-image: var(--launch-buttons);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.46);
 }
 
 .play-button {
-  background: linear-gradient(180deg, #f4c95d, #9d6b20);
+  background-color: transparent;
+  background-image: var(--launch-buttons);
+  background-position: 0 0;
   color: #101312;
+  text-shadow: 0 1px 8px rgba(255, 232, 156, 0.4);
+}
+
+.match-button {
+  background-color: transparent;
+  background-image: var(--launch-buttons);
+  background-position: 100% 0;
+}
+
+.launch-button-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.play-button > span,
+.match-button > span {
+  position: relative;
+  z-index: 1;
 }
 
 .bottom-dock {
@@ -713,14 +746,46 @@ body[data-app-screen="lobby"] .toast {
   background: rgba(10, 16, 16, 0.28);
 }
 
+.screen-overlay .play-button,
+.screen-overlay .match-button {
+  background: transparent;
+  background-color: transparent;
+  background-image: var(--launch-buttons);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+}
+
+.screen-overlay .play-button {
+  background-position: 0 0;
+}
+
+.screen-overlay .match-button {
+  background-position: 100% 0;
+}
+
+.play-button::before {
+  background-position: 0 0;
+}
+
+.match-button::before {
+  background-position: 100% 0;
+}
+
 .screen-overlay .play-button::before {
-  background-image: var(--screen-chrome);
+  background-image: var(--launch-buttons);
+  background-size: 200% 100%;
   background-position: 0 0;
 }
 
 .screen-overlay .match-button::before {
-  background-image: var(--screen-chrome);
-  background-position: 25% 0;
+  background-image: var(--launch-buttons);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+}
+
+.screen-overlay .play-button::before,
+.screen-overlay .match-button::before {
+  background-image: none;
 }
 
 .screen-list {

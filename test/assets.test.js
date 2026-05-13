@@ -130,6 +130,27 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     width: 390,
     height: 560,
     minRuntimeBytes: 90_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-launch-buttons.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-launch-buttons-imagegen.png',
+    width: 860,
+    height: 112,
+    minRuntimeBytes: 90_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-launch-primary.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-launch-buttons-imagegen.png',
+    width: 430,
+    height: 112,
+    minRuntimeBytes: 45_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-launch-secondary.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-launch-buttons-imagegen.png',
+    width: 430,
+    height: 112,
+    minRuntimeBytes: 45_000
   }
 ];
 
@@ -311,6 +332,21 @@ function alphaAt(image, x, y) {
   return image.pixels[(y * image.width + x) * 4 + 3];
 }
 
+function colorRatio(image, rect, predicate) {
+  let matched = 0;
+  let total = 0;
+  for (let y = rect.y; y < rect.y + rect.height; y += 1) {
+    for (let x = rect.x; x < rect.x + rect.width; x += 1) {
+      const offset = (y * image.width + x) * 4;
+      const alpha = image.pixels[offset + 3];
+      if (alpha <= 220) continue;
+      total += 1;
+      if (predicate(image.pixels[offset], image.pixels[offset + 1], image.pixels[offset + 2])) matched += 1;
+    }
+  }
+  return matched / total;
+}
+
 test('generated gameplay atlases are committed as valid png assets', async () => {
   for (const path of GENERATED_ASSETS) {
     const bytes = await readFile(path);
@@ -448,6 +484,29 @@ test('reboot lobby UI scene art is promoted from imagegen sources', async () => 
     assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
     assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
   }
+});
+
+test('reboot launch button atlas keeps the primary CTA visibly gold on phone scale', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-launch-buttons.png'));
+  const primaryGold = colorRatio(
+    image,
+    { x: 40, y: 14, width: 350, height: 84 },
+    (r, g, b) => r > 130 && g > 80 && b < 70
+  );
+  const primaryBrightGold = colorRatio(
+    image,
+    { x: 40, y: 14, width: 350, height: 84 },
+    (r, g, b) => r > 165 && g > 110 && b < 90
+  );
+  const secondaryTeal = colorRatio(
+    image,
+    { x: 470, y: 14, width: 350, height: 84 },
+    (r, g, b) => r < 80 && g > 90 && b > 95
+  );
+
+  assert.equal(primaryGold > 0.22, true, `primary button is not gold enough: ${primaryGold}`);
+  assert.equal(primaryBrightGold > 0.12, true, `primary button is too dim at phone scale: ${primaryBrightGold}`);
+  assert.equal(secondaryTeal > 0.06, true, `secondary button lost its teal read: ${secondaryTeal}`);
 });
 
 test('reboot app icons are promoted from a dedicated imagegen source', async () => {

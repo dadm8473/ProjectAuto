@@ -7,7 +7,7 @@
     <title>ProjectAuto</title>
     <link rel="icon" href="/src/client/assets/generated/reboot-app-icon-192.png">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/src/client/styles.css">
+    <link rel="stylesheet" href="/src/client/styles.css?v=reboot-launch-buttons">
   </head>
   <body data-app-screen="splash">
     <main class="shell">
@@ -38,8 +38,14 @@
 
         <div id="lobbyScreen" class="app-screen lobby-screen" data-screen-panel="lobby" hidden>
           <div id="lobbyContent"></div>
-          <button id="launchBotButton" class="play-button">봇과 시작</button>
-          <button id="launchOnlineButton" class="match-button">온라인 협동</button>
+          <button id="launchBotButton" class="play-button">
+            <img class="launch-button-frame" src="/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta" alt="" aria-hidden="true">
+            <span>봇과 시작</span>
+          </button>
+          <button id="launchOnlineButton" class="match-button">
+            <img class="launch-button-frame" src="/src/client/assets/generated/reboot-launch-secondary.png?v=gold-cta" alt="" aria-hidden="true">
+            <span>온라인 협동</span>
+          </button>
           <nav class="bottom-dock" aria-label="메뉴">
             <button data-open-screen="collection" data-nav-icon="collection">유닛</button>
             <button data-open-screen="shop" data-nav-icon="shop">상점</button>

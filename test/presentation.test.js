@@ -135,6 +135,12 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
   }
 });
 
+test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
+  const html = await readFile('index.html', 'utf8');
+
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-launch-buttons">'), true);
+});
+
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
@@ -269,8 +275,7 @@ test('meta screens use generated game chrome instead of css-only panels', async 
     '.lobby-card::before',
     '.screen-card::before',
     '.bottom-dock::before',
-    '.play-button::before',
-    '.match-button::before'
+    '.launch-button-frame'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
@@ -433,6 +438,30 @@ test('home navigation uses generated app-game icons instead of plain text button
   ]) {
     assert.equal(`${html}\n${css}`.includes(marker), true, marker);
   }
+});
+
+test('lobby launch actions use dedicated generated button frames', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta")',
+    '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta',
+    '/src/client/assets/generated/reboot-launch-secondary.png?v=gold-cta',
+    'class="launch-button-frame"',
+    '.launch-button-frame',
+    'background-image: var(--launch-buttons)',
+    'background-size: 200% 100%',
+    '.play-button {\n  background-color: transparent;\n  background-image: var(--launch-buttons);',
+    '.match-button {\n  background-color: transparent;\n  background-image: var(--launch-buttons);',
+    '.screen-overlay .play-button,\n.screen-overlay .match-button {\n  background: transparent;',
+    '.screen-overlay .play-button::before,\n.screen-overlay .match-button::before {\n  background-image: none;',
+    '.play-button > span,\n.match-button > span'
+  ]) {
+    assert.equal(`${html}\n${css}`.includes(marker), true, marker);
+  }
+
+  assert.equal(css.includes('.play-button {\n  background: linear-gradient'), false);
 });
 
 test('splash and lobby use generated hero squad art instead of empty landing space', async () => {
