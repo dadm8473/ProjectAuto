@@ -150,7 +150,7 @@ test('meta screens use reboot sprite tokens instead of placeholder swatches', as
     'reboot-unit-atlas.png',
     'reboot-ui-icons.png',
     'reboot-reward-icons.png',
-    'grid-template-columns: 64px 1fr'
+    'grid-template-columns: 88px 1fr'
   ]) {
     assert.equal(`${screens}\n${css}`.includes(marker), true, marker);
   }
@@ -164,6 +164,36 @@ test('meta screens use reboot sprite tokens instead of placeholder swatches', as
 
   assert.equal(css.includes('.unit-card i'), false);
   assert.equal(css.includes('linear-gradient(90deg, var(--teal), var(--amber))'), false);
+});
+
+test('meta screens use imagegen app backdrops instead of pure css scenery', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--lobby-backdrop: url("/src/client/assets/generated/reboot-lobby-backdrop.png")',
+    '--meta-backdrop: url("/src/client/assets/generated/reboot-meta-backdrop.png")',
+    '.screen-overlay::before',
+    '[data-screen="splash"]::before',
+    '[data-screen="lobby"]::before',
+    '[data-screen="collection"]::before',
+    '[data-screen="shop"]::before',
+    '[data-screen="missions"]::before',
+    '[data-screen="season"]::before'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
+test('meta screen lists can scroll after larger imagegen unit sprites', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    'overflow-y: auto',
+    '-webkit-overflow-scrolling: touch',
+    '.screen-list::-webkit-scrollbar'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
 });
 
 test('canvas renderer does not duplicate shell resource HUD text', async () => {
