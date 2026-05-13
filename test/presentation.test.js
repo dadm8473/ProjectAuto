@@ -144,7 +144,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-meter-sockets">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-status-plates">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -1055,6 +1055,25 @@ test('combat resource HUD uses generated icons instead of text-only chips', asyn
   const meterBlock = css.slice(css.indexOf('.meters span {\n  display: inline-flex;'), css.indexOf('.meters span::before'));
   assert.equal(meterBlock.includes('background: rgba(3, 9, 10, 0.34);'), false);
   assert.equal(meterBlock.includes('border: 1px solid rgba(245, 240, 220, 0.1);'), false);
+});
+
+test('combat status line uses generated game plates instead of plain web chips', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates")',
+    '.status-line span {\n  display: inline-flex;',
+    'background-image: var(--combat-status-plates);',
+    'background-size: 200% 100%;',
+    '#timeMeter { background-position: 0 0; }',
+    '#bossMeter { background-position: 100% 0; }'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const statusBlock = css.slice(css.indexOf('.status-line span {\n  display: inline-flex;'), css.indexOf('.primary-actions {'));
+  assert.equal(statusBlock.includes('background: rgba(3, 9, 10, 0.34);'), false);
+  assert.equal(statusBlock.includes('border: 1px solid rgba(245, 240, 220, 0.1);'), false);
 });
 
 test('combat shell uses generated HUD and action dock chrome', async () => {

@@ -38,6 +38,7 @@
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png");
   --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets");
+  --combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates");
   --combat-hud-row: clamp(72px, 22.33vw, 96px);
   --combat-action-row: clamp(112px, 29.77vw, 128px);
   --lobby-screen-top-pad: 22px;
@@ -383,6 +384,24 @@ body[data-app-screen="lobby"] .toast {
   grid-template-columns: 1fr 1fr;
   margin-bottom: clamp(6px, 2.33vw, 10px);
 }
+
+.status-line span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(24px, 6.98vw, 30px);
+  padding: 4px clamp(7px, 2.56vw, 11px) 4px clamp(32px, 8.84vw, 38px);
+  border-color: transparent;
+  border-radius: 0;
+  background: transparent;
+  background-image: var(--combat-status-plates);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.7);
+}
+
+#timeMeter { background-position: 0 0; }
+#bossMeter { background-position: 100% 0; }
 
 .primary-actions {
   grid-template-columns: repeat(3, 1fr);
