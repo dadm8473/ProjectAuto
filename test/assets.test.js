@@ -65,6 +65,13 @@ const IMAGEGEN_REBOOT_ATLASES = [
     width: 1024,
     height: 256,
     minRuntimeBytes: 70_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-board-accents.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260513-board-accents-imagegen.png',
+    width: 1280,
+    height: 256,
+    minRuntimeBytes: 70_000
   }
 ];
 

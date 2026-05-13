@@ -127,10 +127,21 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
   ctx.fillText(title, x + 12, y + 18);
   ctx.fillStyle = board.danger >= 80 ? '#ff6f59' : '#a8b4a7';
   ctx.fillText(`위험 ${Math.round(board.danger)}`, x + w - 66, y + 18);
+  if (board.danger >= 80) {
+    drawAtlasSprite(ctx, assets, 'board', 'danger_pulse_frame', x + w - 36, y + 42, compact ? 48 : 56, 0.58);
+  }
 
   const count = compact ? 4 : 5;
   const gap = 8;
   const size = (w - 24 - gap * (count - 1)) / count;
+  const typeCounts = board.units.reduce((counts, unit) => {
+    if (!unit) return counts;
+    counts.set(unit.spriteKey, (counts.get(unit.spriteKey) ?? 0) + 1);
+    return counts;
+  }, new Map());
+  const mergeReadyKeys = new Set(
+    [...typeCounts.entries()].filter(([, unitCount]) => unitCount >= 3).map(([spriteKey]) => spriteKey)
+  );
   for (let i = 0; i < count; i += 1) {
     const sx = x + 12 + i * (size + gap);
     const sy = y + h - size - 12;
@@ -144,6 +155,9 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
     }
     const unit = board.units[i];
     if (!unit) continue;
+    if (mergeReadyKeys.has(unit.spriteKey)) {
+      drawAtlasSprite(ctx, assets, 'board', 'merge_ready_frame', sx + size / 2, sy + size / 2, size * 1.16, 0.72);
+    }
     if (drawAtlasSprite(ctx, assets, 'units', unit.spriteKey, sx + size / 2, sy + size / 2, size * 0.95)) {
       continue;
     }

@@ -247,3 +247,16 @@ test('result screen uses imagegen reward backdrop instead of a plain overlay', a
     assert.equal(css.includes(marker), true, marker);
   }
 });
+
+test('combat board renderer uses generated merge and danger accent frames', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'mergeReadyKeys',
+    "'merge_ready_frame'",
+    "'danger_pulse_frame'",
+    "'rescue_beam_segment'"
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});
