@@ -141,6 +141,16 @@ test('bot partner visibly contributes with scripted board actions', () => {
   assert.equal(partnerEvents.some((event) => event.highlight), true);
 });
 
+test('bot partner marks the late rescue-coil script as rescue support', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1213 });
+  advanceTo(game, 89);
+
+  const partnerEvents = game.events.filter((event) => event.type === 'partner_auto');
+
+  assert.deepEqual(partnerEvents.map((event) => event.action), ['summon', 'summon', 'rescue']);
+  assert.equal(partnerEvents.at(-1).unitId, 'rescue_coil');
+});
+
 test('online reboot rooms do not run local bot partner automation', () => {
   const game = createRebootGame({ mode: 'online', seedName: 'tutorial_success', seed: 1313 });
   advanceTo(game, 54);

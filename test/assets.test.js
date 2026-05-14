@@ -400,6 +400,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 20_000
   },
   {
+    path: 'src/client/assets/generated/reboot-partner-assist-pings.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-partner-assist-pings-chromakey-imagegen.png',
+    width: 640,
+    height: 100,
+    minRuntimeBytes: 18_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-reward-pickup-bursts.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-reward-pickup-bursts-chromakey-imagegen.png',
     width: 768,

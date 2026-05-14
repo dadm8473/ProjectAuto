@@ -98,6 +98,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     height: 144,
     source: 'imagegen'
   },
+  partnerAssistPings: {
+    src: '/src/client/assets/generated/reboot-partner-assist-pings.png?v=partner-assist2',
+    width: 640,
+    height: 100,
+    source: 'imagegen'
+  },
   crisisOverlays: {
     src: '/src/client/assets/generated/reboot-combat-crisis-overlays.png?v=combat-crisis-overlays',
     width: 780,
@@ -132,6 +138,11 @@ const MOMENT_CALLOUTS = {
   rescue: { index: 2, icon: 'rescue_action', title: '구원 발동', body: '파트너 위험 감소' }
 };
 
+const PARTNER_ASSIST_PINGS = {
+  summon: { index: 0, icon: 'summon_charge', body: '자동 소환' },
+  rescue: { index: 1, icon: 'rescue_action', body: '구원 지원' }
+};
+
 export function createRebootAssetImages() {
   if (typeof Image === 'undefined') return {};
   const atlases = Object.fromEntries(
@@ -157,13 +168,15 @@ export function createRebootAssetImages() {
   hitBolts.src = REBOOT_EFFECT_MANIFEST.hitBolts.src;
   const momentCallouts = new Image();
   momentCallouts.src = REBOOT_EFFECT_MANIFEST.momentCallouts.src;
+  const partnerAssistPings = new Image();
+  partnerAssistPings.src = REBOOT_EFFECT_MANIFEST.partnerAssistPings.src;
   const crisisOverlays = new Image();
   crisisOverlays.src = REBOOT_EFFECT_MANIFEST.crisisOverlays.src;
   const rewardPickups = new Image();
   rewardPickups.src = REBOOT_EFFECT_MANIFEST.rewardPickups.src;
   const bossAuras = new Image();
   bossAuras.src = REBOOT_EFFECT_MANIFEST.bossAuras.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, crisisOverlays, rewardPickups, bossAuras };
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -232,6 +245,16 @@ function drawImageCover(ctx, image, x, y, w, h, alpha = 1) {
 function drawMomentCalloutPanel(ctx, image, index, x, y, w, h, alpha = 1) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const cellWidth = image.naturalWidth / 3;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, x, y, w, h);
+  ctx.restore();
+  return true;
+}
+
+function drawPartnerAssistSprite(ctx, image, index, x, y, w, h, alpha = 1) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const cellWidth = image.naturalWidth / 2;
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, x, y, w, h);
@@ -415,6 +438,8 @@ function drawPartnerDangerCutin(ctx, state, assets = {}) {
   const partnerDanger = state.boards.p2.danger >= 80;
   if (!partnerDanger) return false;
   if (state.now >= 92 && state.now < 102) return false;
+  const rescueAssist = recentEvents(state, 'partner_auto', 1.35).some((event) => event.action === 'rescue');
+  if (rescueAssist) return false;
   const image = assets?.rescueCutin;
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const alpha = 0.74 + Math.max(0, Math.sin(state.now * 7)) * 0.08;
@@ -675,6 +700,33 @@ function drawCombatMomentCallout(ctx, state, assets = {}) {
   ctx.restore();
 }
 
+function drawPartnerAssistPing(ctx, state, assets = {}) {
+  const event = recentEvents(state, 'partner_auto', 1.35).at(-1);
+  if (!event) return;
+  const meta = PARTNER_ASSIST_PINGS[event?.action] ?? PARTNER_ASSIST_PINGS.summon;
+  const alpha = Math.min(0.95, eventAlpha(state, event, 1.35) * 1.16);
+  const rise = (1 - alpha) * 7;
+  const x = 52;
+  const y = 138 - rise;
+  const w = 288;
+  const h = 90;
+  const drewAssistPing = drawPartnerAssistSprite(ctx, assets.partnerAssistPings, meta.index, x, y, w, h, alpha);
+  if (!drewAssistPing) return;
+  drawAtlasSprite(ctx, assets, 'ui', meta.icon, x + 52, y + 38, 32, alpha);
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.fillStyle = '#fff7dc';
+  ctx.shadowColor = '#58d7ff';
+  ctx.shadowBlur = 13;
+  ctx.font = '900 16px system-ui';
+  ctx.fillText('파트너 지원', x + 92, y + 36);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(245, 240, 220, 0.82)';
+  ctx.font = '800 10px system-ui';
+  ctx.fillText(meta.body, x + 92, y + 52);
+  ctx.restore();
+}
+
 export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 }, assets = {}) {
   ctx.clearRect(0, 0, layout.width, layout.height);
   const imageBackdrop = drawBattleBackdrop(ctx, layout, assets);
@@ -698,5 +750,6 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawBoard(ctx, state.boards.p1, 24, 438, 342, 138, '내 보드', false, assets, imageBackdrop);
   drawRescueBeam(ctx, state, assets);
   drawCombatVfx(ctx, state, assets);
+  drawPartnerAssistPing(ctx, state, assets);
   drawCombatMomentCallout(ctx, state, assets);
 }

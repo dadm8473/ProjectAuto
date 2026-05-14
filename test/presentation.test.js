@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
+import { drawRebootBattle } from '../src/client/reboot_render.js';
+import { createRebootGame, serializeRebootState, tickRebootGame } from '../src/shared/reboot_game.js';
+
 function cssPxVar(css, name) {
   const match = css.match(new RegExp(`${name}:\\s*(\\d+)px;`));
   assert.ok(match, `${name} token is missing`);
@@ -14,6 +17,73 @@ function cssRuleBlock(css, selector) {
   const end = css.indexOf('\n}', start);
   assert.notEqual(end, -1, `${selector} block is not closed`);
   return css.slice(start, end + 2);
+}
+
+function fakeImage(width = 256, height = 256, complete = true) {
+  return { complete, naturalWidth: complete ? width : 0, naturalHeight: complete ? height : 0 };
+}
+
+function fakeRebootAssets(overrides = {}) {
+  return {
+    backdrop: fakeImage(390, 620),
+    board: fakeImage(1280, 256),
+    units: fakeImage(1280, 256),
+    enemies: fakeImage(1024, 256),
+    ui: fakeImage(1536, 256),
+    startCutin: fakeImage(390, 112),
+    bossCutin: fakeImage(390, 128),
+    rescueCutin: fakeImage(390, 112),
+    killBurst: fakeImage(1024, 256),
+    hitBeam: fakeImage(320, 64),
+    hitBolts: fakeImage(768, 128),
+    momentCallouts: fakeImage(1170, 144),
+    partnerAssistPings: fakeImage(640, 100),
+    crisisOverlays: fakeImage(780, 160),
+    rewardPickups: fakeImage(768, 128),
+    bossAuras: fakeImage(768, 192),
+    ...overrides
+  };
+}
+
+function recordingCanvasContext() {
+  const calls = [];
+  const gradient = { addColorStop() {} };
+  const ctx = new Proxy(
+    { calls, globalAlpha: 1 },
+    {
+      get(target, prop) {
+        if (prop in target) return target[prop];
+        if (prop === 'createLinearGradient' || prop === 'createRadialGradient') return () => gradient;
+        if (prop === 'measureText') return (text) => ({ width: String(text).length * 8 });
+        return (...args) => {
+          calls.push({ name: String(prop), args });
+        };
+      },
+      set(target, prop, value) {
+        target[prop] = value;
+        return true;
+      }
+    }
+  );
+  return ctx;
+}
+
+function stateWithPartnerAutoPing() {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
+  advanceRebootGameTo(game, 18.1);
+  return serializeRebootState(game);
+}
+
+function stateWithPartnerRescuePing() {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
+  advanceRebootGameTo(game, 88.1);
+  return serializeRebootState(game);
+}
+
+function advanceRebootGameTo(game, time, step = 0.25) {
+  while (game.now < time) {
+    tickRebootGame(game, Math.min(step, time - game.now));
+  }
 }
 
 test('client app is split into reboot modules and keeps app.js as bootstrap', async () => {
@@ -811,6 +881,86 @@ test('combat renderer uses generated moment callouts for successful actions', as
   ]) {
     assert.equal(render.includes(marker), true, marker);
   }
+});
+
+test('combat renderer uses generated partner assist pings for bot co-op actions', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'partnerAssistPings',
+    "src: '/src/client/assets/generated/reboot-partner-assist-pings.png?v=partner-assist2'",
+    'width: 640',
+    'height: 100',
+    'const partnerAssistPings = new Image();',
+    'partnerAssistPings.src = REBOOT_EFFECT_MANIFEST.partnerAssistPings.src;',
+    'PARTNER_ASSIST_PINGS',
+    'function drawPartnerAssistSprite',
+    'function drawPartnerAssistPing',
+    "recentEvents(state, 'partner_auto', 1.35)",
+    'const meta = PARTNER_ASSIST_PINGS[event?.action] ?? PARTNER_ASSIST_PINGS.summon;',
+    'drawPartnerAssistSprite(ctx, assets.partnerAssistPings, meta.index, x, y, w, h, alpha);',
+    "ctx.fillText('파트너 지원'",
+    "ctx.fillText(meta.body",
+    'drawPartnerAssistPing(ctx, state, assets)'
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});
+
+test('combat renderer draws partner assist ping without flattening the imagegen banner', () => {
+  const partnerAssistPings = fakeImage(640, 100);
+  const ctx = recordingCanvasContext();
+
+  drawRebootBattle(ctx, stateWithPartnerAutoPing(), { width: 390, height: 620 }, fakeRebootAssets({ partnerAssistPings }));
+
+  const pingDraw = ctx.calls.find((call) => call.name === 'drawImage' && call.args[0] === partnerAssistPings);
+  assert.ok(pingDraw, 'partner assist sprite was not drawn');
+  const [, sx, sy, sw, sh, dx, dy, dw, dh] = pingDraw.args;
+  assert.deepEqual([sx, sy, sw, sh], [0, 0, 320, 100]);
+  assert.equal(dw, 288);
+  assert.equal(dh, 90);
+  assert.equal(dw / dh, sw / sh);
+  assert.equal(dx, 52);
+  assert.equal(dy > 130 && dy < 139, true);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '파트너 지원'), true);
+});
+
+test('combat renderer skips partner assist copy when the generated banner has not loaded', () => {
+  const partnerAssistPings = fakeImage(640, 100, false);
+  const ctx = recordingCanvasContext();
+
+  drawRebootBattle(ctx, stateWithPartnerAutoPing(), { width: 390, height: 620 }, fakeRebootAssets({ partnerAssistPings }));
+
+  assert.equal(ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === partnerAssistPings), false);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '파트너 지원'), false);
+});
+
+test('combat renderer draws the rescue variant of partner assist pings', () => {
+  const partnerAssistPings = fakeImage(640, 100);
+  const ctx = recordingCanvasContext();
+
+  drawRebootBattle(ctx, stateWithPartnerRescuePing(), { width: 390, height: 620 }, fakeRebootAssets({ partnerAssistPings }));
+
+  const pingDraw = ctx.calls.find((call) => call.name === 'drawImage' && call.args[0] === partnerAssistPings);
+  assert.ok(pingDraw, 'partner rescue sprite was not drawn');
+  const [, sx, sy, sw, sh, dx, dy, dw, dh] = pingDraw.args;
+  assert.deepEqual([sx, sy, sw, sh], [320, 0, 320, 100]);
+  assert.equal(dw / dh, sw / sh);
+  assert.equal(dx, 52);
+  assert.equal(dy > 130 && dy < 139, true);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '구원 지원'), true);
+});
+
+test('combat renderer avoids stacking partner danger cutin over rescue support ping', () => {
+  const rescueCutin = fakeImage(390, 112);
+  const partnerAssistPings = fakeImage(640, 100);
+  const ctx = recordingCanvasContext();
+
+  drawRebootBattle(ctx, stateWithPartnerRescuePing(), { width: 390, height: 620 }, fakeRebootAssets({ partnerAssistPings, rescueCutin }));
+
+  assert.equal(ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === partnerAssistPings), true);
+  assert.equal(ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === rescueCutin), false);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '파트너 위험'), false);
 });
 
 test('combat renderer uses generated crisis overlays for boss and partner danger', async () => {

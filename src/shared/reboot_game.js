@@ -14,7 +14,7 @@ const BOSS_DECISION_END = 102;
 const BOT_PARTNER_SCRIPT = [
   { at: 18, unitId: 'spark_pin', highlight: false },
   { at: 46, unitId: 'slow_coil', highlight: true },
-  { at: 88, unitId: 'rescue_coil', highlight: true }
+  { at: 88, unitId: 'rescue_coil', action: 'rescue', highlight: true }
 ];
 
 function clone(value) {
@@ -188,7 +188,7 @@ function applyBotPartnerScript(game) {
     game.boards.p2.danger = Math.max(0, game.boards.p2.danger - 6);
     event(game, {
       type: 'partner_auto',
-      action: 'summon',
+      action: step.action ?? 'summon',
       playerId: 'p2',
       unitId: step.unitId,
       highlight: step.highlight
