@@ -23,7 +23,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js'",
-    "from './reboot_render.js?v=reboot-crisis1'",
+    "from './reboot_render.js?v=reboot-reward-pickup1'",
     "from './reboot_screens.js'",
     "from './reboot_online.js'"
   ]) {
@@ -170,11 +170,11 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-crisis1">'), true);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-crisis1"></script>'), true);
-  assert.equal(app.includes("from './reboot_render.js?v=reboot-crisis1'"), true);
-  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-crisis1'"), true);
-  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-crisis1")'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-reward-pickup1">'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-reward-pickup1"></script>'), true);
+  assert.equal(app.includes("from './reboot_render.js?v=reboot-reward-pickup1'"), true);
+  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-reward-pickup1'"), true);
+  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-reward-pickup1")'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -712,7 +712,8 @@ test('combat renderer uses generated moment callouts for successful actions', as
     "recentEvents(state, 'summon', 1.15)",
     "recentEvents(state, 'merge', 1.15)",
     "recentEvents(state, 'rescue', 1.15)",
-    'if (!drawMomentCalloutPanel(ctx, assets.momentCallouts, meta.index, x, y, w, h, alpha)) return;',
+    'if (!assets.momentCallouts?.complete || assets.momentCallouts.naturalWidth <= 0) return;',
+    'drawMomentCalloutPanel(ctx, assets.momentCallouts, meta.index, x, y, w, h, alpha);',
     'const h = 122;',
     'const w = 330;',
     'MOMENT_CALLOUTS',
@@ -828,6 +829,32 @@ test('death burst effects use a dedicated transparent generated VFX asset', asyn
   ]) {
     assert.equal(render.includes(marker), true, marker);
   }
+});
+
+test('death bursts use generated reward pickup sprites instead of plain reward icons only', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'rewardPickups',
+    "src: '/src/client/assets/generated/reboot-reward-pickup-bursts.png?v=reward-pickups'",
+    'drawRewardPickupSprite',
+    'drawRewardPickups',
+    "effect.targetType === 'boss' || effect.targetType === 'mini_boss'",
+    'effect.rewardCharge > 0',
+    'effect.rewardLink > 1',
+    'const pickupIndex = boss ? 2 : effect.rewardLink > 1 ? 1 : 0;',
+    'drawRewardPickupSprite(ctx, assets.rewardPickups, pickupIndex',
+    'drawRewardPickups(ctx, assets, effect, point, boss, alpha);'
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+
+  const rewardBlock = render.slice(
+    render.indexOf('function drawRewardPickups'),
+    render.indexOf('function drawDeathBursts')
+  );
+  assert.equal(rewardBlock.includes('fillStyle'), false);
+  assert.equal(rewardBlock.includes('roundedRect'), false);
 });
 
 test('hit effects draw generated beam sprites from unit sockets to targets', async () => {
@@ -1501,7 +1528,7 @@ test('combat shell uses generated HUD and action dock chrome', async () => {
 
   for (const marker of [
     '--combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png")',
-    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-crisis1")',
+    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-reward-pickup1")',
     'body[data-app-screen="battle"] .hud::before',
     'body[data-app-screen="battle"] .action-panel::before',
     'background-image: var(--combat-hud-frame)',

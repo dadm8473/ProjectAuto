@@ -45,7 +45,7 @@ export const REBOOT_ATLAS_MANIFEST = {
 
 export const REBOOT_BACKDROP_MANIFEST = {
   battle: {
-    src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-crisis1',
+    src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-reward-pickup1',
     width: 390,
     height: 620,
     source: 'imagegen'
@@ -91,6 +91,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     width: 780,
     height: 160,
     source: 'imagegen'
+  },
+  rewardPickups: {
+    src: '/src/client/assets/generated/reboot-reward-pickup-bursts.png?v=reward-pickups',
+    width: 768,
+    height: 128,
+    source: 'imagegen'
   }
 };
 
@@ -131,7 +137,9 @@ export function createRebootAssetImages() {
   momentCallouts.src = REBOOT_EFFECT_MANIFEST.momentCallouts.src;
   const crisisOverlays = new Image();
   crisisOverlays.src = REBOOT_EFFECT_MANIFEST.crisisOverlays.src;
-  return { ...atlases, backdrop, bossCutin, rescueCutin, killBurst, hitBeam, momentCallouts, crisisOverlays };
+  const rewardPickups = new Image();
+  rewardPickups.src = REBOOT_EFFECT_MANIFEST.rewardPickups.src;
+  return { ...atlases, backdrop, bossCutin, rescueCutin, killBurst, hitBeam, momentCallouts, crisisOverlays, rewardPickups };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -213,6 +221,16 @@ function drawCrisisOverlayPanel(ctx, image, index, x, y, w, h, alpha = 1) {
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, x, y, w, h);
+  ctx.restore();
+  return true;
+}
+
+function drawRewardPickupSprite(ctx, image, index, cx, cy, w, h, alpha = 1) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const cellWidth = image.naturalWidth / 3;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, cx - w / 2, cy - h / 2, w, h);
   ctx.restore();
   return true;
 }
@@ -473,19 +491,32 @@ function drawRescueBeam(ctx, state, assets = {}) {
   ctx.restore();
 }
 
+function drawRewardPickups(ctx, assets, effect, point, boss, alpha) {
+  if (!(effect.rewardCharge > 0 || effect.rewardLink > 0)) return false;
+  const pickupIndex = boss ? 2 : effect.rewardLink > 1 ? 1 : 0;
+  const pickupAlpha = Math.min(0.98, alpha * 1.36);
+  const rise = (1 - alpha) * (boss ? 34 : 22);
+  const w = boss ? 140 : 106;
+  const h = boss ? 74 : 56;
+  const cx = point.x + (boss ? 30 : 16);
+  const cy = point.y - (boss ? 54 : 40) - rise;
+  return drawRewardPickupSprite(ctx, assets.rewardPickups, pickupIndex, cx, cy, w, h, pickupAlpha);
+}
+
 function drawDeathBursts(ctx, state, assets = {}) {
   const bursts = (state.effects ?? [])
     .filter((effect) => effect.type === 'death_burst')
     .slice(-5);
   for (const effect of bursts) {
     const point = trackPointFromProgress(effect.targetProgress, effect.targetLane);
-    const boss = effect.targetType === 'boss';
+    const boss = effect.targetType === 'boss' || effect.targetType === 'mini_boss';
     const size = boss ? 120 : 78;
     const ttlMax = boss ? 1.25 : 0.78;
     const alpha = Math.max(0.18, Math.min(0.92, (effect.ttl ?? ttlMax) / ttlMax));
     drawImageCover(ctx, assets.killBurst, point.x - size / 2, point.y - size / 2, size, size, alpha);
     const rewardSprite = boss ? 'unlock_capsule' : 'soft_currency';
     drawAtlasSprite(ctx, assets, 'rewards', rewardSprite, point.x + size * 0.34, point.y - size * 0.26, boss ? 34 : 24, alpha);
+    drawRewardPickups(ctx, assets, effect, point, boss, alpha);
   }
 }
 
@@ -555,8 +586,9 @@ function drawCombatMomentCallout(ctx, state, assets = {}) {
   const h = 122;
   const y = 328 - rise;
 
+  if (!assets.momentCallouts?.complete || assets.momentCallouts.naturalWidth <= 0) return;
   ctx.save();
-  if (!drawMomentCalloutPanel(ctx, assets.momentCallouts, meta.index, x, y, w, h, alpha)) return;
+  drawMomentCalloutPanel(ctx, assets.momentCallouts, meta.index, x, y, w, h, alpha);
   drawAtlasSprite(ctx, assets, 'ui', meta.icon, x + 50, y + 62, 42, alpha);
   ctx.globalAlpha *= alpha;
   ctx.fillStyle = '#fff7dc';

@@ -1,4 +1,5 @@
 import {
+  REBOOT_ENEMIES,
   REBOOT_RULES,
   REBOOT_SEEDS,
   REBOOT_UNITS,
@@ -6,6 +7,7 @@ import {
 } from './reboot_content.js';
 
 let nextRunId = 1;
+let nextEffectId = 1;
 
 const BOT_PARTNER_SCRIPT = [
   { at: 18, unitId: 'spark_pin', highlight: false },
@@ -209,6 +211,75 @@ function spawnDueWaves(game) {
   }
 }
 
+function enemyProgress(game, enemy) {
+  const spec = REBOOT_ENEMIES[enemy.enemyId] ?? REBOOT_ENEMIES.noise_shard;
+  const age = Math.max(0, game.now - enemy.spawnedAt);
+  return Math.max(0, Math.min(0.98, (age * spec.speed) / REBOOT_RULES.path.length));
+}
+
+function defeatDelay(enemyId) {
+  if (enemyId === 'mini_boss') return 7.5;
+  if (enemyId === 'heavy_noise') return 1.45;
+  if (enemyId === 'quick_noise') return 0.72;
+  return 0.86;
+}
+
+function pushDeathBurst(game, enemy, progress) {
+  const spec = REBOOT_ENEMIES[enemy.enemyId] ?? REBOOT_ENEMIES.noise_shard;
+  const boss = enemy.enemyId === 'mini_boss';
+  const reward = spec.reward ?? 1;
+  game.effects.push({
+    id: `rfx${nextEffectId++}`,
+    type: 'death_burst',
+    targetId: enemy.id,
+    targetType: enemy.enemyId,
+    targetProgress: progress,
+    targetLane: enemy.boardId === 'p2' ? -0.45 : 0.25,
+    rewardCharge: reward,
+    rewardLink: boss ? 4 : reward > 1 ? 2 : 1,
+    ttl: boss ? 1.25 : 0.78
+  });
+}
+
+function pushMiniBossRewardBurst(game) {
+  if (game.internal.bossRewardEmitted) return;
+  game.internal.bossRewardEmitted = true;
+  const boss = game.enemies.find((enemy) => enemy.enemyId === 'mini_boss') ?? {
+    id: 'final-mini-boss',
+    enemyId: 'mini_boss',
+    boardId: 'p1',
+    spawnedAt: REBOOT_RULES.boss.spawnAt
+  };
+  pushDeathBurst(game, boss, Math.max(0.72, enemyProgress(game, boss)));
+  game.enemies = game.enemies.filter((enemy) => enemy.id !== boss.id);
+}
+
+function resolveCombatEffects(game, dt) {
+  game.effects = game.effects.map((effect) => ({ ...effect, ttl: effect.ttl - dt })).filter((effect) => effect.ttl > 0);
+  const survivors = [];
+  for (const enemy of game.enemies) {
+    if (enemy.enemyId === 'mini_boss') {
+      survivors.push({
+        ...enemy,
+        progress: enemyProgress(game, enemy)
+      });
+      continue;
+    }
+    const board = game.boards[enemy.boardId] ?? game.boards.p1;
+    const age = game.now - enemy.spawnedAt;
+    const progress = enemyProgress(game, enemy);
+    if (board.units.length > 0 && age >= defeatDelay(enemy.enemyId)) {
+      pushDeathBurst(game, enemy, progress);
+      continue;
+    }
+    survivors.push({
+      ...enemy,
+      progress
+    });
+  }
+  game.enemies = survivors;
+}
+
 function resolveTerminal(game) {
   if (game.result || game.now < 120) return;
 
@@ -224,6 +295,7 @@ function resolveTerminal(game) {
 
   if (game.seedName === 'lucky_clutch') {
     game.boss.remainingHp = 0;
+    pushMiniBossRewardBurst(game);
     result(game, 'won', 'boss_final_hit', ['boss_final_hit']);
     return;
   }
@@ -241,6 +313,7 @@ function resolveTerminal(game) {
     }
     if (game.internal.bossChoice === 'summonBurst' || game.internal.bossChoice === 'merge') {
       game.boss.remainingHp = 0;
+      pushMiniBossRewardBurst(game);
       result(game, 'won', 'boss_final_hit', ['boss_final_hit']);
       return;
     }
@@ -288,6 +361,7 @@ export function createRebootGame({
     over: false,
     won: false,
     events: [],
+    effects: [],
     actionState: {
       p1: { summon: true, merge: false, rescue: false },
       p2: { summon: true, merge: false, rescue: false }
@@ -304,7 +378,8 @@ export function createRebootGame({
       mergeIndex: 0,
       unitSequence: 0,
       rescued: false,
-      bossChoice: null
+      bossChoice: null,
+      bossRewardEmitted: false
     }
   };
   refreshActionState(game);
@@ -383,6 +458,7 @@ export function tickRebootGame(game, dt) {
   spawnDueWaves(game);
   applyPressureScript(game);
   applyBotPartnerScript(game);
+  resolveCombatEffects(game, dt);
   if (game.now >= REBOOT_RULES.boss.spawnAt) game.boss.active = true;
   resolveTerminal(game);
   refreshActionState(game);
@@ -401,6 +477,7 @@ export function serializeRebootState(game) {
     resources: clone(game.resources),
     result: clone(game.result),
     events: clone(game.events),
+    effects: clone(game.effects),
     actionState: clone(game.actionState),
     boss: clone(game.boss)
   };

@@ -259,3 +259,54 @@ test('serializeRebootState omits rng internals and keeps player-readable action 
   assert.equal(state.actionState.p1.rescue, true);
   assert.equal('rng' in state, false);
 });
+
+test('reboot combat emits serialized death bursts with reward payloads', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 808 });
+  summonToy(game, { playerId: 'p1' });
+  advanceTo(game, 1);
+
+  const state = serializeRebootState(game);
+  const burst = state.effects.find((effect) => effect.type === 'death_burst');
+
+  assert.ok(burst, 'expected a death burst from early reboot combat');
+  assert.equal(burst.targetId.includes('noise_shard'), true);
+  assert.equal(burst.targetType, 'noise_shard');
+  assert.equal(burst.targetProgress >= 0 && burst.targetProgress <= 1, true);
+  assert.equal(Number.isFinite(burst.targetLane), true);
+  assert.equal(burst.rewardCharge, 1);
+  assert.equal(burst.rewardLink, 1);
+  assert.equal(burst.ttl > 0, true);
+});
+
+test('loss branches do not show boss reward pickup before defeat', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'greed_loss', seed: 909 });
+  runScript(game, SCRIPTS.greed_loss);
+  const beforeLoss = createRebootGame({ mode: 'bot', seedName: 'greed_loss', seed: 910 });
+  for (const [at, action] of SCRIPTS.greed_loss) {
+    advanceTo(beforeLoss, at);
+    if (action === 'summon') summonToy(beforeLoss, { playerId: 'p1' });
+    if (action === 'merge') mergeToys(beforeLoss, { playerId: 'p1' });
+  }
+  advanceTo(beforeLoss, 110);
+
+  assert.equal(game.result.status, 'lost');
+  assert.equal(
+    serializeRebootState(beforeLoss).effects.some((effect) => effect.type === 'death_burst' && effect.targetType === 'mini_boss'),
+    false
+  );
+});
+
+test('boss final-hit branches emit a mini boss reward burst for the renderer', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'boss_clutch', seed: 911, branch: 'merge' });
+  advanceTo(game, 78);
+  castRescue(game, { playerId: 'p1' });
+  advanceTo(game, 96);
+  mergeToys(game, { playerId: 'p1' });
+  advanceTo(game, 120);
+
+  const bossBurst = serializeRebootState(game).effects.find((effect) => effect.type === 'death_burst' && effect.targetType === 'mini_boss');
+  assert.equal(game.result.reason, 'boss_final_hit');
+  assert.ok(bossBurst, 'expected boss final hit to emit a mini boss burst');
+  assert.equal(bossBurst.rewardCharge, 10);
+  assert.equal(bossBurst.rewardLink, 4);
+});
