@@ -19,6 +19,7 @@
   --result-copy-plates: url("/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy");
   --result-finale-bursts: url("/src/client/assets/generated/reboot-result-finale-bursts.png?v=result-finale");
   --toast-callouts: url("/src/client/assets/generated/reboot-toast-callouts.png?v=toast-callouts");
+  --reward-reveal-panel: url("/src/client/assets/generated/reboot-reward-reveal-panel.png?v=reward-reveal");
   --result-panel-width: min(calc(100vw - 28px), calc((100dvh - 52px) * 0.6964), 390px);
   --result-panel-top-pad: clamp(108px, calc(var(--result-panel-width) * 0.31), 128px);
   --screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png");
@@ -453,6 +454,94 @@ body[data-app-screen="lobby"] .toast {
   background-position: 0 0;
   opacity: 0.84;
   filter: saturate(1.08);
+}
+
+.reward-reveal {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  z-index: 32;
+  width: min(calc(100vw - 22px), 430px);
+  aspect-ratio: 43 / 26;
+  transform: translate(-50%, -50%);
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 3px;
+  padding: clamp(58px, 14.88vw, 64px) clamp(76px, 20vw, 96px) clamp(40px, 10.7vw, 46px);
+  background-image: var(--reward-reveal-panel);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+  color: var(--ink);
+  text-align: center;
+  text-shadow: 0 3px 11px rgba(0, 0, 0, 0.72);
+  filter: drop-shadow(0 20px 36px rgba(0, 0, 0, 0.58));
+}
+
+.reward-reveal[hidden] {
+  display: none;
+}
+
+.reward-reveal-burst {
+  position: absolute;
+  inset: 26px 22px -8px;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--reward-burst);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 0 0;
+  opacity: 0.58;
+  mix-blend-mode: screen;
+  filter: saturate(1.1);
+  animation: rewardRevealPulse 1.15s ease-out both;
+}
+
+.reward-reveal-icon {
+  position: absolute;
+  top: clamp(36px, 9.53vw, 41px);
+  left: 50%;
+  z-index: 2;
+  width: clamp(44px, 12.09vw, 52px);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  background-image: url("/src/client/assets/generated/reboot-reward-icons.png");
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  filter: drop-shadow(0 7px 13px rgba(0, 0, 0, 0.56));
+}
+
+.reward-reveal-icon[data-reveal-icon="soft_currency"] { background-position: 0 0; }
+.reward-reveal-icon[data-reveal-icon="cosmetic_shard"] { background-position: 33.333% 0; }
+.reward-reveal-icon[data-reveal-icon="season_progress"] { background-position: 66.666% 0; }
+.reward-reveal-icon[data-reveal-icon="unlock_capsule"] { background-position: 100% 0; }
+
+#rewardRevealTitle,
+#rewardRevealDetail {
+  position: relative;
+  z-index: 2;
+}
+
+#rewardRevealTitle {
+  color: var(--mint);
+  font-size: clamp(11px, 3.26vw, 14px);
+  font-weight: 1000;
+  line-height: 1;
+}
+
+#rewardRevealDetail {
+  max-width: 100%;
+  color: #fff2b4;
+  font-size: clamp(19px, 5.58vw, 24px);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@keyframes rewardRevealPulse {
+  0% { opacity: 0; transform: scale(0.84); }
+  22% { opacity: 0.72; transform: scale(1.04); }
+  100% { opacity: 0.58; transform: scale(1); }
 }
 
 .action-panel {

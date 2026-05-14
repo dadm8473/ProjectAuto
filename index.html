@@ -7,7 +7,7 @@
     <title>ProjectAuto</title>
     <link rel="icon" href="/src/client/assets/generated/reboot-app-icon-192.png">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/src/client/styles.css?v=meta-card-states1">
+    <link rel="stylesheet" href="/src/client/styles.css?v=reward-reveal1">
   </head>
   <body data-app-screen="splash">
     <main class="shell">
@@ -98,6 +98,13 @@
         </div>
       </section>
 
+      <section id="rewardReveal" class="reward-reveal" hidden aria-live="polite">
+        <span class="reward-reveal-burst" aria-hidden="true"></span>
+        <span id="rewardRevealIcon" class="reward-reveal-icon" data-reveal-icon="soft_currency" aria-hidden="true"></span>
+        <span id="rewardRevealTitle">보상 획득</span>
+        <strong id="rewardRevealDetail">젬 +0</strong>
+      </section>
+
       <span id="screenTransitionFx" class="screen-transition-fx" aria-hidden="true"></span>
       <div id="toast" class="toast" hidden></div>
 
@@ -113,6 +120,6 @@
         </div>
       </section>
     </main>
-    <script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>
+    <script type="module" src="/src/client/app.js?v=reward-reveal1"></script>
   </body>
 </html>

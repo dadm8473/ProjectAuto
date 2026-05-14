@@ -414,6 +414,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 20_000
   },
   {
+    path: 'src/client/assets/generated/reboot-reward-reveal-panel.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-reward-reveal-panel-chromakey-imagegen.png',
+    width: 430,
+    height: 260,
+    minRuntimeBytes: 45_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-combat-coach-cues.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-coach-cues-chromakey-imagegen.png',
     width: 768,
@@ -1036,6 +1043,24 @@ test('meta card state badge cells stay readable without card backgrounds', async
     assert.equal(bounds.minY >= 10, true, `meta card state badge cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 11, true, `meta card state badge cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
+});
+
+test('reward reveal panel stays transparent at the edges with a readable center socket', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-reward-reveal-panel.png'));
+  const corners = [
+    alphaAt(image, 0, 0),
+    alphaAt(image, image.width - 1, 0),
+    alphaAt(image, 0, image.height - 1),
+    alphaAt(image, image.width - 1, image.height - 1)
+  ];
+  const center = alphaCoverage(image, { x: 150, y: 70, width: 130, height: 118 }, 180);
+  const bounds = alphaBounds(image, { x: 0, y: 0, width: image.width, height: image.height }, 32);
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, 'reward reveal panel must not render as an opaque web rectangle');
+  assert.equal(center > 0.48, true, `reward reveal center is too empty: ${center}`);
+  assert.equal(bounds.count > 18_000, true, `reward reveal panel has too little generated art: ${bounds.count}`);
+  assert.equal(bounds.minX >= 8, true, `reward reveal panel clips left edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxX <= image.width - 9, true, `reward reveal panel clips right edge: ${JSON.stringify(bounds)}`);
 });
 
 test('combat coach cue cells keep each teaching prompt visible and padded', async () => {

@@ -265,11 +265,13 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-card-states1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-reveal1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-card-states1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(app.includes("from './reboot_render.js?v=reboot-action-ready1'"), true);
   assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1'"), true);
   assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1")'), true);
@@ -1682,6 +1684,39 @@ test('profile rewards use generated burst feedback instead of plain text toasts'
   ]) {
     assert.equal(`${css}\n${app}`.includes(marker), true, marker);
   }
+});
+
+test('profile rewards use a generated reveal panel instead of toast-only feedback', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    '<section id="rewardReveal" class="reward-reveal" hidden aria-live="polite">',
+    'id="rewardRevealIcon"',
+    'id="rewardRevealTitle"',
+    'id="rewardRevealDetail"',
+    '--reward-reveal-panel: url("/src/client/assets/generated/reboot-reward-reveal-panel.png?v=reward-reveal")',
+    '.reward-reveal',
+    '.reward-reveal[hidden]',
+    'background-image: var(--reward-reveal-panel);',
+    '.reward-reveal-icon',
+    'data-reveal-icon="soft_currency"',
+    'function showRewardReveal(title, detail, icon = \'soft_currency\')',
+    'dom.rewardReveal.hidden = false;',
+    'clearTimeout(showRewardReveal.timer);',
+    'function hideRewardReveal()',
+    "showRewardReveal('외형 해금', item.name, 'unlock_capsule');",
+    "showRewardReveal('훈련 완료', `${unit.name} Lv.${currentLevel + 1}`, 'season_progress');",
+    "showRewardReveal('미션 보상', `${mission.reward.gems} 젬`, 'soft_currency');",
+    "showRewardReveal('시즌 보상', tier.grant.cosmetic ? '외형 해금' : `${tier.grant.gems ?? 0} 젬`, tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress');"
+  ]) {
+    assert.equal(`${html}\n${css}\n${app}`.includes(marker), true, marker);
+  }
+
+  const revealBlock = css.slice(css.indexOf('.reward-reveal {'), css.indexOf('.reward-reveal[hidden]'));
+  assert.equal(revealBlock.includes('background: rgba'), false);
+  assert.equal(revealBlock.includes('linear-gradient'), false);
 });
 
 test('meta reward actions flash their source cards with generated claim bursts', async () => {

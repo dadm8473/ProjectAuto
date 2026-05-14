@@ -55,13 +55,18 @@ const dom = {
   resultReward: qs('#resultReward'),
   resultRetryButton: qs('#resultRetryButton'),
   resultLobbyButton: qs('#resultLobbyButton'),
-  resultLobbyLabel: qs('#resultLobbyButton span')
+  resultLobbyLabel: qs('#resultLobbyButton span'),
+  rewardReveal: qs('#rewardReveal'),
+  rewardRevealIcon: qs('#rewardRevealIcon'),
+  rewardRevealTitle: qs('#rewardRevealTitle'),
+  rewardRevealDetail: qs('#rewardRevealDetail')
 };
 
 const ctx = dom.canvas.getContext('2d');
 const rebootAssets = createRebootAssetImages();
 const PROFILE_STORAGE_KEY = 'projectauto.reboot.profile.v1';
 const TOAST_VISIBLE_MS = 1400;
+const REWARD_REVEAL_MS = 1500;
 const SCREEN_TRANSITION_MS = 520;
 let appScreen = 'splash';
 let game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
@@ -104,6 +109,20 @@ function showToast(text, kind = 'info') {
   }, TOAST_VISIBLE_MS);
 }
 
+function hideRewardReveal() {
+  clearTimeout(showRewardReveal.timer);
+  dom.rewardReveal.hidden = true;
+}
+
+function showRewardReveal(title, detail, icon = 'soft_currency') {
+  dom.rewardRevealTitle.textContent = title;
+  dom.rewardRevealDetail.textContent = detail;
+  dom.rewardRevealIcon.dataset.revealIcon = icon;
+  dom.rewardReveal.hidden = false;
+  clearTimeout(showRewardReveal.timer);
+  showRewardReveal.timer = setTimeout(hideRewardReveal, REWARD_REVEAL_MS);
+}
+
 function playScreenTransition(screen) {
   clearTimeout(playScreenTransition.timer);
   playScreenTransition.flip = !playScreenTransition.flip;
@@ -125,6 +144,7 @@ function setScreen(screen) {
   appScreen = screen;
   document.body.dataset.appScreen = screen;
   if (screen !== 'battle') delete document.body.dataset.coachCue;
+  if (changed) hideRewardReveal();
   dom.launchOverlay.dataset.screen = screen;
   for (const panel of [dom.splash, dom.lobby, dom.collection, dom.shop, dom.missions, dom.season]) {
     panel.hidden = panel.dataset.screenPanel !== screen;
@@ -216,6 +236,7 @@ function handleShopPurchase(event) {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.shopList, `[data-shop-buy="${selectorValue(item.id)}"]`, 'shop');
+  showRewardReveal('외형 해금', item.name, 'unlock_capsule');
   showToast(`${item.name} 해금`, 'reward');
 }
 
@@ -252,6 +273,7 @@ function handleUnitUpgrade(event) {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.collectionList, `[data-unit-upgrade="${selectorValue(unit.id)}"]`, 'training');
+  showRewardReveal('훈련 완료', `${unit.name} Lv.${currentLevel + 1}`, 'season_progress');
   showToast(`${unit.name} Lv.${currentLevel + 1}`, 'reward');
 }
 
@@ -278,6 +300,7 @@ function handleMissionClaim(event) {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.missionsList, `[data-mission-claim="${selectorValue(mission.id)}"]`, 'mission');
+  showRewardReveal('미션 보상', `${mission.reward.gems} 젬`, 'soft_currency');
   showToast(`${mission.title} 보상`, 'reward');
 }
 
@@ -295,6 +318,7 @@ function handlePassClaim(event) {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.seasonList, `[data-pass-claim="${index}"]`, 'season');
+  showRewardReveal('시즌 보상', tier.grant.cosmetic ? '외형 해금' : `${tier.grant.gems ?? 0} 젬`, tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress');
   showToast(`${index + 1}단계 보상`, 'reward');
 }
 
@@ -433,6 +457,7 @@ function bind() {
   dom.seasonList.addEventListener('click', handlePassClaim);
   dom.resultRetryButton.addEventListener('click', retry);
   dom.resultLobbyButton.addEventListener('click', handleResultSecondary);
+  dom.rewardReveal.addEventListener('click', hideRewardReveal);
   document.querySelectorAll('[data-open-screen]').forEach((button) => {
     button.addEventListener('click', () => setScreen(button.dataset.openScreen));
   });
