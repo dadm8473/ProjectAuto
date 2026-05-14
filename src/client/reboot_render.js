@@ -516,6 +516,10 @@ function drawPartnerDangerCutin(ctx, state, assets = {}) {
 
 function drawCombatStartCutin(ctx, state, assets = {}) {
   if (state.now >= 3.25) return false;
+  const firstActionTaken = state.events.some((event) => (
+    ['summon', 'merge', 'rescue'].includes(event.type) && state.now >= event.at
+  ));
+  if (firstActionTaken) return false;
   const image = assets?.startCutin;
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const introIn = Math.min(1, state.now / 0.34);

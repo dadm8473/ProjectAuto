@@ -129,6 +129,24 @@ test('rescue spends charge and cannot be spammed after the tutorial window', () 
   assert.equal(types(game).filter((type) => type === 'rescue').length, 1);
 });
 
+test('summoned units emit live hit effects before enemies die', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 112 });
+  summonToy(game, { playerId: 'p1' });
+  advance(game, 0.25);
+
+  const state = serializeRebootState(game);
+  const hit = state.effects.find((effect) => effect.type === 'hit');
+
+  assert.ok(hit, 'expected a live hit effect while the first target is still alive');
+  assert.equal(hit.playerId, 'p1');
+  assert.equal(hit.slot, 0);
+  assert.equal(hit.targetType, 'noise_shard');
+  assert.equal(hit.targetProgress >= 0 && hit.targetProgress <= 1, true);
+  assert.equal(Number.isFinite(hit.targetLane), true);
+  assert.equal(hit.ttl > 0, true);
+  assert.equal(state.effects.some((effect) => effect.type === 'death_burst'), false);
+});
+
 test('bot partner visibly contributes with scripted board actions', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1212 });
   advanceTo(game, 54);

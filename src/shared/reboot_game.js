@@ -10,6 +10,8 @@ let nextRunId = 1;
 let nextEffectId = 1;
 const BOSS_DECISION_START = 92;
 const BOSS_DECISION_END = 102;
+const HIT_EFFECT_INTERVAL = 0.48;
+const HIT_EFFECT_TTL = 0.62;
 
 const BOT_PARTNER_SCRIPT = [
   { at: 18, unitId: 'spark_pin', highlight: false },
@@ -247,6 +249,41 @@ function pushDeathBurst(game, enemy, progress) {
   });
 }
 
+function effectLaneForBoard(boardId) {
+  return boardId === 'p2' ? -0.45 : 0.25;
+}
+
+function pushHitEffect(game, boardId, board, enemy, progress) {
+  const slot = Math.max(0, Math.min(board.units.length - 1, Math.floor(game.now * 3) % Math.max(1, board.units.length)));
+  game.effects.push({
+    id: `hfx${nextEffectId++}`,
+    type: 'hit',
+    playerId: boardId,
+    slot,
+    targetId: enemy.id,
+    targetType: enemy.enemyId,
+    targetProgress: progress,
+    targetLane: effectLaneForBoard(enemy.boardId),
+    ttl: HIT_EFFECT_TTL
+  });
+}
+
+function emitLiveHitEffects(game) {
+  for (const [boardId, board] of Object.entries(game.boards)) {
+    if (board.units.length === 0) continue;
+    const lastHitAt = game.internal.hitPulseAt[boardId] ?? -Infinity;
+    if (game.now - lastHitAt < HIT_EFFECT_INTERVAL) continue;
+    const target = game.enemies
+      .filter((enemy) => enemy.boardId === boardId)
+      .map((enemy) => ({ enemy, progress: enemyProgress(game, enemy) }))
+      .filter(({ progress }) => progress < 0.98)
+      .sort((a, b) => b.progress - a.progress)[0];
+    if (!target) continue;
+    game.internal.hitPulseAt[boardId] = game.now;
+    pushHitEffect(game, boardId, board, target.enemy, target.progress);
+  }
+}
+
 function pushMiniBossRewardBurst(game) {
   if (game.internal.bossRewardEmitted) return;
   game.internal.bossRewardEmitted = true;
@@ -262,6 +299,7 @@ function pushMiniBossRewardBurst(game) {
 
 function resolveCombatEffects(game, dt) {
   game.effects = game.effects.map((effect) => ({ ...effect, ttl: effect.ttl - dt })).filter((effect) => effect.ttl > 0);
+  emitLiveHitEffects(game);
   const survivors = [];
   for (const enemy of game.enemies) {
     if (enemy.enemyId === 'mini_boss') {
@@ -380,6 +418,7 @@ export function createRebootGame({
       grantsApplied: [],
       wavesSpawned: [],
       partnerAutoApplied: [],
+      hitPulseAt: { p1: -Infinity, p2: -Infinity },
       summonIndexes: { p1: 0, p2: 0 },
       mergeIndex: 0,
       unitSequence: 0,

@@ -167,6 +167,57 @@ test('player board uses a generated landing tray beneath summoned units', () => 
   assert.equal(unitIndex < summonVfxIndex, true, 'summon flash should sit above the new unit');
 });
 
+test('first player action clears the operation start cutin so combat feedback stays visible', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 1.2,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard' }],
+      events: [{ type: 'summon', at: 1.05, playerId: 'p1' }],
+      effects: [{ type: 'hit', playerId: 'p1', slot: 0, targetProgress: 0.4, targetLane: 0.25, targetType: 'noise_shard', ttl: 0.58 }]
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      hitBolts: image(768, 128),
+      startCutin: image(390, 112),
+      momentCallouts: image(1170, 144),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const startCutinDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 390
+      && command.args[0].naturalHeight === 112
+  ));
+  const hitBoltDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 768
+      && command.args[0].naturalHeight === 128
+  ));
+  const summonVfxDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[1] === 0
+      && command.args[7] === 84
+  ));
+
+  assert.deepEqual(startCutinDraws, []);
+  assert.equal(hitBoltDraws.length >= 1, true, 'expected hit bolt to remain visible after first action');
+  assert.equal(summonVfxDraws.length >= 1, true, 'expected summon VFX to remain visible after first action');
+});
+
 test('equipped cosmetics render as a visual-only player board signature', () => {
   const ctx = mockContext();
   drawRebootBattle(
