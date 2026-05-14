@@ -78,7 +78,7 @@ test('legacy-only actions are disabled without mutating reboot state', () => {
 test('non-reboot createGame keeps the legacy Signal Relay behavior during transition', () => {
   const game = createGame({ mode: 'bot', seed: 45 });
 
-  assert.equal(game.title, '시그널 릴레이');
+  assert.equal(game.title, '신호릴레이');
   assert.equal(game.resources.charge, 110);
   assert.equal(supplyRelay(game, { playerId: 'p1' }).ok, true);
 });

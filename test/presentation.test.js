@@ -147,6 +147,24 @@ test('battle markup exposes exactly three Korean combat actions and no BM button
   }
 });
 
+test('player-facing app branding is Korean and no longer exposes the repository name', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const manifest = JSON.parse(await readFile('manifest.webmanifest', 'utf8'));
+
+  for (const marker of [
+    '<title>신호릴레이</title>',
+    'aria-label="신호릴레이 협동 타워디펜스 전장"',
+    '<strong>신호릴레이</strong>'
+  ]) {
+    assert.equal(html.includes(marker), true, marker);
+  }
+
+  assert.equal(manifest.name, '신호릴레이');
+  assert.equal(manifest.short_name, '신호릴레이');
+  assert.equal(html.includes('ProjectAuto'), false);
+  assert.equal(JSON.stringify(manifest).includes('ProjectAuto'), false);
+});
+
 test('reboot render uses only reboot atlases and manifest keys', async () => {
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 

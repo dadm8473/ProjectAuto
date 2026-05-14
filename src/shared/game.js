@@ -733,7 +733,7 @@ export function createGame({ mode = 'bot', seed = Date.now(), seedName, branch, 
 
   nextId = 1;
   return {
-    title: '시그널 릴레이',
+    title: '신호릴레이',
     id: uniqueRunId(seed),
     privateSeed: seed,
     now: 0,

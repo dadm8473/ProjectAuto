@@ -59,7 +59,7 @@ function installNoise(game, overrides = {}) {
 test('a new run is a two-board Korean Signal Relay defense with earned-only rewards', () => {
   const game = createGame({ mode: 'bot', seed: 42 });
 
-  assert.equal(game.title, '시그널 릴레이');
+  assert.equal(game.title, '신호릴레이');
   assert.equal(game.boards.p1.slots.length, 12);
   assert.equal(game.boards.p2.slots.length, 12);
   assert.equal(game.resources.charge, 110);
