@@ -150,6 +150,7 @@ test('battle markup exposes exactly three Korean combat actions and no BM button
 test('player-facing app branding is Korean and no longer exposes the repository name', async () => {
   const html = await readFile('index.html', 'utf8');
   const manifest = JSON.parse(await readFile('manifest.webmanifest', 'utf8'));
+  const server = await readFile('server/server.js', 'utf8');
 
   for (const marker of [
     '<title>신호릴레이</title>',
@@ -163,6 +164,8 @@ test('player-facing app branding is Korean and no longer exposes the repository 
   assert.equal(manifest.short_name, '신호릴레이');
   assert.equal(html.includes('ProjectAuto'), false);
   assert.equal(JSON.stringify(manifest).includes('ProjectAuto'), false);
+  assert.equal(server.includes('신호릴레이 실행 중'), true);
+  assert.equal(server.includes('ProjectAuto 시그널 릴레이'), false);
 });
 
 test('reboot render uses only reboot atlases and manifest keys', async () => {

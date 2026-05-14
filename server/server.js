@@ -174,7 +174,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const server = http.createServer(serve);
   server.on('upgrade', upgrade);
   server.listen(port, () => {
-    console.log(`ProjectAuto 시그널 릴레이 실행 중: http://localhost:${port}`);
+    console.log(`신호릴레이 실행 중: http://localhost:${port}`);
   });
   setInterval(tickRoom, 100);
 }
