@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 import { decodeClientFrame, encodeServerFrame } from '../server/ws.js';
-import { boardForPlayer, createOnlineRoom, resetFinishedRoomForJoin } from '../server/room.js';
+import { boardForPlayer, createOnlineRoom, removeRoomClient, resetFinishedRoomForJoin } from '../server/room.js';
 
 test('server frames encode a readable text websocket payload', () => {
   const frame = encodeServerFrame(JSON.stringify({ type: 'state', ok: true }));
@@ -49,6 +49,24 @@ test('finished online rooms reset before a new socket joins', () => {
   assert.equal(room.game.over, false);
   assert.equal(room.game.result, null);
   assert.equal(room.resetAt, null);
+});
+
+test('single remaining online socket is reassigned to p1 after stale p1 disconnects', () => {
+  const room = createOnlineRoom(1);
+  const staleP1 = {};
+  const reconnecting = {};
+  room.clients.set(staleP1, { playerId: 'p1', name: 'Old Player' });
+  room.clients.set(reconnecting, { playerId: 'p2', name: 'New Player' });
+
+  removeRoomClient(room, staleP1);
+
+  const remaining = room.clients.get(reconnecting);
+  assert.equal(remaining.playerId, 'p1');
+  assert.deepEqual(room.game.players, [
+    { id: 'p1', name: 'New Player', bot: false, ready: true },
+    { id: 'p2', name: '자동 파트너', bot: true, ready: true }
+  ]);
+  assert.equal(boardForPlayer(room.game.players, remaining.playerId), 'p1');
 });
 
 test('server does not advance empty online rooms', async () => {

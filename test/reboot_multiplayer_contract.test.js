@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createOnlineRoom } from '../server/room.js';
 import { dispatchBattleAction } from '../server/reboot_action_dispatch.js';
+import { handleActionForTest } from '../server/server.js';
 import { serializeState, tickGame } from '../src/shared/game.js';
 
 function action(room, type, extra = {}) {
@@ -82,4 +83,21 @@ test('both online players observe the same reboot result reason', () => {
   assert.equal(p1State.result.reason, 'partner_rescued');
   assert.equal(p2State.result.reason, p1State.result.reason);
   assert.equal(p2State.runId, p1State.runId);
+});
+
+test('joining online with profile gems does not poison reboot combat resources', () => {
+  const room = createOnlineRoom(105);
+  const socket = { destroyed: false };
+  room.clients.set(socket, { playerId: 'socket-a', name: 'Tester' });
+
+  handleActionForTest({
+    targetRoom: room,
+    socket,
+    action: { type: 'join', name: 'Tester', profile: { gems: 28, unlocks: ['skin-signal-mint'] } },
+    send() {}
+  });
+
+  assert.deepEqual(Object.keys(room.game.resources).sort(), ['p1', 'p2']);
+  assert.equal(room.game.metaProfile.startingGems, 28);
+  assert.doesNotThrow(() => tickGame(room.game, 20));
 });

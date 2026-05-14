@@ -8,7 +8,7 @@ import {
   tickGame,
   tryBuyShopItem
 } from '../src/shared/game.js';
-import { boardForPlayer, createOnlineRoom, resetFinishedRoomForJoin, resetRoomGame } from './room.js';
+import { assignRoomPlayers, boardForPlayer, createOnlineRoom, removeRoomClient, resetFinishedRoomForJoin } from './room.js';
 import { approveClientPurchase, safeProfile } from './profile_purchase.js';
 import { dispatchBattleAction } from './reboot_action_dispatch.js';
 import { acceptKey, decodeClientFrame, encodeServerFrame } from './ws.js';
@@ -69,22 +69,11 @@ function isRebootGame(game) {
   return typeof game?.runId === 'string' && game.runId.startsWith('reboot-');
 }
 
-function assignPlayers(targetRoom = room) {
-  const humans = [...targetRoom.clients.values()];
-  targetRoom.game.players = humans.slice(0, 2).map((client, index) => ({
-    id: client.playerId,
-    name: client.name || `플레이어 ${index + 1}`,
-    bot: false,
-    ready: true
-  }));
-  while (targetRoom.game.players.length < 2) {
-    targetRoom.game.players.push({ id: 'p2', name: '자동 파트너', bot: true, ready: true });
-  }
-}
-
 function applyProfileToRoomGame(profile, targetRoom = room) {
   const safe = safeProfile(profile);
-  targetRoom.game.resources.gems = Math.max(targetRoom.game.resources.gems ?? 0, safe.gems);
+  if (!isRebootGame(targetRoom.game)) {
+    targetRoom.game.resources.gems = Math.max(targetRoom.game.resources.gems ?? 0, safe.gems);
+  }
   targetRoom.game.metaProfile = targetRoom.game.metaProfile ?? { startingGems: 0 };
   targetRoom.game.metaProfile.startingGems = Math.max(targetRoom.game.metaProfile.startingGems ?? 0, safe.gems);
   targetRoom.game.unlocks = [...new Set([...(targetRoom.game.unlocks ?? []), ...safe.unlocks])];
@@ -96,7 +85,7 @@ export function handleActionForTest({ targetRoom = room, socket, action, send: s
     client.playerId = action.playerId || client.playerId;
     client.name = String(action.name || '플레이어').slice(0, 18);
     client.profile = safeProfile(action.profile);
-    assignPlayers(targetRoom);
+    assignRoomPlayers(targetRoom);
     applyProfileToRoomGame(client.profile, targetRoom);
     const boardPlayer = boardForPlayer(targetRoom.game.players, client.playerId);
     sendFn(socket, { type: 'state', state: serializeState(targetRoom.game), playerId: client.playerId, boardPlayer });
@@ -139,7 +128,7 @@ function upgrade(req, socket) {
   resetFinishedRoomForJoin(room);
   const id = `p${room.clients.size + 1}`;
   room.clients.set(socket, { playerId: id, name: `플레이어 ${room.clients.size + 1}` });
-  assignPlayers();
+  assignRoomPlayers(room);
 
   socket.on('data', (buffer) => {
     const text = decodeClientFrame(buffer);
@@ -155,14 +144,10 @@ function upgrade(req, socket) {
     }
   });
   socket.on('close', () => {
-    room.clients.delete(socket);
-    if (room.clients.size === 0) resetRoomGame(room);
-    assignPlayers();
+    removeRoomClient(room, socket);
   });
   socket.on('error', () => {
-    room.clients.delete(socket);
-    if (room.clients.size === 0) resetRoomGame(room);
-    assignPlayers();
+    removeRoomClient(room, socket);
   });
   const boardPlayer = boardForPlayer(room.game.players, id);
   send(socket, { type: 'state', state: serializeState(room.game), playerId: id, boardPlayer });
@@ -178,7 +163,7 @@ function tickRoom() {
   if (room.resetAt !== null && now >= room.resetAt) {
     resetRoomGame(room);
   }
-  assignPlayers();
+  assignRoomPlayers(room);
   broadcast({ type: 'state', state: serializeState(room.game) });
 }
 

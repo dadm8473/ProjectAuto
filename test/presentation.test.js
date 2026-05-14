@@ -202,6 +202,52 @@ test('home collection shop and result are app-game screens, not combat BM drawer
   }
 });
 
+test('online entry has app-game fallback instead of trapping players in a dead connection', async () => {
+  const app = await readFile('src/client/app.js', 'utf8');
+  const online = await readFile('src/client/reboot_online.js', 'utf8');
+
+  for (const marker of [
+    'const ONLINE_CONNECT_FALLBACK_MS = 2600;',
+    'let onlineFallbackTimer = null;',
+    'function clearOnlineFallback()',
+    'function fallbackToBotPartner(reason)',
+    'function scheduleOnlineFallback()',
+    "showToast('온라인 응답이 없어 봇 파트너로 전환합니다', 'warning');",
+    "game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });",
+    "onStatus(status) {",
+    "if (status.state === 'open') dom.netStatus.textContent = '온라인 입장';",
+    'if (!online?.send(action)) {',
+    "showToast('온라인 연결 대기 중', 'warning');",
+    'let nextOnline = null;',
+    'if (online !== nextOnline) return;',
+    'online = nextOnline;',
+    'nextOnline.connect();'
+  ]) {
+    assert.equal(app.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    'onStatus',
+    "onStatus?.({ state: 'connecting' });",
+    "onStatus?.({ state: 'open' });",
+    "onStatus?.({ state: 'closed' });",
+    "onError?.('온라인 연결 대기 중');",
+    "return false;",
+    "return true;",
+    "onError?.('온라인 메시지 오류');"
+  ]) {
+    assert.equal(online.includes(marker), true, marker);
+  }
+
+  const startOnlineRun = app.slice(app.indexOf('function startOnlineRun()'), app.indexOf('function executeLocal', app.indexOf('function startOnlineRun()')));
+  assert.equal(
+    startOnlineRun.indexOf('online = nextOnline;') < startOnlineRun.indexOf('scheduleOnlineFallback();')
+      && startOnlineRun.indexOf('scheduleOnlineFallback();') < startOnlineRun.indexOf('nextOnline.connect();'),
+    true,
+    'current online instance and fallback timer must exist before connect so fast initial state can clear it'
+  );
+});
+
 test('app screen changes use a generated game wipe instead of instant web page swapping', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
@@ -278,7 +324,9 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=player-tray1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-fallback2"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-fallback1"></script>'), false);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=player-tray1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-start1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-next1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-cosmetic1"></script>'), false);

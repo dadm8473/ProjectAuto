@@ -69,10 +69,12 @@ const PROFILE_STORAGE_KEY = 'projectauto.reboot.profile.v1';
 const TOAST_VISIBLE_MS = 1400;
 const REWARD_REVEAL_MS = 1500;
 const SCREEN_TRANSITION_MS = 520;
+const ONLINE_CONNECT_FALLBACK_MS = 2600;
 let appScreen = 'splash';
 let game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
 let localBoardId = 'p1';
 let online = null;
+let onlineFallbackTimer = null;
 let lastTime = performance.now();
 let resultShownFor = '';
 let profile = loadProfile();
@@ -122,6 +124,29 @@ function showRewardReveal(title, detail, icon = 'soft_currency') {
   dom.rewardReveal.hidden = false;
   clearTimeout(showRewardReveal.timer);
   showRewardReveal.timer = setTimeout(hideRewardReveal, REWARD_REVEAL_MS);
+}
+
+function clearOnlineFallback() {
+  clearTimeout(onlineFallbackTimer);
+  onlineFallbackTimer = null;
+}
+
+function fallbackToBotPartner(reason) {
+  if (appScreen !== 'battle' || game.mode !== 'online' || game.result) return;
+  clearOnlineFallback();
+  const previousOnline = online;
+  online = null;
+  game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
+  localBoardId = 'p1';
+  resultShownFor = '';
+  dom.netStatus.textContent = '봇 협동';
+  previousOnline?.close();
+  showToast('온라인 응답이 없어 봇 파트너로 전환합니다', 'warning');
+}
+
+function scheduleOnlineFallback() {
+  clearOnlineFallback();
+  onlineFallbackTimer = setTimeout(() => fallbackToBotPartner('timeout'), ONLINE_CONNECT_FALLBACK_MS);
 }
 
 function playScreenTransition(screen) {
@@ -341,31 +366,58 @@ function handlePassClaim(event) {
 }
 
 function startBotRun() {
+  clearOnlineFallback();
+  const previousOnline = online;
+  online = null;
   game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
   localBoardId = 'p1';
   resultShownFor = '';
   dom.netStatus.textContent = '봇 협동';
+  previousOnline?.close();
   setScreen('battle');
 }
 
 function startOnlineRun() {
+  clearOnlineFallback();
+  const previousOnline = online;
+  online = null;
+  previousOnline?.close();
   game = createGame({ mode: 'online', seedName: 'tutorial_success', seed: 2 });
   localBoardId = 'p1';
   resultShownFor = '';
   dom.netStatus.textContent = '온라인 연결 중';
-  online?.close();
-  online = createRebootOnlineClient({
+  let nextOnline = null;
+  nextOnline = createRebootOnlineClient({
+    name: '플레이어',
+    profile,
     onState(nextState, meta) {
+      if (online !== nextOnline) return;
+      clearOnlineFallback();
       game = nextState;
       localBoardId = meta.boardPlayer ?? 'p1';
-      dom.netStatus.textContent = '온라인 협동';
+      const partner = nextState.players?.find((player) => player.id !== meta.playerId);
+      dom.netStatus.textContent = partner?.bot ? '온라인 대기' : '온라인 협동';
+    },
+    onStatus(status) {
+      if (online !== nextOnline) return;
+      if (status.state === 'open') dom.netStatus.textContent = '온라인 입장';
+      if (status.state === 'closed' && appScreen === 'battle' && game.mode === 'online' && !game.result) {
+        fallbackToBotPartner('closed');
+      }
     },
     onError(reason) {
-      showToast(reason);
+      if (online !== nextOnline) return;
+      if (reason === '연결 오류' || reason === '온라인 메시지 오류') {
+        fallbackToBotPartner(reason);
+        return;
+      }
+      if (reason !== '온라인 연결 대기 중') showToast(reason, 'warning');
     }
   });
-  online.connect();
+  online = nextOnline;
+  scheduleOnlineFallback();
   setScreen('battle');
+  nextOnline.connect();
 }
 
 function executeLocal(action) {
@@ -379,7 +431,9 @@ function command(actionName) {
   if (appScreen !== 'battle') return;
   const action = commandForRebootAction(actionName);
   if (game.mode === 'online') {
-    online?.send(action);
+    if (!online?.send(action)) {
+      showToast('온라인 연결 대기 중', 'warning');
+    }
     return;
   }
   const result = executeLocal(action);
