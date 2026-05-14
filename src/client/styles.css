@@ -628,6 +628,8 @@ body[data-app-screen="lobby"] .toast {
   background-image: var(--combat-action-buttons);
   background-repeat: no-repeat;
   background-size: 300% 100%;
+  transform: translateZ(0);
+  transition: transform 90ms ease, filter 90ms ease;
 }
 
 #summonButton { background-position: 0 0; }
@@ -669,6 +671,7 @@ body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions::before
   background-repeat: no-repeat;
   background-size: 168px 28px;
   filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.42));
+  transition: transform 90ms ease, filter 90ms ease;
 }
 
 #summonButton::before { background-position: 0 0; }
@@ -678,6 +681,7 @@ body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions::before
 .primary-actions button > span {
   position: relative;
   z-index: 1;
+  transition: transform 90ms ease;
 }
 
 .primary-actions::after {
@@ -752,6 +756,22 @@ body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after 
   animation: actionReadyPulse 1.15s ease-in-out infinite;
 }
 
+.primary-actions button:active:not(:disabled) {
+  transform: translateY(2px) scale(0.975);
+  filter: brightness(1.15) saturate(1.08);
+}
+
+.primary-actions button:active:not(:disabled)::before,
+.primary-actions button:active:not(:disabled) > span {
+  transform: translateY(1px);
+}
+
+.primary-actions button:active:not(:disabled)::after {
+  opacity: 0.78;
+  transform: scale(1.06);
+  animation: actionTapBurst 220ms ease-out both;
+}
+
 .primary-actions button:disabled::before {
   opacity: 0.54;
   filter: grayscale(0.35);
@@ -765,6 +785,12 @@ body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after 
 @keyframes actionReadyPulse {
   0%, 100% { transform: scale(0.88); opacity: 0.48; }
   48% { transform: scale(1.02); opacity: 0.86; }
+}
+
+@keyframes actionTapBurst {
+  0% { transform: scale(0.92); opacity: 0.48; }
+  42% { transform: scale(1.08); opacity: 0.86; }
+  100% { transform: scale(1.18); opacity: 0; }
 }
 
 @keyframes coachCueFloat {

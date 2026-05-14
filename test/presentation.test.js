@@ -337,7 +337,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=board-labels1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-press1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=board-labels1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=battle-brand1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-track1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-showcase1">'), false);
@@ -594,6 +595,10 @@ test('combat action buttons use generated icons instead of text-only web buttons
     'body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after',
     '.primary-actions button::after',
     'background-image: var(--combat-action-ready-pulses);',
+    '.primary-actions button:active:not(:disabled)',
+    '.primary-actions button:active:not(:disabled)::after',
+    'animation: actionTapBurst 220ms ease-out both;',
+    '@keyframes actionTapBurst',
     'background-image: var(--combat-critical-action-rings);',
     'animation: actionReadyPulse 1.15s ease-in-out infinite;',
     'background-image: url("/src/client/assets/generated/reboot-ui-icons.png")',
