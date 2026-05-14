@@ -98,7 +98,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js'",
     "from './reboot_action_ui.js?v=status-prompt1'",
-    "from './reboot_render.js?v=surface-alpha1'",
+    "from './reboot_render.js?v=online-matchmaking1'",
     "from './reboot_screens.js?v=surface-alpha1'",
     "from './reboot_online.js'"
   ]) {
@@ -324,6 +324,62 @@ test('online waiting state blocks combat until the second player arrives', async
   }
 });
 
+test('online matchmaking states use generated app-game panels instead of plain text status', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+  const qa = await readFile('tools/reboot_online_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    'id="matchmakingBanner"',
+    'id="matchmakingBannerTitle"',
+    'id="matchmakingBannerDetail"'
+  ]) {
+    assert.equal(html.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    '--online-matchmaking-panels: url("/src/client/assets/generated/reboot-online-matchmaking-panels.png?v=online-matchmaking")',
+    '.matchmaking-banner',
+    'background-image: var(--online-matchmaking-panels);',
+    '.matchmaking-banner[data-match-state="waiting"]',
+    '.matchmaking-banner[data-match-state="ready"]',
+    '.matchmaking-banner[data-match-state="reset"]',
+    'body:not([data-app-screen="battle"]) .matchmaking-banner'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    'const MATCH_BANNER_FLASH_MS = 1500;',
+    'function hideMatchmakingBanner()',
+    'function isMatchmakingResetHoldActive()',
+    'function showMatchmakingBanner(kind, title, detail, options = {})',
+    'showMatchmakingBanner.holdUntil = kind === \'reset\' ? performance.now() + MATCH_BANNER_FLASH_MS : 0;',
+    'const previousRunId = game.runId;',
+    'const previousOnlineWaiting = waitingForOnlinePartner(game);',
+    'const previousOnlineReady = game.mode === \'online\' && !previousOnlineWaiting;',
+    'const nextOnlineWaiting = waitingForOnlinePartner(nextState);',
+    'const partnerDisconnected = previousOnlineReady && nextOnlineWaiting && previousRunId !== nextState.runId;',
+    "showMatchmakingBanner('waiting', '파트너 대기', '온라인 매칭 중', { persistent: true });",
+    "showMatchmakingBanner('ready', '협동 시작', '파트너가 입장했습니다');",
+    "showMatchmakingBanner('reset', '파트너 이탈', '새 파트너를 찾는 중');",
+    'if (!isMatchmakingResetHoldActive())'
+  ]) {
+    assert.equal(app.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    '#matchmakingBanner',
+    '파트너 대기',
+    '협동 시작',
+    '파트너 이탈',
+    'waitForTimeout(800)'
+  ]) {
+    assert.equal(qa.includes(marker), true, marker);
+  }
+});
+
 test('app screen changes use a generated game wipe instead of instant web page swapping', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
@@ -412,7 +468,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=surface-alpha1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-matchmaking1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=frame-alpha1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-nav1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-readability1">'), false);
@@ -447,7 +503,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=surface-alpha1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-matchmaking1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reveal-vfx1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=status-prompt1"></script>'), false);
@@ -458,7 +514,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=surface-alpha1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=online-matchmaking1'"), true);
   assert.equal(app.includes("from './reboot_render.js?v=reveal-vfx1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=boss-finale1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=rescue-reward1'"), false);
@@ -1297,9 +1353,11 @@ test('equipped cosmetics appear in battle as generated expression sigils only', 
     'function drawBattleCosmeticSignature',
     'options.equippedCosmetic',
     'drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);',
+    'if (!options.onlineWaiting) drawCombatStartCutin(ctx, state, assets);',
     'drawRebootBattle(ctx, current, { width: dom.canvas.width, height: dom.canvas.height }, rebootAssets, {',
     'equippedCosmetic: profile.equippedCosmetic',
-    'reducedMotion: reduceMotion.matches'
+    'reducedMotion: reduceMotion.matches',
+    'onlineWaiting: waitingForOnlinePartner(current)'
   ]) {
     assert.equal(`${app}\n${render}`.includes(marker), true, marker);
   }

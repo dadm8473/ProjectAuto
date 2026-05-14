@@ -933,7 +933,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
 
   drawBoard(ctx, state.boards.p2, 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
   drawTrack(ctx, state, assets, imageBackdrop);
-  drawCombatStartCutin(ctx, state, assets);
+  if (!options.onlineWaiting) drawCombatStartCutin(ctx, state, assets);
   drawCombatCrisisOverlays(ctx, state, assets);
   drawBossWarningCutin(ctx, state, assets);
   drawPartnerDangerCutin(ctx, state, assets);

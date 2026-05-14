@@ -4,7 +4,7 @@ import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js';
 import { buildCombatCoachCue, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=status-prompt1';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=surface-alpha1';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=online-matchmaking1';
 import {
   buildMetaNavAlerts,
   buildMissionScreen,
@@ -60,7 +60,10 @@ const dom = {
   rewardReveal: qs('#rewardReveal'),
   rewardRevealIcon: qs('#rewardRevealIcon'),
   rewardRevealTitle: qs('#rewardRevealTitle'),
-  rewardRevealDetail: qs('#rewardRevealDetail')
+  rewardRevealDetail: qs('#rewardRevealDetail'),
+  matchmakingBanner: qs('#matchmakingBanner'),
+  matchmakingBannerTitle: qs('#matchmakingBannerTitle'),
+  matchmakingBannerDetail: qs('#matchmakingBannerDetail')
 };
 
 const ctx = dom.canvas.getContext('2d');
@@ -70,6 +73,7 @@ const TOAST_VISIBLE_MS = 1400;
 const REWARD_REVEAL_MS = 1500;
 const SCREEN_TRANSITION_MS = 360;
 const ONLINE_CONNECT_FALLBACK_MS = 2600;
+const MATCH_BANNER_FLASH_MS = 1500;
 let appScreen = 'splash';
 let game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
 let localBoardId = 'p1';
@@ -126,6 +130,35 @@ function showRewardReveal(title, detail, icon = 'soft_currency') {
   showRewardReveal.timer = setTimeout(hideRewardReveal, REWARD_REVEAL_MS);
 }
 
+function hideMatchmakingBanner() {
+  clearTimeout(showMatchmakingBanner.timer);
+  showMatchmakingBanner.holdUntil = 0;
+  dom.matchmakingBanner.hidden = true;
+}
+
+function isMatchmakingResetHoldActive() {
+  return dom.matchmakingBanner.dataset.matchState === 'reset'
+    && !dom.matchmakingBanner.hidden
+    && (showMatchmakingBanner.holdUntil ?? 0) > performance.now();
+}
+
+function showMatchmakingBanner(kind, title, detail, options = {}) {
+  clearTimeout(showMatchmakingBanner.timer);
+  showMatchmakingBanner.holdUntil = kind === 'reset' ? performance.now() + MATCH_BANNER_FLASH_MS : 0;
+  dom.matchmakingBanner.dataset.matchState = kind;
+  dom.matchmakingBannerTitle.textContent = title;
+  dom.matchmakingBannerDetail.textContent = detail;
+  dom.matchmakingBanner.hidden = false;
+  if (options.persistent) return;
+  showMatchmakingBanner.timer = setTimeout(() => {
+    if (kind === 'reset' && game.mode === 'online' && waitingForOnlinePartner(game)) {
+      showMatchmakingBanner('waiting', '파트너 대기', '온라인 매칭 중', { persistent: true });
+      return;
+    }
+    hideMatchmakingBanner();
+  }, MATCH_BANNER_FLASH_MS);
+}
+
 function clearOnlineFallback() {
   clearTimeout(onlineFallbackTimer);
   onlineFallbackTimer = null;
@@ -140,6 +173,7 @@ function fallbackToBotPartner(reason) {
   localBoardId = 'p1';
   resultShownFor = '';
   dom.netStatus.textContent = '봇 협동';
+  hideMatchmakingBanner();
   previousOnline?.close();
   showToast('온라인 응답이 없어 봇 파트너로 전환합니다', 'warning');
 }
@@ -174,6 +208,7 @@ function setScreen(screen, options = {}) {
   appScreen = screen;
   document.body.dataset.appScreen = screen;
   if (screen !== 'battle') delete document.body.dataset.coachCue;
+  if (screen !== 'battle') hideMatchmakingBanner();
   if (changed && !options.preserveRewardReveal) hideRewardReveal();
   dom.launchOverlay.dataset.screen = screen;
   for (const panel of [dom.splash, dom.lobby, dom.collection, dom.shop, dom.missions, dom.season]) {
@@ -442,6 +477,7 @@ function startBotRun() {
   localBoardId = 'p1';
   resultShownFor = '';
   dom.netStatus.textContent = '봇 협동';
+  hideMatchmakingBanner();
   previousOnline?.close();
   setScreen('battle');
 }
@@ -462,10 +498,26 @@ function startOnlineRun() {
     onState(nextState, meta) {
       if (online !== nextOnline) return;
       clearOnlineFallback();
+      const previousRunId = game.runId;
+      const previousOnlineWaiting = waitingForOnlinePartner(game);
+      const previousOnlineReady = game.mode === 'online' && !previousOnlineWaiting;
+      const nextOnlineWaiting = waitingForOnlinePartner(nextState);
+      const partnerDisconnected = previousOnlineReady && nextOnlineWaiting && previousRunId !== nextState.runId;
       game = nextState;
       localBoardId = meta.boardPlayer ?? 'p1';
       const partner = nextState.players?.find((player) => player.id !== meta.playerId);
       dom.netStatus.textContent = partner?.bot ? '온라인 대기' : '온라인 협동';
+      if (partnerDisconnected) {
+        showMatchmakingBanner('reset', '파트너 이탈', '새 파트너를 찾는 중');
+      } else if (nextOnlineWaiting) {
+        if (!isMatchmakingResetHoldActive()) {
+          showMatchmakingBanner('waiting', '파트너 대기', '온라인 매칭 중', { persistent: true });
+        }
+      } else if (previousOnlineWaiting) {
+        showMatchmakingBanner('ready', '협동 시작', '파트너가 입장했습니다');
+      } else if (dom.matchmakingBanner.dataset.matchState !== 'ready') {
+        hideMatchmakingBanner();
+      }
     },
     onStatus(status) {
       if (online !== nextOnline) return;
@@ -598,7 +650,8 @@ function loop(now) {
   const current = state();
   drawRebootBattle(ctx, current, { width: dom.canvas.width, height: dom.canvas.height }, rebootAssets, {
     equippedCosmetic: profile.equippedCosmetic,
-    reducedMotion: reduceMotion.matches
+    reducedMotion: reduceMotion.matches,
+    onlineWaiting: waitingForOnlinePartner(current)
   });
   updateMeters(current);
   updateButtons(current);

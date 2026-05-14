@@ -60,10 +60,27 @@ async function assertOnlineReady(page, label) {
   assert.equal(await page.locator('#rescueButton').isEnabled(), false, `${label} rescue starts locked`);
 }
 
+async function assertMatchBanner(page, title, state) {
+  await page.waitForFunction(
+    ({ title: expectedTitle, state: expectedState }) => {
+      const banner = document.querySelector('#matchmakingBanner');
+      const opacity = banner ? Number.parseFloat(getComputedStyle(banner).opacity) : 0;
+      return banner && !banner.hidden
+        && banner.dataset.matchState === expectedState
+        && document.querySelector('#matchmakingBannerTitle')?.textContent === expectedTitle
+        && opacity > 0.9;
+    },
+    { title, state }
+  );
+  assert.equal(await page.locator('#matchmakingBannerTitle').textContent(), title);
+  assert.equal(await page.locator('#matchmakingBanner').getAttribute('data-match-state'), state);
+}
+
 async function assertOnlineWaiting(page) {
   await page.waitForFunction(() => document.querySelector('#netStatus')?.textContent === '온라인 대기');
   assert.equal(await page.locator('#netStatus').textContent(), '온라인 대기', 'single client waits for partner');
   assert.equal(await page.locator('#timeMeter').textContent(), '파트너 대기', 'waiting prompt replaces action prompt');
+  await assertMatchBanner(page, '파트너 대기', 'waiting');
   assert.equal(await page.locator('#summonButton').isEnabled(), false, 'summon disabled before partner joins');
   assert.equal(await page.locator('#mergeButton').isEnabled(), false, 'merge disabled before partner joins');
   assert.equal(await page.locator('#rescueButton').isEnabled(), false, 'rescue disabled before partner joins');
@@ -101,6 +118,8 @@ async function main() {
       await enterOnline(second, baseUrl);
       await assertOnlineReady(first, 'p1');
       await assertOnlineReady(second, 'p2');
+      await assertMatchBanner(first, '협동 시작', 'ready');
+      await assertMatchBanner(second, '협동 시작', 'ready');
 
       await first.locator('#summonButton').click();
       await first.waitForFunction(() => document.querySelector('#summonMeter')?.textContent === '소환 0');
@@ -113,6 +132,9 @@ async function main() {
       assert.equal(await first.locator('#netStatus').textContent(), '온라인 협동');
 
       await first.close();
+      await assertMatchBanner(second, '파트너 이탈', 'reset');
+      await second.waitForTimeout(800);
+      await assertMatchBanner(second, '파트너 이탈', 'reset');
       await assertOnlineWaiting(second);
       assert.equal(await second.locator('#summonMeter').textContent(), '소환 10', 'remaining player gets fresh run after disconnect');
 

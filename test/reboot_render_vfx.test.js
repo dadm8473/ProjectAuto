@@ -563,6 +563,38 @@ test('operation start cutin clears quickly even before the first player action',
   assert.equal(enemyDraws.length >= 1, true, 'expected early enemies to remain readable after the intro beat');
 });
 
+test('online waiting hides the operation start cutin so matchmaking stays quiet', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 0.35,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      board: image(1280, 256),
+      startCutin: image(390, 112)
+    },
+    { onlineWaiting: true }
+  );
+
+  const startCutinDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 390
+      && command.args[0].naturalHeight === 112
+  ));
+
+  assert.deepEqual(startCutinDraws, []);
+});
+
 test('equipped cosmetics render as a visual-only player board signature', () => {
   const ctx = mockContext();
   drawRebootBattle(

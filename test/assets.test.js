@@ -160,6 +160,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 40_000
   },
   {
+    path: 'src/client/assets/generated/reboot-online-matchmaking-panels.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260515-online-matchmaking-panels-imagegen.png',
+    width: 1170,
+    height: 144,
+    minRuntimeBytes: 60_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-combat-action-buttons.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-action-buttons-imagegen.png',
     width: 1170,
@@ -429,6 +436,12 @@ const TRANSPARENT_UI_FRAME_ASSETS = [
     path: 'src/client/assets/generated/reboot-lobby-intel-next.png',
     minSoftCoverage: 0.13,
     maxSoftCoverage: 0.27
+  },
+  {
+    path: 'src/client/assets/generated/reboot-online-matchmaking-panels.png',
+    minSoftCoverage: 0.7,
+    maxSoftCoverage: 0.92,
+    maxCornerAlpha: 24
   }
 ];
 

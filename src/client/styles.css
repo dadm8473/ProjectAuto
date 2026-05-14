@@ -59,6 +59,7 @@
   --combat-first-command-spotlight: url("/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=first-command");
   --combat-critical-action-rings: url("/src/client/assets/generated/reboot-critical-action-rings.png?v=critical-action-rings");
   --combat-coach-cues: url("/src/client/assets/generated/reboot-combat-coach-cues.png?v=combat-coach");
+  --online-matchmaking-panels: url("/src/client/assets/generated/reboot-online-matchmaking-panels.png?v=online-matchmaking");
   --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets");
   --combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates-alpha1");
   --combat-hud-row: clamp(72px, 22.33vw, 96px);
@@ -408,6 +409,73 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   object-fit: contain;
   object-position: center center;
   image-rendering: auto;
+}
+
+.matchmaking-banner {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--combat-hud-row) + env(safe-area-inset-top) + clamp(118px, 30vw, 138px));
+  z-index: 6;
+  width: min(calc(100% - 24px), 390px);
+  min-height: clamp(48px, 13.4vw, 58px);
+  transform: translateX(-50%);
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 2px;
+  padding: 8px clamp(64px, 18.6vw, 80px);
+  pointer-events: none;
+  background-image: var(--online-matchmaking-panels);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  color: #fff7dc;
+  text-align: center;
+  text-shadow: 0 3px 9px rgba(0, 0, 0, 0.72);
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.54));
+  animation: matchmakingBannerIn 220ms ease-out both;
+}
+
+.matchmaking-banner[hidden],
+body:not([data-app-screen="battle"]) .matchmaking-banner {
+  display: none;
+}
+
+.matchmaking-banner[data-match-state="waiting"] {
+  background-position: 0 0;
+}
+
+.matchmaking-banner[data-match-state="ready"] {
+  background-position: 50% 0;
+}
+
+.matchmaking-banner[data-match-state="reset"] {
+  background-position: 100% 0;
+}
+
+.matchmaking-banner strong,
+.matchmaking-banner span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.matchmaking-banner strong {
+  font-size: clamp(13px, 3.72vw, 16px);
+  line-height: 1;
+  font-weight: 1000;
+}
+
+.matchmaking-banner span {
+  color: rgba(245, 240, 220, 0.82);
+  font-size: clamp(9px, 2.79vw, 12px);
+  line-height: 1;
+  font-weight: 900;
+}
+
+@keyframes matchmakingBannerIn {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-7px) scale(0.98); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
 
 .toast {
