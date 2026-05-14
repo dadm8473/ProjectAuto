@@ -150,19 +150,41 @@ test('result reason copy stays compact for generated result plates', () => {
   }
 });
 
-test('retry creates a fresh run without opening monetization paths', () => {
+test('retry advances bot runs through authored seeds without opening monetization paths', () => {
   const previousGame = runTutorial();
   const retry = buildRebootResultModel({ result: previousGame.result }).primaryAction;
   const nextGame = startRebootRetry({ previousGame, action: retry });
+  const thirdGame = startRebootRetry({ previousGame: nextGame, action: retry });
+  const fourthGame = startRebootRetry({ previousGame: thirdGame, action: retry });
+  const wrappedGame = startRebootRetry({ previousGame: fourthGame, action: retry });
   const nextState = serializeState(nextGame);
 
   assert.notEqual(nextGame.runId, previousGame.runId);
-  assert.equal(nextGame.seedName, previousGame.seedName);
+  assert.equal(nextGame.seedName, 'lucky_clutch');
+  assert.equal(thirdGame.seedName, 'bad_recoverable');
+  assert.equal(fourthGame.seedName, 'boss_clutch');
+  assert.equal(wrappedGame.seedName, 'tutorial_success');
+  assert.equal(nextGame.seed, previousGame.seed + 1);
   assert.equal(nextGame.result, null);
   assert.equal(nextGame.events.length, 0);
   assert.equal(nextGame.now, 0);
   assert.equal(nextGame.resources.p1.summon, 10);
   assert.equal(nextState.actionState.p1.summon, true);
+});
+
+test('retry preserves non-bot or unlisted seed identity while still creating a fresh run', () => {
+  const onlineGame = createGame({ mode: 'online', seedName: 'boss_clutch', seed: 40, branch: 'merge' });
+  const onlineRetry = startRebootRetry({ previousGame: onlineGame, action: { action: 'retry' } });
+  const unlistedGame = createGame({ mode: 'bot', seedName: 'greed_loss', seed: 50 });
+  const unlistedRetry = startRebootRetry({ previousGame: unlistedGame, action: { action: 'retry' } });
+
+  assert.equal(onlineRetry.seedName, 'boss_clutch');
+  assert.equal(onlineRetry.branch, 'merge');
+  assert.equal(onlineRetry.seed, 41);
+  assert.equal(unlistedRetry.seedName, 'greed_loss');
+  assert.equal(unlistedRetry.seed, 51);
+  assert.notEqual(onlineRetry.runId, onlineGame.runId);
+  assert.notEqual(unlistedRetry.runId, unlistedGame.runId);
 });
 
 test('reboot shop renders earned-gem cosmetic purchases with owned and locked states', () => {

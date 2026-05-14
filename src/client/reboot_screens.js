@@ -24,6 +24,13 @@ const GOAL_LABELS = {
   turn_bad_rolls_into_utility: '약한 유닛 활용'
 };
 
+export const REBOOT_RETRY_SEED_SEQUENCE = [
+  'tutorial_success',
+  'lucky_clutch',
+  'bad_recoverable',
+  'boss_clutch'
+];
+
 const ROLE_LABELS = {
   attack: '공격',
   support: '지원',
@@ -437,10 +444,15 @@ export function buildRebootResultModel({ result, rewards = [], profile } = {}) {
 
 export function startRebootRetry({ previousGame, action }) {
   if (action?.action !== 'retry') return previousGame;
+  const botSeedIndex = REBOOT_RETRY_SEED_SEQUENCE.indexOf(previousGame.seedName);
+  const shouldRotateSeed = previousGame.mode === 'bot' && botSeedIndex >= 0;
+  const nextSeedName = shouldRotateSeed
+    ? REBOOT_RETRY_SEED_SEQUENCE[(botSeedIndex + 1) % REBOOT_RETRY_SEED_SEQUENCE.length]
+    : previousGame.seedName;
   return createGame({
     mode: previousGame.mode,
-    seedName: previousGame.seedName,
-    seed: previousGame.seed,
-    branch: previousGame.branch
+    seedName: nextSeedName,
+    seed: Number.isFinite(previousGame.seed) ? previousGame.seed + 1 : Date.now(),
+    branch: shouldRotateSeed ? undefined : previousGame.branch
   });
 }
