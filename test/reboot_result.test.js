@@ -383,6 +383,22 @@ test('lobby recommends the next profile action after rewards settle', () => {
   assert.equal(shopLobby.includes('외형 해금'), true);
 });
 
+test('battle-ready lobby does not duplicate the primary launch button inside the next-action strip', () => {
+  const lobby = buildRebootLobby({
+    gems: 0,
+    xp: 0,
+    processedRuns: [],
+    claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic'],
+    claimedPassTiers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    unlocks: ['mythic-aura', 'founder-board', 'merge-effect', 'rescue-effect', 'profile-frame']
+  });
+
+  assert.equal(lobby.includes('data-next-beacon="battle"'), true);
+  assert.equal(lobby.includes('class="lobby-battle-cue"'), true);
+  assert.equal(lobby.includes('data-lobby-open="battle"'), false);
+  assert.equal(lobby.includes('>출전<'), false);
+});
+
 test('meta navigation alerts expose only actionable profile destinations', () => {
   const empty = buildMetaNavAlerts({
     gems: 0,

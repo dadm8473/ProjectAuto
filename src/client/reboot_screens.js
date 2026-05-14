@@ -156,6 +156,13 @@ export function nextLobbyAction(profile = {}) {
   return { label: '다음 작전', title: '첫 구원 작전', detail: '유닛/외형 성장', screen: 'battle', cta: '출전', beacon: 'battle' };
 }
 
+function buildLobbyNextActionControl(nextAction) {
+  if (nextAction.screen === 'battle') {
+    return '<span class="lobby-battle-cue" aria-hidden="true"></span>';
+  }
+  return `<button type="button" data-lobby-open="${nextAction.screen}">${nextAction.cta}</button>`;
+}
+
 export function buildRebootLobby(model = {}) {
   const gems = model.gems ?? 0;
   const nextAction = nextLobbyAction(model);
@@ -180,7 +187,7 @@ export function buildRebootLobby(model = {}) {
       <span>${nextAction.label}</span>
       <strong>${nextAction.title}</strong>
       <p>${nextAction.detail}</p>
-      <button type="button" data-lobby-open="${nextAction.screen}">${nextAction.cta}</button>
+      ${buildLobbyNextActionControl(nextAction)}
     </section>
   `;
 }
