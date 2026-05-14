@@ -487,7 +487,7 @@ export const SHOP = {
       grant: { cosmetic: 'mythic-aura' },
       category: 'cosmetic',
       realMoney: false,
-      description: '기원/코어 릴레이에 적용되는 외형 오라.'
+      description: '코어 릴레이 오라'
     },
     {
       id: 'founder-board',
@@ -496,7 +496,7 @@ export const SHOP = {
       grant: { cosmetic: 'founder-board' },
       category: 'cosmetic',
       realMoney: false,
-      description: '협동 신호장 보드 스킨.'
+      description: '협동 보드 스킨'
     },
     {
       id: 'merge-effect',
@@ -505,7 +505,7 @@ export const SHOP = {
       grant: { cosmetic: 'merge-effect' },
       category: 'cosmetic',
       realMoney: false,
-      description: '합성 순간의 장난감 에너지 연출.'
+      description: '합성 이펙트'
     },
     {
       id: 'rescue-effect',
@@ -514,7 +514,7 @@ export const SHOP = {
       grant: { cosmetic: 'rescue-effect' },
       category: 'cosmetic',
       realMoney: false,
-      description: '파트너를 구할 때 터지는 보호광 연출.'
+      description: '구원 보호광'
     },
     {
       id: 'profile-frame',
@@ -523,7 +523,7 @@ export const SHOP = {
       grant: { cosmetic: 'profile-frame' },
       category: 'cosmetic',
       realMoney: false,
-      description: '홈과 매칭 화면에 쓰는 프로필 외형.'
+      description: '프로필 프레임'
     }
   ],
   pass: {

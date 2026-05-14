@@ -155,6 +155,19 @@ test('meta screens start with compact actionable status headers', () => {
   assert.equal(season.includes('보상 가능'), true);
 });
 
+test('shop card descriptions stay compact enough for portrait game cards', () => {
+  const shop = buildRebootShop({ gems: 300, unlocks: [] });
+  const descriptions = [...shop.matchAll(/<article class="screen-card shop-card"[\s\S]*?<p>(.*?)<\/p>/g)]
+    .map((match) => match[1]);
+
+  assert.equal(descriptions.length >= 5, true);
+  for (const description of descriptions) {
+    const compactLength = description.replace(/\s/g, '').length;
+    assert.equal(compactLength <= 9, true, `${description} is too long for a portrait shop card`);
+    assert.equal(/[.。]/.test(description), false, `${description} reads like paragraph copy`);
+  }
+});
+
 test('mission screen renders profile progress and claim states', () => {
   const missions = buildMissionScreen({
     processedRuns: ['run-1'],
