@@ -264,6 +264,58 @@ test('first player merge gets a generated board sigil before the burst', () => {
   assert.equal(mergeSigilIndex < mergeBurstIndex, true, 'merge sigil should ground the success moment before the burst');
 });
 
+test('first player rescue gets a generated link sigil before the flare', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 78.24,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'rescue_coil' }] },
+        p2: { danger: 44, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [{ enemyId: 'heavy_noise', spriteKey: 'heavy_noise' }],
+      events: [{ type: 'rescue', at: 78.04, playerId: 'p1' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      cosmeticSigils: image(960, 128),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const rescueSigilIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 960
+      && command.args[0].naturalHeight === 128
+      && command.args[1] === 576
+      && command.args[2] === 0
+      && command.args[3] === 192
+      && command.args[4] === 128
+      && command.args[6] >= 260
+      && command.args[7] >= 300
+      && command.args[8] >= 94
+  ));
+  const rescueFlareIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[1] === 512
+      && command.args[2] === 0
+      && command.args[7] === 132
+  ));
+
+  assert.notEqual(rescueSigilIndex, -1, 'expected generated rescue sigil to draw between the boards');
+  assert.notEqual(rescueFlareIndex, -1, 'expected rescue flare to draw above the link sigil');
+  assert.equal(rescueSigilIndex < rescueFlareIndex, true, 'rescue sigil should ground the co-op save before the flare');
+});
+
 test('image backdrop board labels sit on generated combat plates', () => {
   const ctx = mockContext();
   drawRebootBattle(

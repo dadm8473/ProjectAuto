@@ -798,6 +798,19 @@ function drawFirstMergeRewardSigil(ctx, state, assets = {}, reducedMotion = fals
   return drawCosmeticSigilSprite(ctx, image, index, 36 - (w - 318) / 2, 422 - (h - 92) / 2, w, h, alpha);
 }
 
+function drawFirstRescueRewardSigil(ctx, state, assets = {}, reducedMotion = false) {
+  const event = firstPlayerRecentEvent(state, 'rescue', 1.45);
+  const image = assets?.cosmeticSigils;
+  const index = COSMETIC_SIGIL_INDEX['rescue-effect'];
+  if (!event || !image?.complete || image.naturalWidth <= 0) return false;
+  const elapsed = Math.max(0, state.now - event.at);
+  const alpha = Math.min(0.86, eventAlpha(state, event, 1.45) * 1.08);
+  const swell = reducedMotion ? 1 : 1 + Math.max(0, Math.sin(elapsed * Math.PI * 3.2)) * 0.05;
+  const w = 310 * swell;
+  const h = 104 * swell;
+  return drawCosmeticSigilSprite(ctx, image, index, 40 - (w - 310) / 2, 274 - (h - 104) / 2, w, h, alpha);
+}
+
 function drawCombatMomentCallout(ctx, state, assets = {}) {
   const moments = [
     ...recentEvents(state, 'summon', 1.15),
@@ -883,6 +896,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawBoard(ctx, state.boards.p1, 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
   drawFirstSummonRewardSpotlight(ctx, state, assets);
   drawFirstMergeRewardSigil(ctx, state, assets, options.reducedMotion);
+  drawFirstRescueRewardSigil(ctx, state, assets, options.reducedMotion);
   drawRescueBeam(ctx, state, assets);
   drawCombatVfx(ctx, state, assets);
   drawPartnerAssistPing(ctx, state, assets);
