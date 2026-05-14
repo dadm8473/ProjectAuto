@@ -8,7 +8,7 @@ import {
   tickGame,
   tryBuyShopItem
 } from '../src/shared/game.js';
-import { assignRoomPlayers, boardForPlayer, createOnlineRoom, removeRoomClient, resetFinishedRoomForJoin } from './room.js';
+import { assignRoomPlayers, boardForPlayer, createOnlineRoom, joinRoomClient, removeRoomClient } from './room.js';
 import { approveClientPurchase, safeProfile } from './profile_purchase.js';
 import { dispatchBattleAction } from './reboot_action_dispatch.js';
 import { acceptKey, decodeClientFrame, encodeServerFrame } from './ws.js';
@@ -125,10 +125,13 @@ function upgrade(req, socket) {
     '',
     ''
   ].join('\r\n'));
-  resetFinishedRoomForJoin(room);
-  const id = `p${room.clients.size + 1}`;
-  room.clients.set(socket, { playerId: id, name: `플레이어 ${room.clients.size + 1}` });
-  assignRoomPlayers(room);
+  const joined = joinRoomClient(room, socket);
+  if (!joined.ok) {
+    send(socket, { type: 'error', reason: joined.reason });
+    socket.end();
+    return;
+  }
+  const id = joined.playerId;
 
   socket.on('data', (buffer) => {
     const text = decodeClientFrame(buffer);

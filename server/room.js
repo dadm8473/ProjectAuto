@@ -47,6 +47,20 @@ export function assignRoomPlayers(room) {
   }
 }
 
+export function addRoomClient(room, socket, name) {
+  if (room.clients.size >= 2) return { ok: false, reason: '방이 가득 찼습니다.' };
+  const playerId = `p${room.clients.size + 1}`;
+  room.clients.set(socket, { playerId, name: name || `플레이어 ${room.clients.size + 1}` });
+  assignRoomPlayers(room);
+  return { ok: true, playerId };
+}
+
+export function joinRoomClient(room, socket, name) {
+  if (room.clients.size >= 2) return { ok: false, reason: '방이 가득 찼습니다.' };
+  resetFinishedRoomForJoin(room);
+  return addRoomClient(room, socket, name);
+}
+
 export function removeRoomClient(room, socket) {
   room.clients.delete(socket);
   if (room.clients.size === 0) resetRoomGame(room);
