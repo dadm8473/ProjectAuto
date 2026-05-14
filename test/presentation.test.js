@@ -242,6 +242,9 @@ test('home collection shop and result are app-game screens, not combat BM drawer
   }
   assert.match(cssRuleBlock(css, '.bottom-dock'), /z-index:\s*32;/);
   assert.match(cssRuleBlock(css, '.screen-overlay,\n.result-overlay'), /z-index:\s*30;/);
+  const overlayButtonBlock = cssRuleBlock(css, '.screen-overlay button,\n.result-overlay button');
+  assert.match(overlayButtonBlock, /background:\s*transparent;/);
+  assert.equal(overlayButtonBlock.includes('background: rgba(10, 16, 16, 0.28);'), false);
   const finalResultOverlayBlock = css.slice(css.lastIndexOf('.result-overlay {'), css.indexOf('\n}', css.lastIndexOf('.result-overlay {')) + 2);
   assert.match(finalResultOverlayBlock, /z-index:\s*30;/);
 });
