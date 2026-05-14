@@ -1,0 +1,109 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+import { drawRebootBattle } from '../src/client/reboot_render.js';
+
+function image(width = 256, height = 128) {
+  return { complete: true, naturalWidth: width, naturalHeight: height };
+}
+
+function mockContext() {
+  const commands = [];
+  const ctx = {
+    commands,
+    _lineStart: null,
+    save: () => commands.push({ type: 'save' }),
+    restore: () => commands.push({ type: 'restore' }),
+    translate: (x, y) => commands.push({ type: 'translate', x, y }),
+    rotate: (angle) => commands.push({ type: 'rotate', angle }),
+    clearRect: (...args) => commands.push({ type: 'clearRect', args }),
+    drawImage: (...args) => commands.push({ type: 'drawImage', args }),
+    beginPath: () => commands.push({ type: 'beginPath' }),
+    moveTo(x, y) {
+      ctx._lineStart = { x, y };
+      commands.push({ type: 'moveTo', x, y });
+    },
+    lineTo(x, y) {
+      commands.push({ type: 'lineTo', x, y, from: ctx._lineStart });
+    },
+    stroke: () => commands.push({ type: 'stroke' }),
+    fill: () => commands.push({ type: 'fill' }),
+    roundRect: (...args) => commands.push({ type: 'roundRect', args }),
+    ellipse: (...args) => commands.push({ type: 'ellipse', args }),
+    fillRect: (...args) => commands.push({ type: 'fillRect', args }),
+    fillText: (...args) => commands.push({ type: 'fillText', args }),
+    createLinearGradient: () => ({ addColorStop: () => {} }),
+    set globalAlpha(value) { commands.push({ type: 'globalAlpha', value }); },
+    get globalAlpha() { return 1; },
+    set fillStyle(value) { commands.push({ type: 'fillStyle', value }); },
+    get fillStyle() { return '#000'; },
+    set strokeStyle(value) { commands.push({ type: 'strokeStyle', value }); },
+    get strokeStyle() { return '#000'; },
+    set lineWidth(value) { commands.push({ type: 'lineWidth', value }); },
+    get lineWidth() { return 1; },
+    set shadowColor(value) { commands.push({ type: 'shadowColor', value }); },
+    get shadowColor() { return '#000'; },
+    set shadowBlur(value) { commands.push({ type: 'shadowBlur', value }); },
+    get shadowBlur() { return 0; },
+    set font(value) { commands.push({ type: 'font', value }); },
+    get font() { return '10px system-ui'; }
+  };
+  return ctx;
+}
+
+function stateWithEffects() {
+  return {
+    now: 104,
+    boards: {
+      p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+      p2: { danger: 29, units: [{ spriteKey: 'spark_pin' }] }
+    },
+    enemies: [{ enemyId: 'mini_boss', spriteKey: 'mini_boss' }],
+    events: [{ type: 'rescue', at: 70, playerId: 'p1' }],
+    effects: [
+      { type: 'hit', playerId: 'p1', slot: 0, targetProgress: 0.62, targetLane: 0, targetType: 'mini_boss', ttl: 0.5 }
+    ]
+  };
+}
+
+test('combat VFX uses compact hit bolts and rescue pulses instead of screen-crossing strokes', () => {
+  const ctx = mockContext();
+  drawRebootBattle(ctx, stateWithEffects(), { width: 390, height: 620 }, {
+    backdrop: image(390, 620),
+    units: image(1280, 256),
+    enemies: image(1024, 256),
+    board: image(1280, 256),
+    hitBolts: image(768, 128),
+    bossAuras: image(768, 192)
+  });
+
+  const hitBoltDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 768
+      && command.args[0].naturalHeight === 128
+      && command.args[7] <= 108
+  ));
+  assert.equal(hitBoltDraws.length >= 1, true, 'expected a compact hit bolt draw');
+
+  const longLines = ctx.commands.filter((command) => {
+    if (command.type !== 'lineTo' || !command.from) return false;
+    return Math.hypot(command.x - command.from.x, command.y - command.from.y) > 120;
+  });
+  assert.deepEqual(longLines, []);
+
+  const rescuePulseDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[1] === 768
+      && command.args[2] === 0
+      && command.args[3] === 256
+      && command.args[4] === 256
+      && command.args[7] <= 104
+  ));
+  assert.equal(rescuePulseDraws.length >= 2, true, 'expected short rescue pulse sprites');
+
+  assert.equal(
+    ctx.commands.filter((command) => command.type === 'save').length,
+    ctx.commands.filter((command) => command.type === 'restore').length
+  );
+});

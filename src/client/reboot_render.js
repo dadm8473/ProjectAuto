@@ -45,7 +45,7 @@ export const REBOOT_ATLAS_MANIFEST = {
 
 export const REBOOT_BACKDROP_MANIFEST = {
   battle: {
-    src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-boss-aura1',
+    src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-hit-bolts1',
     width: 390,
     height: 620,
     source: 'imagegen'
@@ -78,6 +78,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     src: '/src/client/assets/generated/reboot-hit-beam.png',
     width: 320,
     height: 64,
+    source: 'imagegen'
+  },
+  hitBolts: {
+    src: '/src/client/assets/generated/reboot-hit-bolts.png?v=reboot-hit-bolts1',
+    width: 768,
+    height: 128,
     source: 'imagegen'
   },
   momentCallouts: {
@@ -139,6 +145,8 @@ export function createRebootAssetImages() {
   killBurst.src = REBOOT_EFFECT_MANIFEST.killBurst.src;
   const hitBeam = new Image();
   hitBeam.src = REBOOT_EFFECT_MANIFEST.hitBeam.src;
+  const hitBolts = new Image();
+  hitBolts.src = REBOOT_EFFECT_MANIFEST.hitBolts.src;
   const momentCallouts = new Image();
   momentCallouts.src = REBOOT_EFFECT_MANIFEST.momentCallouts.src;
   const crisisOverlays = new Image();
@@ -147,7 +155,7 @@ export function createRebootAssetImages() {
   rewardPickups.src = REBOOT_EFFECT_MANIFEST.rewardPickups.src;
   const bossAuras = new Image();
   bossAuras.src = REBOOT_EFFECT_MANIFEST.bossAuras.src;
-  return { ...atlases, backdrop, bossCutin, rescueCutin, killBurst, hitBeam, momentCallouts, crisisOverlays, rewardPickups, bossAuras };
+  return { ...atlases, backdrop, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, crisisOverlays, rewardPickups, bossAuras };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -259,18 +267,24 @@ function drawBossAura(ctx, assets, x, y, now = 0) {
   return drawBossAuraSprite(ctx, assets.bossAuras, auraIndex, x, y + 18, 128, 64, pulse);
 }
 
-function drawBeamSprite(ctx, image, from, to, alpha = 1) {
+function drawHitBoltSprite(ctx, image, from, to, targetType, alpha = 1) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const length = Math.hypot(dx, dy);
   if (length < 4) return false;
-  const height = Math.max(16, Math.min(32, length * 0.13));
+  const angle = Math.atan2(dy, dx);
+  const boltIndex = targetType === 'boss' || targetType === 'mini_boss' ? 2 : length > 170 ? 1 : 0;
+  const cellWidth = image.naturalWidth / 3;
+  const boltLength = Math.min(Math.max(48, length * 0.34), 108);
+  const height = boltIndex === 2 ? 42 : 32;
+  const centerX = to.x - Math.cos(angle) * boltLength * 0.42;
+  const centerY = to.y - Math.sin(angle) * boltLength * 0.42;
   ctx.save();
-  ctx.translate(from.x, from.y);
-  ctx.rotate(Math.atan2(dy, dx));
+  ctx.translate(centerX, centerY);
+  ctx.rotate(angle);
   ctx.globalAlpha *= alpha;
-  ctx.drawImage(image, 0, -height / 2, length, height);
+  ctx.drawImage(image, boltIndex * cellWidth, 0, cellWidth, image.naturalHeight, -boltLength / 2, -height / 2, boltLength, height);
   ctx.restore();
   return true;
 }
@@ -506,15 +520,8 @@ function drawRescueBeam(ctx, state, assets = {}) {
   const rescued = state.events.some((event) => event.type === 'rescue');
   if (!rescued) return;
   ctx.save();
-  drawAtlasSprite(ctx, assets, 'board', 'rescue_beam_segment', 195, 328, 114, 0.42);
-  ctx.strokeStyle = '#dff9ff';
-  ctx.shadowColor = '#58d7ff';
-  ctx.shadowBlur = 22;
-  ctx.lineWidth = 8;
-  ctx.beginPath();
-  ctx.moveTo(78, 148);
-  ctx.bezierCurveTo(135, 230, 250, 395, 312, 500);
-  ctx.stroke();
+  drawAtlasSprite(ctx, assets, 'board', 'rescue_beam_segment', 118, 220, 90, 0.3);
+  drawAtlasSprite(ctx, assets, 'board', 'rescue_beam_segment', 272, 420, 104, 0.24);
   ctx.restore();
 }
 
@@ -555,7 +562,13 @@ function drawHitBeams(ctx, state, assets = {}) {
     const from = boardSlotPoint(effect.playerId, effect.slot);
     const to = trackPointFromProgress(effect.targetProgress, effect.targetLane);
     const alpha = Math.max(0.16, Math.min(0.86, (effect.ttl ?? 0.62) / 0.62));
-    if (!drawBeamSprite(ctx, assets.hitBeam, from, to, alpha)) {
+    if (!drawHitBoltSprite(ctx, assets.hitBolts, from, to, effect.targetType, alpha)) {
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const angle = Math.atan2(dy, dx);
+      const boltLength = Math.min(Math.max(42, Math.hypot(dx, dy) * 0.28), 92);
+      const startX = to.x - Math.cos(angle) * boltLength;
+      const startY = to.y - Math.sin(angle) * boltLength;
       ctx.save();
       ctx.globalAlpha *= alpha;
       ctx.strokeStyle = '#58d7ff';
@@ -563,7 +576,7 @@ function drawHitBeams(ctx, state, assets = {}) {
       ctx.shadowColor = '#58d7ff';
       ctx.shadowBlur = 14;
       ctx.beginPath();
-      ctx.moveTo(from.x, from.y);
+      ctx.moveTo(startX, startY);
       ctx.lineTo(to.x, to.y);
       ctx.stroke();
       ctx.restore();

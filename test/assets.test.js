@@ -348,6 +348,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 8_000
   },
   {
+    path: 'src/client/assets/generated/reboot-hit-bolts.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-hit-bolts-chromakey-imagegen.png',
+    width: 768,
+    height: 128,
+    minRuntimeBytes: 20_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-reward-pickup-bursts.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-reward-pickup-bursts-chromakey-imagegen.png',
     width: 768,

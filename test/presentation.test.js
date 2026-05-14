@@ -23,7 +23,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js'",
-    "from './reboot_render.js?v=reboot-boss-aura1'",
+    "from './reboot_render.js?v=reboot-hit-bolts1'",
     "from './reboot_screens.js'",
     "from './reboot_online.js'"
   ]) {
@@ -170,11 +170,11 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-boss-aura1">'), true);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-boss-aura1"></script>'), true);
-  assert.equal(app.includes("from './reboot_render.js?v=reboot-boss-aura1'"), true);
-  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-boss-aura1'"), true);
-  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-boss-aura1")'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-hit-bolts1">'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-hit-bolts1"></script>'), true);
+  assert.equal(app.includes("from './reboot_render.js?v=reboot-hit-bolts1'"), true);
+  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-hit-bolts1'"), true);
+  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-hit-bolts1")'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -802,7 +802,7 @@ test('combat renderer anchors a generated boss aura under boss enemies', async (
 
   const trackBlock = render.slice(render.indexOf('function drawTrack'), render.indexOf('function enemyScreenPoint'));
   assert.equal(trackBlock.indexOf('drawBossAura(ctx, assets, x, y, state.now);') < trackBlock.indexOf("drawAtlasSprite(ctx, assets, 'enemies'"), true);
-  const auraBlock = render.slice(render.indexOf('function drawBossAuraSprite'), render.indexOf('function drawBeamSprite'));
+  const auraBlock = render.slice(render.indexOf('function drawBossAuraSprite'), render.indexOf('function drawHitBoltSprite'));
   assert.equal(auraBlock.includes('fillStyle'), false);
   assert.equal(auraBlock.includes('roundRect'), false);
 });
@@ -914,21 +914,43 @@ test('death bursts use generated reward pickup sprites instead of plain reward i
   assert.equal(rewardBlock.includes('roundedRect'), false);
 });
 
-test('hit effects draw generated beam sprites from unit sockets to targets', async () => {
+test('hit effects draw generated short bolt sprites without screen-crossing beams', async () => {
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
   for (const marker of [
-    'reboot-hit-beam.png',
-    'hitBeam',
-    'drawBeamSprite',
+    'reboot-hit-bolts.png',
+    "src: '/src/client/assets/generated/reboot-hit-bolts.png?v=reboot-hit-bolts1'",
+    'hitBolts',
+    'drawHitBoltSprite',
     'drawHitBeams',
     "effect.type === 'hit'",
     'boardSlotPoint(effect.playerId, effect.slot)',
     'trackPointFromProgress(effect.targetProgress, effect.targetLane)',
-    'drawBeamSprite(ctx, assets.hitBeam'
+    'const boltLength = Math.min(Math.max(48, length * 0.34), 108);',
+    'const centerX = to.x - Math.cos(angle) * boltLength * 0.42;',
+    'drawHitBoltSprite(ctx, assets.hitBolts'
   ]) {
     assert.equal(render.includes(marker), true, marker);
   }
+
+  const boltBlock = render.slice(render.indexOf('function drawHitBoltSprite'), render.indexOf('function drawHitBeams'));
+  assert.equal(boltBlock.includes('ctx.drawImage(image, 0, -height / 2, length, height);'), false);
+});
+
+test('rescue link feedback avoids a screen-crossing white stroke on the battlefield', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'function drawRescueBeam',
+    "drawAtlasSprite(ctx, assets, 'board', 'rescue_beam_segment', 118, 220, 90, 0.3);",
+    "drawAtlasSprite(ctx, assets, 'board', 'rescue_beam_segment', 272, 420, 104, 0.24);"
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+
+  const rescueBlock = render.slice(render.indexOf('function drawRescueBeam'), render.indexOf('function drawRewardPickups'));
+  assert.equal(rescueBlock.includes("ctx.strokeStyle = '#dff9ff';"), false);
+  assert.equal(rescueBlock.includes('ctx.bezierCurveTo(135, 230, 250, 395, 312, 500);'), false);
 });
 
 test('home navigation uses generated app-game icons instead of plain text buttons', async () => {
@@ -1585,7 +1607,7 @@ test('combat shell uses generated HUD and action dock chrome', async () => {
 
   for (const marker of [
     '--combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png")',
-    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-boss-aura1")',
+    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-hit-bolts1")',
     'body[data-app-screen="battle"] .hud::before',
     'body[data-app-screen="battle"] .action-panel::before',
     'background-image: var(--combat-hud-frame)',
