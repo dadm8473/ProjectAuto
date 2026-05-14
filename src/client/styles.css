@@ -73,6 +73,7 @@
   --lobby-bottom-dock-bottom: 18px;
   --reward-burst: url("/src/client/assets/generated/reboot-reward-burst.png");
   --shop-cosmetics: url("/src/client/assets/generated/reboot-shop-cosmetics.png");
+  --cosmetic-equip-aura: url("/src/client/assets/generated/reboot-cosmetic-equip-aura.png?v=cosmetic-equip");
 }
 
 * {
@@ -1619,6 +1620,50 @@ body[data-app-screen="season"] .app-screen::after {
 .shop-cosmetic[data-shop-cosmetic="merge-effect"] { background-position: -116px 0; }
 .shop-cosmetic[data-shop-cosmetic="rescue-effect"] { background-position: -174px 0; }
 .shop-cosmetic[data-shop-cosmetic="profile-frame"] { background-position: -232px 0; }
+
+.cosmetic-equip-aura {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  z-index: 1;
+  width: 86px;
+  height: 86px;
+  transform: translateY(-50%) scale(0.9);
+  pointer-events: none;
+  opacity: 0;
+  background-image: var(--cosmetic-equip-aura);
+  background-repeat: no-repeat;
+  background-size: 500% 100%;
+  background-position: 0 0;
+  filter: saturate(1.16) drop-shadow(0 8px 15px rgba(0, 0, 0, 0.54));
+}
+
+.shop-card[data-equipped="true"] .cosmetic-equip-aura {
+  opacity: 1;
+  animation: cosmeticEquipPulse 1.9s ease-in-out infinite;
+}
+
+.shop-card .shop-cosmetic {
+  position: relative;
+  z-index: 2;
+}
+
+.cosmetic-equip-aura[data-cosmetic-effect="mythic-aura"] { background-position: 0 0; }
+.cosmetic-equip-aura[data-cosmetic-effect="founder-board"] { background-position: 25% 0; }
+.cosmetic-equip-aura[data-cosmetic-effect="merge-effect"] { background-position: 50% 0; }
+.cosmetic-equip-aura[data-cosmetic-effect="rescue-effect"] { background-position: 75% 0; }
+.cosmetic-equip-aura[data-cosmetic-effect="profile-frame"] { background-position: 100% 0; }
+
+@keyframes cosmeticEquipPulse {
+  0%, 100% { transform: translateY(-50%) scale(0.88); filter: saturate(1.08) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.54)); }
+  50% { transform: translateY(-50%) scale(0.98); filter: saturate(1.28) drop-shadow(0 10px 18px rgba(74, 211, 196, 0.36)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shop-card[data-equipped="true"] .cosmetic-equip-aura {
+    animation: none;
+  }
+}
 
 .reward-token {
   width: 48px;

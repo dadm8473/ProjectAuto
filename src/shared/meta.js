@@ -15,6 +15,10 @@ function safeStringList(value) {
   return Array.isArray(value) ? unique(value.filter((item) => typeof item === 'string')) : [];
 }
 
+function safeEquippedCosmetic(value, unlocks) {
+  return typeof value === 'string' && unlocks.includes(value) ? value : '';
+}
+
 function safeTierList(value) {
   return Array.isArray(value) ? unique(value.filter((item) => Number.isInteger(item) && item >= 0)) : [];
 }
@@ -34,6 +38,7 @@ export function createMetaProfile() {
     claimedMissions: [],
     claimedPassTiers: [],
     unlocks: [],
+    equippedCosmetic: '',
     processedRuns: [],
     unitLevels: {}
   };
@@ -42,13 +47,15 @@ export function createMetaProfile() {
 export function normalizeMetaProfile(value) {
   const base = createMetaProfile();
   if (!value || typeof value !== 'object') return base;
+  const unlocks = safeStringList(value.unlocks);
   return {
     version: META_PROFILE_VERSION,
     gems: safeNumber(value.gems),
     xp: safeNumber(value.xp),
     claimedMissions: safeStringList(value.claimedMissions),
     claimedPassTiers: safeTierList(value.claimedPassTiers),
-    unlocks: safeStringList(value.unlocks),
+    unlocks,
+    equippedCosmetic: safeEquippedCosmetic(value.equippedCosmetic, unlocks),
     processedRuns: safeStringList(value.processedRuns),
     unitLevels: safeUnitLevels(value.unitLevels)
   };

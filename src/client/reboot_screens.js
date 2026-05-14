@@ -218,13 +218,15 @@ export function buildRebootShop(profile = {}) {
   const shopItems = items.map((item) => {
     const cosmetic = item.grant.cosmetic;
     const owned = unlocks.includes(cosmetic);
+    const equipped = owned && profile.equippedCosmetic === cosmetic;
     const price = item.price?.gems ?? 0;
-    const locked = gems < price;
-    const cardState = owned ? 'owned' : locked ? 'locked' : 'ready';
-    const actionLabel = owned ? '보유' : locked ? '젬 부족' : '해금';
+    const locked = !owned && gems < price;
+    const cardState = owned || equipped ? 'owned' : locked ? 'locked' : 'ready';
+    const actionLabel = equipped ? '장착중' : owned ? '착용' : locked ? '젬 부족' : '해금';
     return `
-    <article class="screen-card shop-card" data-item="${item.id}" data-owned="${owned}">
+    <article class="screen-card shop-card" data-item="${item.id}" data-owned="${owned}" data-equipped="${equipped}">
       ${cardStateBadge(cardState)}
+      <span class="cosmetic-equip-aura" data-cosmetic-effect="${item.id}" aria-hidden="true"></span>
       <span class="sprite-token shop-cosmetic" data-shop-cosmetic="${item.id}"></span>
       <div class="card-copy">
         <span class="role-pill">외형</span>
@@ -232,7 +234,7 @@ export function buildRebootShop(profile = {}) {
         <p>${item.description}</p>
         <span class="shop-price">${price} 젬</span>
       </div>
-      <button type="button" data-shop-buy="${item.id}"${owned || locked ? ' disabled' : ''}>${actionLabel}</button>
+      <button type="button" data-shop-buy="${item.id}"${equipped || locked ? ' disabled' : ''}>${actionLabel}</button>
     </article>
   `;
   }).join('');

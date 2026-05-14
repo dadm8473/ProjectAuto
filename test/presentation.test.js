@@ -265,13 +265,15 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-medals1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=cosmetic-equip1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-medals1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-reveal1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-card-states1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cosmetic-equip1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(app.includes("from './reboot_render.js?v=reboot-action-ready1'"), true);
@@ -950,6 +952,36 @@ test('result title and guidance copy use generated plate frames', async () => {
   const copyBlock = css.slice(css.indexOf('#resultTitle'), css.indexOf('.result-actions'));
   assert.equal(copyBlock.includes('border: 1px solid'), false);
   assert.equal(copyBlock.includes('linear-gradient'), false);
+});
+
+test('shop equipped cosmetics use generated expression aura instead of inert owned buttons', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    '--cosmetic-equip-aura: url("/src/client/assets/generated/reboot-cosmetic-equip-aura.png?v=cosmetic-equip")',
+    'data-equipped="${equipped}"',
+    'class="cosmetic-equip-aura"',
+    'data-cosmetic-effect="${item.id}"',
+    'equipped ? \'장착중\' : owned ? \'착용\' : locked ? \'젬 부족\' : \'해금\'',
+    'equippedCosmetic: cosmetic',
+    'showRewardReveal(\'외형 장착\'',
+    '.cosmetic-equip-aura',
+    'background-image: var(--cosmetic-equip-aura);',
+    'background-size: 500% 100%;',
+    '.shop-card[data-equipped="true"] .cosmetic-equip-aura',
+    '.cosmetic-equip-aura[data-cosmetic-effect="mythic-aura"]',
+    '.cosmetic-equip-aura[data-cosmetic-effect="profile-frame"]',
+    '@media (prefers-reduced-motion: reduce)',
+    '.shop-card[data-equipped="true"] .cosmetic-equip-aura {\n    animation: none;'
+  ]) {
+    assert.equal(`${css}\n${app}\n${screens}`.includes(marker), true, marker);
+  }
+
+  const equipBlock = css.slice(css.indexOf('.cosmetic-equip-aura {'), css.indexOf('.shop-card[data-equipped="true"] .cosmetic-equip-aura'));
+  assert.equal(equipBlock.includes('linear-gradient'), false);
+  assert.equal(equipBlock.includes('border:'), false);
 });
 
 test('combat renderer uses generated VFX atlas for action feedback', async () => {

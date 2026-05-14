@@ -224,7 +224,19 @@ function handleShopPurchase(event) {
   if (!item) return;
   const cosmetic = item.grant.cosmetic;
   if (profile.unlocks.includes(cosmetic)) {
-    showToast('이미 보유 중입니다');
+    if (profile.equippedCosmetic === cosmetic) {
+      showToast('이미 장착 중입니다');
+      return;
+    }
+    profile = normalizeMetaProfile({
+      ...profile,
+      equippedCosmetic: cosmetic
+    });
+    saveProfile();
+    renderHomeScreens();
+    flashMetaClaim(dom.shopList, `[data-shop-buy="${selectorValue(item.id)}"]`, 'shop');
+    showRewardReveal('외형 장착', item.name, 'cosmetic_shard');
+    showToast(`${item.name} 장착`, 'reward');
     return;
   }
   const price = item.price?.gems ?? 0;
@@ -235,7 +247,8 @@ function handleShopPurchase(event) {
   profile = normalizeMetaProfile({
     ...profile,
     gems: profile.gems - price,
-    unlocks: [...profile.unlocks, cosmetic]
+    unlocks: [...profile.unlocks, cosmetic],
+    equippedCosmetic: cosmetic
   });
   saveProfile();
   renderHomeScreens();

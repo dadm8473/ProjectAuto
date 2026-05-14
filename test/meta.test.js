@@ -107,3 +107,23 @@ test('meta profile normalization rejects malformed storage without losing shape'
   assert.deepEqual(profile.processedRuns, ['run-1']);
   assert.deepEqual(profile.unitLevels, { spark_pin: 3 });
 });
+
+test('meta profile keeps equipped cosmetic only when it is unlocked', () => {
+  const equipped = normalizeMetaProfile({
+    gems: 10,
+    unlocks: ['mythic-aura', 'merge-effect'],
+    equippedCosmetic: 'mythic-aura'
+  });
+  const stale = normalizeMetaProfile({
+    unlocks: ['mythic-aura'],
+    equippedCosmetic: 'founder-board'
+  });
+  const malformed = normalizeMetaProfile({
+    unlocks: ['mythic-aura'],
+    equippedCosmetic: 42
+  });
+
+  assert.equal(equipped.equippedCosmetic, 'mythic-aura');
+  assert.equal(stale.equippedCosmetic, '');
+  assert.equal(malformed.equippedCosmetic, '');
+});

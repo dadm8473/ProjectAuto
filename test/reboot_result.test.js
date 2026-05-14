@@ -162,7 +162,7 @@ test('reboot shop renders earned-gem cosmetic purchases with owned and locked st
   assert.equal(shop.includes('90 젬'), true);
   assert.equal(shop.includes('140 젬'), true);
   assert.equal(shop.includes('>해금<'), true);
-  assert.equal(shop.includes('>보유<'), true);
+  assert.equal(shop.includes('>착용<'), true);
   assert.equal(shop.includes('lucky-cache'), false);
   assert.equal(shop.includes('run_boost'), false);
 });
@@ -283,6 +283,23 @@ test('meta cards render generated state badge hooks for ready owned and locked s
   assert.equal(shop.includes('data-owned="true"'), true);
   assert.equal(shop.includes('class="card-state-badge" data-card-state="owned"'), true);
   assert.equal(missions.includes('class="card-state-badge" data-card-state="locked"'), true);
+});
+
+test('shop turns owned cosmetics into equipped expression instead of dead BM cards', () => {
+  const shop = buildRebootShop({
+    gems: 300,
+    unlocks: ['mythic-aura', 'merge-effect'],
+    equippedCosmetic: 'mythic-aura'
+  });
+
+  assert.equal(shop.includes('data-equipped="true"'), true);
+  assert.equal(shop.includes('data-equipped="false"'), true);
+  assert.equal(shop.includes('class="cosmetic-equip-aura"'), true);
+  assert.equal(shop.includes('data-cosmetic-effect="mythic-aura"'), true);
+  assert.equal(shop.includes('data-shop-buy="mythic-aura" disabled>장착중<'), true);
+  assert.equal(shop.includes('data-shop-buy="merge-effect">착용<'), true);
+  assert.equal(shop.includes('data-shop-buy="founder-board">해금<'), true);
+  assert.equal(shop.includes('>보유<'), false);
 });
 
 test('mission goals stay compact enough for portrait mission cards', () => {
