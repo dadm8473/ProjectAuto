@@ -144,6 +144,10 @@ function fallbackToBotPartner(reason) {
   showToast('온라인 응답이 없어 봇 파트너로 전환합니다', 'warning');
 }
 
+function waitingForOnlinePartner(current) {
+  return current.mode === 'online' && current.players?.some((player) => player.bot);
+}
+
 function scheduleOnlineFallback() {
   clearOnlineFallback();
   onlineFallbackTimer = setTimeout(() => fallbackToBotPartner('timeout'), ONLINE_CONNECT_FALLBACK_MS);
@@ -495,6 +499,10 @@ function executeLocal(action) {
 function command(actionName) {
   if (appScreen !== 'battle') return;
   const action = commandForRebootAction(actionName);
+  if (game.mode === 'online' && waitingForOnlinePartner(game)) {
+    showToast('파트너 입장 대기 중', 'warning');
+    return;
+  }
   if (game.mode === 'online') {
     if (!online?.send(action)) {
       showToast('온라인 연결 대기 중', 'warning');
@@ -515,7 +523,8 @@ function updateMeters(current) {
   dom.summonMeter.textContent = `소환 ${resources.summon}`;
   dom.rescueMeter.textContent = `구원 ${Math.round(resources.rescue)}%`;
   dom.dangerMeter.textContent = `위험 ${Math.round(current.boards[partner]?.danger ?? 0)}`;
-  dom.timeMeter.textContent = buildCombatStatusPrompt({ current, localBoardId });
+  const onlineWaiting = waitingForOnlinePartner(current);
+  dom.timeMeter.textContent = buildCombatStatusPrompt({ current, localBoardId, onlineWaiting });
   const bossWarning = current.now >= 92 && current.now < 120;
   dom.bossMeter.hidden = !bossWarning;
   dom.bossMeter.textContent = bossWarning ? '보스 경고' : '';
@@ -523,6 +532,7 @@ function updateMeters(current) {
 
 function updateButtons(current) {
   const actions = buildRebootActionState(current, localBoardId);
+  const onlineWaiting = waitingForOnlinePartner(current);
   const coachCue = appScreen === 'battle'
     ? buildCombatCoachCue({ current, localBoardId, actions })
     : '';
@@ -533,10 +543,11 @@ function updateButtons(current) {
     ['merge', dom.mergeButton],
     ['rescue', dom.rescueButton]
   ]) {
-    button.disabled = !actions[key].enabled;
-    button.dataset.ready = String(actions[key].enabled);
-    button.dataset.critical = String(isCriticalRebootAction({ actionKey: key, current, localBoardId, enabled: actions[key].enabled }));
-    button.title = actions[key].reason;
+    const enabled = actions[key].enabled && !onlineWaiting;
+    button.disabled = !enabled;
+    button.dataset.ready = String(enabled);
+    button.dataset.critical = String(isCriticalRebootAction({ actionKey: key, current, localBoardId, enabled }));
+    button.title = onlineWaiting ? '파트너 입장 대기 중' : actions[key].reason;
   }
 }
 

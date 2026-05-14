@@ -8,7 +8,14 @@ import {
   tickGame,
   tryBuyShopItem
 } from '../src/shared/game.js';
-import { assignRoomPlayers, boardForPlayer, createOnlineRoom, joinRoomClient, removeRoomClient } from './room.js';
+import {
+  assignRoomPlayers,
+  boardForPlayer,
+  createOnlineRoom,
+  joinRoomClient,
+  removeRoomClient,
+  roomReadyForOnlineCombat
+} from './room.js';
 import { approveClientPurchase, safeProfile } from './profile_purchase.js';
 import { dispatchBattleAction } from './reboot_action_dispatch.js';
 import { acceptKey, decodeClientFrame, encodeServerFrame } from './ws.js';
@@ -94,7 +101,9 @@ export function handleActionForTest({ targetRoom = room, socket, action, send: s
   const playerId = client?.playerId ?? 'guest';
   let result = { ok: false, reason: '알 수 없는 행동.' };
   const boardPlayer = boardForPlayer(targetRoom.game.players, playerId);
-  if (action.type === 'buy' && !isRebootGame(targetRoom.game)) {
+  if (isRebootGame(targetRoom.game) && targetRoom.game.mode === 'online' && !roomReadyForOnlineCombat(targetRoom)) {
+    result = { ok: false, reason: '파트너 입장 대기 중.' };
+  } else if (action.type === 'buy' && !isRebootGame(targetRoom.game)) {
     const approval = approveClientPurchase(client, action);
     if (!approval.ok) result = { ok: false, reason: approval.reason };
     else {
@@ -161,6 +170,11 @@ function tickRoom() {
   const dt = Math.min(0.1, (now - room.lastTick) / 1000);
   room.lastTick = now;
   if (room.clients.size === 0) return;
+  assignRoomPlayers(room);
+  if (!roomReadyForOnlineCombat(room)) {
+    broadcast({ type: 'state', state: serializeState(room.game) });
+    return;
+  }
   tickGame(room.game, dt);
   if (room.game.over && room.resetAt === null) room.resetAt = now + 6000;
   if (room.resetAt !== null && now >= room.resetAt) {

@@ -47,6 +47,10 @@ export function assignRoomPlayers(room) {
   }
 }
 
+export function roomReadyForOnlineCombat(room) {
+  return room.clients.size >= 2;
+}
+
 export function addRoomClient(room, socket, name) {
   if (room.clients.size >= 2) return { ok: false, reason: '방이 가득 찼습니다.' };
   const playerId = `p${room.clients.size + 1}`;
@@ -62,9 +66,10 @@ export function joinRoomClient(room, socket, name) {
 }
 
 export function removeRoomClient(room, socket) {
-  room.clients.delete(socket);
-  if (room.clients.size === 0) resetRoomGame(room);
-  else {
+  const removed = room.clients.delete(socket);
+  if (!removed) return room;
+  resetRoomGame(room);
+  if (room.clients.size > 0) {
     normalizeRoomClientSlots(room);
     assignRoomPlayers(room);
   }

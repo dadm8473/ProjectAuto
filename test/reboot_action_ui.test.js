@@ -107,3 +107,15 @@ test('combat status prompt names the next useful action instead of only elapsed 
     localBoardId: 'p1'
   }), '구원 가능');
 });
+
+test('combat status prompt shows online partner wait before normal action prompts', () => {
+  assert.equal(buildCombatStatusPrompt({
+    current: {
+      ...state({ now: 4 }),
+      resources: { p1: { summon: 10, rescue: 0 } },
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    localBoardId: 'p1',
+    onlineWaiting: true
+  }), '파트너 대기');
+});

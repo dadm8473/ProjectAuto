@@ -26,8 +26,9 @@ export function buildCombatCoachCue({ current, localBoardId, actions }) {
   return '';
 }
 
-export function buildCombatStatusPrompt({ current, localBoardId }) {
+export function buildCombatStatusPrompt({ current, localBoardId, onlineWaiting = false }) {
   if (current.result) return '전투 완료';
+  if (onlineWaiting) return '파트너 대기';
   const actions = current.actionState?.[localBoardId] ?? {};
   const resources = current.resources?.[localBoardId] ?? { summon: 0, rescue: 0 };
   const partner = localBoardId === 'p1' ? 'p2' : 'p1';

@@ -60,6 +60,15 @@ async function assertOnlineReady(page, label) {
   assert.equal(await page.locator('#rescueButton').isEnabled(), false, `${label} rescue starts locked`);
 }
 
+async function assertOnlineWaiting(page) {
+  await page.waitForFunction(() => document.querySelector('#netStatus')?.textContent === '온라인 대기');
+  assert.equal(await page.locator('#netStatus').textContent(), '온라인 대기', 'single client waits for partner');
+  assert.equal(await page.locator('#timeMeter').textContent(), '파트너 대기', 'waiting prompt replaces action prompt');
+  assert.equal(await page.locator('#summonButton').isEnabled(), false, 'summon disabled before partner joins');
+  assert.equal(await page.locator('#mergeButton').isEnabled(), false, 'merge disabled before partner joins');
+  assert.equal(await page.locator('#rescueButton').isEnabled(), false, 'rescue disabled before partner joins');
+}
+
 async function main() {
   const port = await findFreePort();
   const baseUrl = `http://127.0.0.1:${port}`;
@@ -88,6 +97,7 @@ async function main() {
       const second = await context.newPage();
 
       await enterOnline(first, baseUrl);
+      await assertOnlineWaiting(first);
       await enterOnline(second, baseUrl);
       await assertOnlineReady(first, 'p1');
       await assertOnlineReady(second, 'p2');
@@ -101,6 +111,15 @@ async function main() {
       await second.waitForFunction(() => document.querySelector('#summonMeter')?.textContent === '소환 0');
       assert.equal(await second.locator('#summonButton').isEnabled(), false, 'p2 summon spent');
       assert.equal(await first.locator('#netStatus').textContent(), '온라인 협동');
+
+      await first.close();
+      await assertOnlineWaiting(second);
+      assert.equal(await second.locator('#summonMeter').textContent(), '소환 10', 'remaining player gets fresh run after disconnect');
+
+      const third = await context.newPage();
+      await enterOnline(third, baseUrl);
+      await assertOnlineReady(second, 'remaining');
+      await assertOnlineReady(third, 'replacement');
 
       await context.close();
     } finally {

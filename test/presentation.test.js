@@ -298,6 +298,32 @@ test('online entry has app-game fallback instead of trapping players in a dead c
   );
 });
 
+test('online waiting state blocks combat until the second player arrives', async () => {
+  const app = await readFile('src/client/app.js', 'utf8');
+  const server = await readFile('server/server.js', 'utf8');
+
+  for (const marker of [
+    'function waitingForOnlinePartner(current)',
+    "return current.mode === 'online' && current.players?.some((player) => player.bot);",
+    'const onlineWaiting = waitingForOnlinePartner(current);',
+    'buildCombatStatusPrompt({ current, localBoardId, onlineWaiting })',
+    "button.title = onlineWaiting ? '파트너 입장 대기 중' : actions[key].reason;",
+    "if (game.mode === 'online' && waitingForOnlinePartner(game)) {",
+    "showToast('파트너 입장 대기 중', 'warning');"
+  ]) {
+    assert.equal(app.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    'roomReadyForOnlineCombat',
+    'if (!roomReadyForOnlineCombat(room))',
+    'if (isRebootGame(targetRoom.game) && targetRoom.game.mode === \'online\' && !roomReadyForOnlineCombat(targetRoom))',
+    "result = { ok: false, reason: '파트너 입장 대기 중.' };"
+  ]) {
+    assert.equal(server.includes(marker), true, marker);
+  }
+});
+
 test('app screen changes use a generated game wipe instead of instant web page swapping', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
@@ -700,7 +726,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
     "const coachCue = appScreen === 'battle'",
     'document.body.dataset.coachCue = coachCue;',
     'delete document.body.dataset.coachCue;',
-    'button.dataset.critical = String(isCriticalRebootAction({ actionKey: key, current, localBoardId, enabled: actions[key].enabled }));'
+    'button.dataset.critical = String(isCriticalRebootAction({ actionKey: key, current, localBoardId, enabled }));'
   ]) {
     assert.equal(app.includes(marker), true, marker);
   }

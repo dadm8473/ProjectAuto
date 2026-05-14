@@ -101,3 +101,45 @@ test('joining online with profile gems does not poison reboot combat resources',
   assert.equal(room.game.metaProfile.startingGems, 28);
   assert.doesNotThrow(() => tickGame(room.game, 20));
 });
+
+test('server blocks reboot combat actions while an online player waits for a partner', () => {
+  const room = createOnlineRoom(106);
+  const first = { destroyed: false };
+  const messages = [];
+  room.clients.set(first, { playerId: 'p1', name: 'First' });
+
+  const before = serializeState(room.game);
+  handleActionForTest({
+    targetRoom: room,
+    socket: first,
+    action: { type: 'summon' },
+    send(_socket, message) {
+      messages.push(message);
+    }
+  });
+
+  assert.deepEqual(serializeState(room.game), before);
+  assert.deepEqual(messages, [{ type: 'error', reason: '파트너 입장 대기 중.' }]);
+});
+
+test('server allows reboot combat actions once the online partner has joined', () => {
+  const room = createOnlineRoom(107);
+  const first = { destroyed: false };
+  const second = { destroyed: false };
+  const messages = [];
+  room.clients.set(first, { playerId: 'p1', name: 'First' });
+  room.clients.set(second, { playerId: 'p2', name: 'Second' });
+
+  handleActionForTest({
+    targetRoom: room,
+    socket: first,
+    action: { type: 'summon' },
+    send(_socket, message) {
+      messages.push(message);
+    }
+  });
+
+  assert.equal(messages[0].type, 'action_result');
+  assert.equal(messages[0].result.ok, true);
+  assert.equal(room.game.boards.p1.units.length, 1);
+});

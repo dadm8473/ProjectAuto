@@ -3,7 +3,16 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 import { decodeClientFrame, encodeServerFrame } from '../server/ws.js';
-import { addRoomClient, boardForPlayer, createOnlineRoom, joinRoomClient, removeRoomClient, resetFinishedRoomForJoin } from '../server/room.js';
+import {
+  addRoomClient,
+  boardForPlayer,
+  createOnlineRoom,
+  joinRoomClient,
+  removeRoomClient,
+  resetFinishedRoomForJoin,
+  roomReadyForOnlineCombat
+} from '../server/room.js';
+import { dispatchBattleAction } from '../server/reboot_action_dispatch.js';
 
 test('server frames encode a readable text websocket payload', () => {
   const frame = encodeServerFrame(JSON.stringify({ type: 'state', ok: true }));
@@ -89,6 +98,66 @@ test('single remaining online socket is reassigned to p1 after stale p1 disconne
   assert.equal(boardForPlayer(room.game.players, remaining.playerId), 'p1');
 });
 
+test('remaining online socket gets a fresh waiting run after a mid-combat disconnect', () => {
+  const room = createOnlineRoom(1);
+  const staleP1 = {};
+  const remainingP2 = {};
+  addRoomClient(room, staleP1, 'Leaving');
+  addRoomClient(room, remainingP2, 'Staying');
+  const runIdBefore = room.game.runId;
+
+  const spent = dispatchBattleAction({
+    game: room.game,
+    action: { type: 'summon' },
+    playerId: 'p1',
+    boardPlayer: 'p1'
+  });
+  assert.equal(spent.ok, true);
+  assert.equal(room.game.resources.p1.summon, 0);
+  assert.equal(room.game.resources.p2.summon, 10);
+
+  removeRoomClient(room, staleP1);
+
+  const remaining = room.clients.get(remainingP2);
+  assert.equal(remaining.playerId, 'p1');
+  assert.notEqual(room.game.runId, runIdBefore);
+  assert.equal(room.game.resources.p1.summon, 10);
+  assert.equal(room.game.resources.p2.summon, 10);
+  assert.equal(room.game.boards.p1.units.length, 0);
+  assert.deepEqual(room.game.players, [
+    { id: 'p1', name: 'Staying', bot: false, ready: true },
+    { id: 'p2', name: '자동 파트너', bot: true, ready: true }
+  ]);
+});
+
+test('removing an already-cleared online socket does not reset an active replacement match', () => {
+  const room = createOnlineRoom(1);
+  const staleP1 = {};
+  const staying = {};
+  const replacement = {};
+  addRoomClient(room, staleP1, 'Leaving');
+  addRoomClient(room, staying, 'Staying');
+  removeRoomClient(room, staleP1);
+  addRoomClient(room, replacement, 'Replacement');
+
+  const activeRunId = room.game.runId;
+  const spent = dispatchBattleAction({
+    game: room.game,
+    action: { type: 'summon' },
+    playerId: 'p1',
+    boardPlayer: 'p1'
+  });
+  assert.equal(spent.ok, true);
+  assert.equal(room.game.resources.p1.summon, 0);
+
+  removeRoomClient(room, staleP1);
+
+  assert.equal(room.game.runId, activeRunId);
+  assert.equal(room.game.resources.p1.summon, 0);
+  assert.equal(room.game.boards.p1.units.length, 1);
+  assert.deepEqual([...room.clients.values()].map((client) => client.playerId), ['p1', 'p2']);
+});
+
 test('full online room rejects a third socket without remapping the active match', () => {
   const room = createOnlineRoom(1);
   const first = {};
@@ -126,7 +195,21 @@ test('full finished online room rejects a third socket without resetting the res
   assert.deepEqual(room.game.result, resultBefore);
 });
 
-test('server does not advance empty online rooms', async () => {
+test('online combat is ready only after two human sockets have joined', () => {
+  const room = createOnlineRoom(1);
+  const first = {};
+  const second = {};
+
+  assert.equal(roomReadyForOnlineCombat(room), false);
+  addRoomClient(room, first, 'First');
+  assert.equal(roomReadyForOnlineCombat(room), false);
+  addRoomClient(room, second, 'Second');
+  assert.equal(roomReadyForOnlineCombat(room), true);
+  removeRoomClient(room, first);
+  assert.equal(roomReadyForOnlineCombat(room), false);
+});
+
+test('server does not advance empty or waiting online rooms', async () => {
   const source = await readFile('server/server.js', 'utf8');
   const tickStart = source.indexOf('function tickRoom()');
   assert.notEqual(tickStart, -1);
@@ -134,6 +217,8 @@ test('server does not advance empty online rooms', async () => {
 
   assert.equal(tickBody.includes('if (room.clients.size === 0) return;'), true);
   assert.equal(tickBody.indexOf('if (room.clients.size === 0) return;') < tickBody.indexOf('tickGame(room.game, dt);'), true);
+  assert.equal(tickBody.includes('if (!roomReadyForOnlineCombat(room))'), true);
+  assert.equal(tickBody.indexOf('if (!roomReadyForOnlineCombat(room))') < tickBody.indexOf('tickGame(room.game, dt);'), true);
 });
 
 test('online server rejects hidden manual overclock actions', async () => {
