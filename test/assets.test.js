@@ -355,6 +355,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 20_000
   },
   {
+    path: 'src/client/assets/generated/reboot-action-ready-pulses.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-action-ready-pulses-chromakey-imagegen.png',
+    width: 768,
+    height: 128,
+    minRuntimeBytes: 20_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-reward-pickup-bursts.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-reward-pickup-bursts-chromakey-imagegen.png',
     width: 768,

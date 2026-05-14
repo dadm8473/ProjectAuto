@@ -8,6 +8,8 @@ import {
 
 let nextRunId = 1;
 let nextEffectId = 1;
+const BOSS_DECISION_START = 92;
+const BOSS_DECISION_END = 102;
 
 const BOT_PARTNER_SCRIPT = [
   { at: 18, unitId: 'spark_pin', highlight: false },
@@ -74,7 +76,7 @@ function player(game, playerId) {
 }
 
 function nextScriptUnit(game, playerId) {
-  if (game.seedName === 'boss_clutch' && game.now >= 92 && game.now <= 101) {
+  if (isBossDecisionWindow(game)) {
     if (game.branch === 'summonSlow') return 'slow_coil';
     if (game.branch === 'summonBurst') return 'burst_pin';
   }
@@ -85,7 +87,7 @@ function nextScriptUnit(game, playerId) {
 }
 
 function nextMergeUnit(game) {
-  if (game.seedName === 'boss_clutch' && game.now >= 92 && game.now <= 101) return 'burst_pin';
+  if (isBossDecisionWindow(game)) return 'burst_pin';
   const seed = REBOOT_SEEDS[game.seedName] ?? REBOOT_SEEDS.tutorial_success;
   const index = game.internal.mergeIndex ?? 0;
   const merges = seed.script?.merges ?? ['burst_pin'];
@@ -126,7 +128,11 @@ function refreshActionState(game) {
 }
 
 function canBossMerge(game) {
-  return game.seedName === 'boss_clutch' && game.now >= 92 && game.now <= 101;
+  return isBossDecisionWindow(game);
+}
+
+function isBossDecisionWindow(game) {
+  return game.seedName === 'boss_clutch' && game.now >= BOSS_DECISION_START && game.now < BOSS_DECISION_END;
 }
 
 function applyTimedResources(game) {
@@ -400,7 +406,7 @@ export function summonToy(game, { playerId = 'p1' } = {}) {
   const unit = makeUnit(unitId, owner, game.internal.unitSequence++);
   game.boards[owner].units.push(unit);
 
-  if (game.seedName === 'boss_clutch' && game.now >= 92 && game.now <= 101) {
+  if (isBossDecisionWindow(game)) {
     game.internal.bossChoice = unitId === 'slow_coil' ? 'summonSlow' : 'summonBurst';
   }
 
@@ -426,7 +432,7 @@ export function mergeToys(game, { playerId = 'p1', unitIds = [] } = {}) {
   board.units.push(unit);
   game.internal.mergeIndex += 1;
 
-  if (game.seedName === 'boss_clutch' && game.now >= 92 && game.now <= 101) {
+  if (isBossDecisionWindow(game)) {
     game.internal.bossChoice = 'merge';
   }
 

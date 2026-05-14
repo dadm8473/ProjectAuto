@@ -163,9 +163,9 @@ test('reboot seed suite captures good luck, bad luck, greed, rescue miss, and bo
   assert.equal(REBOOT_SEEDS.greed_loss.intendedResult, 'greed');
   assert.equal(REBOOT_SEEDS.rescue_miss.intendedResult, 'rescue_missed');
   assert.deepEqual(REBOOT_SEEDS.boss_clutch.branches, {
-    summonSlow: { action: 'summon', at: [92, 101], result: 'slow_coil', reason: 'boss_slowed' },
-    summonBurst: { action: 'summon', at: [92, 101], result: 'burst_pin', reason: 'boss_final_hit' },
-    merge: { action: 'merge', at: [92, 101], result: 'burst_pin', reason: 'boss_final_hit' },
+    summonSlow: { action: 'summon', at: [92, 102], result: 'slow_coil', reason: 'boss_slowed' },
+    summonBurst: { action: 'summon', at: [92, 102], result: 'burst_pin', reason: 'boss_final_hit' },
+    merge: { action: 'merge', at: [92, 102], result: 'burst_pin', reason: 'boss_final_hit' },
     lateSummon: { action: 'summon', after: 102, reason: 'boss_leaked' },
     wait: { action: 'wait', at: [92, 116], reason: 'boss_leaked' }
   });

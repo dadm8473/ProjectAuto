@@ -23,7 +23,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js'",
-    "from './reboot_render.js?v=reboot-hit-bolts1'",
+    "from './reboot_render.js?v=reboot-action-ready1'",
     "from './reboot_screens.js'",
     "from './reboot_online.js'"
   ]) {
@@ -170,11 +170,11 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-hit-bolts1">'), true);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-hit-bolts1"></script>'), true);
-  assert.equal(app.includes("from './reboot_render.js?v=reboot-hit-bolts1'"), true);
-  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-hit-bolts1'"), true);
-  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-hit-bolts1")'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), true);
+  assert.equal(app.includes("from './reboot_render.js?v=reboot-action-ready1'"), true);
+  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1'"), true);
+  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1")'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -348,22 +348,38 @@ test('combat renderer keeps imagegen enemy sprites readable on phone canvas', as
 
 test('combat action buttons use generated icons instead of text-only web buttons', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
 
   for (const marker of [
     '--combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons")',
+    '--combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready")',
     '.primary-actions button {\n  display: inline-flex;',
     'background-image: var(--combat-action-buttons);',
     'background-size: 300% 100%;',
     '.primary-actions button::before',
+    '.primary-actions button > span',
+    '.primary-actions button::after',
+    'background-image: var(--combat-action-ready-pulses);',
+    'animation: actionReadyPulse 1.15s ease-in-out infinite;',
     'background-image: url("/src/client/assets/generated/reboot-ui-icons.png")',
     '#summonButton::before',
     '#mergeButton::before',
     '#rescueButton::before',
     '#summonButton { background-position: 0 0; }',
     '#mergeButton { background-position: 50% 0; }',
-    '#rescueButton { background-position: 100% 0; }'
+    '#rescueButton { background-position: 100% 0; }',
+    '#summonButton[data-critical="true"]::after { background-position: 0 0; }',
+    '#mergeButton[data-critical="true"]::after { background-position: 50% 0; }',
+    '#rescueButton[data-critical="true"]::after { background-position: 100% 0; }'
   ]) {
     assert.equal(css.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    "from './reboot_action_ui.js'",
+    'button.dataset.critical = String(isCriticalRebootAction({ actionKey: key, current, localBoardId, enabled: actions[key].enabled }));'
+  ]) {
+    assert.equal(app.includes(marker), true, marker);
   }
 
   const actionBlock = css.slice(css.indexOf('.primary-actions button {\n  display: inline-flex;'), css.indexOf('.primary-actions button::before'));
@@ -1607,7 +1623,7 @@ test('combat shell uses generated HUD and action dock chrome', async () => {
 
   for (const marker of [
     '--combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png")',
-    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-hit-bolts1")',
+    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1")',
     'body[data-app-screen="battle"] .hud::before',
     'body[data-app-screen="battle"] .action-panel::before',
     'background-image: var(--combat-hud-frame)',

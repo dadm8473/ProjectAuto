@@ -248,6 +248,40 @@ test('boss_clutch distinguishes late summon, merge, and wait branches', () => {
   assert.equal(waitBranch.result.reason, 'boss_leaked');
 });
 
+test('boss_clutch accepts fractional last-second decisions until the boss spawns', () => {
+  const summonBranch = createRebootGame({
+    mode: 'bot',
+    seedName: 'boss_clutch',
+    seed: 610,
+    branch: 'summonBurst'
+  });
+  advanceTo(summonBranch, 78);
+  castRescue(summonBranch, { playerId: 'p1' });
+  advanceTo(summonBranch, 101.75);
+  const summonResult = summonToy(summonBranch, { playerId: 'p1' });
+  assert.equal(summonResult.ok, true);
+  assert.equal(summonBranch.internal.bossChoice, 'summonBurst');
+  advanceTo(summonBranch, 120);
+  assert.equal(lastResult(summonBranch).status, 'won');
+  assert.equal(summonBranch.result.reason, 'boss_final_hit');
+
+  const mergeBranch = createRebootGame({
+    mode: 'bot',
+    seedName: 'boss_clutch',
+    seed: 611,
+    branch: 'merge'
+  });
+  advanceTo(mergeBranch, 78);
+  castRescue(mergeBranch, { playerId: 'p1' });
+  advanceTo(mergeBranch, 101.75);
+  const mergeResult = mergeToys(mergeBranch, { playerId: 'p1' });
+  assert.equal(mergeResult.ok, true);
+  assert.equal(mergeBranch.internal.bossChoice, 'merge');
+  advanceTo(mergeBranch, 120);
+  assert.equal(lastResult(mergeBranch).status, 'won');
+  assert.equal(mergeBranch.result.reason, 'boss_final_hit');
+});
+
 test('serializeRebootState omits rng internals and keeps player-readable action state', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 707 });
   advanceTo(game, 76);

@@ -45,8 +45,9 @@
   --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
   --meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
-  --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-hit-bolts1");
+  --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons");
+  --combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready");
   --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets");
   --combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates");
   --combat-hud-row: clamp(72px, 22.33vw, 96px);
@@ -476,6 +477,8 @@ body[data-app-screen="lobby"] .toast {
 
 .primary-actions button::before {
   content: "";
+  position: relative;
+  z-index: 1;
   width: 28px;
   height: 28px;
   flex: 0 0 28px;
@@ -489,9 +492,48 @@ body[data-app-screen="lobby"] .toast {
 #mergeButton::before { background-position: -28px 0; }
 #rescueButton::before { background-position: -56px 0; }
 
+.primary-actions button > span {
+  position: relative;
+  z-index: 1;
+}
+
+.primary-actions button::after {
+  content: "";
+  position: absolute;
+  inset: -10px -8px;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--combat-action-ready-pulses);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  opacity: 0;
+  transform: scale(0.92);
+  mix-blend-mode: screen;
+  filter: saturate(1.18) drop-shadow(0 0 10px rgba(255, 230, 155, 0.22));
+}
+
+#summonButton[data-critical="true"]::after { background-position: 0 0; }
+#mergeButton[data-critical="true"]::after { background-position: 50% 0; }
+#rescueButton[data-critical="true"]::after { background-position: 100% 0; }
+
+.primary-actions button[data-critical="true"]::after {
+  opacity: 0.7;
+  animation: actionReadyPulse 1.15s ease-in-out infinite;
+}
+
 .primary-actions button:disabled::before {
   opacity: 0.54;
   filter: grayscale(0.35);
+}
+
+.primary-actions button:disabled::after {
+  opacity: 0;
+  animation: none;
+}
+
+@keyframes actionReadyPulse {
+  0%, 100% { transform: scale(0.88); opacity: 0.48; }
+  48% { transform: scale(1.02); opacity: 0.86; }
 }
 
 #summonButton[data-ready="true"] {

@@ -3,7 +3,8 @@ import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=reboot-hit-bolts1';
+import { isCriticalRebootAction } from './reboot_action_ui.js';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=reboot-action-ready1';
 import {
   buildMissionScreen,
   buildRebootCollection,
@@ -322,6 +323,7 @@ function updateButtons(current) {
   ]) {
     button.disabled = !actions[key].enabled;
     button.dataset.ready = String(actions[key].enabled);
+    button.dataset.critical = String(isCriticalRebootAction({ actionKey: key, current, localBoardId, enabled: actions[key].enabled }));
     button.title = actions[key].reason;
   }
 }
