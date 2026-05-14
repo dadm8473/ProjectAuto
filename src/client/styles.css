@@ -603,6 +603,10 @@ body[data-app-screen="season"] .toast {
   margin-bottom: clamp(6px, 2.33vw, 10px);
 }
 
+.status-line:has(#bossMeter[hidden]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .status-line span {
   display: inline-flex;
   align-items: center;
@@ -620,6 +624,10 @@ body[data-app-screen="season"] .toast {
 
 #timeMeter { background-position: 0 0; }
 #bossMeter { background-position: 100% 0; }
+
+.status-line span[hidden] {
+  display: none;
+}
 
 .primary-actions {
   grid-template-columns: repeat(3, 1fr);

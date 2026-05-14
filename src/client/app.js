@@ -516,7 +516,9 @@ function updateMeters(current) {
   dom.rescueMeter.textContent = `구${Math.round(resources.rescue)}%`;
   dom.dangerMeter.textContent = `위${Math.round(current.boards[partner]?.danger ?? 0)}`;
   dom.timeMeter.textContent = buildCombatStatusPrompt({ current, localBoardId });
-  dom.bossMeter.textContent = current.now >= 92 && current.now < 120 ? '보스 경고' : '보스 대기';
+  const bossWarning = current.now >= 92 && current.now < 120;
+  dom.bossMeter.hidden = !bossWarning;
+  dom.bossMeter.textContent = bossWarning ? '보스 경고' : '';
 }
 
 function updateButtons(current) {

@@ -2412,7 +2412,9 @@ test('combat status line uses generated game plates instead of plain web chips',
     'background-image: var(--combat-status-plates);',
     'background-size: 200% 100%;',
     '#timeMeter { background-position: 0 0; }',
-    '#bossMeter { background-position: 100% 0; }'
+    '#bossMeter { background-position: 100% 0; }',
+    '.status-line:has(#bossMeter[hidden])',
+    '.status-line span[hidden] {\n  display: none;'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
@@ -2420,6 +2422,17 @@ test('combat status line uses generated game plates instead of plain web chips',
   const statusBlock = css.slice(css.indexOf('.status-line span {\n  display: inline-flex;'), css.indexOf('.primary-actions {'));
   assert.equal(statusBlock.includes('background: rgba(3, 9, 10, 0.34);'), false);
   assert.equal(statusBlock.includes('border: 1px solid rgba(245, 240, 220, 0.1);'), false);
+});
+
+test('combat status hides the idle boss chip until the boss warning matters', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  assert.equal(html.includes('<span id="bossMeter" hidden>보스 경고</span>'), true);
+  assert.equal(app.includes('const bossWarning = current.now >= 92 && current.now < 120;'), true);
+  assert.equal(app.includes('dom.bossMeter.hidden = !bossWarning;'), true);
+  assert.equal(app.includes("dom.bossMeter.textContent = bossWarning ? '보스 경고' : '';"), true);
+  assert.equal(app.includes("'보스 대기'"), false);
 });
 
 test('combat shell uses generated HUD and action dock chrome', async () => {

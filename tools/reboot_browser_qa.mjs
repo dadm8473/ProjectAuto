@@ -73,6 +73,7 @@ async function verifyShell(page, viewport) {
   await page.locator('#summonButton').waitFor({ state: 'visible' });
   assert.equal(await page.locator('.action-panel button').count(), 3);
   assert.equal(await page.locator('#shopButton, #passButton, #adButton, #paidReviveButton').count(), 0);
+  assert.equal(await page.locator('#bossMeter').isVisible(), false);
   assert.notEqual(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
 }
 
