@@ -45,7 +45,7 @@ export const REBOOT_ATLAS_MANIFEST = {
 
 export const REBOOT_BACKDROP_MANIFEST = {
   battle: {
-    src: '/src/client/assets/generated/reboot-battle-backdrop.png',
+    src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-battle-footer-polish6',
     width: 390,
     height: 620,
     source: 'imagegen'
@@ -205,11 +205,17 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
     ctx.lineWidth = 3;
     ctx.stroke();
   }
-  ctx.fillStyle = '#f5f0dc';
-  ctx.font = '700 12px system-ui';
-  ctx.fillText(title, x + 12, y + 18);
-  ctx.fillStyle = board.danger >= 80 ? '#ff6f59' : '#a8b4a7';
-  ctx.fillText(`위험 ${Math.round(board.danger)}`, x + w - 66, y + 18);
+  const showBoardText = !imageBackdrop || compact;
+  const showDangerText = showBoardText || board.danger >= 50;
+  if (showBoardText) {
+    ctx.fillStyle = '#f5f0dc';
+    ctx.font = '700 12px system-ui';
+    ctx.fillText(title, x + 12, y + 18);
+  }
+  if (showDangerText) {
+    ctx.fillStyle = board.danger >= 80 ? '#ff6f59' : '#a8b4a7';
+    ctx.fillText(`위험 ${Math.round(board.danger)}`, x + w - 66, y + 18);
+  }
   if (board.danger >= 80) {
     drawAtlasSprite(ctx, assets, 'board', 'danger_pulse_frame', x + w - 36, y + 42, compact ? 48 : 56, 0.58);
   }
@@ -228,8 +234,12 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
   for (let i = 0; i < count; i += 1) {
     const sx = x + 12 + i * (size + gap);
     const sy = y + h - size - 12;
-    const socketKey = compact ? 'partner_socket' : 'player_socket';
-    if (!imageBackdrop && !drawAtlasSprite(ctx, assets, 'board', socketKey, sx + size / 2, sy + size / 2, size * 1.08, 0.7)) {
+    const socketKey = imageBackdrop && !compact ? 'merge_ready_frame' : compact ? 'partner_socket' : 'player_socket';
+    const shouldDrawSocket = !imageBackdrop || !compact;
+    const socketScale = imageBackdrop ? 0.44 : 1.08;
+    const socketAlpha = imageBackdrop ? 0.18 : 0.7;
+    const drewSocket = shouldDrawSocket && drawAtlasSprite(ctx, assets, 'board', socketKey, sx + size / 2, sy + size / 2, size * socketScale, socketAlpha);
+    if (!drewSocket && !imageBackdrop) {
       roundedRect(ctx, sx, sy, size, size, 7);
       ctx.fillStyle = 'rgba(245, 240, 220, 0.08)';
       ctx.fill();

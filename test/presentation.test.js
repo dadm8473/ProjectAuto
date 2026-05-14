@@ -23,7 +23,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js'",
-    "from './reboot_render.js'",
+    "from './reboot_render.js?v=reboot-battle-footer-polish6'",
     "from './reboot_screens.js'",
     "from './reboot_online.js'"
   ]) {
@@ -149,10 +149,32 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
   }
 });
 
+test('combat canvas preserves the full imagegen map instead of cropping short phones', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const canvasBlock = css.slice(css.indexOf('#gameCanvas {'), css.indexOf('.toast {'));
+
+  for (const marker of [
+    'aspect-ratio: 390 / 620;',
+    'object-fit: contain;',
+    'object-position: center center;'
+  ]) {
+    assert.equal(canvasBlock.includes(marker), true, marker);
+  }
+
+  assert.equal(canvasBlock.includes('object-fit: cover;'), false, 'cover can crop the lower player board on short screens');
+});
+
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-meta-footer-shroud1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-battle-footer-polish6">'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-battle-footer-polish6"></script>'), true);
+  assert.equal(app.includes("from './reboot_render.js?v=reboot-battle-footer-polish6'"), true);
+  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-battle-footer-polish6'"), true);
+  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-battle-footer-polish6")'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -272,6 +294,20 @@ test('canvas renderer does not duplicate shell resource HUD text', async () => {
   }
 });
 
+test('combat board renderer suppresses player-board labels on imagegen map floors', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'const showBoardText = !imageBackdrop || compact;',
+    'const showDangerText = showBoardText || board.danger >= 50;',
+    'if (showBoardText) {',
+    'ctx.fillText(title, x + 12, y + 18);',
+    'if (showDangerText) {'
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});
+
 test('combat renderer keeps imagegen enemy sprites readable on phone canvas', async () => {
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
@@ -331,6 +367,21 @@ test('combat board renderer uses generated merge and danger accent frames', asyn
     "'merge_ready_frame'",
     "'danger_pulse_frame'",
     "'rescue_beam_segment'"
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});
+
+test('combat board renderer uses compact landing markers over imagegen map floors', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    "const socketKey = imageBackdrop && !compact ? 'merge_ready_frame' : compact ? 'partner_socket' : 'player_socket';",
+    'const shouldDrawSocket = !imageBackdrop || !compact;',
+    'const socketScale = imageBackdrop ? 0.44 : 1.08;',
+    'const socketAlpha = imageBackdrop ? 0.18 : 0.7;',
+    "const drewSocket = shouldDrawSocket && drawAtlasSprite(ctx, assets, 'board', socketKey, sx + size / 2, sy + size / 2, size * socketScale, socketAlpha);",
+    'if (!drewSocket && !imageBackdrop) {'
   ]) {
     assert.equal(render.includes(marker), true, marker);
   }
@@ -1125,6 +1176,16 @@ test('reward toast sits above app overlays instead of inside the blurred battle 
   }
 });
 
+test('hidden toast does not leave an empty game panel on the battle screen', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  assert.equal(
+    css.includes('.toast[hidden] {\n  display: none;\n}'),
+    true,
+    'hidden toasts must not render their imagegen frame as an empty floating panel'
+  );
+});
+
 test('client wires unit training to profile XP and collection rerender', async () => {
   const app = await readFile('src/client/app.js', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
@@ -1328,7 +1389,7 @@ test('combat shell uses generated HUD and action dock chrome', async () => {
 
   for (const marker of [
     '--combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png")',
-    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png")',
+    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-battle-footer-polish6")',
     'body[data-app-screen="battle"] .hud::before',
     'body[data-app-screen="battle"] .action-panel::before',
     'background-image: var(--combat-hud-frame)',
@@ -1341,7 +1402,7 @@ test('combat shell uses generated HUD and action dock chrome', async () => {
   }
 });
 
-test('combat shell chrome preserves generated asset ratios on phone widths', async () => {
+test('combat shell chrome uses generated art as compact button backing on phone widths', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
@@ -1350,7 +1411,8 @@ test('combat shell chrome preserves generated asset ratios on phone widths', asy
     'grid-template-rows: calc(var(--combat-hud-row) + env(safe-area-inset-top)) minmax(0, 1fr) calc(var(--combat-action-row) + env(safe-area-inset-bottom));',
     'background-size: 100% auto;',
     'background-position: center bottom;',
-    'background-position: center top;',
+    'background-size: 100% 86px;',
+    'opacity: 0.2;',
     'min-height: clamp(48px, 13.02vw, 56px);'
   ]) {
     assert.equal(css.includes(marker), true, marker);

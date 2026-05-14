@@ -3,7 +3,7 @@ import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=reboot-battle-footer-polish6';
 import {
   buildMissionScreen,
   buildRebootCollection,

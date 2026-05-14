@@ -43,7 +43,7 @@
   --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
   --meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
-  --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png");
+  --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-battle-footer-polish6");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons");
   --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets");
   --combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates");
@@ -179,7 +179,9 @@ body[data-app-screen="battle"] .hud::before {
 
 body[data-app-screen="battle"] .action-panel::before {
   background-image: var(--combat-action-dock);
-  background-position: center top;
+  background-position: center bottom;
+  background-size: 100% 86px;
+  opacity: 0.2;
 }
 
 .hud > *,
@@ -329,6 +331,9 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   width: 100%;
   height: 100%;
   max-width: 390px;
+  aspect-ratio: 390 / 620;
+  object-fit: contain;
+  object-position: center center;
   image-rendering: auto;
 }
 
@@ -357,6 +362,10 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   text-align: center;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
   overflow: visible;
+}
+
+.toast[hidden] {
+  display: none;
 }
 
 .toast[data-toast-kind="combat"] {

@@ -472,6 +472,32 @@ function alphaAt(image, x, y) {
   return image.pixels[(y * image.width + x) * 4 + 3];
 }
 
+function alphaCoverage(image, rect, threshold = 220) {
+  let covered = 0;
+  let total = 0;
+  for (let y = rect.y; y < rect.y + rect.height; y += 1) {
+    for (let x = rect.x; x < rect.x + rect.width; x += 1) {
+      const offset = (y * image.width + x) * 4;
+      total += 1;
+      if (image.pixels[offset + 3] > threshold) covered += 1;
+    }
+  }
+  return covered / total;
+}
+
+function alphaMean(image, rect) {
+  let total = 0;
+  let sum = 0;
+  for (let y = rect.y; y < rect.y + rect.height; y += 1) {
+    for (let x = rect.x; x < rect.x + rect.width; x += 1) {
+      const offset = (y * image.width + x) * 4;
+      total += 1;
+      sum += image.pixels[offset + 3];
+    }
+  }
+  return sum / total;
+}
+
 function colorRatio(image, rect, predicate) {
   let matched = 0;
   let total = 0;
@@ -535,6 +561,34 @@ test('meta footer shroud uses generated dark floor art for lower meta screens', 
   assert.equal(centerLower.mean < 24, true, `meta footer floor too bright: ${centerLower.mean}`);
   assert.equal(centerSocket.brightRatio < 0.005, true, `meta footer still has luminous slot edges: ${centerSocket.brightRatio}`);
   assert.equal(cyanSlotRatio < 0.00005, true, `meta footer has cyan slot pixels: ${cyanSlotRatio}`);
+});
+
+test('battle backdrop lower board reads as arena floor instead of an empty web socket panel', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-battle-backdrop.png'));
+  const lowerBoard = luminanceStats(image, { x: 112, y: 455, width: 166, height: 80 }, 45);
+  const centerSocket = luminanceStats(image, { x: 132, y: 480, width: 126, height: 42 }, 45);
+  const cyanSlotRatio = colorRatio(image, { x: 112, y: 455, width: 166, height: 80 }, (r, g, b) => r < 90 && g > 75 && b > 85);
+  const darkHoleRatio = colorRatio(image, { x: 112, y: 455, width: 166, height: 80 }, (r, g, b) => Math.max(r, g, b) < 35);
+
+  assert.equal(lowerBoard.mean > 34, true, `battle lower board collapsed into a black panel: ${lowerBoard.mean}`);
+  assert.equal(centerSocket.mean > 30, true, `battle center socket area still reads as an empty hole: ${centerSocket.mean}`);
+  assert.equal(darkHoleRatio < 0.12, true, `battle lower board has too much empty black cavity: ${darkHoleRatio}`);
+  assert.equal(cyanSlotRatio < 0.035, true, `battle lower board still has too many cyan lane/socket pixels: ${cyanSlotRatio}`);
+});
+
+test('combat action dock shows status rail chrome instead of an empty socket row', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-combat-action-dock.png'));
+  const emptySocketDarkRatio = colorRatio(
+    image,
+    { x: 50, y: 58, width: 330, height: 62 },
+    (r, g, b) => Math.max(r, g, b) < 35
+  );
+  const exposedPanelAlpha = alphaCoverage(image, { x: 60, y: 0, width: 310, height: 112 }, 1);
+  const exposedPanelMean = alphaMean(image, { x: 60, y: 0, width: 310, height: 112 });
+
+  assert.equal(emptySocketDarkRatio < 0.38, true, `action dock still exposes dark empty sockets: ${emptySocketDarkRatio}`);
+  assert.equal(exposedPanelAlpha < 0.08, true, `action dock still exposes empty upper panels: ${exposedPanelAlpha}`);
+  assert.equal(exposedPanelMean < 10, true, `action dock upper panel is still visibly opaque: ${exposedPanelMean}`);
 });
 
 test('splash floor cap is a transparent matte bitmap, not another glowing button', async () => {
@@ -604,6 +658,17 @@ test('world sprite atlases use png alpha instead of opaque card backgrounds', as
         assert.ok(opaqueInterior / interiorTotal > 0.015, `${asset.path} cell ${col},${row} has too little visible sprite`);
         assert.ok(opaqueInterior / interiorTotal < 0.82, `${asset.path} cell ${col},${row} looks like a mostly opaque card tile`);
       }
+    }
+  }
+});
+
+test('reboot board accent atlas cells have transparent outer backgrounds', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-board-accents.png'));
+  const cell = 256;
+  for (let col = 0; col < 2; col += 1) {
+    const x0 = col * cell;
+    for (const [dx, dy] of [[0, 0], [255, 0], [0, 255], [255, 255]]) {
+      assert.equal(alphaAt(image, x0 + dx, dy) < 10, true, `board accent cell ${col} corner ${dx},${dy} must be transparent`);
     }
   }
 });
