@@ -51,6 +51,7 @@
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons");
   --combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready");
+  --combat-critical-action-rings: url("/src/client/assets/generated/reboot-critical-action-rings.png?v=critical-action-rings");
   --combat-coach-cues: url("/src/client/assets/generated/reboot-combat-coach-cues.png?v=combat-coach");
   --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets");
   --combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates");
@@ -584,8 +585,18 @@ body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after 
 #mergeButton[data-critical="true"]::after { background-position: 50% 0; }
 #rescueButton[data-critical="true"]::after { background-position: 100% 0; }
 
+.primary-actions button[data-ready="true"]::after {
+  opacity: 0.32;
+  transform: scale(0.96);
+}
+
+#summonButton[data-ready="true"]::after { background-position: 0 0; }
+#mergeButton[data-ready="true"]::after { background-position: 50% 0; }
+#rescueButton[data-ready="true"]::after { background-position: 100% 0; }
+
 .primary-actions button[data-critical="true"]::after {
-  opacity: 0.7;
+  background-image: var(--combat-critical-action-rings);
+  opacity: 0.86;
   animation: actionReadyPulse 1.15s ease-in-out infinite;
 }
 

@@ -265,7 +265,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), true);
   assert.equal(app.includes("from './reboot_render.js?v=reboot-action-ready1'"), true);
   assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1'"), true);
@@ -448,6 +449,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
   for (const marker of [
     '--combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons")',
     '--combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready")',
+    '--combat-critical-action-rings: url("/src/client/assets/generated/reboot-critical-action-rings.png?v=critical-action-rings")',
     '--combat-coach-cues: url("/src/client/assets/generated/reboot-combat-coach-cues.png?v=combat-coach")',
     '.primary-actions button {\n  display: inline-flex;',
     'background-image: var(--combat-action-buttons);',
@@ -463,6 +465,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
     'body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after',
     '.primary-actions button::after',
     'background-image: var(--combat-action-ready-pulses);',
+    'background-image: var(--combat-critical-action-rings);',
     'animation: actionReadyPulse 1.15s ease-in-out infinite;',
     'background-image: url("/src/client/assets/generated/reboot-ui-icons.png")',
     '#summonButton::before',
