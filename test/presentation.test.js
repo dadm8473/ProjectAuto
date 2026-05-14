@@ -265,7 +265,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-start1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-command1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-start1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-next1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=battle-cosmetic1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=cosmetic-equip1">'), false);
@@ -467,11 +468,16 @@ test('combat action buttons use generated icons instead of text-only web buttons
   for (const marker of [
     '--combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons")',
     '--combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready")',
+    '--combat-first-command-spotlight: url("/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=first-command")',
     '--combat-critical-action-rings: url("/src/client/assets/generated/reboot-critical-action-rings.png?v=critical-action-rings")',
     '--combat-coach-cues: url("/src/client/assets/generated/reboot-combat-coach-cues.png?v=combat-coach")',
     '.primary-actions button {\n  display: inline-flex;',
+    'z-index: 1;',
     'background-image: var(--combat-action-buttons);',
     'background-size: 300% 100%;',
+    '.primary-actions::before',
+    'background-image: var(--combat-first-command-spotlight);',
+    'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions::before',
     '.primary-actions button::before',
     '.primary-actions button > span',
     '.primary-actions::after',
@@ -499,6 +505,9 @@ test('combat action buttons use generated icons instead of text-only web buttons
     assert.equal(css.includes(marker), true, marker);
   }
 
+  assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="merge"] .primary-actions::before'), false);
+  assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::before'), false);
+
   for (const marker of [
     "from './reboot_action_ui.js'",
     'buildCombatCoachCue',
@@ -513,6 +522,10 @@ test('combat action buttons use generated icons instead of text-only web buttons
   const actionBlock = css.slice(css.indexOf('.primary-actions button {\n  display: inline-flex;'), css.indexOf('.primary-actions button::before'));
   assert.equal(actionBlock.includes('background-image: var(--screen-chrome);'), false);
   assert.equal(actionBlock.includes('background-size: 500% 100%;'), false);
+
+  const spotlightBlock = cssRuleBlock(css, '.primary-actions::before');
+  assert.equal(spotlightBlock.includes('z-index: 0;'), true, 'first command spotlight must sit behind button labels');
+  assert.equal(actionBlock.includes('z-index: 1;'), true, 'action buttons must render above the first command spotlight');
 });
 
 test('result screen uses imagegen reward backdrop instead of a plain overlay', async () => {

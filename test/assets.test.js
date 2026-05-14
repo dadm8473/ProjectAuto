@@ -393,6 +393,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 20_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-first-command-spotlight.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-first-command-spotlight-chromakey-imagegen.png',
+    width: 256,
+    height: 128,
+    minRuntimeBytes: 10_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-critical-action-rings.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-critical-action-rings-chromakey-imagegen.png',
     width: 768,
@@ -1049,6 +1056,24 @@ test('critical action ring cells keep each button cue readable and padded', asyn
     assert.equal(bounds.minY >= 8, true, `critical action ring cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 9, true, `critical action ring cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
+});
+
+test('combat first command spotlight stays transparent and readable behind the first action button', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-combat-first-command-spotlight.png'));
+  const corners = [
+    alphaAt(image, 2, 2),
+    alphaAt(image, image.width - 3, 2),
+    alphaAt(image, 2, image.height - 3),
+    alphaAt(image, image.width - 3, image.height - 3)
+  ];
+  const bounds = alphaBounds(image, { x: 0, y: 0, width: image.width, height: image.height }, 28);
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, 'first command spotlight keeps transparent corners');
+  assert.equal(bounds.count > 2_000, true, `first command spotlight has no readable subject: ${bounds.count}`);
+  assert.equal(bounds.minX >= 8, true, `first command spotlight touches left edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxX <= image.width - 9, true, `first command spotlight touches right edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.minY >= 8, true, `first command spotlight touches top edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxY <= image.height - 9, true, `first command spotlight touches bottom edge: ${JSON.stringify(bounds)}`);
 });
 
 test('meta progress bar cells keep track and fill rows readable', async () => {

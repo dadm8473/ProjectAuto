@@ -57,6 +57,7 @@
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons");
   --combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready");
+  --combat-first-command-spotlight: url("/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=first-command");
   --combat-critical-action-rings: url("/src/client/assets/generated/reboot-critical-action-rings.png?v=critical-action-rings");
   --combat-coach-cues: url("/src/client/assets/generated/reboot-combat-coach-cues.png?v=combat-coach");
   --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets");
@@ -590,6 +591,7 @@ body[data-app-screen="lobby"] .toast {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  z-index: 1;
   gap: 7px;
   min-height: clamp(48px, 13.02vw, 56px);
   background-image: var(--combat-action-buttons);
@@ -600,6 +602,30 @@ body[data-app-screen="lobby"] .toast {
 #summonButton { background-position: 0 0; }
 #mergeButton { background-position: 50% 0; }
 #rescueButton { background-position: 100% 0; }
+
+.primary-actions::before {
+  content: "";
+  position: absolute;
+  left: 16.667%;
+  top: 34%;
+  z-index: 0;
+  width: clamp(122px, 37.67vw, 162px);
+  height: clamp(66px, 20.47vw, 88px);
+  pointer-events: none;
+  background-image: var(--combat-first-command-spotlight);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.9);
+  mix-blend-mode: screen;
+  filter: saturate(1.2) drop-shadow(0 0 14px rgba(244, 201, 93, 0.28));
+}
+
+body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions::before {
+  opacity: 0.94;
+  animation: firstCommandSpotlight 1.28s ease-in-out infinite;
+}
 
 .primary-actions button::before {
   content: "";
@@ -713,6 +739,11 @@ body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after 
 @keyframes coachCueFloat {
   0%, 100% { transform: translateX(-50%) translateY(2px) scale(0.94); }
   50% { transform: translateX(-50%) translateY(-3px) scale(1); }
+}
+
+@keyframes firstCommandSpotlight {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.58; }
+  50% { transform: translate(-50%, -50%) scale(1.06); opacity: 0.95; }
 }
 
 #summonButton[data-ready="true"] {
