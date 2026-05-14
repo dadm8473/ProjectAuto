@@ -154,6 +154,20 @@ function formatResultRewards(rewards) {
   }).join(' · ');
 }
 
+function selectorValue(value) {
+  return String(value).replaceAll('\\', '\\\\').replaceAll('"', '\\"');
+}
+
+function flashMetaClaim(container, selector, kind) {
+  const target = container.querySelector(selector)?.closest('.screen-card');
+  if (!target) return;
+  target.dataset.claimFlash = kind;
+  clearTimeout(target.claimFlashTimer);
+  target.claimFlashTimer = setTimeout(() => {
+    delete target.dataset.claimFlash;
+  }, 900);
+}
+
 function handleShopPurchase(event) {
   const button = event.target.closest('[data-shop-buy]');
   if (!button) return;
@@ -176,6 +190,7 @@ function handleShopPurchase(event) {
   });
   saveProfile();
   renderHomeScreens();
+  flashMetaClaim(dom.shopList, `[data-shop-buy="${selectorValue(item.id)}"]`, 'shop');
   showToast(`${item.name} 해금`, 'reward');
 }
 
@@ -211,6 +226,7 @@ function handleUnitUpgrade(event) {
   });
   saveProfile();
   renderHomeScreens();
+  flashMetaClaim(dom.collectionList, `[data-unit-upgrade="${selectorValue(unit.id)}"]`, 'training');
   showToast(`${unit.name} Lv.${currentLevel + 1}`, 'reward');
 }
 
@@ -236,6 +252,7 @@ function handleMissionClaim(event) {
   });
   saveProfile();
   renderHomeScreens();
+  flashMetaClaim(dom.missionsList, `[data-mission-claim="${selectorValue(mission.id)}"]`, 'mission');
   showToast(`${mission.title} 보상`, 'reward');
 }
 
@@ -252,6 +269,7 @@ function handlePassClaim(event) {
   });
   saveProfile();
   renderHomeScreens();
+  flashMetaClaim(dom.seasonList, `[data-pass-claim="${index}"]`, 'season');
   showToast(`${index + 1}단계 보상`, 'reward');
 }
 

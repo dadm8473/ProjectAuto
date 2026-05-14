@@ -1375,6 +1375,31 @@ test('profile rewards use generated burst feedback instead of plain text toasts'
   }
 });
 
+test('meta reward actions flash their source cards with generated claim bursts', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    '--meta-claim-bursts: url("/src/client/assets/generated/reboot-meta-claim-bursts.png?v=claim-bursts")',
+    'function flashMetaClaim(container, selector, kind)',
+    'target.dataset.claimFlash = kind;',
+    'delete target.dataset.claimFlash;',
+    "flashMetaClaim(dom.shopList, `[data-shop-buy=\"${selectorValue(item.id)}\"]`, 'shop');",
+    "flashMetaClaim(dom.collectionList, `[data-unit-upgrade=\"${selectorValue(unit.id)}\"]`, 'training');",
+    "flashMetaClaim(dom.missionsList, `[data-mission-claim=\"${selectorValue(mission.id)}\"]`, 'mission');",
+    "flashMetaClaim(dom.seasonList, `[data-pass-claim=\"${index}\"]`, 'season');",
+    '.unit-card[data-claim-flash]::after,\n.shop-card[data-claim-flash]::after,\n.mission-card[data-claim-flash]::after,\n.season-card[data-claim-flash]::after',
+    'background-image: var(--meta-claim-bursts);',
+    '.unit-card[data-claim-flash="training"]::after { background-position: 0 0; }',
+    '.shop-card[data-claim-flash="shop"]::after { background-position: 33.333% 0; }',
+    '.mission-card[data-claim-flash="mission"]::after { background-position: 66.666% 0; }',
+    '.season-card[data-claim-flash="season"]::after { background-position: 100% 0; }',
+    '@keyframes metaClaimBurst'
+  ]) {
+    assert.equal(`${css}\n${app}`.includes(marker), true, marker);
+  }
+});
+
 test('successful combat actions use canvas moment callouts instead of duplicate toasts', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');

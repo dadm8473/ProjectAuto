@@ -44,6 +44,7 @@
   --meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges");
   --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
   --meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions");
+  --meta-claim-bursts: url("/src/client/assets/generated/reboot-meta-claim-bursts.png?v=claim-bursts");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons");
@@ -1506,6 +1507,40 @@ body[data-app-screen="season"] .app-screen::after {
 .mission-card[data-owned="true"],
 .season-card[data-owned="true"] {
   filter: saturate(1.12) brightness(1.08);
+}
+
+.unit-card[data-claim-flash]::after,
+.shop-card[data-claim-flash]::after,
+.mission-card[data-claim-flash]::after,
+.season-card[data-claim-flash]::after {
+  content: "";
+  position: absolute;
+  left: clamp(10px, 4.19vw, 18px);
+  top: 50%;
+  z-index: 2;
+  width: clamp(104px, 32.56vw, 140px);
+  aspect-ratio: 1 / 1;
+  transform: translateY(-50%) scale(0.86);
+  pointer-events: none;
+  background-image: var(--meta-claim-bursts);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  opacity: 0;
+  mix-blend-mode: screen;
+  filter: saturate(1.14) drop-shadow(0 10px 20px rgba(0, 0, 0, 0.48));
+  animation: metaClaimBurst 900ms ease-out both;
+}
+
+.unit-card[data-claim-flash="training"]::after { background-position: 0 0; }
+.shop-card[data-claim-flash="shop"]::after { background-position: 33.333% 0; }
+.mission-card[data-claim-flash="mission"]::after { background-position: 66.666% 0; }
+.season-card[data-claim-flash="season"]::after { background-position: 100% 0; }
+
+@keyframes metaClaimBurst {
+  0% { opacity: 0; transform: translateY(-50%) scale(0.62); }
+  18% { opacity: 0.94; transform: translateY(-50%) scale(1.04); }
+  72% { opacity: 0.8; transform: translateY(-50%) scale(0.98); }
+  100% { opacity: 0; transform: translateY(-50%) scale(1.1); }
 }
 
 .card-copy {

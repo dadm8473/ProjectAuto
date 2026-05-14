@@ -332,6 +332,16 @@ const IMAGEGEN_REBOOT_APP_ICONS = [
   }
 ];
 
+const IMAGEGEN_REBOOT_META_FEEDBACK = [
+  {
+    path: 'src/client/assets/generated/reboot-meta-claim-bursts.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-meta-claim-bursts-chromakey-imagegen.png',
+    width: 1024,
+    height: 256,
+    minRuntimeBytes: 30_000
+  }
+];
+
 const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
   {
     path: 'src/client/assets/generated/reboot-kill-burst.png',
@@ -870,6 +880,30 @@ test('reboot app icons are promoted from a dedicated imagegen source', async () 
     assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
     assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
     assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+  }
+});
+
+test('reboot meta reward feedback is promoted from imagegen and readable per cell', async () => {
+  for (const asset of IMAGEGEN_REBOOT_META_FEEDBACK) {
+    const source = await readFile(asset.source);
+    const runtime = await readFile(asset.path);
+    assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+    assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+    assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+    assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+    assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+    assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+    const image = parsePng(runtime);
+    const cellWidth = 256;
+    for (let cell = 0; cell < 4; cell += 1) {
+      const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 32);
+      assert.equal(bounds.count > 4_000, true, `meta claim burst cell ${cell} has no readable subject`);
+      assert.equal(bounds.minX >= 8, true, `meta claim burst cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+      assert.equal(bounds.maxX <= cellWidth - 9, true, `meta claim burst cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+      assert.equal(bounds.minY >= 8, true, `meta claim burst cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+      assert.equal(bounds.maxY <= image.height - 9, true, `meta claim burst cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+    }
   }
 });
 
