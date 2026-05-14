@@ -685,19 +685,6 @@ function alphaBounds(image, rect, threshold = 32) {
   return bounds;
 }
 
-function alphaMean(image, rect) {
-  let total = 0;
-  let sum = 0;
-  for (let y = rect.y; y < rect.y + rect.height; y += 1) {
-    for (let x = rect.x; x < rect.x + rect.width; x += 1) {
-      const offset = (y * image.width + x) * 4;
-      total += 1;
-      sum += image.pixels[offset + 3];
-    }
-  }
-  return sum / total;
-}
-
 function colorRatio(image, rect, predicate) {
   let matched = 0;
   let total = 0;
@@ -776,19 +763,24 @@ test('battle backdrop lower board reads as arena floor instead of an empty web s
   assert.equal(cyanSlotRatio < 0.035, true, `battle lower board still has too many cyan lane/socket pixels: ${cyanSlotRatio}`);
 });
 
-test('combat action dock shows status rail chrome instead of an empty socket row', async () => {
+test('combat action dock fills the command row with generated console art', async () => {
   const image = parsePng(await readFile('src/client/assets/generated/reboot-combat-action-dock.png'));
-  const emptySocketDarkRatio = colorRatio(
-    image,
-    { x: 50, y: 58, width: 330, height: 62 },
-    (r, g, b) => Math.max(r, g, b) < 35
-  );
-  const exposedPanelAlpha = alphaCoverage(image, { x: 60, y: 0, width: 310, height: 112 }, 1);
-  const exposedPanelMean = alphaMean(image, { x: 60, y: 0, width: 310, height: 112 });
+  const upperConsole = luminanceStats(image, { x: 36, y: 8, width: 358, height: 46 }, 48);
+  const middleConsole = luminanceStats(image, { x: 30, y: 42, width: 370, height: 56 }, 48);
+  const lowerConsole = luminanceStats(image, { x: 30, y: 82, width: 370, height: 40 }, 48);
+  const leftEdge = luminanceStats(image, { x: 0, y: 0, width: 18, height: 128 }, 48);
+  const rightEdge = luminanceStats(image, { x: 412, y: 0, width: 18, height: 128 }, 48);
+  const upperConsoleCoverage = alphaCoverage(image, { x: 36, y: 8, width: 358, height: 46 }, 1);
 
-  assert.equal(emptySocketDarkRatio < 0.38, true, `action dock still exposes dark empty sockets: ${emptySocketDarkRatio}`);
-  assert.equal(exposedPanelAlpha < 0.08, true, `action dock still exposes empty upper panels: ${exposedPanelAlpha}`);
-  assert.equal(exposedPanelMean < 10, true, `action dock upper panel is still visibly opaque: ${exposedPanelMean}`);
+  assert.equal(upperConsoleCoverage > 0.85, true, `action dock upper row is still transparent: ${upperConsoleCoverage}`);
+  assert.equal(upperConsole.brightRatio > 0.18, true, `action dock upper row lacks generated chrome: ${upperConsole.brightRatio}`);
+  assert.equal(upperConsole.brightRatio < 0.48, true, `action dock upper row is too visually busy: ${upperConsole.brightRatio}`);
+  assert.equal(middleConsole.mean > 36, true, `action dock middle row collapses into a black web gap: ${middleConsole.mean}`);
+  assert.equal(middleConsole.mean < 72, true, `action dock middle row is too bright behind controls: ${middleConsole.mean}`);
+  assert.equal(lowerConsole.brightRatio > 0.12, true, `action dock lower controls lack readable command sockets: ${lowerConsole.brightRatio}`);
+  assert.equal(lowerConsole.brightRatio < 0.36, true, `action dock lower controls are too busy behind buttons: ${lowerConsole.brightRatio}`);
+  assert.equal(leftEdge.mean < 28, true, `action dock left edge looks clipped: ${leftEdge.mean}`);
+  assert.equal(rightEdge.mean < 28, true, `action dock right edge looks clipped: ${rightEdge.mean}`);
 });
 
 test('splash floor cap is a transparent matte bitmap, not another glowing button', async () => {

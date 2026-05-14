@@ -53,7 +53,7 @@
   --meta-card-state-badges: url("/src/client/assets/generated/reboot-meta-card-state-badges.png?v=meta-card-states");
   --meta-claim-bursts: url("/src/client/assets/generated/reboot-meta-claim-bursts.png?v=claim-bursts");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
-  --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1");
+  --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons");
   --combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready");
   --combat-first-command-spotlight: url("/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=first-command");
@@ -231,8 +231,9 @@ body[data-app-screen="battle"] .hud::before {
 body[data-app-screen="battle"] .action-panel::before {
   background-image: var(--combat-action-dock);
   background-position: center bottom;
-  background-size: 100% 86px;
-  opacity: 0.2;
+  background-size: 100% 100%;
+  opacity: 0.92;
+  border-top: 1px solid rgba(244, 201, 93, 0.22);
 }
 
 .hud > *,

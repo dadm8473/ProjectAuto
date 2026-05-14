@@ -339,7 +339,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-press1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=command-console1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-press1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=board-labels1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=battle-brand1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-track1">'), false);
@@ -391,7 +392,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=reboot-action-ready1'"), false);
   assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1'"), true);
   assert.equal(render.includes("src: '/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=summon-reward1'"), true);
-  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1")'), true);
+  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1")'), true);
+  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1")'), false);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -2341,7 +2343,7 @@ test('combat shell uses generated HUD and action dock chrome', async () => {
 
   for (const marker of [
     '--combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png")',
-    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1")',
+    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1")',
     'body[data-app-screen="battle"] .hud::before',
     'body[data-app-screen="battle"] .action-panel::before',
     'background-image: var(--combat-hud-frame)',
@@ -2373,7 +2375,7 @@ test('combat HUD brand reads as a generated operation badge, not a web header', 
   assert.equal(hudBlock.includes('<strong>ProjectAuto</strong>'), false);
 });
 
-test('combat shell chrome uses generated art as compact button backing on phone widths', async () => {
+test('combat shell chrome renders the generated action dock as a full command console', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
@@ -2382,8 +2384,9 @@ test('combat shell chrome uses generated art as compact button backing on phone 
     'grid-template-rows: calc(var(--combat-hud-row) + env(safe-area-inset-top)) minmax(0, 1fr) calc(var(--combat-action-row) + env(safe-area-inset-bottom));',
     'background-size: 100% auto;',
     'background-position: center bottom;',
-    'background-size: 100% 86px;',
-    'opacity: 0.2;',
+    'background-size: 100% 100%;',
+    'opacity: 0.92;',
+    'border-top: 1px solid rgba(244, 201, 93, 0.22);',
     'min-height: clamp(48px, 13.02vw, 56px);'
   ]) {
     assert.equal(css.includes(marker), true, marker);
