@@ -362,7 +362,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-nav1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=frame-alpha1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-nav1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-readability1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=command-console1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-press1">'), false);
@@ -784,7 +785,7 @@ test('meta list rows use dedicated generated game row frames', async () => {
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
   for (const marker of [
-    '--meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row")',
+    '--meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row-alpha1")',
     'class="screen-card unit-card"',
     'class="screen-card shop-card"',
     'class="screen-card mission-card"',
@@ -1018,7 +1019,7 @@ test('result screen uses a dedicated generated debrief panel frame', async () =>
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '--result-panel-frame: url("/src/client/assets/generated/reboot-result-panel-frame.png")',
+    '--result-panel-frame: url("/src/client/assets/generated/reboot-result-panel-frame.png?v=frame-alpha1")',
     '--result-panel-width: min(calc(100vw - 28px), calc((100dvh - 52px) * 0.6964), 390px);',
     '--result-panel-top-pad: clamp(108px, calc(var(--result-panel-width) * 0.31), 128px);',
     '.result-panel::before',
@@ -1057,7 +1058,7 @@ test('result actions use dedicated generated button frames', async () => {
   const app = await readFile('src/client/app.js', 'utf8');
 
   for (const marker of [
-    '--result-action-buttons: url("/src/client/assets/generated/reboot-result-action-buttons.png?v=result-actions")',
+    '--result-action-buttons: url("/src/client/assets/generated/reboot-result-action-buttons.png?v=result-actions-alpha1")',
     '<button id="resultRetryButton" class="result-action-button result-action-primary"><span>다시 도전</span></button>',
     '<button id="resultLobbyButton" class="result-action-button result-action-secondary"><span>홈</span></button>',
     'resultLobbyLabel: qs(\'#resultLobbyButton span\')',
@@ -1102,7 +1103,7 @@ test('result highlights and reward use generated strip frames', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '--result-detail-strips: url("/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail")',
+    '--result-detail-strips: url("/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail-alpha1")',
     '.result-highlights span,\n.result-reward',
     'background-image: var(--result-detail-strips);',
     'background-size: 200% 100%;',

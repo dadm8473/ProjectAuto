@@ -185,7 +185,7 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     source: 'docs/design/generation/source/reboot/style-lock/20260514-result-detail-strips-imagegen.png',
     width: 780,
     height: 80,
-    minRuntimeBytes: 70_000
+    minRuntimeBytes: 30_000
   },
   {
     path: 'src/client/assets/generated/reboot-result-copy-plates.png',
@@ -350,6 +350,29 @@ const IMAGEGEN_REBOOT_APP_ICONS = [
     width: 512,
     height: 512,
     minRuntimeBytes: 40_000
+  }
+];
+
+const TRANSPARENT_UI_FRAME_ASSETS = [
+  {
+    path: 'src/client/assets/generated/reboot-result-panel-frame.png',
+    minSoftCoverage: 0.1,
+    maxSoftCoverage: 0.24
+  },
+  {
+    path: 'src/client/assets/generated/reboot-result-action-buttons.png',
+    minSoftCoverage: 0.32,
+    maxSoftCoverage: 0.58
+  },
+  {
+    path: 'src/client/assets/generated/reboot-result-detail-strips.png',
+    minSoftCoverage: 0.06,
+    maxSoftCoverage: 0.16
+  },
+  {
+    path: 'src/client/assets/generated/reboot-meta-row-frames.png',
+    minSoftCoverage: 0.16,
+    maxSoftCoverage: 0.32
   }
 ];
 
@@ -802,6 +825,18 @@ test('splash floor cap is a transparent matte bitmap, not another glowing button
   assert.equal(center.mean < 18, true, `center cap too bright: ${center.mean}`);
   assert.equal(center.brightRatio < 0.002, true, `center cap has button-like bright pixels: ${center.brightRatio}`);
   assert.equal(frameRatio < 0.0001, true, `center cap has cyan frame pixels: ${frameRatio}`);
+});
+
+test('generated UI frames use alpha instead of baked black rectangles', async () => {
+  for (const asset of TRANSPARENT_UI_FRAME_ASSETS) {
+    const image = parsePng(await readFile(asset.path));
+    for (const [x, y] of [[0, 0], [image.width - 1, 0], [0, image.height - 1], [image.width - 1, image.height - 1]]) {
+      assert.equal(alphaAt(image, x, y) < 10, true, `${asset.path} corner ${x},${y} must be transparent`);
+    }
+    const softCoverage = alphaCoverage(image, { x: 0, y: 0, width: image.width, height: image.height }, 24);
+    assert.equal(softCoverage > asset.minSoftCoverage, true, `${asset.path} lost too much generated frame art: ${softCoverage}`);
+    assert.equal(softCoverage < asset.maxSoftCoverage, true, `${asset.path} still reads as a baked rectangular card: ${softCoverage}`);
+  }
 });
 
 test('generated gameplay atlases align to their slicing grids', async () => {

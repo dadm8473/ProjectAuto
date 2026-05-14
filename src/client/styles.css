@@ -13,9 +13,9 @@
   --meta-backdrop: url("/src/client/assets/generated/reboot-meta-backdrop.png");
   --result-backdrop: url("/src/client/assets/generated/reboot-result-backdrop.png");
   --result-badges: url("/src/client/assets/generated/reboot-result-badges.png");
-  --result-panel-frame: url("/src/client/assets/generated/reboot-result-panel-frame.png");
-  --result-action-buttons: url("/src/client/assets/generated/reboot-result-action-buttons.png?v=result-actions");
-  --result-detail-strips: url("/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail");
+  --result-panel-frame: url("/src/client/assets/generated/reboot-result-panel-frame.png?v=frame-alpha1");
+  --result-action-buttons: url("/src/client/assets/generated/reboot-result-action-buttons.png?v=result-actions-alpha1");
+  --result-detail-strips: url("/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail-alpha1");
   --result-copy-plates: url("/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy");
   --result-finale-bursts: url("/src/client/assets/generated/reboot-result-finale-bursts.png?v=result-finale");
   --result-medals: url("/src/client/assets/generated/reboot-result-medals.png?v=result-medals");
@@ -44,7 +44,7 @@
   --launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta");
   --missions-banner: url("/src/client/assets/generated/reboot-missions-banner.png");
   --season-banner: url("/src/client/assets/generated/reboot-season-banner.png");
-  --meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row");
+  --meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row-alpha1");
   --meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges");
   --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
   --meta-showcase-stage: url("/src/client/assets/generated/reboot-meta-showcase-stage.png?v=showcase-stage");

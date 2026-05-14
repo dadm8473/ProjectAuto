@@ -735,6 +735,21 @@ Constraints: background must be one uniform #ff00ff with no gradients, shadows, 
 Postprocess: remove #ff00ff chroma key with soft matte/despill, crop and pad runtime atlas to 1920x512, 4 columns x 1 row, 480x512 cells, centered straight-alpha subjects.
 ```
 
+## Runtime Postprocess: UI Frame Alpha Cleanup
+
+```text
+Scope: generated UI frame assets that were created by imagegen with usable frame art but baked a dark rectangular background into the PNG.
+Runtime files:
+- src/client/assets/generated/reboot-result-panel-frame.png
+- src/client/assets/generated/reboot-result-action-buttons.png
+- src/client/assets/generated/reboot-result-detail-strips.png
+- src/client/assets/generated/reboot-meta-row-frames.png
+Source files remain the committed imagegen sources under docs/design/generation/source/reboot/style-lock/.
+Postprocess command pattern: run remove_chroma_key.py with --auto-key border --soft-matte --transparent-threshold 18 --opaque-threshold 210 --despill, then visually verify at 390x844.
+Acceptance: all four corners alpha < 10, soft alpha coverage stays within the frame-specific test ranges, and stable lobby/meta/result screenshots no longer show a full black web-card rectangle behind generated UI chrome.
+Reason: these assets are still imagegen-authored game UI art, but the runtime PNG must expose straight alpha so the app reads as one layered mobile game scene instead of stacked HTML/CSS cards.
+```
+
 ## 후처리 기준
 
 필수:
