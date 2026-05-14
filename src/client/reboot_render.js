@@ -45,7 +45,7 @@ export const REBOOT_ATLAS_MANIFEST = {
 
 export const REBOOT_BACKDROP_MANIFEST = {
   battle: {
-    src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-meta-shutter2',
+    src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-combat-moment1',
     width: 390,
     height: 620,
     source: 'imagegen'
@@ -79,6 +79,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     width: 320,
     height: 64,
     source: 'imagegen'
+  },
+  momentCallouts: {
+    src: '/src/client/assets/generated/reboot-combat-moment-callouts.png?v=combat-moment-callouts',
+    width: 1170,
+    height: 144,
+    source: 'imagegen'
   }
 };
 
@@ -88,6 +94,12 @@ const UNIT_COLORS = {
   slow_coil: '#8ee6d2',
   burst_pin: '#ffd166',
   rescue_coil: '#dff9ff'
+};
+
+const MOMENT_CALLOUTS = {
+  summon: { index: 0, icon: 'summon_charge', title: '소환 성공', body: '새 유닛 전장 투입' },
+  merge: { index: 1, icon: 'merge_action', title: '합성 성공', body: '상위 전력으로 강화' },
+  rescue: { index: 2, icon: 'rescue_action', title: '구원 발동', body: '파트너 위험 감소' }
 };
 
 export function createRebootAssetImages() {
@@ -109,7 +121,9 @@ export function createRebootAssetImages() {
   killBurst.src = REBOOT_EFFECT_MANIFEST.killBurst.src;
   const hitBeam = new Image();
   hitBeam.src = REBOOT_EFFECT_MANIFEST.hitBeam.src;
-  return { ...atlases, backdrop, bossCutin, rescueCutin, killBurst, hitBeam };
+  const momentCallouts = new Image();
+  momentCallouts.src = REBOOT_EFFECT_MANIFEST.momentCallouts.src;
+  return { ...atlases, backdrop, bossCutin, rescueCutin, killBurst, hitBeam, momentCallouts };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -171,6 +185,16 @@ function drawImageCover(ctx, image, x, y, w, h, alpha = 1) {
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.drawImage(image, sx, sy, sw, sh, x, y, w, h);
+  ctx.restore();
+  return true;
+}
+
+function drawMomentCalloutPanel(ctx, image, index, x, y, w, h, alpha = 1) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const cellWidth = image.naturalWidth / 3;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, x, y, w, h);
   ctx.restore();
   return true;
 }
@@ -491,6 +515,39 @@ function drawCombatVfx(ctx, state, assets = {}) {
   }
 }
 
+function drawCombatMomentCallout(ctx, state, assets = {}) {
+  const moments = [
+    ...recentEvents(state, 'summon', 1.15),
+    ...recentEvents(state, 'merge', 1.15),
+    ...recentEvents(state, 'rescue', 1.15)
+  ].sort((a, b) => a.at - b.at);
+  const event = moments.at(-1);
+  const meta = MOMENT_CALLOUTS[event?.type];
+  if (!event || !meta) return;
+
+  const alpha = Math.min(0.96, eventAlpha(state, event, 1.15) * 1.18);
+  const rise = (1 - alpha) * 8;
+  const x = 30;
+  const w = 330;
+  const h = 122;
+  const y = 328 - rise;
+
+  ctx.save();
+  if (!drawMomentCalloutPanel(ctx, assets.momentCallouts, meta.index, x, y, w, h, alpha)) return;
+  drawAtlasSprite(ctx, assets, 'ui', meta.icon, x + 50, y + 62, 42, alpha);
+  ctx.globalAlpha *= alpha;
+  ctx.fillStyle = '#fff7dc';
+  ctx.shadowColor = meta.index === 1 ? '#f4c95d' : '#58d7ff';
+  ctx.shadowBlur = 12;
+  ctx.font = '900 18px system-ui';
+  ctx.fillText(meta.title, x + 92, y + 58);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(245, 240, 220, 0.82)';
+  ctx.font = '800 11px system-ui';
+  ctx.fillText(meta.body, x + 92, y + 76);
+  ctx.restore();
+}
+
 export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 }, assets = {}) {
   ctx.clearRect(0, 0, layout.width, layout.height);
   const imageBackdrop = drawBattleBackdrop(ctx, layout, assets);
@@ -511,4 +568,5 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawBoard(ctx, state.boards.p1, 24, 438, 342, 138, '내 보드', false, assets, imageBackdrop);
   drawRescueBeam(ctx, state, assets);
   drawCombatVfx(ctx, state, assets);
+  drawCombatMomentCallout(ctx, state, assets);
 }

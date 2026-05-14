@@ -23,7 +23,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js'",
-    "from './reboot_render.js?v=reboot-meta-shutter2'",
+    "from './reboot_render.js?v=reboot-combat-moment1'",
     "from './reboot_screens.js'",
     "from './reboot_online.js'"
   ]) {
@@ -170,11 +170,11 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-meta-shutter2">'), true);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-meta-shutter2"></script>'), true);
-  assert.equal(app.includes("from './reboot_render.js?v=reboot-meta-shutter2'"), true);
-  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-meta-shutter2'"), true);
-  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-meta-shutter2")'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-combat-moment1">'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-combat-moment1"></script>'), true);
+  assert.equal(app.includes("from './reboot_render.js?v=reboot-combat-moment1'"), true);
+  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-combat-moment1'"), true);
+  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-combat-moment1")'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -701,6 +701,29 @@ test('combat renderer uses generated VFX atlas for action feedback', async () =>
   }
 });
 
+test('combat renderer uses generated moment callouts for successful actions', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'momentCallouts',
+    "src: '/src/client/assets/generated/reboot-combat-moment-callouts.png?v=combat-moment-callouts'",
+    'drawCombatMomentCallout',
+    'drawMomentCalloutPanel',
+    "recentEvents(state, 'summon', 1.15)",
+    "recentEvents(state, 'merge', 1.15)",
+    "recentEvents(state, 'rescue', 1.15)",
+    'if (!drawMomentCalloutPanel(ctx, assets.momentCallouts, meta.index, x, y, w, h, alpha)) return;',
+    'const h = 122;',
+    'const w = 330;',
+    'MOMENT_CALLOUTS',
+    "'소환 성공'",
+    "'합성 성공'",
+    "'구원 발동'"
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});
+
 test('boss warning uses a dedicated generated combat cutin', async () => {
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
@@ -1159,29 +1182,32 @@ test('profile rewards use generated burst feedback instead of plain text toasts'
   }
 });
 
-test('combat action toasts use generated callout frames instead of web alert boxes', async () => {
+test('successful combat actions use canvas moment callouts instead of duplicate toasts', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
 
   for (const marker of [
     '--toast-callouts: url("/src/client/assets/generated/reboot-toast-callouts.png?v=toast-callouts")',
-    "showToast({ summon: '소환 완료', merge: '합성 완료', rescue: '구원 성공' }[actionName], 'combat')",
+    'drawCombatMomentCallout',
+    'softFeedback(actionName)',
     '.toast {\n  position: absolute;',
     'background-image: var(--toast-callouts);',
     'background-size: 200% 100%;',
     'background-position: 0 0;',
     'border-color: transparent;',
     'border-radius: 0;',
-    '.toast[data-toast-kind="combat"]',
     'min-width: 168px;',
     'body[data-app-screen="battle"] .toast {\n  bottom: calc(126px + env(safe-area-inset-bottom));'
   ]) {
-    assert.equal(`${css}\n${app}`.includes(marker), true, marker);
+    assert.equal(`${css}\n${app}\n${render}`.includes(marker), true, marker);
   }
 
   const toastBlock = css.slice(css.indexOf('.toast {'), css.indexOf('body[data-app-screen="battle"] .toast'));
   assert.equal(toastBlock.includes('background: rgba(12, 18, 18, 0.92);'), false);
   assert.equal(toastBlock.includes('border: 1px solid var(--line);'), false);
+  assert.equal(app.includes("showToast({ summon: '소환 완료', merge: '합성 완료', rescue: '구원 성공' }[actionName], 'combat')"), false);
+  assert.equal(css.includes('.toast[data-toast-kind="combat"]'), false);
 });
 
 test('reward toast sits above app overlays instead of inside the blurred battle stage', async () => {
@@ -1416,7 +1442,7 @@ test('combat shell uses generated HUD and action dock chrome', async () => {
 
   for (const marker of [
     '--combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png")',
-    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-meta-shutter2")',
+    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-combat-moment1")',
     'body[data-app-screen="battle"] .hud::before',
     'body[data-app-screen="battle"] .action-panel::before',
     'background-image: var(--combat-hud-frame)',

@@ -3,7 +3,7 @@ import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=reboot-meta-shutter2';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=reboot-combat-moment1';
 import {
   buildMissionScreen,
   buildRebootCollection,
@@ -293,7 +293,6 @@ function command(actionName) {
     return;
   }
   softFeedback(actionName);
-  showToast({ summon: '소환 완료', merge: '합성 완료', rescue: '구원 성공' }[actionName], 'combat');
 }
 
 function updateMeters(current) {
