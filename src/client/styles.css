@@ -27,6 +27,8 @@
   --title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png");
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
   --splash-title-plate: url("/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title");
+  --splash-footer-shroud: url("/src/client/assets/generated/reboot-splash-footer-shroud.png?v=splash-footer-depth-clean3");
+  --splash-floor-cap: url("/src/client/assets/generated/reboot-splash-floor-cap.png?v=splash-floor-cap-matte4");
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
   --lobby-operation-poster: url("/src/client/assets/generated/reboot-lobby-operation-poster.png?v=operation-poster");
   --lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips");
@@ -110,6 +112,23 @@ button:disabled {
   background:
     radial-gradient(circle at 50% 35%, rgba(88, 215, 255, 0.12), transparent 36%),
     linear-gradient(180deg, #111817, #050808 72%);
+}
+
+body[data-app-screen="splash"] .shell::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 30;
+  width: 100%;
+  height: clamp(86px, 14dvh, 116px);
+  transform: translateX(-50%);
+  background-color: #010405;
+  background-image: var(--splash-footer-shroud);
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 100% 100%;
+  pointer-events: none;
 }
 
 .hud,
@@ -505,6 +524,16 @@ body[data-app-screen="lobby"] .toast {
   pointer-events: none;
 }
 
+[data-screen="splash"]::after {
+  inset: auto 0 0;
+  z-index: 0;
+  height: clamp(86px, 14dvh, 116px);
+  background-image: var(--splash-floor-cap);
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: min(260px, 61vw) min(96px, 22.5vw);
+}
+
 .result-overlay::after {
   content: "";
   position: absolute;
@@ -573,6 +602,38 @@ body[data-app-screen="lobby"] .toast {
 .lobby-screen::before {
   top: calc(62px + env(safe-area-inset-top));
   opacity: 0.92;
+}
+
+.splash-screen::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) - 10px);
+  z-index: 0;
+  width: 100%;
+  height: clamp(210px, 34dvh, 270px);
+  transform: translateX(-50%);
+  background-image: var(--splash-floor-cap), var(--splash-footer-shroud);
+  background-repeat: no-repeat;
+  background-position: center bottom, center bottom;
+  background-size: min(260px, 61vw) min(96px, 22.5vw), 100% 100%;
+  pointer-events: none;
+}
+
+.splash-screen > .splash-floor-cap {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) - 10px);
+  z-index: 0;
+  width: min(100vw, 430px);
+  height: clamp(210px, 34dvh, 270px);
+  transform: translateX(-50%);
+  background-color: #010405;
+  background-image: var(--splash-floor-cap), var(--splash-footer-shroud);
+  background-repeat: no-repeat;
+  background-position: center bottom, center bottom;
+  background-size: min(260px, 61vw) min(96px, 22.5vw), 100% 100%;
+  pointer-events: none;
 }
 
 .splash-screen > *,

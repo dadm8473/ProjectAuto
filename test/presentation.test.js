@@ -8,6 +8,14 @@ function cssPxVar(css, name) {
   return Number(match[1]);
 }
 
+function cssRuleBlock(css, selector) {
+  const start = css.indexOf(`${selector} {`);
+  assert.notEqual(start, -1, `${selector} block is missing`);
+  const end = css.indexOf('\n}', start);
+  assert.notEqual(end, -1, `${selector} block is not closed`);
+  return css.slice(start, end + 2);
+}
+
 test('client app is split into reboot modules and keeps app.js as bootstrap', async () => {
   const app = await readFile('src/client/app.js', 'utf8');
   const lines = app.split('\n').length;
@@ -144,7 +152,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-splash-title">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-splash-floor-matte10">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -903,6 +911,66 @@ test('splash title remains readable on 360px portrait screens', async () => {
   ]) {
     assert.equal(`${lockupBlock}\n${titleBlock}`.includes(marker), true, marker);
   }
+});
+
+test('splash uses a generated footer shroud to hide unused lower console slots', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '<span class="splash-floor-cap" aria-hidden="true"></span>',
+    '--splash-footer-shroud: url("/src/client/assets/generated/reboot-splash-footer-shroud.png?v=splash-footer-depth-clean3")',
+    '--splash-floor-cap: url("/src/client/assets/generated/reboot-splash-floor-cap.png?v=splash-floor-cap-matte4")',
+    '[data-screen="splash"]::after',
+    'inset: auto 0 0;',
+    'height: clamp(86px, 14dvh, 116px);',
+    'background-image: var(--splash-floor-cap);',
+    'background-position: center bottom;',
+    'background-size: min(260px, 61vw) min(96px, 22.5vw);',
+    '.splash-screen::after',
+    'position: fixed;',
+    'background-image: var(--splash-floor-cap), var(--splash-footer-shroud);',
+    'background-position: center bottom, center bottom;',
+    'background-size: min(260px, 61vw) min(96px, 22.5vw), 100% 100%;',
+    'bottom: calc(env(safe-area-inset-bottom) - 10px);',
+    'height: clamp(210px, 34dvh, 270px);',
+    '.splash-screen > .splash-floor-cap',
+    'z-index: 0;',
+    'background-color: #010405;',
+    'background-image: var(--splash-floor-cap), var(--splash-footer-shroud);',
+    'bottom: calc(env(safe-area-inset-bottom) - 10px);',
+    'width: min(100vw, 430px);',
+    'height: clamp(210px, 34dvh, 270px);',
+    'background-position: center bottom, center bottom;',
+    'background-size: min(260px, 61vw) min(96px, 22.5vw), 100% 100%;',
+    'body[data-app-screen="splash"] .shell::after',
+    'z-index: 30;',
+    'height: clamp(86px, 14dvh, 116px);',
+    'background-image: var(--splash-footer-shroud);',
+    'background-size: 100% 100%;',
+    'pointer-events: none;'
+  ]) {
+    assert.equal(`${html}\n${css}`.includes(marker), true, marker);
+  }
+
+  const overlayBlock = cssRuleBlock(css, '[data-screen="splash"]::after');
+  assert.equal(overlayBlock.includes('z-index: 0;'), true);
+  assert.equal(overlayBlock.includes('var(--splash-footer-shroud)'), false);
+
+  const shellMaskBlock = cssRuleBlock(css, 'body[data-app-screen="splash"] .shell::after');
+  assert.equal(shellMaskBlock.includes('z-index: 30;'), true);
+  assert.equal(shellMaskBlock.includes('background-image: var(--splash-footer-shroud);'), true);
+  assert.equal(shellMaskBlock.includes('var(--splash-floor-cap)'), false);
+  assert.equal(css.includes('body[data-app-screen="battle"] .shell::after'), false);
+  assert.equal(cssPxVar(css, '--lobby-screen-bottom-pad') >= 126, true);
+
+  const footerBlock = css.slice(css.indexOf('.splash-screen::after'), css.indexOf('.splash-screen > *,'));
+  assert.equal(footerBlock.includes('display: none;'), false);
+
+  const capBlock = css.slice(css.indexOf('.splash-screen > .splash-floor-cap'), css.indexOf('.splash-screen > *,'));
+  assert.equal(capBlock.includes('background-size: min(260px, 61vw) min(96px, 22.5vw), 100% 100%;'), true);
+  assert.equal(capBlock.includes('rgba(255, 0, 0'), false);
+  assert.equal(css.includes('content: "";\n  display: none;\n  position: absolute;\n  inset: -1px;'), false);
 });
 
 test('client settles result rewards into profile and wires shop purchases', async () => {

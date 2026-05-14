@@ -270,6 +270,20 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     width: 430,
     height: 184,
     minRuntimeBytes: 90_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-splash-footer-shroud.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-splash-footer-shroud-imagegen.png',
+    width: 430,
+    height: 184,
+    minRuntimeBytes: 80_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-splash-floor-cap.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-splash-footer-shroud-imagegen.png',
+    width: 260,
+    height: 96,
+    minRuntimeBytes: 8_000
   }
 ];
 
@@ -466,12 +480,57 @@ function colorRatio(image, rect, predicate) {
   return matched / total;
 }
 
+function luminanceStats(image, rect, brightThreshold = 64) {
+  let total = 0;
+  let sum = 0;
+  let bright = 0;
+  for (let y = rect.y; y < rect.y + rect.height; y += 1) {
+    for (let x = rect.x; x < rect.x + rect.width; x += 1) {
+      const offset = (y * image.width + x) * 4;
+      if (image.pixels[offset + 3] <= 220) continue;
+      const luma = (image.pixels[offset] * 0.2126) + (image.pixels[offset + 1] * 0.7152) + (image.pixels[offset + 2] * 0.0722);
+      total += 1;
+      sum += luma;
+      if (luma > brightThreshold) bright += 1;
+    }
+  }
+  return { mean: sum / total, brightRatio: bright / total };
+}
+
 test('generated gameplay atlases are committed as valid png assets', async () => {
   for (const path of GENERATED_ASSETS) {
     const bytes = await readFile(path);
     assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', path);
     assert.equal(bytes.length > 100_000, true, path);
   }
+});
+
+test('splash footer shroud reads as dark floor instead of a centered empty slot', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-splash-footer-shroud.png'));
+  const centerLower = luminanceStats(image, { x: 120, y: 92, width: 190, height: 86 });
+  const centerSocket = luminanceStats(image, { x: 130, y: 126, width: 170, height: 58 }, 45);
+  const sideLower = luminanceStats(image, { x: 20, y: 92, width: 90, height: 86 });
+  const cyanSlotRatio = colorRatio(image, { x: 120, y: 92, width: 190, height: 86 }, (r, g, b) => r < 80 && g > 80 && b > 90);
+
+  assert.equal(centerLower.mean <= sideLower.mean + 7, true, `center floor too bright: ${centerLower.mean} vs ${sideLower.mean}`);
+  assert.equal(centerLower.brightRatio < 0.015, true, `center floor has too many bright slot pixels: ${centerLower.brightRatio}`);
+  assert.equal(centerSocket.mean < 28, true, `center socket frame still reads bright: ${centerSocket.mean}`);
+  assert.equal(centerSocket.brightRatio < 0.005, true, `center socket frame has too many luminous edge pixels: ${centerSocket.brightRatio}`);
+  assert.equal(cyanSlotRatio < 0.00005, true, `center floor has cyan slot pixels: ${cyanSlotRatio}`);
+});
+
+test('splash floor cap is a transparent matte bitmap, not another glowing button', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-splash-floor-cap.png'));
+  const center = luminanceStats(image, { x: 78, y: 38, width: 104, height: 34 }, 42);
+  const frameRatio = colorRatio(image, { x: 42, y: 20, width: 176, height: 58 }, (r, g, b) => r < 70 && g > 80 && b > 90);
+
+  for (const point of [[0, 0], [259, 0], [0, 95], [259, 95]]) {
+    assert.equal(alphaAt(image, point[0], point[1]) < 24, true, `corner ${point.join(',')} must stay transparent`);
+  }
+  assert.equal(alphaAt(image, 130, 58) > 220, true, 'center cap must be opaque enough to cover the slot');
+  assert.equal(center.mean < 18, true, `center cap too bright: ${center.mean}`);
+  assert.equal(center.brightRatio < 0.002, true, `center cap has button-like bright pixels: ${center.brightRatio}`);
+  assert.equal(frameRatio < 0.0001, true, `center cap has cyan frame pixels: ${frameRatio}`);
 });
 
 test('generated gameplay atlases align to their slicing grids', async () => {
