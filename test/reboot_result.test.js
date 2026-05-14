@@ -85,6 +85,27 @@ test('result model exposes loss status for generated result badges', () => {
   assert.equal(model.highlight.kind, 'danger');
 });
 
+test('result next-goal copy stays compact for generated result plates', () => {
+  const goalKeys = [
+    'time_next_rescue',
+    'repeat_boss_timing',
+    'protect_control_unit',
+    'rescue_before_merge_greed',
+    'save_rescue_for_partner_danger',
+    'answer_boss_warning',
+    'merge_before_boss',
+    'turn_bad_rolls_into_utility',
+    undefined
+  ];
+
+  for (const nextGoal of goalKeys) {
+    const model = buildRebootResultModel({ result: { status: 'lost', reason: 'boss_leaked', nextGoal } });
+    const compactLength = model.nextGoal.label.replace(/\s/g, '').length;
+    assert.equal(compactLength <= 10, true, `${model.nextGoal.label} is too long for the result plate`);
+    assert.equal(/[.。]/.test(model.nextGoal.label), false, `${model.nextGoal.label} reads like paragraph copy`);
+  }
+});
+
 test('retry creates a fresh run without opening monetization paths', () => {
   const previousGame = runTutorial();
   const retry = buildRebootResultModel({ result: previousGame.result }).primaryAction;

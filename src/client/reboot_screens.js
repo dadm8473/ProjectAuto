@@ -14,14 +14,14 @@ const REASON_LABELS = {
 };
 
 const GOAL_LABELS = {
-  time_next_rescue: '다음 판에는 위험 80 전에 구원을 준비하세요',
-  repeat_boss_timing: '보스 경고 후 10초 안에 소환이나 합성을 선택하세요',
-  protect_control_unit: '느림 코일을 보스 전까지 살려두세요',
-  rescue_before_merge_greed: '파트너 위험이 높으면 합성보다 구원을 먼저 누르세요',
-  save_rescue_for_partner_danger: '구원은 파트너 위험 80 전에 준비하세요',
-  answer_boss_warning: '보스 실루엣이 보이면 마지막 선택을 아끼지 마세요',
-  merge_before_boss: '보스 전 합성 후보를 놓치지 마세요',
-  turn_bad_rolls_into_utility: '애매한 유닛도 제어와 구원 재료로 활용하세요'
+  time_next_rescue: '위험 80 전 구원',
+  repeat_boss_timing: '보스 경고 후 선택',
+  protect_control_unit: '느림 코일 생존',
+  rescue_before_merge_greed: '위험 높으면 구원',
+  save_rescue_for_partner_danger: '구원 게이지 보존',
+  answer_boss_warning: '보스 실루엣 대응',
+  merge_before_boss: '보스 전 합성',
+  turn_bad_rolls_into_utility: '약한 유닛 활용'
 };
 
 const ROLE_LABELS = {
@@ -280,7 +280,7 @@ export function buildRebootResultModel({ result, rewards = [], profile } = {}) {
     title: won ? '승리' : '패배',
     highlight: { label: REASON_LABELS[reason] ?? '전투 완료', kind: won ? 'success' : 'danger' },
     reason: { label: REASON_LABELS[reason] ?? '전투 완료', reason },
-    nextGoal: { label: GOAL_LABELS[result?.nextGoal] ?? '다시 도전해 핵심 타이밍을 익히세요', goal: result?.nextGoal ?? 'retry' },
+    nextGoal: { label: GOAL_LABELS[result?.nextGoal] ?? '핵심 타이밍 재도전', goal: result?.nextGoal ?? 'retry' },
     rewards,
     primaryAction: { label: '다시 도전', action: 'retry' },
     secondaryAction: nextAction && nextAction.screen !== 'battle'
