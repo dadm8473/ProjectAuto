@@ -180,6 +180,8 @@ test('reboot render uses only reboot atlases and manifest keys', async () => {
 test('home collection shop and result are app-game screens, not combat BM drawers', async () => {
   const html = await readFile('index.html', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
 
   for (const marker of [
     'id="splashScreen"',
@@ -203,6 +205,26 @@ test('home collection shop and result are app-game screens, not combat BM drawer
   ]) {
     assert.equal(screens.includes(forbidden), false, forbidden);
   }
+
+  assert.equal(
+    html.indexOf('<nav class="bottom-dock"') > html.indexOf('id="seasonScreen"'),
+    true,
+    'meta nav should be shared across lobby and hub screens instead of being trapped inside the lobby page'
+  );
+  for (const marker of [
+    '.screen-overlay[data-screen="splash"] > .bottom-dock',
+    '.bottom-dock button[data-nav-active="true"]',
+    'function updateNavState()',
+    "button.setAttribute('aria-current', 'page');",
+    'button.dataset.navActive = \'true\';',
+    'updateNavState();'
+  ]) {
+    assert.equal(`${css}\n${app}`.includes(marker), true, marker);
+  }
+  assert.match(cssRuleBlock(css, '.bottom-dock'), /z-index:\s*32;/);
+  assert.match(cssRuleBlock(css, '.screen-overlay,\n.result-overlay'), /z-index:\s*30;/);
+  const finalResultOverlayBlock = css.slice(css.lastIndexOf('.result-overlay {'), css.indexOf('\n}', css.lastIndexOf('.result-overlay {')) + 2);
+  assert.match(finalResultOverlayBlock, /z-index:\s*30;/);
 });
 
 test('online entry has app-game fallback instead of trapping players in a dead connection', async () => {
@@ -339,7 +361,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-readability1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-nav1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-readability1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=command-console1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-press1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=board-labels1">'), false);
@@ -371,7 +394,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=retry-seeds1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-nav1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=retry-seeds1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=boss-finale1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=rescue-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reward1"></script>'), false);
@@ -2087,12 +2111,17 @@ test('reward toast sits above app overlays instead of inside the blurred battle 
   assert.equal(stageEnd >= 0, true);
   assert.equal(toastIndex > stageEnd, true, 'toast must be a shell-level overlay, not a child of stage-wrap');
   for (const marker of [
-    'z-index: 12',
+    'z-index: 40',
     'body[data-app-screen="battle"] .toast',
-    'body[data-app-screen="lobby"] .toast'
+    'body[data-app-screen="lobby"] .toast',
+    'body[data-app-screen="collection"] .toast',
+    'body[data-app-screen="shop"] .toast',
+    'body[data-app-screen="missions"] .toast',
+    'body[data-app-screen="season"] .toast'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
+  assert.equal(css.includes('z-index: 12'), false);
 });
 
 test('hidden toast does not leave an empty game panel on the battle screen', async () => {

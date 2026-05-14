@@ -176,6 +176,7 @@ function setScreen(screen) {
     panel.hidden = panel.dataset.screenPanel !== screen;
   }
   dom.launchOverlay.hidden = screen === 'battle' || screen === 'result';
+  updateNavState();
   if (changed) playScreenTransition(screen);
 }
 
@@ -188,6 +189,19 @@ function updateNavAlerts() {
   });
 }
 
+function updateNavState() {
+  document.querySelectorAll('.bottom-dock [data-open-screen]').forEach((button) => {
+    const active = button.dataset.openScreen === appScreen;
+    if (active) {
+      button.dataset.navActive = 'true';
+      button.setAttribute('aria-current', 'page');
+    } else {
+      delete button.dataset.navActive;
+      button.removeAttribute('aria-current');
+    }
+  });
+}
+
 function renderHomeScreens() {
   dom.lobbyContent.innerHTML = buildRebootLobby(profile);
   dom.collectionList.innerHTML = buildRebootCollection(profile);
@@ -195,6 +209,7 @@ function renderHomeScreens() {
   dom.missionsList.innerHTML = buildMissionScreen(profile);
   dom.seasonList.innerHTML = buildSeasonScreen(profile);
   updateNavAlerts();
+  updateNavState();
 }
 
 function resultRewards(current) {

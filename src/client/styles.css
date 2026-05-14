@@ -415,7 +415,7 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   left: 50%;
   bottom: calc(22px + env(safe-area-inset-bottom));
   transform: translateX(-50%);
-  z-index: 12;
+  z-index: 40;
   isolation: isolate;
   min-height: 48px;
   min-width: 168px;
@@ -447,6 +447,13 @@ body[data-app-screen="battle"] .toast {
 
 body[data-app-screen="lobby"] .toast {
   bottom: calc(104px + env(safe-area-inset-bottom));
+}
+
+body[data-app-screen="collection"] .toast,
+body[data-app-screen="shop"] .toast,
+body[data-app-screen="missions"] .toast,
+body[data-app-screen="season"] .toast {
+  bottom: calc(126px + env(safe-area-inset-bottom));
 }
 
 .toast[data-toast-kind="reward"] {
@@ -822,7 +829,7 @@ body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after 
 .result-overlay {
   position: absolute;
   inset: 0;
-  z-index: 6;
+  z-index: 30;
   display: grid;
   place-items: stretch;
   overflow: hidden;
@@ -1122,12 +1129,16 @@ body[data-app-screen="season"] .app-screen::after {
   left: 12px;
   right: 12px;
   bottom: calc(var(--lobby-bottom-dock-bottom) + env(safe-area-inset-bottom));
-  z-index: 3;
+  z-index: 32;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
   padding: var(--lobby-bottom-dock-padding-y) 6px;
   isolation: isolate;
+}
+
+.screen-overlay[data-screen="splash"] > .bottom-dock {
+  display: none;
 }
 
 .bottom-dock button {
@@ -1146,6 +1157,11 @@ body[data-app-screen="season"] .app-screen::after {
   transition: transform 120ms ease, filter 120ms ease;
 }
 
+.bottom-dock button[data-nav-active="true"] {
+  color: #fff2b4;
+  filter: saturate(1.18) brightness(1.12);
+}
+
 .bottom-dock button::after {
   content: "";
   position: absolute;
@@ -1161,6 +1177,10 @@ body[data-app-screen="season"] .app-screen::after {
   mix-blend-mode: screen;
   pointer-events: none;
   transform: translate(-50%, -50%);
+}
+
+.bottom-dock button[data-nav-active="true"]::after {
+  opacity: 0.96;
 }
 
 .bottom-dock button:active,
@@ -2276,7 +2296,7 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .result-overlay {
-  z-index: 9;
+  z-index: 30;
   padding: 26px 14px;
   align-items: center;
 }
