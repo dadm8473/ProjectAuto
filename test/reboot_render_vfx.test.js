@@ -167,6 +167,48 @@ test('player board uses a generated landing tray beneath summoned units', () => 
   assert.equal(unitIndex < summonVfxIndex, true, 'summon flash should sit above the new unit');
 });
 
+test('image backdrop board labels sit on generated combat plates', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 8.4,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 52, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      board: image(1280, 256),
+      boardLabelPlates: image(780, 80)
+    }
+  );
+
+  const plateIndices = ctx.commands
+    .map((command, index) => ({ command, index }))
+    .filter(({ command }) => (
+      command.type === 'drawImage'
+        && command.args[0].naturalWidth === 780
+        && command.args[0].naturalHeight === 80
+    ))
+    .map(({ index }) => index);
+  const partnerTextIndex = ctx.commands.findIndex((command) => (
+    command.type === 'fillText' && command.args[0] === '파트너 보드'
+  ));
+  const dangerTextIndex = ctx.commands.findIndex((command) => (
+    command.type === 'fillText' && command.args[0] === '위험 52'
+  ));
+
+  assert.equal(plateIndices.length >= 2, true, 'expected generated plates behind partner and danger labels');
+  assert.equal(plateIndices.some((index) => index < partnerTextIndex), true, 'partner label should sit above a generated plate');
+  assert.equal(plateIndices.some((index) => index < dangerTextIndex), true, 'danger label should sit above a generated plate');
+});
+
 test('first player action clears the operation start cutin so combat feedback stays visible', () => {
   const ctx = mockContext();
   drawRebootBattle(

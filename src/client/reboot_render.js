@@ -133,6 +133,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     width: 780,
     height: 320,
     source: 'imagegen'
+  },
+  boardLabelPlates: {
+    src: '/src/client/assets/generated/reboot-combat-status-plates.png?v=board-labels1',
+    width: 780,
+    height: 80,
+    source: 'imagegen'
   }
 };
 
@@ -202,7 +208,9 @@ export function createRebootAssetImages() {
   cosmeticSigils.src = REBOOT_EFFECT_MANIFEST.cosmeticSigils.src;
   const playerBoardTray = new Image();
   playerBoardTray.src = REBOOT_EFFECT_MANIFEST.playerBoardTray.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, cosmeticSigils, playerBoardTray };
+  const boardLabelPlates = new Image();
+  boardLabelPlates.src = REBOOT_EFFECT_MANIFEST.boardLabelPlates.src;
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, cosmeticSigils, playerBoardTray, boardLabelPlates };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -334,6 +342,18 @@ function drawPlayerBoardTray(ctx, assets, x, y, w, h) {
   return true;
 }
 
+function drawBoardLabelPlate(ctx, assets, variant, x, y, w, h, alpha = 0.76) {
+  const image = assets?.boardLabelPlates;
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const cellWidth = image.naturalWidth / 2;
+  const index = variant === 'danger' ? 1 : 0;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, x, y, w, h);
+  ctx.restore();
+  return true;
+}
+
 function drawHitBoltSprite(ctx, image, from, to, targetType, alpha = 1) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const dx = to.x - from.x;
@@ -374,11 +394,13 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
   const showBoardText = !imageBackdrop || compact;
   const showDangerText = showBoardText || board.danger >= 50;
   if (showBoardText) {
+    if (imageBackdrop) drawBoardLabelPlate(ctx, assets, 'board', x + 4, y + 2, compact ? 118 : 106, 28, 0.68);
     ctx.fillStyle = '#f5f0dc';
     ctx.font = '700 12px system-ui';
     ctx.fillText(title, x + 12, y + 18);
   }
   if (showDangerText) {
+    if (imageBackdrop) drawBoardLabelPlate(ctx, assets, 'danger', x + w - 90, y + 2, 86, 28, board.danger >= 80 ? 0.9 : 0.72);
     ctx.fillStyle = board.danger >= 80 ? '#ff6f59' : '#a8b4a7';
     ctx.fillText(`위험 ${Math.round(board.danger)}`, x + w - 66, y + 18);
   }

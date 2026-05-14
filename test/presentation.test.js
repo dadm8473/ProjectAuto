@@ -95,7 +95,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js'",
-    "from './reboot_render.js?v=player-tray1'",
+    "from './reboot_render.js?v=board-labels1'",
     "from './reboot_screens.js?v=mission-track1'",
     "from './reboot_online.js'"
   ]) {
@@ -337,7 +337,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=battle-brand1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=board-labels1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=battle-brand1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-track1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-showcase1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=player-tray1">'), false);
@@ -352,7 +353,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-brand1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-brand1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=mission-track1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-showcase1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-fallback2"></script>'), false);
@@ -365,7 +367,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=mission-track1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-showcase1'"), false);
@@ -530,6 +533,23 @@ test('combat board renderer suppresses player-board labels on imagegen map floor
     'if (showBoardText) {',
     'ctx.fillText(title, x + 12, y + 18);',
     'if (showDangerText) {'
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});
+
+test('combat board labels use generated status plates on the canvas', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'boardLabelPlates: {',
+    "src: '/src/client/assets/generated/reboot-combat-status-plates.png?v=board-labels1'",
+    'width: 780,\n    height: 80,',
+    'const boardLabelPlates = new Image();',
+    'boardLabelPlates.src = REBOOT_EFFECT_MANIFEST.boardLabelPlates.src;',
+    'function drawBoardLabelPlate',
+    "drawBoardLabelPlate(ctx, assets, 'board'",
+    "drawBoardLabelPlate(ctx, assets, 'danger'"
   ]) {
     assert.equal(render.includes(marker), true, marker);
   }
