@@ -47,6 +47,7 @@
   --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
   --meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions");
   --meta-progress-bars: url("/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress");
+  --meta-card-state-badges: url("/src/client/assets/generated/reboot-meta-card-state-badges.png?v=meta-card-states");
   --meta-claim-bursts: url("/src/client/assets/generated/reboot-meta-claim-bursts.png?v=claim-bursts");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1");
@@ -1710,6 +1711,25 @@ body[data-app-screen="season"] .app-screen::after {
 .meta-progress[data-progress-kind="mission"]::before { background-position: 50% 100%; }
 .meta-progress[data-progress-kind="season"] { background-position: 100% 0; }
 .meta-progress[data-progress-kind="season"]::before { background-position: 100% 100%; }
+
+.card-state-badge {
+  position: absolute;
+  top: clamp(10px, 3.26vw, 14px);
+  left: clamp(32px, 8.37vw, 36px);
+  z-index: 3;
+  width: clamp(28px, 7.91vw, 34px);
+  aspect-ratio: 1 / 1;
+  pointer-events: none;
+  background-image: var(--meta-card-state-badges);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  background-position: 0 0;
+  filter: saturate(1.08) drop-shadow(0 5px 10px rgba(0, 0, 0, 0.56));
+}
+
+.card-state-badge[data-card-state="ready"] { background-position: 0 0; }
+.card-state-badge[data-card-state="owned"] { background-position: 50% 0; }
+.card-state-badge[data-card-state="locked"] { background-position: 100% 0; }
 
 .unit-level {
   color: var(--amber);

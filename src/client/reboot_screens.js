@@ -105,6 +105,16 @@ function buildMetaProgress(kind, current, target, label) {
   return `<span class="meta-progress" data-progress-kind="${kind}" style="--progress-fill:${progressFillPercent(current, target)}%" role="progressbar" aria-valuemin="0" aria-valuemax="${target}" aria-valuenow="${valueNow}" aria-label="${label}"></span>`;
 }
 
+const CARD_STATE_BADGES = {
+  ready: '<span class="card-state-badge" data-card-state="ready" aria-hidden="true"></span>',
+  owned: '<span class="card-state-badge" data-card-state="owned" aria-hidden="true"></span>',
+  locked: '<span class="card-state-badge" data-card-state="locked" aria-hidden="true"></span>'
+};
+
+function cardStateBadge(state) {
+  return CARD_STATE_BADGES[state] ?? CARD_STATE_BADGES.locked;
+}
+
 export function buildMetaNavAlerts(profile = {}) {
   return {
     collection: countTrainableUnits(profile) > 0,
@@ -178,6 +188,7 @@ export function buildRebootCollection(profile = {}) {
     const ready = xp >= cost;
     return `
     <article class="screen-card unit-card" data-role="${unit.role}">
+      ${cardStateBadge(ready ? 'ready' : 'locked')}
       <span class="sprite-token unit-sprite" data-sprite="${unit.spriteKey}"></span>
       <div class="card-copy">
         <span class="role-pill">${ROLE_LABELS[unit.role] ?? unit.role}</span>
@@ -203,9 +214,11 @@ export function buildRebootShop(profile = {}) {
     const owned = unlocks.includes(cosmetic);
     const price = item.price?.gems ?? 0;
     const locked = gems < price;
+    const cardState = owned ? 'owned' : locked ? 'locked' : 'ready';
     const actionLabel = owned ? '보유' : locked ? '젬 부족' : '해금';
     return `
     <article class="screen-card shop-card" data-item="${item.id}" data-owned="${owned}">
+      ${cardStateBadge(cardState)}
       <span class="sprite-token shop-cosmetic" data-shop-cosmetic="${item.id}"></span>
       <div class="card-copy">
         <span class="role-pill">외형</span>
@@ -227,9 +240,11 @@ export function buildMissionScreen(profile = {}) {
     const progress = missionProgress(profile, mission);
     const done = progress >= mission.target;
     const received = claimed.has(mission.id);
+    const cardState = received ? 'owned' : done ? 'ready' : 'locked';
     const label = received ? '받음' : done ? '수령' : '진행중';
     return `
     <article class="screen-card mission-card" data-mission="${mission.id}" data-owned="${received}">
+      ${cardStateBadge(cardState)}
       <span class="reward-token mission-reward-token" data-reward-icon="${rewardIconForGrant(mission.reward, 'mission')}"></span>
       <div class="card-copy">
         <span class="role-pill">미션</span>
@@ -267,8 +282,10 @@ export function buildSeasonScreen(profile = {}) {
     const received = claimed.has(index);
     const label = received ? '받음' : done ? '수령' : '진행중';
     const progress = Math.min(tier.xp, xp);
+    const cardState = received ? 'owned' : done ? 'ready' : 'locked';
     return `
     <article class="screen-card season-card" data-pass-tier="${index}" data-owned="${received}">
+      ${cardStateBadge(cardState)}
       <span class="reward-token season-reward-token" data-reward-icon="${rewardIconForGrant(tier.grant, 'season')}"></span>
       <div class="card-copy">
         <span class="role-pill">시즌</span>

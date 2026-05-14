@@ -265,7 +265,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-card-states1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), true);
@@ -648,6 +649,46 @@ test('meta rows use generated progress bars for growth and pass progress', async
   const progressBlock = css.slice(css.indexOf('.meta-progress'), css.indexOf('.meta-progress[data-progress-kind="training"]'));
   assert.equal(progressBlock.includes('linear-gradient'), false);
   assert.equal(progressBlock.includes('border: 1px solid'), false);
+});
+
+test('meta cards use generated state badges instead of text-only ownership cues', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    '--meta-card-state-badges: url("/src/client/assets/generated/reboot-meta-card-state-badges.png?v=meta-card-states")',
+    'function cardStateBadge',
+    'class="card-state-badge"',
+    'data-card-state="ready"',
+    'data-card-state="owned"',
+    'data-card-state="locked"',
+    '.card-state-badge',
+    'background-image: var(--meta-card-state-badges);',
+    'background-size: 300% 100%;',
+    '.card-state-badge[data-card-state="ready"]',
+    '.card-state-badge[data-card-state="owned"]',
+    '.card-state-badge[data-card-state="locked"]'
+  ]) {
+    assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+
+  const stateBlock = css.slice(css.indexOf('.card-state-badge'), css.indexOf('.card-state-badge[data-card-state="ready"]'));
+  assert.equal(stateBlock.includes('linear-gradient'), false);
+  assert.equal(stateBlock.includes('border-radius'), false);
+});
+
+test('meta card state badges stay in the icon lane instead of the action button lane', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const stateBlock = cssRuleBlock(css, '.card-state-badge');
+
+  assert.equal(stateBlock.includes('left: clamp('), true);
+  assert.equal(stateBlock.includes('right:'), false);
+
+  const leftMax = Number(stateBlock.match(/left: clamp\(\d+px, [^)]+, (\d+)px\);/)?.[1]);
+  const widthMax = Number(stateBlock.match(/width: clamp\(\d+px, [^)]+, (\d+)px\);/)?.[1]);
+  assert.equal(Number.isFinite(leftMax), true, stateBlock);
+  assert.equal(Number.isFinite(widthMax), true, stateBlock);
+  assert.equal(leftMax + widthMax <= 72, true, `badge can overlap copy/action lanes: ${leftMax + widthMax}px`);
 });
 
 test('meta screen titles use generated header plates instead of browser default h1', async () => {

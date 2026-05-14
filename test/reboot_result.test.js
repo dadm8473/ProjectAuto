@@ -264,6 +264,17 @@ test('meta progression surfaces render compact visual progress bars', () => {
   assert.equal(season.includes('role="progressbar" aria-valuemin="0" aria-valuemax="160" aria-valuenow="80"'), true);
 });
 
+test('meta cards render generated state badge hooks for ready owned and locked states', () => {
+  const collection = buildRebootCollection({ xp: 80, unitLevels: {} });
+  const shop = buildRebootShop({ gems: 300, unlocks: ['mythic-aura'] });
+  const missions = buildMissionScreen({ processedRuns: ['run-1'], unitLevels: {}, unlocks: [], claimedMissions: ['train-unit'] });
+
+  assert.equal(collection.includes('class="card-state-badge" data-card-state="ready"'), true);
+  assert.equal(shop.includes('data-owned="true"'), true);
+  assert.equal(shop.includes('class="card-state-badge" data-card-state="owned"'), true);
+  assert.equal(missions.includes('class="card-state-badge" data-card-state="locked"'), true);
+});
+
 test('mission goals stay compact enough for portrait mission cards', () => {
   const missions = buildMissionScreen({
     processedRuns: ['run-1'],

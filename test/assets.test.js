@@ -407,6 +407,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 24_000
   },
   {
+    path: 'src/client/assets/generated/reboot-meta-card-state-badges.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-meta-card-state-badges-chromakey-imagegen.png',
+    width: 768,
+    height: 128,
+    minRuntimeBytes: 20_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-combat-coach-cues.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-coach-cues-chromakey-imagegen.png',
     width: 768,
@@ -1015,6 +1022,19 @@ test('meta progress bar cells keep track and fill rows readable', async () => {
       assert.equal(bounds.minY >= 4, true, `meta progress row ${row} cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
       assert.equal(bounds.maxY <= rowHeight - 5, true, `meta progress row ${row} cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
     }
+  }
+});
+
+test('meta card state badge cells stay readable without card backgrounds', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-meta-card-state-badges.png'));
+  const cellWidth = 256;
+  for (let cell = 0; cell < 3; cell += 1) {
+    const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 32);
+    assert.equal(bounds.count > 2_000, true, `meta card state badge cell ${cell} has no readable subject`);
+    assert.equal(bounds.minX >= 12, true, `meta card state badge cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 13, true, `meta card state badge cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 10, true, `meta card state badge cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 11, true, `meta card state badge cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
 });
 
