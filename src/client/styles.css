@@ -1598,72 +1598,144 @@ body[data-app-screen="season"] .app-screen::after {
   display: none;
 }
 
-.meta-summary {
-  min-height: 96px;
+.mission-stamp-board,
+.season-track-board {
+  position: relative;
+  min-height: 154px;
   display: grid;
-  align-content: center;
-  gap: 4px;
-  padding-right: 82px;
-}
-
-.meta-summary[data-summary-kind="missions"],
-.meta-summary[data-summary-kind="season"] {
-  min-height: 132px;
   align-content: end;
+  gap: 10px;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 18px 18px 16px;
+  border-radius: 8px;
   background-repeat: no-repeat;
-  background-size: cover;
   background-position: center;
+  background-size: 100% 100%;
+  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.38));
 }
 
-.meta-summary[data-summary-kind="missions"] {
-  background-image:
-    linear-gradient(180deg, rgba(5, 8, 8, 0.06), rgba(5, 8, 8, 0.48) 48%, rgba(5, 8, 8, 0.9)),
-    var(--missions-banner);
+.mission-stamp-board {
+  background-image: var(--missions-banner);
 }
 
-.meta-summary[data-summary-kind="season"] {
-  background-image:
-    linear-gradient(180deg, rgba(5, 8, 8, 0.04), rgba(5, 8, 8, 0.46) 48%, rgba(5, 8, 8, 0.9)),
-    var(--season-banner);
+.season-track-board {
+  background-image: var(--season-banner);
 }
 
-.meta-summary[data-summary-kind="missions"]::before,
-.meta-summary[data-summary-kind="season"]::before {
-  opacity: 0.52;
-}
-
-.meta-summary span {
-  color: var(--mint);
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.meta-summary strong {
-  font-size: 24px;
-  line-height: 1;
-}
-
-.meta-summary::after {
+.mission-stamp-board::after,
+.season-track-board::after {
   content: "";
   position: absolute;
-  top: 50%;
-  right: 18px;
-  z-index: 1;
-  width: 48px;
-  height: 48px;
-  transform: translateY(-50%);
-  background-image: url("/src/client/assets/generated/reboot-ui-icons.png");
-  background-repeat: no-repeat;
-  background-size: 288px 48px;
-  filter: drop-shadow(0 7px 13px rgba(0, 0, 0, 0.52));
+  inset: 0;
+  z-index: 0;
+  background: rgba(2, 7, 8, 0.38);
   pointer-events: none;
 }
 
-.meta-summary[data-summary-kind="missions"]::after { background-position: -96px 0; }
-.meta-summary[data-summary-kind="season"]::after {
-  background-image: url("/src/client/assets/generated/reboot-reward-icons.png");
-  background-size: 192px 48px;
-  background-position: -96px 0;
+.mission-board-copy,
+.season-board-copy,
+.mission-stamp-grid,
+.season-track-rail {
+  position: relative;
+  z-index: 1;
+}
+
+.mission-board-copy,
+.season-board-copy {
+  display: grid;
+  gap: 2px;
+  max-width: 188px;
+  text-shadow: 0 4px 13px rgba(0, 0, 0, 0.72);
+}
+
+.mission-board-copy span,
+.season-board-copy span {
+  color: var(--mint);
+  font-size: 12px;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.mission-board-copy strong,
+.season-board-copy strong {
+  color: var(--ink);
+  font-size: clamp(25px, 7vw, 30px);
+  line-height: 1;
+}
+
+.mission-board-copy p,
+.season-board-copy p {
+  overflow: hidden;
+  color: rgba(245, 240, 220, 0.84);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mission-stamp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mission-stamp-slot,
+.season-track-node {
+  position: relative;
+  min-height: 42px;
+  display: grid;
+  place-items: center;
+  background-image: var(--meta-mini-badges);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  filter: drop-shadow(0 7px 13px rgba(0, 0, 0, 0.46));
+}
+
+.mission-stamp-slot[data-mission-state="claimed"],
+.season-track-node[data-season-state="claimed"] {
+  background-position: 50% 0;
+}
+
+.mission-stamp-slot[data-mission-state="ready"],
+.season-track-node[data-season-state="ready"] {
+  background-position: 0 0;
+}
+
+.mission-stamp-slot[data-mission-state="locked"],
+.season-track-node[data-season-state="locked"] {
+  background-position: 100% 0;
+  filter: grayscale(0.25) brightness(0.72) drop-shadow(0 7px 13px rgba(0, 0, 0, 0.46));
+}
+
+.mission-stamp-slot .reward-token,
+.season-track-node .reward-token {
+  width: 34px;
+  height: 34px;
+}
+
+.season-track-rail {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  gap: 7px;
+}
+
+.season-track-rail::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 50%;
+  z-index: -1;
+  height: 10px;
+  transform: translateY(-50%);
+  background-image: var(--meta-progress-bars);
+  background-repeat: no-repeat;
+  background-position: 100% 0;
+  background-size: 300% 200%;
+  filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.4));
 }
 
 .meta-showcase {
@@ -1882,6 +1954,31 @@ body[data-app-screen="season"] .app-screen::after {
 .reward-token[data-reward-icon="cosmetic_shard"] { background-position: -48px 0; }
 .reward-token[data-reward-icon="season_progress"] { background-position: -96px 0; }
 .reward-token[data-reward-icon="unlock_capsule"] { background-position: -144px 0; }
+
+.mission-stamp-slot .reward-token,
+.season-track-node .reward-token {
+  background-size: 136px 34px;
+}
+
+.mission-stamp-slot .reward-token[data-reward-icon="soft_currency"],
+.season-track-node .reward-token[data-reward-icon="soft_currency"] {
+  background-position: 0 0;
+}
+
+.mission-stamp-slot .reward-token[data-reward-icon="cosmetic_shard"],
+.season-track-node .reward-token[data-reward-icon="cosmetic_shard"] {
+  background-position: -34px 0;
+}
+
+.mission-stamp-slot .reward-token[data-reward-icon="season_progress"],
+.season-track-node .reward-token[data-reward-icon="season_progress"] {
+  background-position: -68px 0;
+}
+
+.mission-stamp-slot .reward-token[data-reward-icon="unlock_capsule"],
+.season-track-node .reward-token[data-reward-icon="unlock_capsule"] {
+  background-position: -102px 0;
+}
 
 .unit-card,
 .shop-card,

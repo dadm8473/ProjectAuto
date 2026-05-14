@@ -130,16 +130,6 @@ export function buildMetaNavAlerts(profile = {}) {
   };
 }
 
-function buildMetaSummary(kind, label, value, detail) {
-  return `
-    <article class="meta-summary screen-card" data-summary-kind="${kind}">
-      <span>${label}</span>
-      <strong>${value}</strong>
-      <p>${detail}</p>
-    </article>
-  `;
-}
-
 function buildMetaShowcase({ kind, label, title, detail, chip, spriteClass, spriteAttr, spriteValue }) {
   return `
     <section class="meta-showcase" data-showcase-kind="${kind}" data-summary-kind="${kind}">
@@ -152,6 +142,76 @@ function buildMetaShowcase({ kind, label, title, detail, chip, spriteClass, spri
         <p>${detail}</p>
         <span class="meta-showcase-chip">${chip}</span>
       </div>
+    </section>
+  `;
+}
+
+function missionState(progress, target, received) {
+  if (received) return 'claimed';
+  if (progress >= target) return 'ready';
+  return 'locked';
+}
+
+function missionCardState(state) {
+  if (state === 'claimed') return 'owned';
+  if (state === 'ready') return 'ready';
+  return 'locked';
+}
+
+function buildMissionStampBoard(profile = {}, claimed = new Set()) {
+  const stamps = REBOOT_MISSIONS.map((mission) => {
+    const progress = missionProgress(profile, mission);
+    const state = missionState(progress, mission.target, claimed.has(mission.id));
+    return `
+      <span class="mission-stamp-slot" data-mission-state="${state}" data-mission-id="${mission.id}" aria-label="${mission.title} ${progress}/${mission.target}">
+        <span class="reward-token mission-reward-token" data-reward-icon="${rewardIconForGrant(mission.reward, 'mission')}" aria-hidden="true"></span>
+      </span>
+    `;
+  }).join('');
+
+  return `
+    <section class="mission-stamp-board" data-board-kind="missions">
+      <div class="mission-board-copy">
+        <span>수령 가능</span>
+        <strong>${countClaimableMissions(profile)}개</strong>
+        <p>완료 목표 보상 전환</p>
+      </div>
+      <div class="mission-stamp-grid">${stamps}</div>
+    </section>
+  `;
+}
+
+function seasonState(xp, tier, index, claimed = new Set()) {
+  if (claimed.has(index)) return 'claimed';
+  if (xp >= tier.xp) return 'ready';
+  return 'locked';
+}
+
+function seasonCardState(state) {
+  if (state === 'claimed') return 'owned';
+  if (state === 'ready') return 'ready';
+  return 'locked';
+}
+
+function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
+  const xp = profile.xp ?? 0;
+  const nodes = SHOP.pass.tiers.map((tier, index) => {
+    const state = seasonState(xp, tier, index, claimed);
+    return `
+      <span class="season-track-node" data-season-state="${state}" data-pass-tier="${index}" aria-label="${index + 1}단계 ${Math.min(xp, tier.xp)}/${tier.xp}">
+        <span class="reward-token season-reward-token" data-reward-icon="${rewardIconForGrant(tier.grant, 'season')}" aria-hidden="true"></span>
+      </span>
+    `;
+  }).join('');
+
+  return `
+    <section class="season-track-board" data-board-kind="season">
+      <div class="season-board-copy">
+        <span>시즌 경험치</span>
+        <strong>${xp} 경험치</strong>
+        <p>${countClaimablePassTiers(profile)}개 보상 가능</p>
+      </div>
+      <div class="season-track-rail">${nodes}</div>
     </section>
   `;
 }
@@ -289,12 +349,13 @@ export function buildRebootShop(profile = {}) {
 
 export function buildMissionScreen(profile = {}) {
   const claimed = new Set(profile.claimedMissions ?? []);
-  const summary = buildMetaSummary('missions', '수령 가능', `${countClaimableMissions(profile)}개`, '완료 목표 보상 전환');
+  const board = buildMissionStampBoard(profile, claimed);
   const missions = REBOOT_MISSIONS.map((mission) => {
     const progress = missionProgress(profile, mission);
     const done = progress >= mission.target;
     const received = claimed.has(mission.id);
-    const cardState = received ? 'owned' : done ? 'ready' : 'locked';
+    const stampState = missionState(progress, mission.target, received);
+    const cardState = missionCardState(stampState);
     const label = received ? '받음' : done ? '수령' : '진행중';
     return `
     <article class="screen-card mission-card" data-mission="${mission.id}" data-owned="${received}">
@@ -311,7 +372,7 @@ export function buildMissionScreen(profile = {}) {
     </article>
   `;
   }).join('');
-  return `${summary}${missions}`;
+  return `${board}${missions}`;
 }
 
 function seasonRewardLabel(grant = {}) {
@@ -330,13 +391,13 @@ function rewardIconForGrant(grant = {}, source = 'mission') {
 export function buildSeasonScreen(profile = {}) {
   const claimed = new Set(profile.claimedPassTiers ?? []);
   const xp = profile.xp ?? 0;
-  const summary = buildMetaSummary('season', '시즌 경험치', `${xp} 경험치`, `${countClaimablePassTiers(profile)}개 보상 가능`);
+  const board = buildSeasonTrackBoard(profile, claimed);
   const tiers = SHOP.pass.tiers.map((tier, index) => {
     const done = xp >= tier.xp;
     const received = claimed.has(index);
     const label = received ? '받음' : done ? '수령' : '진행중';
     const progress = Math.min(tier.xp, xp);
-    const cardState = received ? 'owned' : done ? 'ready' : 'locked';
+    const cardState = seasonCardState(seasonState(xp, tier, index, claimed));
     return `
     <article class="screen-card season-card" data-pass-tier="${index}" data-owned="${received}">
       ${cardStateBadge(cardState)}
@@ -352,7 +413,7 @@ export function buildSeasonScreen(profile = {}) {
     </article>
   `;
   }).join('');
-  return `${summary}${tiers}`;
+  return `${board}${tiers}`;
 }
 
 export function buildRebootResultModel({ result, rewards = [], profile } = {}) {

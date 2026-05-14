@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 import { drawRebootBattle } from '../src/client/reboot_render.js';
-import { buildRebootCollection, buildRebootShop } from '../src/client/reboot_screens.js';
+import { buildMissionScreen, buildRebootCollection, buildRebootShop, buildSeasonScreen } from '../src/client/reboot_screens.js';
 import { createRebootGame, serializeRebootState, tickRebootGame } from '../src/shared/reboot_game.js';
 
 function cssPxVar(css, name) {
@@ -96,7 +96,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js'",
     "from './reboot_render.js?v=player-tray1'",
-    "from './reboot_screens.js?v=meta-showcase1'",
+    "from './reboot_screens.js?v=mission-track1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -337,7 +337,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-showcase1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-track1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-showcase1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=player-tray1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-command1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-start1">'), false);
@@ -350,7 +351,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-showcase1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=mission-track1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-showcase1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-fallback2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-fallback1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=player-tray1"></script>'), false);
@@ -363,7 +365,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), true);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=meta-showcase1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=mission-track1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=meta-showcase1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=lobby-start1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=lobby-next1'"), false);
   assert.equal(app.includes("from './reboot_screens.js'"), false);
@@ -2106,22 +2109,27 @@ test('meta screens expose game-like status headers before scroll lists', async (
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
   const collection = buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 1 } });
   const shop = buildRebootShop({ gems: 120, unlocks: [] });
+  const missions = buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] });
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
 
   for (const marker of [
-    'buildMetaSummary',
     'buildMetaShowcase',
-    'class="meta-summary screen-card"',
+    'buildMissionStampBoard',
+    'buildSeasonTrackBoard',
     'class="meta-showcase"',
+    'class="mission-stamp-board"',
+    'class="season-track-board"',
     'data-showcase-kind="collection"',
     'data-showcase-kind="shop"',
-    'data-summary-kind="missions"',
-    'data-summary-kind="season"',
-    '.meta-summary',
     '.meta-showcase',
-    '.meta-summary::after'
+    '.mission-stamp-board',
+    '.season-track-board'
   ]) {
-    assert.equal(`${css}\n${screens}\n${collection}\n${shop}`.includes(marker), true, marker);
+    assert.equal(`${css}\n${screens}\n${collection}\n${shop}\n${missions}\n${season}`.includes(marker), true, marker);
   }
+
+  assert.equal(css.includes('.meta-summary'), false);
+  assert.equal(screens.includes('function buildMetaSummary'), false);
 });
 
 test('unit training screen uses the active generated showcase stage', async () => {
@@ -2181,21 +2189,39 @@ test('shop screen uses the active generated showcase stage', async () => {
   assert.equal(css.includes('--shop-banner:'), false);
 });
 
-test('mission and season screens use dedicated generated progress banners', async () => {
+test('mission and season screens use generated stamp and reward-track boards', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const missions = buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] });
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
 
   for (const marker of [
     '--missions-banner: url("/src/client/assets/generated/reboot-missions-banner.png")',
     '--season-banner: url("/src/client/assets/generated/reboot-season-banner.png")',
-    '.meta-summary[data-summary-kind="missions"]',
-    '.meta-summary[data-summary-kind="season"]',
+    'function buildMissionStampBoard',
+    'function buildSeasonTrackBoard',
+    'class="mission-stamp-board"',
+    'class="mission-stamp-grid"',
+    'class="mission-stamp-slot"',
+    'class="season-track-board"',
+    'class="season-track-rail"',
+    'class="season-track-node"',
+    '.mission-stamp-board',
+    '.season-track-board',
+    '.mission-stamp-slot .reward-token',
+    'background-size: 136px 34px;',
+    '.mission-stamp-slot .reward-token[data-reward-icon="cosmetic_shard"]',
+    'background-position: -34px 0;',
+    '.season-track-node .reward-token[data-reward-icon="season_progress"]',
+    'background-position: -68px 0;',
     'var(--missions-banner)',
-    'var(--season-banner)',
-    '.meta-summary[data-summary-kind="missions"]::before',
-    '.meta-summary[data-summary-kind="season"]::before'
+    'var(--season-banner)'
   ]) {
-    assert.equal(css.includes(marker), true, marker);
+    assert.equal(`${css}\n${screens}\n${missions}\n${season}`.includes(marker), true, marker);
   }
+
+  assert.equal(css.includes('.meta-summary[data-summary-kind="missions"]'), false);
+  assert.equal(css.includes('.meta-summary[data-summary-kind="season"]'), false);
 });
 
 test('mission and season rows show generated reward tokens', async () => {

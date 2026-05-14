@@ -58,6 +58,16 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#shopList .shop-card .sprite-token.shop-cosmetic').count(), 5);
   assert.equal(await page.locator('#shopList .meta-showcase .sprite-token.shop-cosmetic').count(), 1);
   await page.getByRole('button', { name: '홈' }).click();
+  await page.getByRole('button', { name: '미션' }).click();
+  await page.locator('#missionsList .mission-stamp-board').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#missionsList .mission-stamp-slot').count(), 3);
+  assert.equal(await page.locator('#missionsList .mission-card').count(), 3);
+  await page.getByRole('button', { name: '홈' }).click();
+  await page.getByRole('button', { name: '시즌' }).click();
+  await page.locator('#seasonList .season-track-board').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#seasonList .season-track-node').count(), 4);
+  assert.equal(await page.locator('#seasonList .season-card').count(), 4);
+  await page.getByRole('button', { name: '홈' }).click();
 
   await page.getByRole('button', { name: '봇과 시작' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });

@@ -208,24 +208,26 @@ test('meta screens start with compact actionable status headers', () => {
     processedRuns: ['run-1'],
     claimedMissions: []
   });
-  assert.equal(missions.includes('meta-summary'), true);
+  assert.equal(missions.includes('mission-stamp-board'), true);
   assert.equal(missions.includes('수령 가능'), true);
+  assert.equal(missions.indexOf('class="mission-stamp-board"') < missions.indexOf('class="screen-card mission-card"'), true);
 
   const season = buildSeasonScreen({
     xp: 60,
     claimedPassTiers: []
   });
-  assert.equal(season.includes('meta-summary'), true);
+  assert.equal(season.includes('season-track-board'), true);
   assert.equal(season.includes('시즌 경험치'), true);
   assert.equal(season.includes('보상 가능'), true);
+  assert.equal(season.indexOf('class="season-track-board"') < season.indexOf('class="screen-card season-card"'), true);
 });
 
 test('meta summary detail copy stays compact for generated header banners', () => {
   const screens = [
     { html: buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 2 } }), pattern: /<section class="meta-showcase"[\s\S]*?<p>(.*?)<\/p>/ },
     { html: buildRebootShop({ gems: 100, unlocks: [] }), pattern: /<section class="meta-showcase"[\s\S]*?<p>(.*?)<\/p>/ },
-    { html: buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] }), pattern: /<article class="meta-summary screen-card"[\s\S]*?<p>(.*?)<\/p>/ },
-    { html: buildSeasonScreen({ xp: 60, claimedPassTiers: [] }), pattern: /<article class="meta-summary screen-card"[\s\S]*?<p>(.*?)<\/p>/ }
+    { html: buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] }), pattern: /<section class="mission-stamp-board"[\s\S]*?<p>(.*?)<\/p>/ },
+    { html: buildSeasonScreen({ xp: 60, claimedPassTiers: [] }), pattern: /<section class="season-track-board"[\s\S]*?<p>(.*?)<\/p>/ }
   ];
   const details = screens.map(({ html, pattern }) => {
     const match = html.match(pattern);
@@ -238,6 +240,36 @@ test('meta summary detail copy stays compact for generated header banners', () =
     assert.equal(compactLength <= 12, true, `${detail} is too long for a meta header banner`);
     assert.equal(/하세요|습니다|[.。]/.test(detail), false, `${detail} reads like paragraph copy`);
   }
+});
+
+test('mission screen starts with a stamp board instead of a web list summary', () => {
+  const missions = buildMissionScreen({
+    processedRuns: ['run-1'],
+    unitLevels: { spark_pin: 2 },
+    unlocks: [],
+    claimedMissions: ['first-run']
+  });
+
+  assert.equal(missions.includes('class="mission-stamp-board"'), true);
+  assert.equal(missions.includes('class="mission-stamp-grid"'), true);
+  assert.equal((missions.match(/class="mission-stamp-slot"/g) ?? []).length, 3);
+  assert.equal(missions.includes('data-mission-state="claimed"'), true);
+  assert.equal(missions.includes('data-mission-state="ready"'), true);
+  assert.equal(missions.includes('data-mission-state="locked"'), true);
+  assert.equal(missions.includes('class="meta-summary screen-card"'), false);
+});
+
+test('season screen starts with a reward track instead of a web list summary', () => {
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
+
+  assert.equal(season.includes('class="season-track-board"'), true);
+  assert.equal(season.includes('class="season-track-rail"'), true);
+  assert.equal((season.match(/class="season-track-node"/g) ?? []).length, 4);
+  assert.equal(season.includes('data-season-state="claimed"'), true);
+  assert.equal(season.includes('data-season-state="locked"'), true);
+  assert.equal(season.includes('data-reward-icon="season_progress"'), true);
+  assert.equal(season.includes('data-reward-icon="cosmetic_shard"'), true);
+  assert.equal(season.includes('class="meta-summary screen-card"'), false);
 });
 
 test('shop card descriptions stay compact enough for portrait game cards', () => {
