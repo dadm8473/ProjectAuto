@@ -265,7 +265,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), true);
   assert.equal(app.includes("from './reboot_render.js?v=reboot-action-ready1'"), true);
@@ -613,6 +614,40 @@ test('meta row compact chips use generated mini badge frames', async () => {
   assert.equal(chipBlock.includes('background: rgba'), false);
   assert.equal(chipBlock.includes('border: 1px solid rgba'), false);
   assert.equal(css.includes('.role-pill::before'), false);
+});
+
+test('meta rows use generated progress bars for growth and pass progress', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    '--meta-progress-bars: url("/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress")',
+    'function progressFillPercent',
+    'function buildMetaProgress',
+    'class="meta-progress"',
+    'data-progress-kind="training"',
+    'data-progress-kind="mission"',
+    'data-progress-kind="season"',
+    'style="--progress-fill:${progressFillPercent',
+    'role="progressbar"',
+    'aria-valuemin="0"',
+    'aria-valuemax="${target}"',
+    'aria-valuenow="${valueNow}"',
+    '.meta-progress',
+    'background-image: var(--meta-progress-bars);',
+    'background-size: 300% 200%;',
+    '.meta-progress::before',
+    'clip-path: inset(0 calc(100% - var(--progress-fill)) 0 0);',
+    '.meta-progress[data-progress-kind="training"]',
+    '.meta-progress[data-progress-kind="mission"]',
+    '.meta-progress[data-progress-kind="season"]'
+  ]) {
+    assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+
+  const progressBlock = css.slice(css.indexOf('.meta-progress'), css.indexOf('.meta-progress[data-progress-kind="training"]'));
+  assert.equal(progressBlock.includes('linear-gradient'), false);
+  assert.equal(progressBlock.includes('border: 1px solid'), false);
 });
 
 test('meta screen titles use generated header plates instead of browser default h1', async () => {

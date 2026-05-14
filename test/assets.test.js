@@ -400,6 +400,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 20_000
   },
   {
+    path: 'src/client/assets/generated/reboot-meta-progress-bars.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-meta-progress-bars-chromakey-imagegen.png',
+    width: 768,
+    height: 128,
+    minRuntimeBytes: 24_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-combat-coach-cues.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-coach-cues-chromakey-imagegen.png',
     width: 768,
@@ -992,6 +999,22 @@ test('critical action ring cells keep each button cue readable and padded', asyn
     assert.equal(bounds.maxX <= cellWidth - 11, true, `critical action ring cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 8, true, `critical action ring cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 9, true, `critical action ring cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('meta progress bar cells keep track and fill rows readable', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-meta-progress-bars.png'));
+  const cellWidth = 256;
+  const rowHeight = 64;
+  for (let row = 0; row < 2; row += 1) {
+    for (let cell = 0; cell < 3; cell += 1) {
+      const bounds = alphaBounds(image, { x: cell * cellWidth, y: row * rowHeight, width: cellWidth, height: rowHeight }, 32);
+      assert.equal(bounds.count > 1_100, true, `meta progress row ${row} cell ${cell} has no readable subject`);
+      assert.equal(bounds.minX >= 8, true, `meta progress row ${row} cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+      assert.equal(bounds.maxX <= cellWidth - 9, true, `meta progress row ${row} cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+      assert.equal(bounds.minY >= 4, true, `meta progress row ${row} cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+      assert.equal(bounds.maxY <= rowHeight - 5, true, `meta progress row ${row} cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+    }
   }
 });
 

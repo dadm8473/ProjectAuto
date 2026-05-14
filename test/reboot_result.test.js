@@ -247,6 +247,23 @@ test('mission screen renders profile progress and claim states', () => {
   assert.equal(missions.includes('>수령<'), true);
 });
 
+test('meta progression surfaces render compact visual progress bars', () => {
+  const collection = buildRebootCollection({ xp: 20, unitLevels: {} });
+  const missions = buildMissionScreen({ processedRuns: ['run-1'], unitLevels: {}, unlocks: [], claimedMissions: [] });
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [] });
+
+  assert.equal(collection.includes('class="meta-progress" data-progress-kind="training"'), true);
+  assert.equal(collection.includes('style="--progress-fill:50%"'), true);
+  assert.equal(collection.includes('role="progressbar" aria-valuemin="0" aria-valuemax="40" aria-valuenow="20"'), true);
+  assert.equal(collection.includes('aria-label="훈련 경험치 20/40"'), true);
+  assert.equal(missions.includes('class="meta-progress" data-progress-kind="mission"'), true);
+  assert.equal(missions.includes('style="--progress-fill:100%"'), true);
+  assert.equal(missions.includes('role="progressbar" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1"'), true);
+  assert.equal(season.includes('class="meta-progress" data-progress-kind="season"'), true);
+  assert.equal(season.includes('style="--progress-fill:50%"'), true);
+  assert.equal(season.includes('role="progressbar" aria-valuemin="0" aria-valuemax="160" aria-valuenow="80"'), true);
+});
+
 test('mission goals stay compact enough for portrait mission cards', () => {
   const missions = buildMissionScreen({
     processedRuns: ['run-1'],

@@ -46,6 +46,7 @@
   --meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges");
   --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
   --meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions");
+  --meta-progress-bars: url("/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress");
   --meta-claim-bursts: url("/src/client/assets/generated/reboot-meta-claim-bursts.png?v=claim-bursts");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1");
@@ -1675,6 +1676,40 @@ body[data-app-screen="season"] .app-screen::after {
 .role-pill { background-position: 0 0; }
 .unit-cost { background-position: 50% 0; }
 .shop-price { background-position: 100% 0; }
+
+.meta-progress {
+  --progress-fill: 0%;
+  position: relative;
+  display: block;
+  width: min(100%, 148px);
+  height: 20px;
+  margin: 1px 0 0;
+  overflow: hidden;
+  background-image: var(--meta-progress-bars);
+  background-repeat: no-repeat;
+  background-size: 300% 200%;
+  background-position: 0 0;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.38));
+}
+
+.meta-progress::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--meta-progress-bars);
+  background-repeat: no-repeat;
+  background-size: 300% 200%;
+  background-position: 0 100%;
+  clip-path: inset(0 calc(100% - var(--progress-fill)) 0 0);
+}
+
+.meta-progress[data-progress-kind="training"] { background-position: 0 0; }
+.meta-progress[data-progress-kind="training"]::before { background-position: 0 100%; }
+.meta-progress[data-progress-kind="mission"] { background-position: 50% 0; }
+.meta-progress[data-progress-kind="mission"]::before { background-position: 50% 100%; }
+.meta-progress[data-progress-kind="season"] { background-position: 100% 0; }
+.meta-progress[data-progress-kind="season"]::before { background-position: 100% 100%; }
 
 .unit-level {
   color: var(--amber);

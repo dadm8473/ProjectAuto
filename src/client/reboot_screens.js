@@ -95,6 +95,16 @@ function countAffordableCosmetics(profile = {}) {
   return SHOP.items.filter((item) => item.category === 'cosmetic' && item.grant?.cosmetic && !unlocks.has(item.grant.cosmetic) && gems >= (item.price?.gems ?? 0)).length;
 }
 
+function progressFillPercent(current, target) {
+  if (!Number.isFinite(current) || !Number.isFinite(target) || target <= 0) return 0;
+  return Math.max(0, Math.min(100, Math.round((current / target) * 100)));
+}
+
+function buildMetaProgress(kind, current, target, label) {
+  const valueNow = Math.min(current, target);
+  return `<span class="meta-progress" data-progress-kind="${kind}" style="--progress-fill:${progressFillPercent(current, target)}%" role="progressbar" aria-valuemin="0" aria-valuemax="${target}" aria-valuenow="${valueNow}" aria-label="${label}"></span>`;
+}
+
 export function buildMetaNavAlerts(profile = {}) {
   return {
     collection: countTrainableUnits(profile) > 0,
@@ -173,6 +183,7 @@ export function buildRebootCollection(profile = {}) {
         <span class="role-pill">${ROLE_LABELS[unit.role] ?? unit.role}</span>
         <strong>${unit.name}</strong>
         <p>등급 ${unit.grade} · <span class="unit-level">Lv.${level}</span></p>
+        ${buildMetaProgress('training', Math.min(xp, cost), cost, `훈련 경험치 ${Math.min(xp, cost)}/${cost}`)}
         <span class="unit-cost">${cost} 경험치</span>
       </div>
       <button type="button" data-unit-upgrade="${unit.id}"${ready ? '' : ' disabled'}>${ready ? '훈련' : '경험치 부족'}</button>
@@ -224,7 +235,8 @@ export function buildMissionScreen(profile = {}) {
         <span class="role-pill">미션</span>
         <strong>${mission.title}</strong>
         <p>${mission.goal}</p>
-        <span class="shop-price">${progress}/${mission.target} · ${mission.reward.gems} 젬</span>
+        ${buildMetaProgress('mission', progress, mission.target, `미션 진행 ${progress}/${mission.target}`)}
+        <span class="shop-price">${mission.reward.gems} 젬</span>
       </div>
       <button type="button" data-mission-claim="${mission.id}"${done && !received ? '' : ' disabled'}>${label}</button>
     </article>
@@ -262,6 +274,7 @@ export function buildSeasonScreen(profile = {}) {
         <span class="role-pill">시즌</span>
         <strong>${index + 1}단계 · ${seasonRewardLabel(tier.grant)}</strong>
         <p>${progress}/${tier.xp} 경험치</p>
+        ${buildMetaProgress('season', progress, tier.xp, `시즌 경험치 ${progress}/${tier.xp}`)}
         <span class="shop-price">${tier.xp} 경험치</span>
       </div>
       <button type="button" data-pass-claim="${index}"${done && !received ? '' : ' disabled'}>${label}</button>
