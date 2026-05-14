@@ -45,7 +45,7 @@ export const REBOOT_ATLAS_MANIFEST = {
 
 export const REBOOT_BACKDROP_MANIFEST = {
   battle: {
-    src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-result-finale1',
+    src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-boss-aura1',
     width: 390,
     height: 620,
     source: 'imagegen'
@@ -97,6 +97,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     width: 768,
     height: 128,
     source: 'imagegen'
+  },
+  bossAuras: {
+    src: '/src/client/assets/generated/reboot-boss-aura-rings.png?v=boss-aura-rings',
+    width: 768,
+    height: 192,
+    source: 'imagegen'
   }
 };
 
@@ -139,7 +145,9 @@ export function createRebootAssetImages() {
   crisisOverlays.src = REBOOT_EFFECT_MANIFEST.crisisOverlays.src;
   const rewardPickups = new Image();
   rewardPickups.src = REBOOT_EFFECT_MANIFEST.rewardPickups.src;
-  return { ...atlases, backdrop, bossCutin, rescueCutin, killBurst, hitBeam, momentCallouts, crisisOverlays, rewardPickups };
+  const bossAuras = new Image();
+  bossAuras.src = REBOOT_EFFECT_MANIFEST.bossAuras.src;
+  return { ...atlases, backdrop, bossCutin, rescueCutin, killBurst, hitBeam, momentCallouts, crisisOverlays, rewardPickups, bossAuras };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -233,6 +241,22 @@ function drawRewardPickupSprite(ctx, image, index, cx, cy, w, h, alpha = 1) {
   ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, cx - w / 2, cy - h / 2, w, h);
   ctx.restore();
   return true;
+}
+
+function drawBossAuraSprite(ctx, image, index, cx, cy, w, h, alpha = 1) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const cellWidth = image.naturalWidth / 3;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, cx - w / 2, cy - h / 2, w, h);
+  ctx.restore();
+  return true;
+}
+
+function drawBossAura(ctx, assets, x, y, now = 0) {
+  const auraIndex = now >= 112 ? 2 : now >= 102 ? 1 : 0;
+  const pulse = 0.78 + Math.max(0, Math.sin(now * 5.4)) * 0.16;
+  return drawBossAuraSprite(ctx, assets.bossAuras, auraIndex, x, y + 18, 128, 64, pulse);
 }
 
 function drawBeamSprite(ctx, image, from, to, alpha = 1) {
@@ -413,6 +437,9 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
   enemies.forEach((enemy, index) => {
     const { x, y } = enemyScreenPoint(state, index);
     const size = enemy.enemyId === 'mini_boss' ? 54 : 36;
+    if (enemy.enemyId === 'mini_boss') {
+      drawBossAura(ctx, assets, x, y, state.now);
+    }
     if (drawAtlasSprite(ctx, assets, 'enemies', enemy.spriteKey ?? enemy.enemyId, x, y, size)) {
       return;
     }

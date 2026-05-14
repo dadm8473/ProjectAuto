@@ -23,7 +23,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js'",
-    "from './reboot_render.js?v=reboot-result-finale1'",
+    "from './reboot_render.js?v=reboot-boss-aura1'",
     "from './reboot_screens.js'",
     "from './reboot_online.js'"
   ]) {
@@ -170,11 +170,11 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-result-finale1">'), true);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-result-finale1"></script>'), true);
-  assert.equal(app.includes("from './reboot_render.js?v=reboot-result-finale1'"), true);
-  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-result-finale1'"), true);
-  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-result-finale1")'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-boss-aura1">'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-boss-aura1"></script>'), true);
+  assert.equal(app.includes("from './reboot_render.js?v=reboot-boss-aura1'"), true);
+  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-boss-aura1'"), true);
+  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-boss-aura1")'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -783,6 +783,28 @@ test('combat renderer uses generated crisis overlays for boss and partner danger
   );
   assert.equal(overlayBlock.includes('fillStyle'), false);
   assert.equal(overlayBlock.includes('roundedRect'), false);
+});
+
+test('combat renderer anchors a generated boss aura under boss enemies', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'bossAuras: {',
+    "src: '/src/client/assets/generated/reboot-boss-aura-rings.png?v=boss-aura-rings'",
+    'const bossAuras = new Image();',
+    'bossAuras.src = REBOOT_EFFECT_MANIFEST.bossAuras.src;',
+    'drawBossAuraSprite(ctx, assets.bossAuras',
+    "if (enemy.enemyId === 'mini_boss') {",
+    'drawBossAura(ctx, assets, x, y, state.now);'
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+
+  const trackBlock = render.slice(render.indexOf('function drawTrack'), render.indexOf('function enemyScreenPoint'));
+  assert.equal(trackBlock.indexOf('drawBossAura(ctx, assets, x, y, state.now);') < trackBlock.indexOf("drawAtlasSprite(ctx, assets, 'enemies'"), true);
+  const auraBlock = render.slice(render.indexOf('function drawBossAuraSprite'), render.indexOf('function drawBeamSprite'));
+  assert.equal(auraBlock.includes('fillStyle'), false);
+  assert.equal(auraBlock.includes('roundRect'), false);
 });
 
 test('boss crisis presentation takes priority over partner danger overlays', async () => {
@@ -1563,7 +1585,7 @@ test('combat shell uses generated HUD and action dock chrome', async () => {
 
   for (const marker of [
     '--combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png")',
-    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-result-finale1")',
+    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-boss-aura1")',
     'body[data-app-screen="battle"] .hud::before',
     'body[data-app-screen="battle"] .action-panel::before',
     'background-image: var(--combat-hud-frame)',

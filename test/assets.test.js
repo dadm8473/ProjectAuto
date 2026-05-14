@@ -360,6 +360,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     width: 780,
     height: 260,
     minRuntimeBytes: 45_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-boss-aura-rings.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-boss-aura-rings-chromakey-imagegen.png',
+    width: 768,
+    height: 192,
+    minRuntimeBytes: 28_000
   }
 ];
 
@@ -518,6 +525,21 @@ function alphaCoverage(image, rect, threshold = 220) {
     }
   }
   return covered / total;
+}
+
+function alphaBounds(image, rect, threshold = 32) {
+  const bounds = { minX: rect.width, maxX: -1, minY: rect.height, maxY: -1, count: 0 };
+  for (let y = rect.y; y < rect.y + rect.height; y += 1) {
+    for (let x = rect.x; x < rect.x + rect.width; x += 1) {
+      if (alphaAt(image, x, y) <= threshold) continue;
+      bounds.minX = Math.min(bounds.minX, x - rect.x);
+      bounds.maxX = Math.max(bounds.maxX, x - rect.x);
+      bounds.minY = Math.min(bounds.minY, y - rect.y);
+      bounds.maxY = Math.max(bounds.maxY, y - rect.y);
+      bounds.count += 1;
+    }
+  }
+  return bounds;
 }
 
 function alphaMean(image, rect) {
@@ -856,5 +878,16 @@ test('reboot transparent combat effects are promoted from imagegen sources', asy
       }
     }
     assert.equal(visiblePixels > 2_000, true, `${asset.path} has no readable VFX subject`);
+  }
+});
+
+test('boss aura sprite cells keep transparent padding so effects do not clip at slice edges', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-boss-aura-rings.png'));
+  const cellWidth = 256;
+  for (let cell = 0; cell < 3; cell += 1) {
+    const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 32);
+    assert.equal(bounds.count > 2_000, true, `boss aura cell ${cell} has no visible subject`);
+    assert.equal(bounds.minX >= 8, true, `boss aura cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 9, true, `boss aura cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
   }
 });
