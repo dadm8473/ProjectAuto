@@ -17,7 +17,7 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=lobby-start1';
+} from './reboot_screens.js?v=meta-showcase1';
 import { createRebootOnlineClient } from './reboot_online.js';
 
 const qs = (selector) => document.querySelector(selector);
@@ -68,7 +68,7 @@ const rebootAssets = createRebootAssetImages();
 const PROFILE_STORAGE_KEY = 'projectauto.reboot.profile.v1';
 const TOAST_VISIBLE_MS = 1400;
 const REWARD_REVEAL_MS = 1500;
-const SCREEN_TRANSITION_MS = 520;
+const SCREEN_TRANSITION_MS = 360;
 const ONLINE_CONNECT_FALLBACK_MS = 2600;
 let appScreen = 'splash';
 let game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });

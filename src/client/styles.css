@@ -42,13 +42,12 @@
   --lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next");
   --lobby-battle-ready-cue: url("/src/client/assets/generated/reboot-lobby-battle-ready-cue.png?v=battle-ready-cue");
   --launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta");
-  --training-banner: url("/src/client/assets/generated/reboot-training-banner.png");
-  --shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png");
   --missions-banner: url("/src/client/assets/generated/reboot-missions-banner.png");
   --season-banner: url("/src/client/assets/generated/reboot-season-banner.png");
   --meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row");
   --meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges");
   --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
+  --meta-showcase-stage: url("/src/client/assets/generated/reboot-meta-showcase-stage.png?v=showcase-stage");
   --meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions");
   --meta-progress-bars: url("/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress");
   --meta-card-state-badges: url("/src/client/assets/generated/reboot-meta-card-state-badges.png?v=meta-card-states");
@@ -159,17 +158,28 @@ body[data-app-screen="splash"] .shell::after {
   background-size: 100% 100%;
   opacity: 0;
   transform: translate3d(-18%, -5%, 0) scale(1.08);
-  filter: saturate(1.12) drop-shadow(0 18px 30px rgba(0, 0, 0, 0.48));
+  filter: saturate(1.08) drop-shadow(0 12px 22px rgba(0, 0, 0, 0.36));
 }
 
-body[data-screen-wipe] .screen-transition-fx {
-  animation: screenWipeSweep 520ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
+body[data-screen-wipe][data-screen-wipe-pulse="a"] .screen-transition-fx {
+  animation: screenWipeSweepA 340ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
 }
 
-@keyframes screenWipeSweep {
+body[data-screen-wipe][data-screen-wipe-pulse="b"] .screen-transition-fx {
+  animation: screenWipeSweepB 340ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
+}
+
+@keyframes screenWipeSweepA {
   0% { opacity: 0; transform: translate3d(-44%, -13%, 0) scale(1.1); }
-  18% { opacity: 0.9; }
-  58% { opacity: 0.72; transform: translate3d(5%, 0, 0) scale(1.02); }
+  18% { opacity: 0.58; }
+  58% { opacity: 0.36; transform: translate3d(5%, 0, 0) scale(1.02); }
+  100% { opacity: 0; transform: translate3d(44%, 12%, 0) scale(1.08); }
+}
+
+@keyframes screenWipeSweepB {
+  0% { opacity: 0; transform: translate3d(-44%, -13%, 0) scale(1.1); }
+  18% { opacity: 0.58; }
+  58% { opacity: 0.36; transform: translate3d(5%, 0, 0) scale(1.02); }
   100% { opacity: 0; transform: translate3d(44%, 12%, 0) scale(1.08); }
 }
 
@@ -1596,36 +1606,6 @@ body[data-app-screen="season"] .app-screen::after {
   padding-right: 82px;
 }
 
-.meta-summary[data-summary-kind="collection"] {
-  min-height: 132px;
-  align-content: end;
-  background-image:
-    linear-gradient(180deg, rgba(5, 8, 8, 0.08), rgba(5, 8, 8, 0.5) 48%, rgba(5, 8, 8, 0.92)),
-    var(--training-banner);
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-}
-
-.meta-summary[data-summary-kind="collection"]::before {
-  opacity: 0.52;
-}
-
-.meta-summary[data-summary-kind="shop"] {
-  min-height: 132px;
-  align-content: end;
-  background-image:
-    linear-gradient(180deg, rgba(5, 8, 8, 0.08), rgba(5, 8, 8, 0.48) 48%, rgba(5, 8, 8, 0.9)),
-    var(--shop-banner);
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-}
-
-.meta-summary[data-summary-kind="shop"]::before {
-  opacity: 0.52;
-}
-
 .meta-summary[data-summary-kind="missions"],
 .meta-summary[data-summary-kind="season"] {
   min-height: 132px;
@@ -1679,13 +1659,111 @@ body[data-app-screen="season"] .app-screen::after {
   pointer-events: none;
 }
 
-.meta-summary[data-summary-kind="collection"]::after { background-position: 0 0; }
-.meta-summary[data-summary-kind="shop"]::after { background-position: -240px 0; }
 .meta-summary[data-summary-kind="missions"]::after { background-position: -96px 0; }
 .meta-summary[data-summary-kind="season"]::after {
   background-image: url("/src/client/assets/generated/reboot-reward-icons.png");
   background-size: 192px 48px;
   background-position: -96px 0;
+}
+
+.meta-showcase {
+  position: relative;
+  min-height: 148px;
+  display: grid;
+  grid-template-columns: minmax(104px, 34%) minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 16px 18px 14px 16px;
+  border-radius: 8px;
+  background-image: var(--meta-showcase-stage);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.38));
+}
+
+.meta-showcase::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: rgba(2, 7, 8, 0.28);
+  pointer-events: none;
+}
+
+.meta-showcase-preview,
+.meta-showcase-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.meta-showcase-preview {
+  min-height: 112px;
+  display: grid;
+  place-items: center;
+}
+
+.meta-showcase-preview .sprite-token {
+  margin: 0;
+  transform: scale(1.34);
+  filter: saturate(1.13) drop-shadow(0 16px 22px rgba(0, 0, 0, 0.62));
+}
+
+.meta-showcase-copy {
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.meta-showcase-copy > span:first-child {
+  color: var(--mint);
+  font-size: 12px;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.meta-showcase-copy strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: clamp(24px, 7.2vw, 30px);
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 4px 13px rgba(0, 0, 0, 0.72);
+}
+
+.meta-showcase-copy p {
+  overflow: hidden;
+  color: rgba(245, 240, 220, 0.8);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta-showcase-chip {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 26px;
+  display: inline-grid;
+  align-items: center;
+  padding: 5px 13px;
+  overflow: hidden;
+  color: #fff2c4;
+  font-size: 12px;
+  font-weight: 1000;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.62);
+  background-image: var(--meta-mini-badges);
+  background-repeat: no-repeat;
+  background-position: 50% 0;
+  background-size: 300% 100%;
 }
 
 .screen-back {

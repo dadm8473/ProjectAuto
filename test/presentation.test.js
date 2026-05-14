@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 import { drawRebootBattle } from '../src/client/reboot_render.js';
+import { buildRebootCollection, buildRebootShop } from '../src/client/reboot_screens.js';
 import { createRebootGame, serializeRebootState, tickRebootGame } from '../src/shared/reboot_game.js';
 
 function cssPxVar(css, name) {
@@ -95,7 +96,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js'",
     "from './reboot_render.js?v=player-tray1'",
-    "from './reboot_screens.js?v=lobby-start1'",
+    "from './reboot_screens.js?v=meta-showcase1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -259,8 +260,10 @@ test('app screen changes use a generated game wipe instead of instant web page s
     '--screen-transition-wipe: url("/src/client/assets/generated/reboot-screen-transition-wipe.png?v=screen-wipe")',
     '.screen-transition-fx',
     'background-image: var(--screen-transition-wipe);',
-    'body[data-screen-wipe] .screen-transition-fx',
-    '@keyframes screenWipeSweep',
+    'body[data-screen-wipe][data-screen-wipe-pulse="a"] .screen-transition-fx',
+    'body[data-screen-wipe][data-screen-wipe-pulse="b"] .screen-transition-fx',
+    '@keyframes screenWipeSweepA',
+    '@keyframes screenWipeSweepB',
     'function playScreenTransition(screen)',
     'playScreenTransition.flip = !playScreenTransition.flip;',
     'document.body.dataset.screenWipe = screen;',
@@ -271,6 +274,28 @@ test('app screen changes use a generated game wipe instead of instant web page s
   ]) {
     assert.equal(`${html}\n${css}\n${app}`.includes(marker), true, marker);
   }
+});
+
+test('screen transition wipe stays brief and does not hide the next playable screen', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    'animation: screenWipeSweepA 340ms cubic-bezier(0.22, 0.8, 0.2, 1) both;',
+    'animation: screenWipeSweepB 340ms cubic-bezier(0.22, 0.8, 0.2, 1) both;',
+    'body[data-screen-wipe][data-screen-wipe-pulse="a"] .screen-transition-fx',
+    'body[data-screen-wipe][data-screen-wipe-pulse="b"] .screen-transition-fx',
+    '18% { opacity: 0.58; }',
+    '58% { opacity: 0.36;',
+    'filter: saturate(1.08) drop-shadow(0 12px 22px rgba(0, 0, 0, 0.36));',
+    'const SCREEN_TRANSITION_MS = 360;'
+  ]) {
+    assert.equal(`${css}\n${app}`.includes(marker), true, marker);
+  }
+
+  assert.equal(css.includes('animation: screenWipeSweep 520ms'), false);
+  assert.equal(app.includes('const SCREEN_TRANSITION_MS = 520;'), false);
+  assert.equal(css.includes('18% { opacity: 0.9; }'), false);
 });
 
 test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
@@ -312,7 +337,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=player-tray1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-showcase1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=player-tray1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-command1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-start1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-next1">'), false);
@@ -324,7 +350,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-fallback2"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-showcase1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-fallback2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-fallback1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=player-tray1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-start1"></script>'), false);
@@ -336,7 +363,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), true);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=lobby-start1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=meta-showcase1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=lobby-start1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=lobby-next1'"), false);
   assert.equal(app.includes("from './reboot_screens.js'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=reboot-action-ready1'"), false);
@@ -642,6 +670,36 @@ test('meta screens use generated game chrome instead of css-only panels', async 
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
+});
+
+test('collection and shop start with generated showcase stages instead of list-first cards', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const collection = buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 1 } });
+  const shop = buildRebootShop({ gems: 120, unlocks: [] });
+
+  for (const marker of [
+    '--meta-showcase-stage: url("/src/client/assets/generated/reboot-meta-showcase-stage.png?v=showcase-stage")',
+    'function buildMetaShowcase',
+    'class="meta-showcase"',
+    'class="meta-showcase-preview"',
+    'class="meta-showcase-copy"',
+    'class="meta-showcase-chip"',
+    'data-showcase-kind="collection"',
+    'data-showcase-kind="shop"',
+    '.meta-showcase',
+    'background-image: var(--meta-showcase-stage);',
+    '.meta-showcase-preview .sprite-token'
+  ]) {
+    assert.equal(`${css}\n${screens}\n${collection}\n${shop}`.includes(marker), true, marker);
+  }
+
+  assert.equal(collection.indexOf('class="meta-showcase"') < collection.indexOf('class="screen-card unit-card"'), true);
+  assert.equal(shop.indexOf('class="meta-showcase"') < shop.indexOf('class="screen-card shop-card"'), true);
+
+  const showcaseBlock = css.slice(css.indexOf('.meta-showcase'), css.indexOf('.meta-showcase-preview'));
+  assert.equal(showcaseBlock.includes('linear-gradient'), false);
+  assert.equal(showcaseBlock.includes('backdrop-filter'), false);
 });
 
 test('meta list rows use dedicated generated game row frames', async () => {
@@ -2046,34 +2104,45 @@ test('lobby next-action card can navigate to profile screens', async () => {
 test('meta screens expose game-like status headers before scroll lists', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const collection = buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 1 } });
+  const shop = buildRebootShop({ gems: 120, unlocks: [] });
 
   for (const marker of [
     'buildMetaSummary',
+    'buildMetaShowcase',
     'class="meta-summary screen-card"',
-    'data-summary-kind="collection"',
-    'data-summary-kind="shop"',
+    'class="meta-showcase"',
+    'data-showcase-kind="collection"',
+    'data-showcase-kind="shop"',
     'data-summary-kind="missions"',
     'data-summary-kind="season"',
     '.meta-summary',
+    '.meta-showcase',
     '.meta-summary::after'
   ]) {
-    assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+    assert.equal(`${css}\n${screens}\n${collection}\n${shop}`.includes(marker), true, marker);
   }
 });
 
-test('unit training screen uses a dedicated generated training banner', async () => {
+test('unit training screen uses the active generated showcase stage', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const collection = buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 1 } });
 
   for (const marker of [
-    '--training-banner: url("/src/client/assets/generated/reboot-training-banner.png")',
-    '.meta-summary[data-summary-kind="collection"]',
-    'background-image:',
-    'var(--training-banner)',
-    'min-height: 132px',
-    '.meta-summary[data-summary-kind="collection"]::before'
+    '--meta-showcase-stage: url("/src/client/assets/generated/reboot-meta-showcase-stage.png?v=showcase-stage")',
+    'background-image: var(--meta-showcase-stage);',
+    'function buildMetaShowcase',
+    'data-showcase-kind="collection"',
+    '대표 유닛',
+    'class="meta-showcase-preview"',
+    'class="sprite-token unit-sprite"'
   ]) {
-    assert.equal(css.includes(marker), true, marker);
+    assert.equal(`${css}\n${screens}\n${collection}`.includes(marker), true, marker);
   }
+
+  assert.equal(css.includes('.meta-summary[data-summary-kind="collection"]'), false);
+  assert.equal(css.includes('--training-banner:'), false);
 });
 
 test('shop cosmetics use a dedicated imagegen item atlas', async () => {
@@ -2091,17 +2160,25 @@ test('shop cosmetics use a dedicated imagegen item atlas', async () => {
   }
 });
 
-test('shop screen uses a dedicated generated storefront banner', async () => {
+test('shop screen uses the active generated showcase stage', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const shop = buildRebootShop({ gems: 120, unlocks: [] });
 
   for (const marker of [
-    '--shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png")',
-    '.meta-summary[data-summary-kind="shop"]',
-    'var(--shop-banner)',
-    '.meta-summary[data-summary-kind="shop"]::before'
+    '--meta-showcase-stage: url("/src/client/assets/generated/reboot-meta-showcase-stage.png?v=showcase-stage")',
+    'background-image: var(--meta-showcase-stage);',
+    'function buildMetaShowcase',
+    'data-showcase-kind="shop"',
+    '추천 외형',
+    'class="meta-showcase-preview"',
+    'class="sprite-token shop-cosmetic"'
   ]) {
-    assert.equal(css.includes(marker), true, marker);
+    assert.equal(`${css}\n${screens}\n${shop}`.includes(marker), true, marker);
   }
+
+  assert.equal(css.includes('.meta-summary[data-summary-kind="shop"]'), false);
+  assert.equal(css.includes('--shop-banner:'), false);
 });
 
 test('mission and season screens use dedicated generated progress banners', async () => {

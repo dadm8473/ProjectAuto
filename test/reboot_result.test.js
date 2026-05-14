@@ -195,14 +195,14 @@ test('reboot collection renders unit training state from profile XP and levels',
 
 test('meta screens start with compact actionable status headers', () => {
   const collection = buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 2 } });
-  assert.equal(collection.includes('meta-summary'), true);
-  assert.equal(collection.includes('훈련 가능'), true);
-  assert.equal(collection.includes('80 경험치'), true);
+  assert.equal(collection.includes('meta-showcase'), true);
+  assert.equal(collection.includes('대표 유닛'), true);
+  assert.equal(collection.includes('60/60 경험치'), true);
 
   const shop = buildRebootShop({ gems: 100, unlocks: [] });
-  assert.equal(shop.includes('meta-summary'), true);
-  assert.equal(shop.includes('해금 가능'), true);
-  assert.equal(shop.includes('100 젬'), true);
+  assert.equal(shop.includes('meta-showcase'), true);
+  assert.equal(shop.includes('추천 외형'), true);
+  assert.equal(shop.includes('100 젬 보유 · 90 젬'), true);
 
   const missions = buildMissionScreen({
     processedRuns: ['run-1'],
@@ -222,20 +222,20 @@ test('meta screens start with compact actionable status headers', () => {
 
 test('meta summary detail copy stays compact for generated header banners', () => {
   const screens = [
-    buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 2 } }),
-    buildRebootShop({ gems: 100, unlocks: [] }),
-    buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] }),
-    buildSeasonScreen({ xp: 60, claimedPassTiers: [] })
+    { html: buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 2 } }), pattern: /<section class="meta-showcase"[\s\S]*?<p>(.*?)<\/p>/ },
+    { html: buildRebootShop({ gems: 100, unlocks: [] }), pattern: /<section class="meta-showcase"[\s\S]*?<p>(.*?)<\/p>/ },
+    { html: buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] }), pattern: /<article class="meta-summary screen-card"[\s\S]*?<p>(.*?)<\/p>/ },
+    { html: buildSeasonScreen({ xp: 60, claimedPassTiers: [] }), pattern: /<article class="meta-summary screen-card"[\s\S]*?<p>(.*?)<\/p>/ }
   ];
-  const details = screens.map((html) => {
-    const match = html.match(/<article class="meta-summary screen-card"[\s\S]*?<p>(.*?)<\/p>/);
+  const details = screens.map(({ html, pattern }) => {
+    const match = html.match(pattern);
     assert.ok(match, 'meta summary detail is missing');
     return match[1];
   });
 
   for (const detail of details) {
     const compactLength = detail.replace(/\s/g, '').length;
-    assert.equal(compactLength <= 9, true, `${detail} is too long for a meta header banner`);
+    assert.equal(compactLength <= 12, true, `${detail} is too long for a meta header banner`);
     assert.equal(/하세요|습니다|[.。]/.test(detail), false, `${detail} reads like paragraph copy`);
   }
 });

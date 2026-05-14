@@ -140,6 +140,22 @@ function buildMetaSummary(kind, label, value, detail) {
   `;
 }
 
+function buildMetaShowcase({ kind, label, title, detail, chip, spriteClass, spriteAttr, spriteValue }) {
+  return `
+    <section class="meta-showcase" data-showcase-kind="${kind}" data-summary-kind="${kind}">
+      <div class="meta-showcase-preview">
+        <span class="sprite-token ${spriteClass}" ${spriteAttr}="${spriteValue}" aria-hidden="true"></span>
+      </div>
+      <div class="meta-showcase-copy">
+        <span>${label}</span>
+        <strong>${title}</strong>
+        <p>${detail}</p>
+        <span class="meta-showcase-chip">${chip}</span>
+      </div>
+    </section>
+  `;
+}
+
 export function nextLobbyAction(profile = {}) {
   if (countClaimableMissions(profile) > 0) {
     return { label: '미션 보상', title: '받을 미션 보상', detail: '완료 목표 수령', screen: 'missions', cta: '수령하기', beacon: 'mission' };
@@ -195,7 +211,19 @@ export function buildRebootLobby(model = {}) {
 export function buildRebootCollection(profile = {}) {
   const xp = profile.xp ?? 0;
   const unitLevels = profile.unitLevels ?? {};
-  const summary = buildMetaSummary('collection', '훈련 가능', `${countTrainableUnits(profile)}명`, `${xp} 경험치 보유`);
+  const featuredUnit = Object.values(REBOOT_UNITS).find((unit) => xp >= unitUpgradeCost(unitLevels[unit.id] ?? 1)) ?? Object.values(REBOOT_UNITS)[0];
+  const featuredLevel = unitLevels[featuredUnit.id] ?? 1;
+  const featuredCost = unitUpgradeCost(featuredLevel);
+  const showcase = buildMetaShowcase({
+    kind: 'collection',
+    label: '대표 유닛',
+    title: featuredUnit.name,
+    detail: `${ROLE_LABELS[featuredUnit.role] ?? featuredUnit.role} · ${countTrainableUnits(profile)}명 훈련 가능`,
+    chip: `Lv.${featuredLevel} · ${Math.min(xp, featuredCost)}/${featuredCost} 경험치`,
+    spriteClass: 'unit-sprite',
+    spriteAttr: 'data-sprite',
+    spriteValue: featuredUnit.spriteKey
+  });
   const units = Object.values(REBOOT_UNITS).map((unit) => {
     const level = unitLevels[unit.id] ?? 1;
     const cost = unitUpgradeCost(level);
@@ -215,14 +243,24 @@ export function buildRebootCollection(profile = {}) {
     </article>
   `;
   }).join('');
-  return `${summary}${units}`;
+  return `${showcase}${units}`;
 }
 
 export function buildRebootShop(profile = {}) {
   const gems = profile.gems ?? 0;
   const unlocks = Array.isArray(profile.unlocks) ? profile.unlocks : [];
   const items = SHOP.items.filter((item) => item.category === 'cosmetic' && item.grant?.cosmetic);
-  const summary = buildMetaSummary('shop', '해금 가능', `${countAffordableCosmetics(profile)}개`, `${gems} 젬 보유`);
+  const featuredItem = items.find((item) => !unlocks.includes(item.grant.cosmetic) && gems >= (item.price?.gems ?? 0)) ?? items[0];
+  const showcase = buildMetaShowcase({
+    kind: 'shop',
+    label: '추천 외형',
+    title: featuredItem.name,
+    detail: featuredItem.description,
+    chip: `${gems} 젬 보유 · ${featuredItem.price?.gems ?? 0} 젬`,
+    spriteClass: 'shop-cosmetic',
+    spriteAttr: 'data-shop-cosmetic',
+    spriteValue: featuredItem.id
+  });
   const shopItems = items.map((item) => {
     const cosmetic = item.grant.cosmetic;
     const owned = unlocks.includes(cosmetic);
@@ -246,7 +284,7 @@ export function buildRebootShop(profile = {}) {
     </article>
   `;
   }).join('');
-  return `${summary}${shopItems}`;
+  return `${showcase}${shopItems}`;
 }
 
 export function buildMissionScreen(profile = {}) {

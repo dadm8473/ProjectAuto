@@ -50,11 +50,13 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await page.getByRole('button', { name: '유닛' }).click();
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
-  assert.equal(await page.locator('.sprite-token.unit-sprite').count(), 5);
+  assert.equal(await page.locator('#collectionList .unit-card .sprite-token.unit-sprite').count(), 5);
+  assert.equal(await page.locator('#collectionList .meta-showcase .sprite-token.unit-sprite').count(), 1);
   await page.getByRole('button', { name: '홈' }).click();
   await page.getByRole('button', { name: '상점' }).click();
   await page.locator('.shop-cosmetic').first().waitFor({ state: 'visible' });
-  assert.equal(await page.locator('.sprite-token.shop-cosmetic').count(), 5);
+  assert.equal(await page.locator('#shopList .shop-card .sprite-token.shop-cosmetic').count(), 5);
+  assert.equal(await page.locator('#shopList .meta-showcase .sprite-token.shop-cosmetic').count(), 1);
   await page.getByRole('button', { name: '홈' }).click();
 
   await page.getByRole('button', { name: '봇과 시작' }).click();

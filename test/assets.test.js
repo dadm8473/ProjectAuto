@@ -90,6 +90,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 70_000
   },
   {
+    path: 'src/client/assets/generated/reboot-meta-showcase-stage.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260513-meta-backdrop-imagegen.png',
+    width: 430,
+    height: 160,
+    minRuntimeBytes: 70_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-missions-banner.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-missions-banner-imagegen.png',
     width: 430,
