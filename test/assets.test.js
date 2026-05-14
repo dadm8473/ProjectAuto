@@ -435,6 +435,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 20_000
   },
   {
+    path: 'src/client/assets/generated/reboot-battle-cosmetic-sigils.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-battle-cosmetic-sigils-chromakey-imagegen.png',
+    width: 960,
+    height: 128,
+    minRuntimeBytes: 20_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-combat-coach-cues.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-coach-cues-chromakey-imagegen.png',
     width: 768,
@@ -1100,6 +1107,19 @@ test('cosmetic equip aura cells stay transparent and readable behind shop icons'
     assert.equal(bounds.maxX <= cellWidth - 6, true, `cosmetic equip aura cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 6, true, `cosmetic equip aura cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 7, true, `cosmetic equip aura cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('battle cosmetic sigil cells stay transparent and readable under the player board', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-battle-cosmetic-sigils.png'));
+  const cellWidth = 192;
+  for (let cell = 0; cell < 5; cell += 1) {
+    const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 28);
+    assert.equal(bounds.count > 1_700, true, `battle cosmetic sigil cell ${cell} has no readable subject`);
+    assert.equal(bounds.minX >= 8, true, `battle cosmetic sigil cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 9, true, `battle cosmetic sigil cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 8, true, `battle cosmetic sigil cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 9, true, `battle cosmetic sigil cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
 });
 

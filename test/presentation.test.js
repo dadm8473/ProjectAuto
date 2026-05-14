@@ -93,7 +93,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js'",
-    "from './reboot_render.js?v=reboot-action-ready1'",
+    "from './reboot_render.js?v=battle-cosmetic1'",
     "from './reboot_screens.js'",
     "from './reboot_online.js'"
   ]) {
@@ -265,18 +265,21 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=cosmetic-equip1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=battle-cosmetic1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=cosmetic-equip1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-medals1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-reveal1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-card-states1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cosmetic-equip1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-cosmetic1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cosmetic-equip1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=reboot-action-ready1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=reboot-action-ready1'"), false);
   assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1'"), true);
   assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1")'), true);
 });
@@ -1000,6 +1003,30 @@ test('combat renderer uses generated VFX atlas for action feedback', async () =>
   ]) {
     assert.equal(render.includes(marker), true, marker);
   }
+});
+
+test('equipped cosmetics appear in battle as generated expression sigils only', async () => {
+  const app = await readFile('src/client/app.js', 'utf8');
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'cosmeticSigils',
+    "src: '/src/client/assets/generated/reboot-battle-cosmetic-sigils.png?v=battle-cosmetic'",
+    'COSMETIC_SIGIL_INDEX',
+    'function drawBattleCosmeticSignature',
+    'options.equippedCosmetic',
+    'drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);',
+    'drawRebootBattle(ctx, current, { width: dom.canvas.width, height: dom.canvas.height }, rebootAssets, {',
+    'equippedCosmetic: profile.equippedCosmetic',
+    'reducedMotion: reduceMotion.matches'
+  ]) {
+    assert.equal(`${app}\n${render}`.includes(marker), true, marker);
+  }
+
+  const signatureBlock = render.slice(render.indexOf('function drawBattleCosmeticSignature'), render.indexOf('function drawCombatCrisisOverlays'));
+  assert.equal(signatureBlock.includes('state.resources'), false);
+  assert.equal(signatureBlock.includes('state.boards.p1.units'), false);
+  assert.equal(signatureBlock.includes('fillText'), false);
 });
 
 test('combat renderer uses generated moment callouts for successful actions', async () => {

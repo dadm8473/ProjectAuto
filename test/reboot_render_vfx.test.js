@@ -107,3 +107,46 @@ test('combat VFX uses compact hit bolts and rescue pulses instead of screen-cros
     ctx.commands.filter((command) => command.type === 'restore').length
   );
 });
+
+test('equipped cosmetics render as a visual-only player board signature', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 35,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      cosmeticSigils: image(960, 128)
+    },
+    { equippedCosmetic: 'merge-effect', reducedMotion: true }
+  );
+
+  const sigilDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 960
+      && command.args[0].naturalHeight === 128
+      && command.args[1] === 384
+      && command.args[2] === 0
+      && command.args[3] === 192
+      && command.args[4] === 128
+      && command.args[7] <= 330
+      && command.args[8] <= 92
+  ));
+
+  assert.equal(sigilDraws.length, 1, 'equipped cosmetic should draw one non-gameplay board sigil');
+  assert.equal(
+    ctx.commands.filter((command) => command.type === 'save').length,
+    ctx.commands.filter((command) => command.type === 'restore').length
+  );
+});

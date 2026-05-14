@@ -4,7 +4,7 @@ import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js';
 import { buildCombatCoachCue, isCriticalRebootAction } from './reboot_action_ui.js';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=reboot-action-ready1';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=battle-cosmetic1';
 import {
   buildMetaNavAlerts,
   buildMissionScreen,
@@ -22,6 +22,7 @@ import { createRebootOnlineClient } from './reboot_online.js';
 
 const qs = (selector) => document.querySelector(selector);
 const muted = new URLSearchParams(location.search).get('mute') === '1';
+const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)') ?? { matches: false };
 
 const dom = {
   canvas: qs('#gameCanvas'),
@@ -453,7 +454,10 @@ function loop(now) {
   lastTime = now;
   if (appScreen === 'battle' && !game.result && game.mode !== 'online') tickGame(game, dt);
   const current = state();
-  drawRebootBattle(ctx, current, { width: dom.canvas.width, height: dom.canvas.height }, rebootAssets);
+  drawRebootBattle(ctx, current, { width: dom.canvas.width, height: dom.canvas.height }, rebootAssets, {
+    equippedCosmetic: profile.equippedCosmetic,
+    reducedMotion: reduceMotion.matches
+  });
   updateMeters(current);
   updateButtons(current);
   showResult(current);

@@ -121,6 +121,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     width: 768,
     height: 192,
     source: 'imagegen'
+  },
+  cosmeticSigils: {
+    src: '/src/client/assets/generated/reboot-battle-cosmetic-sigils.png?v=battle-cosmetic',
+    width: 960,
+    height: 128,
+    source: 'imagegen'
   }
 };
 
@@ -141,6 +147,16 @@ const MOMENT_CALLOUTS = {
 const PARTNER_ASSIST_PINGS = {
   summon: { index: 0, icon: 'summon_charge', body: '자동 소환' },
   rescue: { index: 1, icon: 'rescue_action', body: '구원 지원' }
+};
+
+const COSMETIC_SIGIL_INDEX = {
+  'mythic-aura': 0,
+  'founder-board': 1,
+  'merge-effect': 2,
+  'rescue-effect': 3,
+  'profile-frame': 4,
+  'golden-supply-flash': 2,
+  'origin-loop-banner': 1
 };
 
 export function createRebootAssetImages() {
@@ -176,7 +192,9 @@ export function createRebootAssetImages() {
   rewardPickups.src = REBOOT_EFFECT_MANIFEST.rewardPickups.src;
   const bossAuras = new Image();
   bossAuras.src = REBOOT_EFFECT_MANIFEST.bossAuras.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras };
+  const cosmeticSigils = new Image();
+  cosmeticSigils.src = REBOOT_EFFECT_MANIFEST.cosmeticSigils.src;
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, cosmeticSigils };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -396,6 +414,20 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
     ctx.stroke();
     ctx.restore();
   }
+}
+
+function drawBattleCosmeticSignature(ctx, assets, equippedCosmetic, now = 0, reducedMotion = false) {
+  const index = COSMETIC_SIGIL_INDEX[equippedCosmetic];
+  const image = assets?.cosmeticSigils;
+  if (!Number.isInteger(index) || !image?.complete || image.naturalWidth <= 0) return false;
+  const cellWidth = image.naturalWidth / 5;
+  const pulse = reducedMotion ? 0 : Math.max(0, Math.sin(now * 2.6)) * 0.08;
+  const alpha = 0.38 + pulse;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, 35, 476, 320, 86);
+  ctx.restore();
+  return true;
 }
 
 function drawCombatCrisisOverlays(ctx, state, assets = {}) {
@@ -727,7 +759,7 @@ function drawPartnerAssistPing(ctx, state, assets = {}) {
   ctx.restore();
 }
 
-export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 }, assets = {}) {
+export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 }, assets = {}, options = {}) {
   ctx.clearRect(0, 0, layout.width, layout.height);
   const imageBackdrop = drawBattleBackdrop(ctx, layout, assets);
   if (!imageBackdrop) {
@@ -747,6 +779,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawCombatCrisisOverlays(ctx, state, assets);
   drawBossWarningCutin(ctx, state, assets);
   drawPartnerDangerCutin(ctx, state, assets);
+  drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
   drawBoard(ctx, state.boards.p1, 24, 438, 342, 138, '내 보드', false, assets, imageBackdrop);
   drawRescueBeam(ctx, state, assets);
   drawCombatVfx(ctx, state, assets);
