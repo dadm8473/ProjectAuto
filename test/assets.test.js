@@ -442,6 +442,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 20_000
   },
   {
+    path: 'src/client/assets/generated/reboot-lobby-next-beacons.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-lobby-next-beacons-chromakey-imagegen.png',
+    width: 640,
+    height: 128,
+    minRuntimeBytes: 20_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-combat-coach-cues.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-coach-cues-chromakey-imagegen.png',
     width: 768,
@@ -1120,6 +1127,19 @@ test('battle cosmetic sigil cells stay transparent and readable under the player
     assert.equal(bounds.maxX <= cellWidth - 9, true, `battle cosmetic sigil cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 8, true, `battle cosmetic sigil cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 9, true, `battle cosmetic sigil cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('lobby next action beacon cells stay transparent and readable inside the recommendation strip', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-lobby-next-beacons.png'));
+  const cellWidth = 128;
+  for (let cell = 0; cell < 5; cell += 1) {
+    const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 28);
+    assert.equal(bounds.count > 1_500, true, `lobby next beacon cell ${cell} has no readable subject`);
+    assert.equal(bounds.minX >= 8, true, `lobby next beacon cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 9, true, `lobby next beacon cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 8, true, `lobby next beacon cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 9, true, `lobby next beacon cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
 });
 

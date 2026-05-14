@@ -94,7 +94,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js'",
     "from './reboot_render.js?v=battle-cosmetic1'",
-    "from './reboot_screens.js'",
+    "from './reboot_screens.js?v=lobby-next1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -265,7 +265,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=battle-cosmetic1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-next1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=battle-cosmetic1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=cosmetic-equip1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-medals1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-reveal1">'), false);
@@ -273,12 +274,15 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-cosmetic1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-next1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-cosmetic1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cosmetic-equip1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=lobby-next1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=reboot-action-ready1'"), false);
   assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1'"), true);
   assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1")'), true);
@@ -1552,13 +1556,23 @@ test('lobby reward and next hooks use generated intel strips instead of web card
 
   for (const marker of [
     '--lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips")',
+    '--lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next")',
     'class="lobby-intel-strip reward-hook"',
     'class="lobby-intel-strip next-hook"',
     'class="lobby-intel-frame"',
+    'class="lobby-next-beacon"',
+    'data-next-beacon="${nextAction.beacon}"',
     '/src/client/assets/generated/reboot-lobby-intel-gems.png?v=intel-strips',
     '/src/client/assets/generated/reboot-lobby-intel-next.png?v=intel-strips',
     '.lobby-intel-strip',
     '.lobby-intel-frame',
+    '.lobby-next-beacon',
+    '[data-next-beacon="mission"]',
+    '[data-next-beacon="season"]',
+    '[data-next-beacon="training"]',
+    '[data-next-beacon="shop"]',
+    '[data-next-beacon="battle"]',
+    'background-image: var(--lobby-next-beacons);',
     '.lobby-intel-strip > span,\n.lobby-intel-strip > strong,\n.lobby-intel-strip > p,\n.lobby-intel-strip > button',
     '.reward-hook .lobby-intel-frame',
     '.next-hook .lobby-intel-frame',

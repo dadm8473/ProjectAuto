@@ -5,6 +5,7 @@ import { createGame, mergeRelays, serializeState, supplyRelay, tickGame, castLin
 import {
   buildMetaNavAlerts,
   buildMissionScreen,
+  nextLobbyAction,
   buildRebootCollection,
   buildRebootLobby,
   buildRebootResultModel,
@@ -75,6 +76,19 @@ test('result model routes secondary action to the next profile growth screen', (
 
   assert.equal(trainingModel.secondaryAction.action, 'collection');
   assert.equal(trainingModel.secondaryAction.label, '훈련하기');
+});
+
+test('lobby next action maps each priority to a generated beacon key', () => {
+  const allClaimed = {
+    claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic'],
+    claimedPassTiers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  };
+
+  assert.equal(nextLobbyAction({ processedRuns: ['run-1'] }).beacon, 'mission');
+  assert.equal(nextLobbyAction({ ...allClaimed, xp: 80, claimedPassTiers: [] }).beacon, 'season');
+  assert.equal(nextLobbyAction({ ...allClaimed, xp: 40 }).beacon, 'training');
+  assert.equal(nextLobbyAction({ ...allClaimed, gems: 1_000, unlocks: [] }).beacon, 'shop');
+  assert.equal(nextLobbyAction(allClaimed).beacon, 'battle');
 });
 
 test('result model exposes loss status for generated result badges', () => {

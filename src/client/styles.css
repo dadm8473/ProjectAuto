@@ -39,6 +39,7 @@
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
   --lobby-operation-poster: url("/src/client/assets/generated/reboot-lobby-operation-poster.png?v=operation-poster");
   --lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips");
+  --lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next");
   --launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta");
   --training-banner: url("/src/client/assets/generated/reboot-training-banner.png");
   --shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png");
@@ -1369,6 +1370,61 @@ body[data-app-screen="season"] .app-screen::after {
   padding: 0 10px;
   transform: translateY(-50%);
   font-size: 12px;
+}
+
+.lobby-next-beacon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  z-index: 1;
+  width: 52px;
+  height: 52px;
+  transform: translateY(-50%);
+  background-image: var(--lobby-next-beacons);
+  background-repeat: no-repeat;
+  background-size: 500% 100%;
+  background-position: 0 0;
+  filter: drop-shadow(0 7px 12px rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+
+.lobby-next-beacon[data-next-beacon="mission"] {
+  background-position: 0 0;
+}
+
+.lobby-next-beacon[data-next-beacon="season"] {
+  background-position: 25% 0;
+}
+
+.lobby-next-beacon[data-next-beacon="training"] {
+  background-position: 50% 0;
+}
+
+.lobby-next-beacon[data-next-beacon="shop"] {
+  background-position: 75% 0;
+}
+
+.lobby-next-beacon[data-next-beacon="battle"] {
+  background-position: 100% 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .next-hook .lobby-next-beacon {
+    animation: lobbyNextBeaconPulse 1800ms ease-in-out infinite;
+  }
+}
+
+@keyframes lobbyNextBeaconPulse {
+  0%,
+  100% {
+    opacity: 0.94;
+    transform: translateY(-50%) scale(0.98);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.05);
+  }
 }
 
 .screen-overlay .play-button,
