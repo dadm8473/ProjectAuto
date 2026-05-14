@@ -3,7 +3,7 @@ import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=reboot-reward-pickup1';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=reboot-result-finale1';
 import {
   buildMissionScreen,
   buildRebootCollection,
@@ -142,6 +142,14 @@ function settleResultRewards(current) {
   saveProfile();
   renderHomeScreens();
   return rewards;
+}
+
+function formatResultRewards(rewards) {
+  if (!rewards.length) return '젬 +0';
+  return rewards.map((reward) => {
+    if (reward.type === 'soft') return `젬 +${reward.amount}`;
+    return `보상 +${reward.amount}`;
+  }).join(' · ');
 }
 
 function handleShopPurchase(event) {
@@ -328,7 +336,7 @@ function showResult(current) {
   dom.resultReason.textContent = model.reason.label;
   dom.resultNextGoal.textContent = model.nextGoal.label;
   dom.resultHighlights.innerHTML = `<span>${model.highlight.label}</span>`;
-  dom.resultReward.textContent = model.rewards.map((reward) => `보상 ${reward.amount}`).join(' · ');
+  dom.resultReward.textContent = formatResultRewards(model.rewards);
   dom.resultLobbyLabel.textContent = model.secondaryAction.label;
   dom.resultLobbyButton.dataset.resultOpen = model.secondaryAction.action;
   dom.resultOverlay.hidden = false;

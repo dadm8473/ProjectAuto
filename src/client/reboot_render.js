@@ -45,7 +45,7 @@ export const REBOOT_ATLAS_MANIFEST = {
 
 export const REBOOT_BACKDROP_MANIFEST = {
   battle: {
-    src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-reward-pickup1',
+    src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-result-finale1',
     width: 390,
     height: 620,
     source: 'imagegen'

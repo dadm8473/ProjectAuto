@@ -17,6 +17,7 @@
   --result-action-buttons: url("/src/client/assets/generated/reboot-result-action-buttons.png?v=result-actions");
   --result-detail-strips: url("/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail");
   --result-copy-plates: url("/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy");
+  --result-finale-bursts: url("/src/client/assets/generated/reboot-result-finale-bursts.png?v=result-finale");
   --toast-callouts: url("/src/client/assets/generated/reboot-toast-callouts.png?v=toast-callouts");
   --result-panel-width: min(calc(100vw - 28px), calc((100dvh - 52px) * 0.6964), 390px);
   --result-panel-top-pad: clamp(108px, calc(var(--result-panel-width) * 0.31), 128px);
@@ -44,7 +45,7 @@
   --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
   --meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
-  --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-reward-pickup1");
+  --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-result-finale1");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons");
   --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets");
   --combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates");
@@ -1585,6 +1586,26 @@ body[data-app-screen="season"] .app-screen::after {
 .result-overlay[data-result-status="lost"] .result-panel::after {
   background-position: 33.333% 0;
 }
+
+.result-finale {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  z-index: 0;
+  width: clamp(214px, calc(var(--result-panel-width) * 0.72), 280px);
+  aspect-ratio: 1 / 1;
+  transform: translateX(-50%);
+  background-image: var(--result-finale-bursts);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.56));
+  opacity: 0.94;
+  pointer-events: none;
+}
+
+.result-overlay[data-result-status="won"] .result-finale { background-position: 0 0; }
+.result-overlay[data-result-status="lost"] .result-finale { background-position: 50% 0; }
 
 #resultCode {
   justify-self: start;

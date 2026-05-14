@@ -23,7 +23,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js'",
-    "from './reboot_render.js?v=reboot-reward-pickup1'",
+    "from './reboot_render.js?v=reboot-result-finale1'",
     "from './reboot_screens.js'",
     "from './reboot_online.js'"
   ]) {
@@ -170,11 +170,11 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-reward-pickup1">'), true);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-reward-pickup1"></script>'), true);
-  assert.equal(app.includes("from './reboot_render.js?v=reboot-reward-pickup1'"), true);
-  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-reward-pickup1'"), true);
-  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-reward-pickup1")'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-result-finale1">'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-result-finale1"></script>'), true);
+  assert.equal(app.includes("from './reboot_render.js?v=reboot-result-finale1'"), true);
+  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-result-finale1'"), true);
+  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-result-finale1")'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -563,6 +563,27 @@ test('result screen uses generated status badges for win and loss peaks', async 
   }
 });
 
+test('result screen uses a generated finale burst instead of css-only celebration', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '<span id="resultFinale" class="result-finale" aria-hidden="true"></span>',
+    '--result-finale-bursts: url("/src/client/assets/generated/reboot-result-finale-bursts.png?v=result-finale")',
+    '.result-finale {',
+    'background-image: var(--result-finale-bursts);',
+    'background-size: 300% 100%;',
+    '.result-overlay[data-result-status="won"] .result-finale { background-position: 0 0; }',
+    '.result-overlay[data-result-status="lost"] .result-finale { background-position: 50% 0; }'
+  ]) {
+    assert.equal(`${html}\n${css}`.includes(marker), true, marker);
+  }
+
+  const finaleBlock = css.slice(css.indexOf('.result-finale {'), css.indexOf('.result-overlay[data-result-status="won"] .result-finale'));
+  assert.equal(finaleBlock.includes('linear-gradient'), false);
+  assert.equal(finaleBlock.includes('radial-gradient'), false);
+});
+
 test('result screen uses a dedicated generated debrief panel frame', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
@@ -631,6 +652,20 @@ test('result actions use dedicated generated button frames', async () => {
   assert.equal(css.includes('.result-actions button {\n    min-height: 40px;'), false);
   assert.equal(/(^|\n)\.result-action-button \{\n  display: grid;/.test(css), false);
   assert.equal(/(^|\n)\.result-action-secondary \{ background-position: 100% 0; \}/.test(css), false);
+});
+
+test('result reward copy names the earned currency instead of a generic reward number', async () => {
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    'function formatResultRewards(rewards)',
+    "if (reward.type === 'soft') return `젬 +${reward.amount}`;",
+    'dom.resultReward.textContent = formatResultRewards(model.rewards);'
+  ]) {
+    assert.equal(app.includes(marker), true, marker);
+  }
+
+  assert.equal(app.includes('`보상 ${reward.amount}`'), false);
 });
 
 test('result highlights and reward use generated strip frames', async () => {
@@ -1528,7 +1563,7 @@ test('combat shell uses generated HUD and action dock chrome', async () => {
 
   for (const marker of [
     '--combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png")',
-    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-reward-pickup1")',
+    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-result-finale1")',
     'body[data-app-screen="battle"] .hud::before',
     'body[data-app-screen="battle"] .action-panel::before',
     'background-image: var(--combat-hud-frame)',

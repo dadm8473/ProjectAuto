@@ -353,6 +353,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     width: 768,
     height: 128,
     minRuntimeBytes: 24_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-result-finale-bursts.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-result-finale-bursts-chromakey-imagegen.png',
+    width: 780,
+    height: 260,
+    minRuntimeBytes: 45_000
   }
 ];
 
