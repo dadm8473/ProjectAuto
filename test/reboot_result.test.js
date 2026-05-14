@@ -106,6 +106,26 @@ test('result next-goal copy stays compact for generated result plates', () => {
   }
 });
 
+test('result reason copy stays compact for generated result plates', () => {
+  const reasons = [
+    'partner_rescued',
+    'boss_final_hit',
+    'boss_slowed',
+    'greed',
+    'rescue_missed',
+    'boss_leaked',
+    'merge_gap',
+    'bad_luck'
+  ];
+
+  for (const reason of reasons) {
+    const model = buildRebootResultModel({ result: { status: 'lost', reason } });
+    const compactLength = model.reason.label.replace(/\s/g, '').length;
+    assert.equal(compactLength <= 8, true, `${model.reason.label} is too long for the result reason plate`);
+    assert.equal(/[.。]/.test(model.reason.label), false, `${model.reason.label} reads like paragraph copy`);
+  }
+});
+
 test('retry creates a fresh run without opening monetization paths', () => {
   const previousGame = runTutorial();
   const retry = buildRebootResultModel({ result: previousGame.result }).primaryAction;
@@ -176,6 +196,26 @@ test('meta screens start with compact actionable status headers', () => {
   assert.equal(season.includes('보상 가능'), true);
 });
 
+test('meta summary detail copy stays compact for generated header banners', () => {
+  const screens = [
+    buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 2 } }),
+    buildRebootShop({ gems: 100, unlocks: [] }),
+    buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] }),
+    buildSeasonScreen({ xp: 60, claimedPassTiers: [] })
+  ];
+  const details = screens.map((html) => {
+    const match = html.match(/<article class="meta-summary screen-card"[\s\S]*?<p>(.*?)<\/p>/);
+    assert.ok(match, 'meta summary detail is missing');
+    return match[1];
+  });
+
+  for (const detail of details) {
+    const compactLength = detail.replace(/\s/g, '').length;
+    assert.equal(compactLength <= 9, true, `${detail} is too long for a meta header banner`);
+    assert.equal(/하세요|습니다|[.。]/.test(detail), false, `${detail} reads like paragraph copy`);
+  }
+});
+
 test('shop card descriptions stay compact enough for portrait game cards', () => {
   const shop = buildRebootShop({ gems: 300, unlocks: [] });
   const descriptions = [...shop.matchAll(/<article class="screen-card shop-card"[\s\S]*?<p>(.*?)<\/p>/g)]
@@ -205,6 +245,24 @@ test('mission screen renders profile progress and claim states', () => {
   assert.equal(missions.includes('유닛 훈련'), true);
   assert.equal(missions.includes('>받음<'), true);
   assert.equal(missions.includes('>수령<'), true);
+});
+
+test('mission goals stay compact enough for portrait mission cards', () => {
+  const missions = buildMissionScreen({
+    processedRuns: ['run-1'],
+    unitLevels: { spark_pin: 2 },
+    unlocks: ['mythic-aura'],
+    claimedMissions: []
+  });
+  const goals = [...missions.matchAll(/<article class="screen-card mission-card"[\s\S]*?<p>(.*?)<\/p>/g)]
+    .map((match) => match[1]);
+
+  assert.equal(goals.length >= 3, true);
+  for (const goal of goals) {
+    const compactLength = goal.replace(/\s/g, '').length;
+    assert.equal(compactLength <= 8, true, `${goal} is too long for a portrait mission card`);
+    assert.equal(/하세요|습니다|[.。]/.test(goal), false, `${goal} reads like paragraph copy`);
+  }
 });
 
 test('season screen renders pass tiers from profile XP and claim states', () => {

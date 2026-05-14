@@ -3,14 +3,14 @@ import { SHOP } from '../shared/content.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 
 const REASON_LABELS = {
-  partner_rescued: '파트너를 구했습니다',
-  boss_final_hit: '보스를 막타로 정리했습니다',
-  boss_slowed: '보스를 둔화시켜 버텼습니다',
-  greed: '구원보다 합성을 욕심냈습니다',
-  rescue_missed: '구원 타이밍을 놓쳤습니다',
-  boss_leaked: '보스가 방어선을 돌파했습니다',
-  merge_gap: '보스 전에 합성이 늦었습니다',
-  bad_luck: '나쁜 결과를 활용하지 못했습니다'
+  partner_rescued: '파트너 구원 성공',
+  boss_final_hit: '보스 막타 성공',
+  boss_slowed: '보스 둔화 성공',
+  greed: '합성 욕심 실패',
+  rescue_missed: '구원 타이밍 실패',
+  boss_leaked: '보스 돌파',
+  merge_gap: '합성 지연',
+  bad_luck: '약한 조합 방치'
 };
 
 const GOAL_LABELS = {
@@ -39,7 +39,7 @@ export const REBOOT_MISSIONS = [
   {
     id: 'first-run',
     title: '첫 작전 완료',
-    goal: '전투를 1회 끝내세요',
+    goal: '전투 1회 완료',
     target: 1,
     reward: { gems: 20 },
     progress(profile = {}) {
@@ -49,7 +49,7 @@ export const REBOOT_MISSIONS = [
   {
     id: 'train-unit',
     title: '유닛 훈련',
-    goal: '아무 유닛이나 1회 훈련하세요',
+    goal: '유닛 1회 훈련',
     target: 1,
     reward: { gems: 20 },
     progress(profile = {}) {
@@ -59,7 +59,7 @@ export const REBOOT_MISSIONS = [
   {
     id: 'unlock-cosmetic',
     title: '외형 해금',
-    goal: '상점에서 외형 1개를 보유하세요',
+    goal: '외형 1개 보유',
     target: 1,
     reward: { gems: 25 },
     progress(profile = {}) {
@@ -211,7 +211,7 @@ export function buildRebootShop(profile = {}) {
 
 export function buildMissionScreen(profile = {}) {
   const claimed = new Set(profile.claimedMissions ?? []);
-  const summary = buildMetaSummary('missions', '수령 가능', `${countClaimableMissions(profile)}개`, '완료한 목표를 바로 보상으로 전환');
+  const summary = buildMetaSummary('missions', '수령 가능', `${countClaimableMissions(profile)}개`, '완료 목표 보상 전환');
   const missions = REBOOT_MISSIONS.map((mission) => {
     const progress = missionProgress(profile, mission);
     const done = progress >= mission.target;
