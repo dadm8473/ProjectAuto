@@ -22,6 +22,7 @@
   --result-panel-width: min(calc(100vw - 28px), calc((100dvh - 52px) * 0.6964), 390px);
   --result-panel-top-pad: clamp(108px, calc(var(--result-panel-width) * 0.31), 128px);
   --screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png");
+  --screen-transition-wipe: url("/src/client/assets/generated/reboot-screen-transition-wipe.png?v=screen-wipe");
   --nav-icons: url("/src/client/assets/generated/reboot-nav-icons.png");
   --nav-button-glow: url("/src/client/assets/generated/reboot-nav-button-glow.png?v=nav-glow");
   --nav-button-glow-size: clamp(62px, 18vw, 76px);
@@ -135,6 +136,31 @@ body[data-app-screen="splash"] .shell::after {
   background-position: center bottom;
   background-size: 100% 100%;
   pointer-events: none;
+}
+
+.screen-transition-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 36;
+  pointer-events: none;
+  background-image: var(--screen-transition-wipe);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  opacity: 0;
+  transform: translate3d(-18%, -5%, 0) scale(1.08);
+  filter: saturate(1.12) drop-shadow(0 18px 30px rgba(0, 0, 0, 0.48));
+}
+
+body[data-screen-wipe] .screen-transition-fx {
+  animation: screenWipeSweep 520ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
+}
+
+@keyframes screenWipeSweep {
+  0% { opacity: 0; transform: translate3d(-44%, -13%, 0) scale(1.1); }
+  18% { opacity: 0.9; }
+  58% { opacity: 0.72; transform: translate3d(5%, 0, 0) scale(1.02); }
+  100% { opacity: 0; transform: translate3d(44%, 12%, 0) scale(1.08); }
 }
 
 body[data-app-screen="collection"] .shell::after,

@@ -131,6 +131,31 @@ test('home collection shop and result are app-game screens, not combat BM drawer
   }
 });
 
+test('app screen changes use a generated game wipe instead of instant web page swapping', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    'id="screenTransitionFx"',
+    'class="screen-transition-fx"',
+    '--screen-transition-wipe: url("/src/client/assets/generated/reboot-screen-transition-wipe.png?v=screen-wipe")',
+    '.screen-transition-fx',
+    'background-image: var(--screen-transition-wipe);',
+    'body[data-screen-wipe] .screen-transition-fx',
+    '@keyframes screenWipeSweep',
+    'function playScreenTransition(screen)',
+    'playScreenTransition.flip = !playScreenTransition.flip;',
+    'document.body.dataset.screenWipe = screen;',
+    'document.body.dataset.screenWipePulse = playScreenTransition.flip ? \'a\' : \'b\';',
+    'delete document.body.dataset.screenWipe;',
+    'delete document.body.dataset.screenWipePulse;',
+    'playScreenTransition(screen);'
+  ]) {
+    assert.equal(`${html}\n${css}\n${app}`.includes(marker), true, marker);
+  }
+});
+
 test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 

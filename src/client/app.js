@@ -61,6 +61,7 @@ const ctx = dom.canvas.getContext('2d');
 const rebootAssets = createRebootAssetImages();
 const PROFILE_STORAGE_KEY = 'projectauto.reboot.profile.v1';
 const TOAST_VISIBLE_MS = 1400;
+const SCREEN_TRANSITION_MS = 520;
 let appScreen = 'splash';
 let game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
 let localBoardId = 'p1';
@@ -102,12 +103,24 @@ function showToast(text, kind = 'info') {
   }, TOAST_VISIBLE_MS);
 }
 
+function playScreenTransition(screen) {
+  clearTimeout(playScreenTransition.timer);
+  playScreenTransition.flip = !playScreenTransition.flip;
+  document.body.dataset.screenWipe = screen;
+  document.body.dataset.screenWipePulse = playScreenTransition.flip ? 'a' : 'b';
+  playScreenTransition.timer = setTimeout(() => {
+    delete document.body.dataset.screenWipe;
+    delete document.body.dataset.screenWipePulse;
+  }, SCREEN_TRANSITION_MS);
+}
+
 function softFeedback(kind) {
   if (muted) return;
   navigator.vibrate?.(kind === 'rescue' ? [18, 24, 18] : [8]);
 }
 
 function setScreen(screen) {
+  const changed = appScreen !== screen;
   appScreen = screen;
   document.body.dataset.appScreen = screen;
   if (screen !== 'battle') delete document.body.dataset.coachCue;
@@ -116,6 +129,7 @@ function setScreen(screen) {
     panel.hidden = panel.dataset.screenPanel !== screen;
   }
   dom.launchOverlay.hidden = screen === 'battle' || screen === 'result';
+  if (changed) playScreenTransition(screen);
 }
 
 function renderHomeScreens() {
