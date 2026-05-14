@@ -151,6 +151,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     width: 256,
     height: 128,
     source: 'imagegen'
+  },
+  combatRevealVfx: {
+    src: '/src/client/assets/generated/reboot-combat-reveal-vfx.png?v=reveal-vfx1',
+    width: 1920,
+    height: 512,
+    source: 'imagegen'
   }
 };
 
@@ -226,7 +232,9 @@ export function createRebootAssetImages() {
   boardLabelPlates.src = REBOOT_EFFECT_MANIFEST.boardLabelPlates.src;
   const firstCommandSpotlight = new Image();
   firstCommandSpotlight.src = REBOOT_EFFECT_MANIFEST.firstCommandSpotlight.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight };
+  const combatRevealVfx = new Image();
+  combatRevealVfx.src = REBOOT_EFFECT_MANIFEST.combatRevealVfx.src;
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight, combatRevealVfx };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -335,6 +343,16 @@ function drawRewardPickupSprite(ctx, image, index, cx, cy, w, h, alpha = 1) {
 function drawBossAuraSprite(ctx, image, index, cx, cy, w, h, alpha = 1) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const cellWidth = image.naturalWidth / 3;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, cx - w / 2, cy - h / 2, w, h);
+  ctx.restore();
+  return true;
+}
+
+function drawCombatRevealVfxSprite(ctx, image, index, cx, cy, w, h, alpha = 1) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const cellWidth = image.naturalWidth / 4;
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, cx - w / 2, cy - h / 2, w, h);
@@ -757,14 +775,22 @@ function drawHitBeams(ctx, state, assets = {}) {
 function drawCombatVfx(ctx, state, assets = {}) {
   for (const event of recentEvents(state, 'summon')) {
     const point = boardVfxPoint(state, event);
-    drawAtlasSprite(ctx, assets, 'vfx', 'summon_flash', point.x, point.y, 84, eventAlpha(state, event));
+    const alpha = eventAlpha(state, event);
+    drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 0, point.x, point.y + 2, 126, 112, alpha * 0.92);
+    if (event.highlight) drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 2, point.x, point.y - 2, 128, 128, alpha * 0.78);
+    drawAtlasSprite(ctx, assets, 'vfx', 'summon_flash', point.x, point.y, 84, alpha);
   }
   for (const event of recentEvents(state, 'merge')) {
     const point = boardVfxPoint(state, event);
-    drawAtlasSprite(ctx, assets, 'vfx', 'merge_burst', point.x, point.y, 112, eventAlpha(state, event));
+    const alpha = eventAlpha(state, event);
+    drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 1, point.x, point.y, 146, 132, alpha * 0.88);
+    if (event.highlight) drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 2, point.x, point.y - 2, 132, 132, alpha * 0.74);
+    drawAtlasSprite(ctx, assets, 'vfx', 'merge_burst', point.x, point.y, 112, alpha);
   }
   for (const event of recentEvents(state, 'rescue')) {
-    drawAtlasSprite(ctx, assets, 'vfx', 'rescue_flare', 195, 328, 132, eventAlpha(state, event));
+    const alpha = eventAlpha(state, event);
+    drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 3, 195, 328, 156, 118, alpha * 0.9);
+    drawAtlasSprite(ctx, assets, 'vfx', 'rescue_flare', 195, 328, 132, alpha);
   }
   drawHitBeams(ctx, state, assets);
   drawDeathBursts(ctx, state, assets);

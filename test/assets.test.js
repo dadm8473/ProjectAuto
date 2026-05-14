@@ -510,6 +510,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     width: 768,
     height: 192,
     minRuntimeBytes: 28_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-combat-reveal-vfx.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260515-combat-reveal-vfx-imagegen.png',
+    width: 1920,
+    height: 512,
+    minRuntimeBytes: 80_000
   }
 ];
 
@@ -1227,5 +1234,21 @@ test('combat coach cue cells keep each teaching prompt visible and padded', asyn
     assert.equal(bounds.maxX <= cellWidth - 9, true, `combat coach cue cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 4, true, `combat coach cue cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 5, true, `combat coach cue cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('combat reveal VFX atlas keeps each random-action reveal readable and padded', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-combat-reveal-vfx.png'));
+  const cellWidth = 480;
+  assert.equal(image.width, cellWidth * 4);
+  assert.equal(image.height, 512);
+
+  for (let cell = 0; cell < 4; cell += 1) {
+    const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 32);
+    assert.equal(bounds.count > 20_000, true, `combat reveal VFX cell ${cell} has no readable subject`);
+    assert.equal(bounds.minX >= 20, true, `combat reveal VFX cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 21, true, `combat reveal VFX cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 24, true, `combat reveal VFX cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 23, true, `combat reveal VFX cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
 });

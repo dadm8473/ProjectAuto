@@ -721,6 +721,20 @@ Constraints: transparent background, no text, no letters, no numbers, no waterma
 Export target: each piece centered in its 256x256 cell and usable as a CSS-scaled background skin.
 ```
 
+## Runtime Prompt: Combat Reveal VFX
+
+```text
+Use case: stylized-concept
+Asset type: project-bound transparent VFX atlas for a portrait mobile cooperative tower-defense game combat canvas.
+Primary request: Create one horizontal 4-cell VFX atlas for ProjectAuto summon and merge anticipation moments, on a perfectly flat solid #ff00ff chroma-key background for background removal.
+Subject: four separate equal-width cells with generous padding: 1) summon capsule opening ring, teal energy circle with amber sparks; 2) merge fusion burst, three small toy-device lights combining into one bright core; 3) rare pull flash, compact golden starburst with teal rim; 4) partner rescue charge spark, linked teal-gold pulse knot. No text, no icons with letters, no character faces.
+Style/medium: shipped Korean mobile game combat VFX, premium toy-board tower-defense, polished metal/glass energy, chunky readable shapes, dark graphite outline accents, teal cores and warm amber highlights.
+Composition/framing: orthographic UI sprite atlas, four equal cells in one row, centered effects, transparent-safe padding, readable at 54px and 96px.
+Lighting/mood: crisp energetic combat feedback, controlled glow, high contrast.
+Constraints: background must be one uniform #ff00ff with no gradients, shadows, texture, floor, reflections, or lighting variation. Do not use #ff00ff anywhere in the VFX. Keep cells visually separate. No watermark. No text.
+Postprocess: remove #ff00ff chroma key with soft matte/despill, crop and pad runtime atlas to 1920x512, 4 columns x 1 row, 480x512 cells, centered straight-alpha subjects.
+```
+
 ## 후처리 기준
 
 필수:

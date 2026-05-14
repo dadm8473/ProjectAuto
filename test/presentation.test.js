@@ -98,7 +98,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js'",
     "from './reboot_action_ui.js?v=status-prompt1'",
-    "from './reboot_render.js?v=boss-finale1'",
+    "from './reboot_render.js?v=reveal-vfx1'",
     "from './reboot_screens.js?v=retry-seeds1'",
     "from './reboot_online.js'"
   ]) {
@@ -395,7 +395,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=status-prompt1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reveal-vfx1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=status-prompt1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-nav1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=retry-seeds1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=boss-finale1"></script>'), false);
@@ -403,7 +404,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=boss-finale1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=reveal-vfx1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=boss-finale1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=rescue-reward1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=merge-reward1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=summon-reward1'"), false);
@@ -1207,6 +1209,9 @@ test('combat renderer uses generated VFX atlas for action feedback', async () =>
 
   for (const marker of [
     'reboot-combat-vfx.png',
+    "src: '/src/client/assets/generated/reboot-combat-reveal-vfx.png?v=reveal-vfx1'",
+    'combatRevealVfx',
+    'function drawCombatRevealVfxSprite',
     'drawCombatVfx',
     'recentEvents',
     "'summon_flash'",
@@ -1214,6 +1219,10 @@ test('combat renderer uses generated VFX atlas for action feedback', async () =>
     "'rescue_flare'",
     "'enemy_hit_spark'",
     "'boss_warning_flare'",
+    'drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 0',
+    'drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 1',
+    'drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 2',
+    'drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 3',
     "drawAtlasSprite(ctx, assets, 'vfx'"
   ]) {
     assert.equal(render.includes(marker), true, marker);

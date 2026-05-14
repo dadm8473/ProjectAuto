@@ -108,6 +108,62 @@ test('combat VFX uses compact hit bolts and rescue pulses instead of screen-cros
   );
 });
 
+test('random combat actions draw generated reveal VFX before the small legacy flash', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 12.32,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }, { spriteKey: 'burst_pin' }] },
+        p2: { danger: 42, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [],
+      events: [
+        { type: 'summon', at: 12.02, playerId: 'p1', highlight: true },
+        { type: 'merge', at: 12.08, playerId: 'p1', highlight: true },
+        { type: 'rescue', at: 12.12, playerId: 'p1', highlight: true }
+      ],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1282, 256),
+      board: image(1281, 256),
+      vfx: image(1280, 256),
+      combatRevealVfx: image(1920, 512),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const revealDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1920
+      && command.args[0].naturalHeight === 512
+  ));
+  const sourceXs = revealDraws.map((command) => command.args[1]);
+  assert.equal(sourceXs.includes(0), true, 'expected summon reveal cell');
+  assert.equal(sourceXs.includes(480), true, 'expected merge reveal cell');
+  assert.equal(sourceXs.includes(960), true, 'expected rare reveal flash cell');
+  assert.equal(sourceXs.includes(1440), true, 'expected rescue reveal cell');
+
+  const firstRevealIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1920
+      && command.args[0].naturalHeight === 512
+  ));
+  const firstLegacyVfxIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && [0, 256, 512].includes(command.args[1])
+  ));
+  assert.notEqual(firstRevealIndex, -1, 'expected generated reveal VFX to draw');
+  assert.notEqual(firstLegacyVfxIndex, -1, 'expected legacy compact flash to still draw');
+  assert.equal(firstRevealIndex < firstLegacyVfxIndex, true, 'big reveal should establish the moment before the compact flash');
+});
+
 test('boss death burst gets a generated battlefield finale behind the kill burst', () => {
   const ctx = mockContext();
   drawRebootBattle(
