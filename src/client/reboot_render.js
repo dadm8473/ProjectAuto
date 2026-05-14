@@ -469,18 +469,22 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
   }
 }
 
+function drawCosmeticSigilSprite(ctx, image, index, x, y, w, h, alpha = 1) {
+  if (!Number.isInteger(index) || !image?.complete || image.naturalWidth <= 0) return false;
+  const cellWidth = image.naturalWidth / 5;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, x, y, w, h);
+  ctx.restore();
+  return true;
+}
+
 function drawBattleCosmeticSignature(ctx, assets, equippedCosmetic, now = 0, reducedMotion = false) {
   const index = COSMETIC_SIGIL_INDEX[equippedCosmetic];
   const image = assets?.cosmeticSigils;
-  if (!Number.isInteger(index) || !image?.complete || image.naturalWidth <= 0) return false;
-  const cellWidth = image.naturalWidth / 5;
   const pulse = reducedMotion ? 0 : Math.max(0, Math.sin(now * 2.6)) * 0.08;
   const alpha = 0.38 + pulse;
-  ctx.save();
-  ctx.globalAlpha *= alpha;
-  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, 35, 476, 320, 86);
-  ctx.restore();
-  return true;
+  return drawCosmeticSigilSprite(ctx, image, index, 35, 476, 320, 86, alpha);
 }
 
 function drawCombatCrisisOverlays(ctx, state, assets = {}) {
@@ -756,11 +760,15 @@ function drawCombatVfx(ctx, state, assets = {}) {
 }
 
 function firstPlayerSummonRewardEvent(state) {
-  const playerSummons = state.events
-    .filter((event) => event.type === 'summon' && (event.playerId ?? 'p1') === 'p1' && state.now >= event.at)
+  return firstPlayerRecentEvent(state, 'summon', 1.35);
+}
+
+function firstPlayerRecentEvent(state, type, windowSeconds) {
+  const playerEvents = state.events
+    .filter((event) => event.type === type && (event.playerId ?? 'p1') === 'p1' && state.now >= event.at)
     .sort((a, b) => a.at - b.at);
-  const event = playerSummons[0];
-  if (!event || state.now - event.at > 1.35) return null;
+  const event = playerEvents[0];
+  if (!event || state.now - event.at > windowSeconds) return null;
   return event;
 }
 
@@ -775,6 +783,19 @@ function drawFirstSummonRewardSpotlight(ctx, state, assets = {}) {
   const w = 196 * swell;
   const h = 98 * swell;
   return drawImageCover(ctx, image, point.x - w / 2, point.y + 18 - h / 2, w, h, alpha);
+}
+
+function drawFirstMergeRewardSigil(ctx, state, assets = {}, reducedMotion = false) {
+  const event = firstPlayerRecentEvent(state, 'merge', 1.35);
+  const image = assets?.cosmeticSigils;
+  const index = COSMETIC_SIGIL_INDEX['merge-effect'];
+  if (!event || !image?.complete || image.naturalWidth <= 0) return false;
+  const elapsed = Math.max(0, state.now - event.at);
+  const alpha = Math.min(0.84, eventAlpha(state, event, 1.35) * 1.1);
+  const swell = reducedMotion ? 1 : 1 + Math.max(0, Math.sin(elapsed * Math.PI * 3.6)) * 0.06;
+  const w = 318 * swell;
+  const h = 92 * swell;
+  return drawCosmeticSigilSprite(ctx, image, index, 36 - (w - 318) / 2, 422 - (h - 92) / 2, w, h, alpha);
 }
 
 function drawCombatMomentCallout(ctx, state, assets = {}) {
@@ -861,6 +882,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
   drawBoard(ctx, state.boards.p1, 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
   drawFirstSummonRewardSpotlight(ctx, state, assets);
+  drawFirstMergeRewardSigil(ctx, state, assets, options.reducedMotion);
   drawRescueBeam(ctx, state, assets);
   drawCombatVfx(ctx, state, assets);
   drawPartnerAssistPing(ctx, state, assets);

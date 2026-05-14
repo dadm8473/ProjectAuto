@@ -214,6 +214,56 @@ test('first player summon gets a generated reward spotlight before the small fla
   assert.equal(spotlightIndex < summonVfxIndex, true, 'reward spotlight should establish the summon moment before the flash');
 });
 
+test('first player merge gets a generated board sigil before the burst', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 51.28,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'burst_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [{ type: 'merge', at: 51.08, playerId: 'p1' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      cosmeticSigils: image(960, 128),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const mergeSigilIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 960
+      && command.args[0].naturalHeight === 128
+      && command.args[1] === 384
+      && command.args[2] === 0
+      && command.args[3] === 192
+      && command.args[4] === 128
+      && command.args[7] >= 300
+      && command.args[8] >= 86
+  ));
+  const mergeBurstIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[1] === 256
+      && command.args[2] === 0
+      && command.args[7] === 112
+  ));
+
+  assert.notEqual(mergeSigilIndex, -1, 'expected generated merge sigil to draw across the player board');
+  assert.notEqual(mergeBurstIndex, -1, 'expected merge burst to draw above the board sigil');
+  assert.equal(mergeSigilIndex < mergeBurstIndex, true, 'merge sigil should ground the success moment before the burst');
+});
+
 test('image backdrop board labels sit on generated combat plates', () => {
   const ctx = mockContext();
   drawRebootBattle(
