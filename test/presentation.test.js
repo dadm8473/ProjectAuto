@@ -339,7 +339,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=command-console1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-readability1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=command-console1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-press1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=board-labels1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=battle-brand1">'), false);
@@ -965,6 +966,8 @@ test('result screen uses a generated finale burst instead of css-only celebratio
     '.result-finale {',
     'background-image: var(--result-finale-bursts);',
     'background-size: 300% 100%;',
+    'width: clamp(96px, calc(var(--result-panel-width) * 0.32), 126px);',
+    'opacity: 0.38;',
     '.result-overlay[data-result-status="won"] .result-finale { background-position: 0 0; }',
     '.result-overlay[data-result-status="lost"] .result-finale { background-position: 50% 0; }'
   ]) {
@@ -974,6 +977,10 @@ test('result screen uses a generated finale burst instead of css-only celebratio
   const finaleBlock = css.slice(css.indexOf('.result-finale {'), css.indexOf('.result-overlay[data-result-status="won"] .result-finale'));
   assert.equal(finaleBlock.includes('linear-gradient'), false);
   assert.equal(finaleBlock.includes('radial-gradient'), false);
+  assert.equal(finaleBlock.includes('calc(var(--result-panel-width) * 0.48)'), false);
+  assert.equal(finaleBlock.includes('opacity: 0.62;'), false);
+  assert.equal(finaleBlock.includes('calc(var(--result-panel-width) * 0.72)'), false);
+  assert.equal(finaleBlock.includes('opacity: 0.94;'), false);
 });
 
 test('result screen uses a dedicated generated debrief panel frame', async () => {

@@ -2332,18 +2332,18 @@ body[data-app-screen="season"] .app-screen::after {
 
 .result-finale {
   position: absolute;
-  top: -18px;
+  top: 10px;
   left: 50%;
   z-index: 0;
-  width: clamp(214px, calc(var(--result-panel-width) * 0.72), 280px);
+  width: clamp(96px, calc(var(--result-panel-width) * 0.32), 126px);
   aspect-ratio: 1 / 1;
   transform: translateX(-50%);
   background-image: var(--result-finale-bursts);
   background-repeat: no-repeat;
   background-size: 300% 100%;
   background-position: 100% 0;
-  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.56));
-  opacity: 0.94;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.52));
+  opacity: 0.38;
   pointer-events: none;
 }
 
