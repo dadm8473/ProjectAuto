@@ -265,12 +265,14 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-reveal1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-medals1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-reveal1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-card-states1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(app.includes("from './reboot_render.js?v=reboot-action-ready1'"), true);
   assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1'"), true);
@@ -896,6 +898,34 @@ test('result highlights and reward use generated strip frames', async () => {
   );
   assert.equal(stripBlock.includes('background: rgba(88, 215, 255, 0.1);'), false);
   assert.equal(stripBlock.includes('border: 1px solid rgba(88, 215, 255, 0.22);'), false);
+});
+
+test('result highlights use generated run medal badges instead of text-only callouts', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    '--result-medals: url("/src/client/assets/generated/reboot-result-medals.png?v=result-medals")',
+    'function resultHighlightMarkup(model)',
+    'class="result-medal"',
+    'data-result-medal="${model.highlight.medal}"',
+    'model.highlight.medal',
+    'medal: resultMedalForReason(reason)',
+    'function resultMedalForReason(reason)',
+    '.result-medal',
+    'background-image: var(--result-medals);',
+    'background-size: 300% 100%;',
+    '.result-medal[data-result-medal="rescue"]',
+    '.result-medal[data-result-medal="boss"]',
+    '.result-medal[data-result-medal="tactics"]'
+  ]) {
+    assert.equal(`${css}\n${app}\n${screens}`.includes(marker), true, marker);
+  }
+
+  const medalBlock = css.slice(css.indexOf('.result-medal {'), css.indexOf('.result-medal[data-result-medal="rescue"]'));
+  assert.equal(medalBlock.includes('linear-gradient'), false);
+  assert.equal(medalBlock.includes('border:'), false);
 });
 
 test('result title and guidance copy use generated plate frames', async () => {

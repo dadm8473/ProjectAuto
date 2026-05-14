@@ -85,6 +85,16 @@ test('result model exposes loss status for generated result badges', () => {
   assert.equal(model.highlight.kind, 'danger');
 });
 
+test('result model maps the key run moment to a generated medal type', () => {
+  const rescue = buildRebootResultModel({ result: { status: 'won', reason: 'partner_rescued' } });
+  const boss = buildRebootResultModel({ result: { status: 'won', reason: 'boss_final_hit' } });
+  const tactics = buildRebootResultModel({ result: { status: 'lost', reason: 'merge_gap' } });
+
+  assert.equal(rescue.highlight.medal, 'rescue');
+  assert.equal(boss.highlight.medal, 'boss');
+  assert.equal(tactics.highlight.medal, 'tactics');
+});
+
 test('result next-goal copy stays compact for generated result plates', () => {
   const goalKeys = [
     'time_next_rescue',

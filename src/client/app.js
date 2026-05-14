@@ -199,6 +199,10 @@ function formatResultRewards(rewards) {
   }).join(' · ');
 }
 
+function resultHighlightMarkup(model) {
+  return `<span><i class="result-medal" data-result-medal="${model.highlight.medal}" aria-hidden="true"></i><b>${model.highlight.label}</b></span>`;
+}
+
 function selectorValue(value) {
   return String(value).replaceAll('\\', '\\\\').replaceAll('"', '\\"');
 }
@@ -410,7 +414,7 @@ function showResult(current) {
   dom.resultTitle.textContent = model.title;
   dom.resultReason.textContent = model.reason.label;
   dom.resultNextGoal.textContent = model.nextGoal.label;
-  dom.resultHighlights.innerHTML = `<span>${model.highlight.label}</span>`;
+  dom.resultHighlights.innerHTML = resultHighlightMarkup(model);
   dom.resultReward.textContent = formatResultRewards(model.rewards);
   dom.resultLobbyLabel.textContent = model.secondaryAction.label;
   dom.resultLobbyButton.dataset.resultOpen = model.secondaryAction.action;

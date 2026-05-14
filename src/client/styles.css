@@ -18,6 +18,7 @@
   --result-detail-strips: url("/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail");
   --result-copy-plates: url("/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy");
   --result-finale-bursts: url("/src/client/assets/generated/reboot-result-finale-bursts.png?v=result-finale");
+  --result-medals: url("/src/client/assets/generated/reboot-result-medals.png?v=result-medals");
   --toast-callouts: url("/src/client/assets/generated/reboot-toast-callouts.png?v=toast-callouts");
   --reward-reveal-panel: url("/src/client/assets/generated/reboot-reward-reveal-panel.png?v=reward-reveal");
   --result-panel-width: min(calc(100vw - 28px), calc((100dvh - 52px) * 0.6964), 390px);
@@ -2059,6 +2060,30 @@ body[data-app-screen="season"] .app-screen::after {
 
 .result-highlights span {
   background-position: 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.result-medal {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  background-image: var(--result-medals);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  background-position: 0 0;
+  filter: saturate(1.08) drop-shadow(0 5px 10px rgba(0, 0, 0, 0.52));
+}
+
+.result-medal[data-result-medal="rescue"] { background-position: 0 0; }
+.result-medal[data-result-medal="boss"] { background-position: 50% 0; }
+.result-medal[data-result-medal="tactics"] { background-position: 100% 0; }
+
+.result-highlights b {
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.05;
 }
 
 .result-reward {

@@ -31,6 +31,12 @@ const ROLE_LABELS = {
   rescue: '구원'
 };
 
+function resultMedalForReason(reason) {
+  if (['partner_rescued', 'rescue_missed', 'save_rescue_for_partner_danger'].includes(reason)) return 'rescue';
+  if (['boss_final_hit', 'boss_slowed', 'boss_leaked'].includes(reason)) return 'boss';
+  return 'tactics';
+}
+
 export function unitUpgradeCost(level = 1) {
   return 40 + Math.max(0, level - 1) * 20;
 }
@@ -308,7 +314,7 @@ export function buildRebootResultModel({ result, rewards = [], profile } = {}) {
   return {
     status: won ? 'won' : 'lost',
     title: won ? '승리' : '패배',
-    highlight: { label: REASON_LABELS[reason] ?? '전투 완료', kind: won ? 'success' : 'danger' },
+    highlight: { label: REASON_LABELS[reason] ?? '전투 완료', kind: won ? 'success' : 'danger', medal: resultMedalForReason(reason) },
     reason: { label: REASON_LABELS[reason] ?? '전투 완료', reason },
     nextGoal: { label: GOAL_LABELS[result?.nextGoal] ?? '핵심 타이밍 재도전', goal: result?.nextGoal ?? 'retry' },
     rewards,
