@@ -29,6 +29,7 @@
   --splash-title-plate: url("/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title");
   --splash-footer-shroud: url("/src/client/assets/generated/reboot-splash-footer-shroud.png?v=splash-footer-depth-clean3");
   --splash-floor-cap: url("/src/client/assets/generated/reboot-splash-floor-cap.png?v=splash-floor-cap-matte4");
+  --meta-footer-shroud: url("/src/client/assets/generated/reboot-meta-footer-shroud.png?v=meta-footer-shroud");
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
   --lobby-operation-poster: url("/src/client/assets/generated/reboot-lobby-operation-poster.png?v=operation-poster");
   --lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips");
@@ -125,6 +126,26 @@ body[data-app-screen="splash"] .shell::after {
   transform: translateX(-50%);
   background-color: #010405;
   background-image: var(--splash-footer-shroud);
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 100% 100%;
+  pointer-events: none;
+}
+
+body[data-app-screen="collection"] .shell::after,
+body[data-app-screen="shop"] .shell::after,
+body[data-app-screen="missions"] .shell::after,
+body[data-app-screen="season"] .shell::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 24;
+  width: 100%;
+  height: clamp(86px, 14dvh, 116px);
+  transform: translateX(-50%);
+  background-color: #010405;
+  background-image: var(--meta-footer-shroud);
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: 100% 100%;

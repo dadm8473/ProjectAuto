@@ -152,7 +152,7 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
 test('app shell cache-busts the game stylesheet for visual asset updates', async () => {
   const html = await readFile('index.html', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-splash-floor-matte10">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-meta-footer-shroud1">'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -228,6 +228,36 @@ test('meta screen lists fade clipped rows instead of showing detached partial fr
   ]) {
     assert.equal(listBlock.includes(marker), true, marker);
   }
+});
+
+test('meta screens use generated footer shroud instead of exposing lower console slots', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const selector = [
+    'body[data-app-screen="collection"] .shell::after',
+    'body[data-app-screen="shop"] .shell::after',
+    'body[data-app-screen="missions"] .shell::after',
+    'body[data-app-screen="season"] .shell::after'
+  ].join(',\n');
+  const block = cssRuleBlock(css, selector);
+
+  assert.equal(css.includes('--meta-footer-shroud: url("/src/client/assets/generated/reboot-meta-footer-shroud.png?v=meta-footer-shroud")'), true);
+  for (const marker of [
+    'z-index: 24;',
+    'height: clamp(86px, 14dvh, 116px);',
+    'background-image: var(--meta-footer-shroud);',
+    'background-position: center bottom;',
+    'background-size: 100% 100%;',
+    'pointer-events: none;'
+  ]) {
+    assert.equal(block.includes(marker), true, marker);
+  }
+
+  for (const screen of ['battle', 'splash', 'lobby', 'result']) {
+    assert.equal(css.includes(`body[data-app-screen="${screen}"] .shell::after,\nbody[data-app-screen="collection"]`), false, screen);
+    assert.equal(css.includes(`body[data-app-screen="${screen}"] .shell::after {\n  content: "";\n  position: absolute;\n  left: 50%;\n  bottom: 0;\n  z-index: 24;`), false, screen);
+  }
+  assert.equal(block.includes('var(--splash-footer-shroud)'), false);
+  assert.equal(block.includes('var(--splash-floor-cap)'), false);
 });
 
 test('canvas renderer does not duplicate shell resource HUD text', async () => {

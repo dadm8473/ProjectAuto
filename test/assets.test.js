@@ -279,6 +279,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 80_000
   },
   {
+    path: 'src/client/assets/generated/reboot-meta-footer-shroud.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-meta-footer-shroud-imagegen.png',
+    width: 430,
+    height: 184,
+    minRuntimeBytes: 80_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-splash-floor-cap.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-splash-footer-shroud-imagegen.png',
     width: 260,
@@ -517,6 +524,17 @@ test('splash footer shroud reads as dark floor instead of a centered empty slot'
   assert.equal(centerSocket.mean < 28, true, `center socket frame still reads bright: ${centerSocket.mean}`);
   assert.equal(centerSocket.brightRatio < 0.005, true, `center socket frame has too many luminous edge pixels: ${centerSocket.brightRatio}`);
   assert.equal(cyanSlotRatio < 0.00005, true, `center floor has cyan slot pixels: ${cyanSlotRatio}`);
+});
+
+test('meta footer shroud uses generated dark floor art for lower meta screens', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-meta-footer-shroud.png'));
+  const centerLower = luminanceStats(image, { x: 120, y: 92, width: 190, height: 86 });
+  const centerSocket = luminanceStats(image, { x: 130, y: 126, width: 170, height: 58 }, 45);
+  const cyanSlotRatio = colorRatio(image, { x: 120, y: 92, width: 190, height: 86 }, (r, g, b) => r < 80 && g > 80 && b > 90);
+
+  assert.equal(centerLower.mean < 24, true, `meta footer floor too bright: ${centerLower.mean}`);
+  assert.equal(centerSocket.brightRatio < 0.005, true, `meta footer still has luminous slot edges: ${centerSocket.brightRatio}`);
+  assert.equal(cyanSlotRatio < 0.00005, true, `meta footer has cyan slot pixels: ${cyanSlotRatio}`);
 });
 
 test('splash floor cap is a transparent matte bitmap, not another glowing button', async () => {
