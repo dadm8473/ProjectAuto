@@ -108,6 +108,66 @@ test('combat VFX uses compact hit bolts and rescue pulses instead of screen-cros
   );
 });
 
+test('boss death burst gets a generated battlefield finale behind the kill burst', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 116.4,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'burst_pin' }] },
+        p2: { danger: 18, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [],
+      events: [],
+      effects: [
+        {
+          type: 'death_burst',
+          targetType: 'mini_boss',
+          targetProgress: 0.62,
+          targetLane: 0,
+          rewardCharge: 10,
+          rewardLink: 4,
+          ttl: 1.05
+        }
+      ]
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      killBurst: image(256, 256),
+      fieldFinaleBursts: image(780, 260),
+      rewardPickups: image(768, 128),
+      rewards: image(1024, 256)
+    }
+  );
+
+  const finaleIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 780
+      && command.args[0].naturalHeight === 260
+      && command.args[1] === 0
+      && command.args[2] === 0
+      && command.args[3] === 260
+      && command.args[4] === 260
+      && command.args[7] >= 150
+      && command.args[8] >= 150
+  ));
+  const killBurstIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 256
+      && command.args[0].naturalHeight === 256
+      && command.args[7] === 120
+      && command.args[8] === 120
+  ));
+
+  assert.notEqual(finaleIndex, -1, 'expected generated boss battlefield finale to draw');
+  assert.notEqual(killBurstIndex, -1, 'expected boss kill burst to still draw');
+  assert.equal(finaleIndex < killBurstIndex, true, 'battlefield finale should frame the boss kill burst from behind');
+});
+
 test('player board uses a generated landing tray beneath summoned units', () => {
   const ctx = mockContext();
   drawRebootBattle(

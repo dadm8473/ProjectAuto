@@ -122,6 +122,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     height: 192,
     source: 'imagegen'
   },
+  fieldFinaleBursts: {
+    src: '/src/client/assets/generated/reboot-result-finale-bursts.png?v=boss-finale1',
+    width: 780,
+    height: 260,
+    source: 'imagegen'
+  },
   cosmeticSigils: {
     src: '/src/client/assets/generated/reboot-battle-cosmetic-sigils.png?v=battle-cosmetic',
     width: 960,
@@ -210,6 +216,8 @@ export function createRebootAssetImages() {
   rewardPickups.src = REBOOT_EFFECT_MANIFEST.rewardPickups.src;
   const bossAuras = new Image();
   bossAuras.src = REBOOT_EFFECT_MANIFEST.bossAuras.src;
+  const fieldFinaleBursts = new Image();
+  fieldFinaleBursts.src = REBOOT_EFFECT_MANIFEST.fieldFinaleBursts.src;
   const cosmeticSigils = new Image();
   cosmeticSigils.src = REBOOT_EFFECT_MANIFEST.cosmeticSigils.src;
   const playerBoardTray = new Image();
@@ -218,7 +226,7 @@ export function createRebootAssetImages() {
   boardLabelPlates.src = REBOOT_EFFECT_MANIFEST.boardLabelPlates.src;
   const firstCommandSpotlight = new Image();
   firstCommandSpotlight.src = REBOOT_EFFECT_MANIFEST.firstCommandSpotlight.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight };
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -325,6 +333,16 @@ function drawRewardPickupSprite(ctx, image, index, cx, cy, w, h, alpha = 1) {
 }
 
 function drawBossAuraSprite(ctx, image, index, cx, cy, w, h, alpha = 1) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const cellWidth = image.naturalWidth / 3;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, cx - w / 2, cy - h / 2, w, h);
+  ctx.restore();
+  return true;
+}
+
+function drawFinaleBurstSprite(ctx, image, index, cx, cy, w, h, alpha = 1) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const cellWidth = image.naturalWidth / 3;
   ctx.save();
@@ -697,6 +715,7 @@ function drawDeathBursts(ctx, state, assets = {}) {
     const size = boss ? 120 : 78;
     const ttlMax = boss ? 1.25 : 0.78;
     const alpha = Math.max(0.18, Math.min(0.92, (effect.ttl ?? ttlMax) / ttlMax));
+    if (boss) drawFinaleBurstSprite(ctx, assets.fieldFinaleBursts, 0, point.x, point.y - 8, 176, 176, alpha * 0.9);
     drawImageCover(ctx, assets.killBurst, point.x - size / 2, point.y - size / 2, size, size, alpha);
     const rewardSprite = boss ? 'unlock_capsule' : 'soft_currency';
     drawAtlasSprite(ctx, assets, 'rewards', rewardSprite, point.x + size * 0.34, point.y - size * 0.26, boss ? 34 : 24, alpha);
