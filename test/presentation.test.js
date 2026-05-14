@@ -2510,22 +2510,26 @@ test('combat HUD keeps three resource meters bounded on compact phones', async (
   }
 });
 
-test('combat HUD meter labels stay compact enough for generated chrome sockets', async () => {
+test('combat HUD meter labels explain their values without adding extra controls', async () => {
   const html = await readFile('index.html', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '>소10<',
-    '>구0%<',
-    '>위0<',
-    'dom.summonMeter.textContent = `소${resources.summon}`',
-    'dom.rescueMeter.textContent = `구${Math.round(resources.rescue)}%`',
-    'dom.dangerMeter.textContent = `위${Math.round(current.boards[partner]?.danger ?? 0)}`',
+    '>소환 10<',
+    '>구원 0%<',
+    '>위험 0<',
+    'dom.summonMeter.textContent = `소환 ${resources.summon}`',
+    'dom.rescueMeter.textContent = `구원 ${Math.round(resources.rescue)}%`',
+    'dom.dangerMeter.textContent = `위험 ${Math.round(current.boards[partner]?.danger ?? 0)}`',
     'margin-left: clamp(34px, 10vw, 46px);',
     'padding: clamp(4px, 1.4vw, 6px) clamp(3px, 1.2vw, 5px);'
   ]) {
     assert.equal(`${html}\n${app}\n${css}`.includes(marker), true, marker);
+  }
+
+  for (const forbidden of ['>소10<', '>구0%<', '>위0<']) {
+    assert.equal(html.includes(forbidden), false, forbidden);
   }
 });
 
