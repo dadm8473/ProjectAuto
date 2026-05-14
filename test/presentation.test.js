@@ -337,7 +337,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-track1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=battle-brand1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-track1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-showcase1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=player-tray1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-command1">'), false);
@@ -351,7 +352,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=mission-track1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-brand1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=mission-track1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-showcase1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-fallback2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-fallback1"></script>'), false);
@@ -2310,6 +2312,25 @@ test('combat shell uses generated HUD and action dock chrome', async () => {
   }
 });
 
+test('combat HUD brand reads as a generated operation badge, not a web header', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '<strong>신호릴레이</strong>',
+    '.brand::before',
+    'background-image: var(--title-emblem);',
+    'grid-template-columns: clamp(28px, 8vw, 34px) minmax(0, 1fr);',
+    'text-shadow: 0 2px 8px rgba(0, 0, 0, 0.74);',
+    'white-space: nowrap;'
+  ]) {
+    assert.equal(`${html}\n${css}`.includes(marker), true, marker);
+  }
+
+  const hudBlock = html.slice(html.indexOf('<section class="hud">'), html.indexOf('</section>', html.indexOf('<section class="hud">')));
+  assert.equal(hudBlock.includes('<strong>ProjectAuto</strong>'), false);
+});
+
 test('combat shell chrome uses generated art as compact button backing on phone widths', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
@@ -2359,7 +2380,7 @@ test('combat HUD meter labels stay compact enough for generated chrome sockets',
     'dom.summonMeter.textContent = `소${resources.summon}`',
     'dom.rescueMeter.textContent = `구${Math.round(resources.rescue)}%`',
     'dom.dangerMeter.textContent = `위${Math.round(current.boards[partner]?.danger ?? 0)}`',
-    'margin-left: clamp(38px, 12vw, 56px);',
+    'margin-left: clamp(34px, 10vw, 46px);',
     'padding: clamp(4px, 1.4vw, 6px) clamp(3px, 1.2vw, 5px);'
   ]) {
     assert.equal(`${html}\n${app}\n${css}`.includes(marker), true, marker);
