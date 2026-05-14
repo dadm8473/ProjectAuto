@@ -28,6 +28,36 @@ async function assertNoErrors(errors, label) {
   assert.deepEqual(errors, [], `${label} console/page errors`);
 }
 
+async function assertMetaListReachesDock(page, selector, label) {
+  const geometry = await page.locator(selector).evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const dock = document.querySelector('.bottom-dock')?.getBoundingClientRect();
+    const cards = [...node.querySelectorAll('.screen-card')];
+    const visibleCards = cards.filter((card) => {
+      const cardRect = card.getBoundingClientRect();
+      return cardRect.top < (dock?.top ?? 0) - 10 && cardRect.bottom > rect.top;
+    }).length;
+    return {
+      listBottom: Math.round(rect.bottom),
+      dockTop: Math.round(dock?.top ?? 0),
+      listHeight: Math.round(rect.height),
+      cardCount: cards.length,
+      visibleCards
+    };
+  });
+  assert.equal(
+    geometry.listBottom >= geometry.dockTop - 18,
+    true,
+    `${label} list stops too high: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(geometry.listHeight >= 560, true, `${label} list too short: ${JSON.stringify(geometry)}`);
+  assert.equal(
+    geometry.visibleCards >= Math.min(3, geometry.cardCount),
+    true,
+    `${label} visible card density too low: ${JSON.stringify(geometry)}`
+  );
+}
+
 async function verifyShell(page, viewport) {
   await page.goto(baseUrl, { waitUntil: 'load' });
   await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
@@ -50,21 +80,25 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await page.getByRole('button', { name: '유닛' }).click();
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
+  await assertMetaListReachesDock(page, '#collectionList', 'collection');
   assert.equal(await page.locator('#collectionList .unit-card .sprite-token.unit-sprite').count(), 5);
   assert.equal(await page.locator('#collectionList .meta-showcase .sprite-token.unit-sprite').count(), 1);
   await page.getByRole('button', { name: '홈' }).click();
   await page.getByRole('button', { name: '상점' }).click();
   await page.locator('.shop-cosmetic').first().waitFor({ state: 'visible' });
+  await assertMetaListReachesDock(page, '#shopList', 'shop');
   assert.equal(await page.locator('#shopList .shop-card .sprite-token.shop-cosmetic').count(), 5);
   assert.equal(await page.locator('#shopList .meta-showcase .sprite-token.shop-cosmetic').count(), 1);
   await page.getByRole('button', { name: '홈' }).click();
   await page.getByRole('button', { name: '미션' }).click();
   await page.locator('#missionsList .mission-stamp-board').waitFor({ state: 'visible' });
+  await assertMetaListReachesDock(page, '#missionsList', 'missions');
   assert.equal(await page.locator('#missionsList .mission-stamp-slot').count(), 3);
   assert.equal(await page.locator('#missionsList .mission-card').count(), 3);
   await page.getByRole('button', { name: '홈' }).click();
   await page.getByRole('button', { name: '시즌' }).click();
   await page.locator('#seasonList .season-track-board').waitFor({ state: 'visible' });
+  await assertMetaListReachesDock(page, '#seasonList', 'season');
   assert.equal(await page.locator('#seasonList .season-track-node').count(), 4);
   assert.equal(await page.locator('#seasonList .season-card').count(), 4);
   await page.getByRole('button', { name: '홈' }).click();

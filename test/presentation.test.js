@@ -468,7 +468,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-matchmaking1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-density1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-matchmaking1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=frame-alpha1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-nav1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-readability1">'), false);
@@ -598,22 +599,40 @@ test('meta screen lists can scroll after larger imagegen unit sprites', async ()
   }
 });
 
-test('meta screen lists frame a summary plus two app cards instead of a sparse web list', async () => {
+test('meta screen lists fill the lower app area instead of stopping like a sparse web list', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
+  const hubBlock = cssRuleBlock(css, '.hub-screen');
   const listBlock = css.slice(css.indexOf('.screen-list {'), css.indexOf('.screen-list::-webkit-scrollbar'));
   const cardBlock = css.slice(css.indexOf('.unit-card,\n.shop-card,'), css.indexOf('.unit-card::before,'));
   for (const marker of [
-    'max-height: min(calc(100dvh - 300px), 396px);',
+    'display: grid;',
+    'grid-template-rows: auto minmax(0, 1fr);',
+    'min-height: 0;'
+  ]) {
+    assert.equal(hubBlock.includes(marker), true, marker);
+  }
+  for (const marker of [
+    'height: 100%;',
+    'min-height: 0;',
+    'max-height: none;',
+    'align-content: start;',
+    'grid-auto-rows: minmax(clamp(98px, 27vw, 112px), auto);',
     '-webkit-mask-image: linear-gradient(',
     'mask-image: linear-gradient(',
-    'calc(100% - 12px)',
-    'padding-bottom: 40px;',
+    'calc(100% - 28px)',
+    'padding-bottom: calc(var(--lobby-bottom-dock-rendered-height) + 16px);',
     'transparent 100%'
   ]) {
     assert.equal(listBlock.includes(marker), true, marker);
   }
-  assert.equal(cardBlock.includes('min-height: 122px;'), true);
+  for (const marker of [
+    'min-height: clamp(98px, 27vw, 112px);',
+    'padding: 10px 12px;',
+    'box-shadow: 0 10px 20px rgba(0, 0, 0, 0.42);'
+  ]) {
+    assert.equal(cardBlock.includes(marker), true, marker);
+  }
 });
 
 test('meta screens keep generated floor art separate from scroll-list clipping', async () => {
@@ -907,7 +926,8 @@ test('meta list rows use dedicated generated game row frames', async () => {
     '.shop-card::before { background-position: 33.333% 0; }',
     '.mission-card::before { background-position: 66.666% 0; }',
     '.season-card::before { background-position: 100% 0; }',
-    '.unit-card,\n.shop-card,\n.mission-card,\n.season-card {\n  border-color: transparent;\n  background: transparent;',
+    '.unit-card,\n.shop-card,\n.mission-card,\n.season-card {\n  border-color: transparent;',
+    'linear-gradient(90deg, rgba(2, 7, 8, 0.68), rgba(8, 18, 18, 0.54) 58%, rgba(2, 7, 8, 0.72));',
     'backdrop-filter: none;',
     '.shop-card[data-owned="true"],\n.mission-card[data-owned="true"],\n.season-card[data-owned="true"] {\n  filter: saturate(1.12) brightness(1.08);'
   ]) {
@@ -923,6 +943,7 @@ test('meta list rows use dedicated generated game row frames', async () => {
   }
 
   assert.equal(css.includes('min-height: 34px;'), false);
+  assert.equal(css.includes('background: transparent;\n  box-shadow: 0 10px 20px'), false);
 });
 
 test('meta row compact chips use generated mini badge frames', async () => {
@@ -1037,7 +1058,7 @@ test('meta screen titles use generated header plates instead of browser default 
     '.hub-screen h1',
     'background-image: var(--meta-title-plate);',
     'background-size: 100% 100%;',
-    'margin: 0 0 10px;',
+    'margin: 0 0 8px;',
     '.hub-screen .screen-back',
     'position: absolute;',
     '.hub-screen .screen-back::before',

@@ -1692,11 +1692,18 @@ body[data-app-screen="season"] .app-screen::after {
   background-image: none;
 }
 
+.hub-screen {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
 .hub-screen h1 {
   min-height: clamp(60px, 17.67vw, 76px);
   display: flex;
   align-items: center;
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   padding: 10px clamp(24px, 7vw, 32px) 10px clamp(78px, 22.33vw, 96px);
   background-image: var(--meta-title-plate);
   background-repeat: no-repeat;
@@ -1727,15 +1734,19 @@ body[data-app-screen="season"] .app-screen::after {
 
 .screen-list {
   display: grid;
-  gap: 10px;
-  max-height: min(calc(100dvh - 300px), 396px);
+  align-content: start;
+  grid-auto-rows: minmax(clamp(98px, 27vw, 112px), auto);
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
   overflow-x: hidden;
   overflow-y: auto;
-  padding-bottom: 40px;
+  padding-bottom: calc(var(--lobby-bottom-dock-rendered-height) + 16px);
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 12px), transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 12px), transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 28px), transparent 100%);
 }
 
 .screen-list::-webkit-scrollbar {
@@ -2129,13 +2140,14 @@ body[data-app-screen="season"] .app-screen::after {
 .mission-card,
 .season-card {
   border-color: transparent;
-  background: transparent;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.36);
+  background: linear-gradient(90deg, rgba(2, 7, 8, 0.68), rgba(8, 18, 18, 0.54) 58%, rgba(2, 7, 8, 0.72));
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.42);
   backdrop-filter: none;
-  min-height: 122px;
+  min-height: clamp(98px, 27vw, 112px);
   display: grid;
   align-items: center;
   column-gap: 10px;
+  padding: 10px 12px;
 }
 
 .unit-card::before,
