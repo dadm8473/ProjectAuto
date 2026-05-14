@@ -23,7 +23,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js'",
-    "from './reboot_render.js?v=reboot-combat-moment1'",
+    "from './reboot_render.js?v=reboot-crisis1'",
     "from './reboot_screens.js'",
     "from './reboot_online.js'"
   ]) {
@@ -170,11 +170,11 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-combat-moment1">'), true);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-combat-moment1"></script>'), true);
-  assert.equal(app.includes("from './reboot_render.js?v=reboot-combat-moment1'"), true);
-  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-combat-moment1'"), true);
-  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-combat-moment1")'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-crisis1">'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-crisis1"></script>'), true);
+  assert.equal(app.includes("from './reboot_render.js?v=reboot-crisis1'"), true);
+  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-crisis1'"), true);
+  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-crisis1")'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -721,6 +721,65 @@ test('combat renderer uses generated moment callouts for successful actions', as
     "'구원 발동'"
   ]) {
     assert.equal(render.includes(marker), true, marker);
+  }
+});
+
+test('combat renderer uses generated crisis overlays for boss and partner danger', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'crisisOverlays',
+    "src: '/src/client/assets/generated/reboot-combat-crisis-overlays.png?v=combat-crisis-overlays'",
+    'drawCombatCrisisOverlays',
+    'drawCrisisOverlayPanel',
+    'state.now >= 92 && state.now < 102',
+    'state.boards.p2.danger >= 80',
+    'drawCrisisOverlayPanel(ctx, assets.crisisOverlays, 0, 0, 210, 390, 160',
+    'drawCrisisOverlayPanel(ctx, assets.crisisOverlays, 1, 0, 126, 390, 160',
+    'drawCombatCrisisOverlays(ctx, state, assets)'
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+
+  const overlayBlock = render.slice(
+    render.indexOf('function drawCombatCrisisOverlays'),
+    render.indexOf('function drawBossWarningCutin')
+  );
+  assert.equal(overlayBlock.includes('fillStyle'), false);
+  assert.equal(overlayBlock.includes('roundedRect'), false);
+});
+
+test('boss crisis presentation takes priority over partner danger overlays', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'if (bossWarning) {',
+    'return drawCrisisOverlayPanel(ctx, assets.crisisOverlays, 0, 0, 210, 390, 160',
+    'if (state.now >= 92 && state.now < 102) return false;'
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});
+
+test('combat cutins do not leak canvas state while generated images load', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+  const bossBlock = render.slice(
+    render.indexOf('function drawBossWarningCutin'),
+    render.indexOf('function drawPartnerDangerCutin')
+  );
+  const partnerBlock = render.slice(
+    render.indexOf('function drawPartnerDangerCutin'),
+    render.indexOf('function drawTrack')
+  );
+  const loadedGuard = 'if (!image?.complete || image.naturalWidth <= 0) return false;';
+
+  for (const block of [bossBlock, partnerBlock]) {
+    const guardIndex = block.indexOf(loadedGuard);
+    const saveIndex = block.indexOf('ctx.save();');
+    const restoreIndex = block.indexOf('ctx.restore();');
+    assert.equal(guardIndex >= 0, true);
+    assert.equal(guardIndex < saveIndex, true);
+    assert.equal(block.slice(saveIndex, restoreIndex).includes('return false'), false);
   }
 });
 
@@ -1442,7 +1501,7 @@ test('combat shell uses generated HUD and action dock chrome', async () => {
 
   for (const marker of [
     '--combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png")',
-    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-combat-moment1")',
+    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-crisis1")',
     'body[data-app-screen="battle"] .hud::before',
     'body[data-app-screen="battle"] .action-panel::before',
     'background-image: var(--combat-hud-frame)',

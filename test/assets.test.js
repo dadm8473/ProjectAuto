@@ -195,6 +195,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 90_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-crisis-overlays.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-crisis-overlays-imagegen.png',
+    width: 780,
+    height: 160,
+    minRuntimeBytes: 90_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-launch-buttons.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-launch-buttons-imagegen.png',
     width: 860,

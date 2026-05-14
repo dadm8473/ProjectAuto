@@ -45,7 +45,7 @@ export const REBOOT_ATLAS_MANIFEST = {
 
 export const REBOOT_BACKDROP_MANIFEST = {
   battle: {
-    src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-combat-moment1',
+    src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-crisis1',
     width: 390,
     height: 620,
     source: 'imagegen'
@@ -85,6 +85,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     width: 1170,
     height: 144,
     source: 'imagegen'
+  },
+  crisisOverlays: {
+    src: '/src/client/assets/generated/reboot-combat-crisis-overlays.png?v=combat-crisis-overlays',
+    width: 780,
+    height: 160,
+    source: 'imagegen'
   }
 };
 
@@ -123,7 +129,9 @@ export function createRebootAssetImages() {
   hitBeam.src = REBOOT_EFFECT_MANIFEST.hitBeam.src;
   const momentCallouts = new Image();
   momentCallouts.src = REBOOT_EFFECT_MANIFEST.momentCallouts.src;
-  return { ...atlases, backdrop, bossCutin, rescueCutin, killBurst, hitBeam, momentCallouts };
+  const crisisOverlays = new Image();
+  crisisOverlays.src = REBOOT_EFFECT_MANIFEST.crisisOverlays.src;
+  return { ...atlases, backdrop, bossCutin, rescueCutin, killBurst, hitBeam, momentCallouts, crisisOverlays };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -192,6 +200,16 @@ function drawImageCover(ctx, image, x, y, w, h, alpha = 1) {
 function drawMomentCalloutPanel(ctx, image, index, x, y, w, h, alpha = 1) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const cellWidth = image.naturalWidth / 3;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, x, y, w, h);
+  ctx.restore();
+  return true;
+}
+
+function drawCrisisOverlayPanel(ctx, image, index, x, y, w, h, alpha = 1) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const cellWidth = image.naturalWidth / 2;
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, x, y, w, h);
@@ -293,16 +311,27 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
   }
 }
 
+function drawCombatCrisisOverlays(ctx, state, assets = {}) {
+  const bossWarning = state.now >= 92 && state.now < 102;
+  const partnerDanger = state.boards.p2.danger >= 80;
+  if (bossWarning) {
+    const alpha = 0.5 + Math.max(0, Math.sin(state.now * 8)) * 0.12;
+    return drawCrisisOverlayPanel(ctx, assets.crisisOverlays, 0, 0, 210, 390, 160, alpha);
+  }
+  if (partnerDanger) {
+    const alpha = 0.48 + Math.max(0, Math.sin(state.now * 6)) * 0.1;
+    return drawCrisisOverlayPanel(ctx, assets.crisisOverlays, 1, 0, 126, 390, 160, alpha);
+  }
+  return false;
+}
+
 function drawBossWarningCutin(ctx, state, assets = {}) {
   if (state.now < 92 || state.now >= 102) return false;
   const image = assets?.bossCutin;
-  ctx.save();
+  if (!image?.complete || image.naturalWidth <= 0) return false;
   const alpha = 0.78 + Math.sin(state.now * 10) * 0.06;
-  if (!drawImageCover(ctx, image, 0, 205, 390, 128, alpha)) {
-    ctx.fillStyle = 'rgba(255, 111, 89, 0.18)';
-    roundedRect(ctx, 42, 220, 306, 106, 8);
-    ctx.fill();
-  }
+  ctx.save();
+  drawImageCover(ctx, image, 0, 205, 390, 128, alpha);
   const alarmAlpha = 0.84 + Math.max(0, Math.sin(state.now * 8)) * 0.16;
   drawAtlasSprite(ctx, assets, 'ui', 'boss_warning', 66, 270, 42, alarmAlpha);
   ctx.fillStyle = '#ffdfd8';
@@ -321,14 +350,12 @@ function drawBossWarningCutin(ctx, state, assets = {}) {
 function drawPartnerDangerCutin(ctx, state, assets = {}) {
   const partnerDanger = state.boards.p2.danger >= 80;
   if (!partnerDanger) return false;
+  if (state.now >= 92 && state.now < 102) return false;
   const image = assets?.rescueCutin;
-  ctx.save();
+  if (!image?.complete || image.naturalWidth <= 0) return false;
   const alpha = 0.74 + Math.max(0, Math.sin(state.now * 7)) * 0.08;
-  if (!drawImageCover(ctx, image, 0, 160, 390, 112, alpha)) {
-    ctx.fillStyle = 'rgba(255, 111, 89, 0.16)';
-    roundedRect(ctx, 38, 170, 314, 92, 8);
-    ctx.fill();
-  }
+  ctx.save();
+  drawImageCover(ctx, image, 0, 160, 390, 112, alpha);
   drawAtlasSprite(ctx, assets, 'ui', 'partner_danger', 62, 218, 42, 0.95);
   ctx.fillStyle = '#ffdfd8';
   ctx.shadowColor = '#ff6f59';
@@ -379,10 +406,6 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
     ctx.fill();
   });
 
-  const warning = state.now >= 92 && state.now < 102;
-  if (warning) {
-    drawBossWarningCutin(ctx, state, assets);
-  }
   ctx.restore();
 }
 
@@ -564,6 +587,8 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
 
   drawBoard(ctx, state.boards.p2, 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
   drawTrack(ctx, state, assets, imageBackdrop);
+  drawCombatCrisisOverlays(ctx, state, assets);
+  drawBossWarningCutin(ctx, state, assets);
   drawPartnerDangerCutin(ctx, state, assets);
   drawBoard(ctx, state.boards.p1, 24, 438, 342, 138, '내 보드', false, assets, imageBackdrop);
   drawRescueBeam(ctx, state, assets);
