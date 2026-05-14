@@ -30,6 +30,7 @@
   --splash-footer-shroud: url("/src/client/assets/generated/reboot-splash-footer-shroud.png?v=splash-footer-depth-clean3");
   --splash-floor-cap: url("/src/client/assets/generated/reboot-splash-floor-cap.png?v=splash-floor-cap-matte4");
   --meta-footer-shroud: url("/src/client/assets/generated/reboot-meta-footer-shroud.png?v=meta-footer-shroud");
+  --meta-list-shutter: url("/src/client/assets/generated/reboot-meta-list-shutter.png?v=meta-list-shutter2");
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
   --lobby-operation-poster: url("/src/client/assets/generated/reboot-lobby-operation-poster.png?v=operation-poster");
   --lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips");
@@ -43,7 +44,7 @@
   --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
   --meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
-  --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-battle-footer-polish6");
+  --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-meta-shutter2");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons");
   --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets");
   --combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates");
@@ -601,6 +602,24 @@ body[data-app-screen="lobby"] .toast {
 
 .app-screen[hidden] {
   display: none;
+}
+
+body[data-app-screen="collection"] .app-screen::after,
+body[data-app-screen="shop"] .app-screen::after,
+body[data-app-screen="missions"] .app-screen::after,
+body[data-app-screen="season"] .app-screen::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: clamp(138px, 22dvh, 184px);
+  z-index: 2;
+  background-image: var(--meta-list-shutter);
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 100% 100%;
+  pointer-events: none;
 }
 
 .splash-screen,
@@ -1169,14 +1188,14 @@ body[data-app-screen="lobby"] .toast {
 .screen-list {
   display: grid;
   gap: 10px;
-  max-height: calc(100dvh - 220px);
+  max-height: min(calc(100dvh - 300px), 396px);
   overflow-x: hidden;
   overflow-y: auto;
-  padding-bottom: 48px;
+  padding-bottom: 40px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 96px), transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 96px), transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 12px), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 12px), transparent 100%);
 }
 
 .screen-list::-webkit-scrollbar {
@@ -1364,7 +1383,7 @@ body[data-app-screen="lobby"] .toast {
   background: transparent;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.36);
   backdrop-filter: none;
-  min-height: 108px;
+  min-height: 122px;
   display: grid;
   align-items: center;
   column-gap: 10px;
@@ -1387,7 +1406,6 @@ body[data-app-screen="lobby"] .toast {
 .season-card::before { background-position: 100% 0; }
 
 .unit-card {
-  min-height: 122px;
   grid-template-columns: 78px 1fr 96px;
 }
 

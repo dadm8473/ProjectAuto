@@ -286,6 +286,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 80_000
   },
   {
+    path: 'src/client/assets/generated/reboot-meta-list-shutter.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-meta-list-shutter-imagegen.png',
+    width: 430,
+    height: 184,
+    minRuntimeBytes: 80_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-splash-floor-cap.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-splash-footer-shroud-imagegen.png',
     width: 260,

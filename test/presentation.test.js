@@ -23,7 +23,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js'",
-    "from './reboot_render.js?v=reboot-battle-footer-polish6'",
+    "from './reboot_render.js?v=reboot-meta-shutter2'",
     "from './reboot_screens.js'",
     "from './reboot_online.js'"
   ]) {
@@ -170,11 +170,11 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-battle-footer-polish6">'), true);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-battle-footer-polish6"></script>'), true);
-  assert.equal(app.includes("from './reboot_render.js?v=reboot-battle-footer-polish6'"), true);
-  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-battle-footer-polish6'"), true);
-  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-battle-footer-polish6")'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-meta-shutter2">'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-meta-shutter2"></script>'), true);
+  assert.equal(app.includes("from './reboot_render.js?v=reboot-meta-shutter2'"), true);
+  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-meta-shutter2'"), true);
+  assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-meta-shutter2")'), true);
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -237,19 +237,46 @@ test('meta screen lists can scroll after larger imagegen unit sprites', async ()
   }
 });
 
-test('meta screen lists fade clipped rows instead of showing detached partial frames', async () => {
+test('meta screen lists frame a summary plus two app cards instead of a sparse web list', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
   const listBlock = css.slice(css.indexOf('.screen-list {'), css.indexOf('.screen-list::-webkit-scrollbar'));
+  const cardBlock = css.slice(css.indexOf('.unit-card,\n.shop-card,'), css.indexOf('.unit-card::before,'));
   for (const marker of [
+    'max-height: min(calc(100dvh - 300px), 396px);',
     '-webkit-mask-image: linear-gradient(',
     'mask-image: linear-gradient(',
-    'calc(100% - 96px)',
-    'padding-bottom: 48px;',
+    'calc(100% - 12px)',
+    'padding-bottom: 40px;',
     'transparent 100%'
   ]) {
     assert.equal(listBlock.includes(marker), true, marker);
   }
+  assert.equal(cardBlock.includes('min-height: 122px;'), true);
+});
+
+test('meta screens keep generated floor art separate from scroll-list clipping', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const selector = [
+    'body[data-app-screen="collection"] .app-screen::after',
+    'body[data-app-screen="shop"] .app-screen::after',
+    'body[data-app-screen="missions"] .app-screen::after',
+    'body[data-app-screen="season"] .app-screen::after'
+  ].join(',\n');
+  const block = cssRuleBlock(css, selector);
+
+  assert.equal(css.includes('--meta-list-shutter: url("/src/client/assets/generated/reboot-meta-list-shutter.png?v=meta-list-shutter2")'), true);
+  for (const marker of [
+    'height: clamp(138px, 22dvh, 184px);',
+    'z-index: 2;',
+    'background-image: var(--meta-list-shutter);',
+    'background-position: center bottom;',
+    'background-size: 100% 100%;',
+    'pointer-events: none;'
+  ]) {
+    assert.equal(block.includes(marker), true, marker);
+  }
+  assert.equal(css.includes('.screen-list::after'), false);
 });
 
 test('meta screens use generated footer shroud instead of exposing lower console slots', async () => {
@@ -1389,7 +1416,7 @@ test('combat shell uses generated HUD and action dock chrome', async () => {
 
   for (const marker of [
     '--combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png")',
-    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-battle-footer-polish6")',
+    '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-meta-shutter2")',
     'body[data-app-screen="battle"] .hud::before',
     'body[data-app-screen="battle"] .action-panel::before',
     'background-image: var(--combat-hud-frame)',
