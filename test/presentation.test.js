@@ -880,11 +880,15 @@ test('combat cutins do not leak canvas state while generated images load', async
   );
   const partnerBlock = render.slice(
     render.indexOf('function drawPartnerDangerCutin'),
+    render.indexOf('function drawCombatStartCutin')
+  );
+  const startBlock = render.slice(
+    render.indexOf('function drawCombatStartCutin'),
     render.indexOf('function drawTrack')
   );
   const loadedGuard = 'if (!image?.complete || image.naturalWidth <= 0) return false;';
 
-  for (const block of [bossBlock, partnerBlock]) {
+  for (const block of [bossBlock, partnerBlock, startBlock]) {
     const guardIndex = block.indexOf(loadedGuard);
     const saveIndex = block.indexOf('ctx.save();');
     const restoreIndex = block.indexOf('ctx.restore();');
@@ -904,6 +908,25 @@ test('boss warning uses a dedicated generated combat cutin', async () => {
     'drawImageCover(ctx, image, 0, 205, 390, 128',
     'drawBossWarningCutin',
     'drawBossWarningCutin(ctx, state, assets)'
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});
+
+test('combat starts with a generated operation cutin instead of a silent canvas spawn', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'operationStart',
+    "src: '/src/client/assets/generated/reboot-combat-start-cutin.png?v=combat-start'",
+    'const startCutin = new Image();',
+    'startCutin.src = REBOOT_CUTIN_MANIFEST.operationStart.src;',
+    'drawCombatStartCutin',
+    'if (state.now >= 3.25) return false;',
+    'drawImageCover(ctx, image, 0, 238, 390, 112',
+    "ctx.fillText('작전 시작'",
+    "ctx.fillText('소환 준비'",
+    'drawCombatStartCutin(ctx, state, assets)'
   ]) {
     assert.equal(render.includes(marker), true, marker);
   }

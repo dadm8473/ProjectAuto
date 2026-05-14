@@ -53,6 +53,12 @@ export const REBOOT_BACKDROP_MANIFEST = {
 };
 
 export const REBOOT_CUTIN_MANIFEST = {
+  operationStart: {
+    src: '/src/client/assets/generated/reboot-combat-start-cutin.png?v=combat-start',
+    width: 390,
+    height: 112,
+    source: 'imagegen'
+  },
   bossWarning: {
     src: '/src/client/assets/generated/reboot-boss-cutin.png',
     width: 390,
@@ -137,6 +143,8 @@ export function createRebootAssetImages() {
   );
   const backdrop = new Image();
   backdrop.src = REBOOT_BACKDROP_MANIFEST.battle.src;
+  const startCutin = new Image();
+  startCutin.src = REBOOT_CUTIN_MANIFEST.operationStart.src;
   const bossCutin = new Image();
   bossCutin.src = REBOOT_CUTIN_MANIFEST.bossWarning.src;
   const rescueCutin = new Image();
@@ -155,7 +163,7 @@ export function createRebootAssetImages() {
   rewardPickups.src = REBOOT_EFFECT_MANIFEST.rewardPickups.src;
   const bossAuras = new Image();
   bossAuras.src = REBOOT_EFFECT_MANIFEST.bossAuras.src;
-  return { ...atlases, backdrop, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, crisisOverlays, rewardPickups, bossAuras };
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, crisisOverlays, rewardPickups, bossAuras };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -426,6 +434,30 @@ function drawPartnerDangerCutin(ctx, state, assets = {}) {
   return true;
 }
 
+function drawCombatStartCutin(ctx, state, assets = {}) {
+  if (state.now >= 3.25) return false;
+  const image = assets?.startCutin;
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const introIn = Math.min(1, state.now / 0.34);
+  const introOut = Math.min(1, Math.max(0, 3.25 - state.now) / 0.56);
+  const alpha = Math.min(introIn, introOut) * 0.94;
+  ctx.save();
+  drawImageCover(ctx, image, 0, 238, 390, 112, alpha);
+  drawAtlasSprite(ctx, assets, 'ui', 'summon_charge', 74, 296, 38, alpha);
+  ctx.globalAlpha *= alpha;
+  ctx.fillStyle = '#fff7dc';
+  ctx.shadowColor = '#58d7ff';
+  ctx.shadowBlur = 15;
+  ctx.font = '900 20px system-ui';
+  ctx.fillText('작전 시작', 116, 292);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(245, 240, 220, 0.82)';
+  ctx.font = '800 11px system-ui';
+  ctx.fillText('소환 준비', 118, 310);
+  ctx.restore();
+  return true;
+}
+
 function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
   ctx.save();
   ctx.translate(0, 0);
@@ -659,6 +691,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
 
   drawBoard(ctx, state.boards.p2, 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
   drawTrack(ctx, state, assets, imageBackdrop);
+  drawCombatStartCutin(ctx, state, assets);
   drawCombatCrisisOverlays(ctx, state, assets);
   drawBossWarningCutin(ctx, state, assets);
   drawPartnerDangerCutin(ctx, state, assets);
