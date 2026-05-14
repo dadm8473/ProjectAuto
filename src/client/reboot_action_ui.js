@@ -1,3 +1,5 @@
+import { REBOOT_RULES } from '../shared/reboot_content.js';
+
 const BOSS_DECISION_START = 92;
 const BOSS_DECISION_END = 102;
 const RESCUE_DANGER_CUE = 70;
@@ -22,4 +24,23 @@ export function buildCombatCoachCue({ current, localBoardId, actions }) {
   if (actions.merge?.enabled && current.now < MERGE_COACH_END) return 'merge';
   if (actions.summon?.enabled && current.now < SUMMON_COACH_END && (board.units?.length ?? 0) === 0) return 'summon';
   return '';
+}
+
+export function buildCombatStatusPrompt({ current, localBoardId }) {
+  if (current.result) return '전투 완료';
+  const actions = current.actionState?.[localBoardId] ?? {};
+  const resources = current.resources?.[localBoardId] ?? { summon: 0, rescue: 0 };
+  const partner = localBoardId === 'p1' ? 'p2' : 'p1';
+  const partnerDanger = current.boards?.[partner]?.danger ?? 0;
+
+  if (actions.rescue && partnerDanger >= RESCUE_DANGER_CUE) return '구원 가능';
+  if (actions.merge) return '합성 가능';
+  if (actions.summon) return '소환 가능';
+
+  if ((resources.summon ?? 0) < REBOOT_RULES.summon.cost) {
+    const nextGrant = REBOOT_RULES.summon.grants.find((grant) => grant.at > current.now);
+    if (nextGrant) return `충전 ${Math.max(1, Math.ceil(nextGrant.at - current.now))}초`;
+  }
+
+  return '전투 중';
 }

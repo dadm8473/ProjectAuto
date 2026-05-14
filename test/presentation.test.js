@@ -97,6 +97,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js'",
+    "from './reboot_action_ui.js?v=status-prompt1'",
     "from './reboot_render.js?v=boss-finale1'",
     "from './reboot_screens.js?v=retry-seeds1'",
     "from './reboot_online.js'"
@@ -394,7 +395,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-nav1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=status-prompt1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-nav1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=retry-seeds1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=boss-finale1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=rescue-reward1"></script>'), false);
@@ -659,8 +661,9 @@ test('combat action buttons use generated icons instead of text-only web buttons
   assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::before'), false);
 
   for (const marker of [
-    "from './reboot_action_ui.js'",
+    "from './reboot_action_ui.js?v=status-prompt1'",
     'buildCombatCoachCue',
+    'buildCombatStatusPrompt',
     "const coachCue = appScreen === 'battle'",
     'document.body.dataset.coachCue = coachCue;',
     'delete document.body.dataset.coachCue;',

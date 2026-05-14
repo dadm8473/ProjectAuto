@@ -113,13 +113,13 @@ async function verifyFastPlaythrough(page) {
 
   await page.locator('#resultRetryButton').click();
   await page.locator('#timeMeter').waitFor({ state: 'visible' });
-  let retryTime = '';
+  let retryPrompt = '';
   for (let i = 0; i < 50; i += 1) {
-    retryTime = await page.locator('#timeMeter').textContent();
-    if (/^0초$/.test(retryTime ?? '')) break;
+    retryPrompt = await page.locator('#timeMeter').textContent();
+    if (retryPrompt === '소환 가능') break;
     await page.waitForTimeout(20);
   }
-  assert.match(retryTime, /^0초$/);
+  assert.equal(retryPrompt, '소환 가능');
 }
 
 async function main() {

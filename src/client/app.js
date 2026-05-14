@@ -3,7 +3,7 @@ import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js';
-import { buildCombatCoachCue, isCriticalRebootAction } from './reboot_action_ui.js';
+import { buildCombatCoachCue, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=status-prompt1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=boss-finale1';
 import {
   buildMetaNavAlerts,
@@ -465,7 +465,7 @@ function updateMeters(current) {
   dom.summonMeter.textContent = `소${resources.summon}`;
   dom.rescueMeter.textContent = `구${Math.round(resources.rescue)}%`;
   dom.dangerMeter.textContent = `위${Math.round(current.boards[partner]?.danger ?? 0)}`;
-  dom.timeMeter.textContent = `${Math.floor(current.now)}초`;
+  dom.timeMeter.textContent = buildCombatStatusPrompt({ current, localBoardId });
   dom.bossMeter.textContent = current.now >= 92 && current.now < 120 ? '보스 경고' : '보스 대기';
 }
 

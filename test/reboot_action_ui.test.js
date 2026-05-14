@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildCombatCoachCue, isCriticalRebootAction } from '../src/client/reboot_action_ui.js';
+import { buildCombatCoachCue, buildCombatStatusPrompt, isCriticalRebootAction } from '../src/client/reboot_action_ui.js';
 
 function state(overrides = {}) {
   return {
@@ -68,4 +68,42 @@ test('combat coach cue avoids clutter after the player has clear context', () =>
     localBoardId: 'p1',
     actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
   }), '');
+});
+
+test('combat status prompt names the next useful action instead of only elapsed time', () => {
+  assert.equal(buildCombatStatusPrompt({
+    current: {
+      ...state({ now: 4 }),
+      resources: { p1: { summon: 10, rescue: 0 } },
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    localBoardId: 'p1'
+  }), '소환 가능');
+
+  assert.equal(buildCombatStatusPrompt({
+    current: {
+      ...state({ now: 9 }),
+      resources: { p1: { summon: 0, rescue: 0 } },
+      actionState: { p1: { summon: false, merge: false, rescue: false } }
+    },
+    localBoardId: 'p1'
+  }), '충전 9초');
+
+  assert.equal(buildCombatStatusPrompt({
+    current: {
+      ...state({ now: 24, p1Units: [{ id: 'a' }, { id: 'b' }] }),
+      resources: { p1: { summon: 10, rescue: 0 } },
+      actionState: { p1: { summon: true, merge: true, rescue: false } }
+    },
+    localBoardId: 'p1'
+  }), '합성 가능');
+
+  assert.equal(buildCombatStatusPrompt({
+    current: {
+      ...state({ now: 78, p2Danger: 82 }),
+      resources: { p1: { summon: 10, rescue: 100 } },
+      actionState: { p1: { summon: true, merge: false, rescue: true } }
+    },
+    localBoardId: 'p1'
+  }), '구원 가능');
 });
