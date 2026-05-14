@@ -167,6 +167,53 @@ test('player board uses a generated landing tray beneath summoned units', () => 
   assert.equal(unitIndex < summonVfxIndex, true, 'summon flash should sit above the new unit');
 });
 
+test('first player summon gets a generated reward spotlight before the small flash', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 0.82,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [{ type: 'summon', at: 0.64, playerId: 'p1' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      firstCommandSpotlight: image(256, 128),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const spotlightIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 256
+      && command.args[0].naturalHeight === 128
+      && command.args[7] >= 176
+      && command.args[8] >= 88
+      && command.args[6] >= 390
+  ));
+  const summonVfxIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[1] === 0
+      && command.args[2] === 0
+      && command.args[7] === 84
+  ));
+
+  assert.notEqual(spotlightIndex, -1, 'expected generated first-summon spotlight to draw on the player board');
+  assert.notEqual(summonVfxIndex, -1, 'expected summon flash to draw above the reward spotlight');
+  assert.equal(spotlightIndex < summonVfxIndex, true, 'reward spotlight should establish the summon moment before the flash');
+});
+
 test('image backdrop board labels sit on generated combat plates', () => {
   const ctx = mockContext();
   drawRebootBattle(

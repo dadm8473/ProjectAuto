@@ -139,6 +139,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     width: 780,
     height: 80,
     source: 'imagegen'
+  },
+  firstCommandSpotlight: {
+    src: '/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=summon-reward1',
+    width: 256,
+    height: 128,
+    source: 'imagegen'
   }
 };
 
@@ -210,7 +216,9 @@ export function createRebootAssetImages() {
   playerBoardTray.src = REBOOT_EFFECT_MANIFEST.playerBoardTray.src;
   const boardLabelPlates = new Image();
   boardLabelPlates.src = REBOOT_EFFECT_MANIFEST.boardLabelPlates.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, cosmeticSigils, playerBoardTray, boardLabelPlates };
+  const firstCommandSpotlight = new Image();
+  firstCommandSpotlight.src = REBOOT_EFFECT_MANIFEST.firstCommandSpotlight.src;
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -747,6 +755,28 @@ function drawCombatVfx(ctx, state, assets = {}) {
   }
 }
 
+function firstPlayerSummonRewardEvent(state) {
+  const playerSummons = state.events
+    .filter((event) => event.type === 'summon' && (event.playerId ?? 'p1') === 'p1' && state.now >= event.at)
+    .sort((a, b) => a.at - b.at);
+  const event = playerSummons[0];
+  if (!event || state.now - event.at > 1.35) return null;
+  return event;
+}
+
+function drawFirstSummonRewardSpotlight(ctx, state, assets = {}) {
+  const event = firstPlayerSummonRewardEvent(state);
+  const image = assets?.firstCommandSpotlight;
+  if (!event || !image?.complete || image.naturalWidth <= 0) return false;
+  const point = boardVfxPoint(state, event);
+  const elapsed = Math.max(0, state.now - event.at);
+  const alpha = Math.min(0.94, eventAlpha(state, event, 1.35) * 1.2);
+  const swell = 1 + Math.max(0, Math.sin(elapsed * Math.PI * 3.2)) * 0.08;
+  const w = 196 * swell;
+  const h = 98 * swell;
+  return drawImageCover(ctx, image, point.x - w / 2, point.y + 18 - h / 2, w, h, alpha);
+}
+
 function drawCombatMomentCallout(ctx, state, assets = {}) {
   const moments = [
     ...recentEvents(state, 'summon', 1.15),
@@ -830,6 +860,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawPartnerDangerCutin(ctx, state, assets);
   drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
   drawBoard(ctx, state.boards.p1, 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
+  drawFirstSummonRewardSpotlight(ctx, state, assets);
   drawRescueBeam(ctx, state, assets);
   drawCombatVfx(ctx, state, assets);
   drawPartnerAssistPing(ctx, state, assets);
