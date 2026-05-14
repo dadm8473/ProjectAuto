@@ -17,7 +17,7 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=retry-seeds1';
+} from './reboot_screens.js?v=result-claim1';
 import { createRebootOnlineClient } from './reboot_online.js';
 
 const qs = (selector) => document.querySelector(selector);
@@ -165,12 +165,12 @@ function softFeedback(kind) {
   navigator.vibrate?.(kind === 'rescue' ? [18, 24, 18] : [8]);
 }
 
-function setScreen(screen) {
+function setScreen(screen, options = {}) {
   const changed = appScreen !== screen;
   appScreen = screen;
   document.body.dataset.appScreen = screen;
   if (screen !== 'battle') delete document.body.dataset.coachCue;
-  if (changed) hideRewardReveal();
+  if (changed && !options.preserveRewardReveal) hideRewardReveal();
   dom.launchOverlay.dataset.screen = screen;
   for (const panel of [dom.splash, dom.lobby, dom.collection, dom.shop, dom.missions, dom.season]) {
     panel.hidden = panel.dataset.screenPanel !== screen;
@@ -345,6 +345,56 @@ function applyGrantToProfile(grant = {}) {
   });
 }
 
+function grantBundle(grants = []) {
+  const unlocks = new Set(profile.unlocks ?? []);
+  const gems = grants.reduce((total, grant) => total + (grant.gems ?? 0), 0);
+  for (const grant of grants) {
+    if (grant.cosmetic) unlocks.add(grant.cosmetic);
+  }
+  return { gems, unlocks: [...unlocks] };
+}
+
+function claimReadyMissionsFromResult() {
+  const claimed = new Set(profile.claimedMissions ?? []);
+  const ready = REBOOT_MISSIONS.filter((mission) => !claimed.has(mission.id) && missionProgress(profile, mission) >= mission.target);
+  if (ready.length === 0) return false;
+  const bundle = grantBundle(ready.map((mission) => mission.reward));
+  profile = normalizeMetaProfile({
+    ...profile,
+    gems: profile.gems + bundle.gems,
+    unlocks: bundle.unlocks,
+    claimedMissions: [...profile.claimedMissions, ...ready.map((mission) => mission.id)]
+  });
+  saveProfile();
+  renderHomeScreens();
+  flashMetaClaim(dom.missionsList, `[data-mission-claim="${selectorValue(ready[0].id)}"]`, 'mission');
+  showRewardReveal('미션 보상', ready.length > 1 ? `보상 ${ready.length}개` : `${bundle.gems} 젬`, 'soft_currency');
+  showToast(`미션 보상 ${ready.length}개`, 'reward');
+  return true;
+}
+
+function claimReadySeasonFromResult() {
+  const claimed = new Set(profile.claimedPassTiers ?? []);
+  const ready = SHOP.pass.tiers
+    .map((tier, index) => ({ tier, index }))
+    .filter(({ tier, index }) => profile.xp >= tier.xp && !claimed.has(index));
+  if (ready.length === 0) return false;
+  const bundle = grantBundle(ready.map(({ tier }) => tier.grant));
+  profile = normalizeMetaProfile({
+    ...profile,
+    gems: profile.gems + bundle.gems,
+    unlocks: bundle.unlocks,
+    claimedPassTiers: [...profile.claimedPassTiers, ...ready.map(({ index }) => index)]
+  });
+  saveProfile();
+  renderHomeScreens();
+  flashMetaClaim(dom.seasonList, `[data-pass-claim="${ready[0].index}"]`, 'season');
+  const hasCosmetic = ready.some(({ tier }) => tier.grant.cosmetic);
+  showRewardReveal('시즌 보상', hasCosmetic ? '외형 해금' : `${bundle.gems} 젬`, hasCosmetic ? 'cosmetic_shard' : 'season_progress');
+  showToast(`시즌 보상 ${ready.length}개`, 'reward');
+  return true;
+}
+
 function handleMissionClaim(event) {
   const button = event.target.closest('[data-mission-claim]');
   if (!button) return;
@@ -515,6 +565,16 @@ function retry() {
 function handleResultSecondary() {
   const target = dom.resultLobbyButton.dataset.resultOpen || 'home';
   dom.resultOverlay.hidden = true;
+  if (target === 'claim-missions') {
+    if (!claimReadyMissionsFromResult()) showToast('수령할 미션 보상이 없습니다', 'warning');
+    setScreen('missions', { preserveRewardReveal: true });
+    return;
+  }
+  if (target === 'claim-season') {
+    if (!claimReadySeasonFromResult()) showToast('수령할 시즌 보상이 없습니다', 'warning');
+    setScreen('season', { preserveRewardReveal: true });
+    return;
+  }
   setScreen(target === 'home' ? 'lobby' : target);
 }
 

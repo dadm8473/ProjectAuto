@@ -225,16 +225,16 @@ function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
 
 export function nextLobbyAction(profile = {}) {
   if (countClaimableMissions(profile) > 0) {
-    return { label: '미션 보상', title: '받을 미션 보상', detail: '완료 목표 수령', screen: 'missions', cta: '수령하기', beacon: 'mission' };
+    return { label: '미션 보상', title: '받을 미션 보상', detail: '완료 목표 수령', screen: 'missions', cta: '보상 보기', beacon: 'mission' };
   }
   if (countClaimablePassTiers(profile) > 0) {
-    return { label: '시즌 보상', title: '시즌 보상 도착', detail: '시즌 보상 열기', screen: 'season', cta: '열기', beacon: 'season' };
+    return { label: '시즌 보상', title: '시즌 보상 도착', detail: '시즌 보상 열기', screen: 'season', cta: '시즌 보기', beacon: 'season' };
   }
   if (countTrainableUnits(profile) > 0) {
-    return { label: '훈련 가능', title: '유닛 강화 가능', detail: '전투 유닛 성장', screen: 'collection', cta: '훈련하기', beacon: 'training' };
+    return { label: '훈련 가능', title: '유닛 강화 가능', detail: '전투 유닛 성장', screen: 'collection', cta: '유닛 보기', beacon: 'training' };
   }
   if (countAffordableCosmetics(profile) > 0) {
-    return { label: '외형 해금', title: '외형 해금 가능', detail: '젬으로 외형 해금', screen: 'shop', cta: '상점가기', beacon: 'shop' };
+    return { label: '외형 해금', title: '외형 해금 가능', detail: '젬으로 외형 해금', screen: 'shop', cta: '상점 보기', beacon: 'shop' };
   }
   return { label: '다음 작전', title: '첫 구원 작전', detail: '유닛/외형 성장', screen: 'battle', cta: '출전', beacon: 'battle' };
 }
@@ -427,6 +427,12 @@ export function buildRebootResultModel({ result, rewards = [], profile } = {}) {
   const won = result?.status === 'won';
   const reason = result?.reason ?? 'partner_rescued';
   const nextAction = profile ? nextLobbyAction(profile) : null;
+  const secondaryAction = (() => {
+    if (!nextAction || nextAction.screen === 'battle') return { label: '홈', action: 'home' };
+    if (nextAction.screen === 'missions') return { label: '수령하기', action: 'claim-missions', screen: 'missions', title: nextAction.title };
+    if (nextAction.screen === 'season') return { label: '수령하기', action: 'claim-season', screen: 'season', title: nextAction.title };
+    return { label: nextAction.cta, action: nextAction.screen, screen: nextAction.screen, title: nextAction.title };
+  })();
   return {
     status: won ? 'won' : 'lost',
     title: won ? '승리' : '패배',
@@ -435,9 +441,7 @@ export function buildRebootResultModel({ result, rewards = [], profile } = {}) {
     nextGoal: { label: GOAL_LABELS[result?.nextGoal] ?? '핵심 타이밍 재도전', goal: result?.nextGoal ?? 'retry' },
     rewards,
     primaryAction: { label: '다시 도전', action: 'retry' },
-    secondaryAction: nextAction && nextAction.screen !== 'battle'
-      ? { label: nextAction.cta, action: nextAction.screen, title: nextAction.title }
-      : { label: '홈', action: 'home' },
+    secondaryAction,
     forbiddenActions: []
   };
 }

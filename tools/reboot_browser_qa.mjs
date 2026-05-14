@@ -104,22 +104,19 @@ async function verifyFastPlaythrough(page) {
   assert.equal(await page.locator('#resultTitle').isVisible(), true, `missing result: ${events.join(', ')}`);
   assert.equal(await page.locator('#resultTitle').textContent(), '승리');
   assert.equal(await page.locator('#resultOverlay').getAttribute('data-result-status'), 'won');
+  assert.equal(await page.locator('#resultLobbyButton span').textContent(), '수령하기');
+  assert.equal(await page.locator('#resultLobbyButton').getAttribute('data-result-open'), 'claim-missions');
   assert.match(
     await page.locator('.result-panel').evaluate((node) => getComputedStyle(node, '::after').backgroundImage),
     /reboot-result-badges/
   );
   assert.equal(events.filter((entry) => entry.startsWith('rescue@')).length, 1, events.join(', '));
   assert.equal(await page.locator('#resultRetryButton').isVisible(), true);
-
-  await page.locator('#resultRetryButton').click();
-  await page.locator('#timeMeter').waitFor({ state: 'visible' });
-  let retryPrompt = '';
-  for (let i = 0; i < 50; i += 1) {
-    retryPrompt = await page.locator('#timeMeter').textContent();
-    if (retryPrompt === '소환 가능') break;
-    await page.waitForTimeout(20);
-  }
-  assert.equal(retryPrompt, '소환 가능');
+  await page.locator('#resultLobbyButton').click();
+  await page.locator('#missionsList .mission-card').first().waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#rewardReveal').isVisible(), true);
+  assert.match(await page.locator('#rewardReveal').textContent(), /미션 보상/);
+  assert.match(await page.locator('#missionsList .mission-card').first().textContent(), /받음/);
 }
 
 async function main() {

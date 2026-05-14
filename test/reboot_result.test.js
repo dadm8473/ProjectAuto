@@ -47,7 +47,7 @@ test('result model prioritizes reason, next goal, rewards, retry, and home', () 
   assert.deepEqual(model.forbiddenActions, []);
 });
 
-test('result model routes secondary action to the next profile growth screen', () => {
+test('result model routes secondary action to direct reward claims or clear profile screens', () => {
   const missionModel = buildRebootResultModel({
     result: { status: 'won', reason: 'partner_rescued' },
     profile: {
@@ -59,9 +59,24 @@ test('result model routes secondary action to the next profile growth screen', (
     }
   });
 
-  assert.equal(missionModel.secondaryAction.action, 'missions');
+  assert.equal(missionModel.secondaryAction.action, 'claim-missions');
   assert.equal(missionModel.secondaryAction.label, '수령하기');
   assert.equal(missionModel.secondaryAction.title, '받을 미션 보상');
+
+  const seasonModel = buildRebootResultModel({
+    result: { status: 'won', reason: 'partner_rescued' },
+    profile: {
+      gems: 24,
+      xp: 80,
+      processedRuns: ['run-1'],
+      claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic'],
+      claimedPassTiers: []
+    }
+  });
+
+  assert.equal(seasonModel.secondaryAction.action, 'claim-season');
+  assert.equal(seasonModel.secondaryAction.label, '수령하기');
+  assert.equal(seasonModel.secondaryAction.title, '시즌 보상 도착');
 
   const trainingModel = buildRebootResultModel({
     result: { status: 'won', reason: 'partner_rescued' },
@@ -75,7 +90,7 @@ test('result model routes secondary action to the next profile growth screen', (
   });
 
   assert.equal(trainingModel.secondaryAction.action, 'collection');
-  assert.equal(trainingModel.secondaryAction.label, '훈련하기');
+  assert.equal(trainingModel.secondaryAction.label, '유닛 보기');
 });
 
 test('lobby next action maps each priority to a generated beacon key', () => {

@@ -99,7 +99,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js'",
     "from './reboot_action_ui.js?v=status-prompt1'",
     "from './reboot_render.js?v=reveal-vfx1'",
-    "from './reboot_screens.js?v=retry-seeds1'",
+    "from './reboot_screens.js?v=result-claim1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -395,7 +395,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reveal-vfx1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reveal-vfx1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=status-prompt1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-nav1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=retry-seeds1"></script>'), false);
@@ -412,7 +413,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=retry-seeds1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=result-claim1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=retry-seeds1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=mission-track1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-showcase1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=lobby-start1'"), false);
@@ -1982,7 +1984,7 @@ test('result reward strip uses generated reward burst art', async () => {
   }
 });
 
-test('result secondary action opens the recommended growth screen', async () => {
+test('result secondary action can claim ready rewards without an extra tap', async () => {
   const app = await readFile('src/client/app.js', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
@@ -1990,10 +1992,21 @@ test('result secondary action opens the recommended growth screen', async () => 
     'buildRebootResultModel({ result: current.result, rewards, profile })',
     'dom.resultLobbyLabel.textContent = model.secondaryAction.label',
     'dom.resultLobbyButton.dataset.resultOpen = model.secondaryAction.action',
+    "action: 'claim-missions'",
+    "action: 'claim-season'",
+    'function claimReadyMissionsFromResult()',
+    'function claimReadySeasonFromResult()',
+    "if (target === 'claim-missions')",
+    "if (target === 'claim-season')",
+    "setScreen('missions', { preserveRewardReveal: true });",
+    "setScreen('season', { preserveRewardReveal: true });",
+    'function setScreen(screen, options = {})',
+    'changed && !options.preserveRewardReveal',
+    "showRewardReveal('미션 보상'",
+    "showRewardReveal('시즌 보상'",
     'function handleResultSecondary()',
     "setScreen(target === 'home' ? 'lobby' : target)",
-    'label: nextAction.cta',
-    'action: nextAction.screen',
+    "return { label: nextAction.cta, action: nextAction.screen",
     'title: nextAction.title',
     'nextLobbyAction(profile)'
   ]) {
