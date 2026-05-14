@@ -98,8 +98,8 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js'",
     "from './reboot_action_ui.js?v=status-prompt1'",
-    "from './reboot_render.js?v=reveal-vfx1'",
-    "from './reboot_screens.js?v=result-claim1'",
+    "from './reboot_render.js?v=surface-alpha1'",
+    "from './reboot_screens.js?v=surface-alpha1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -362,7 +362,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=frame-alpha1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=surface-alpha1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=frame-alpha1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-nav1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-readability1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=command-console1">'), false);
@@ -396,7 +397,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=surface-alpha1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reveal-vfx1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=status-prompt1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-nav1"></script>'), false);
@@ -406,7 +408,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=reveal-vfx1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=surface-alpha1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=reveal-vfx1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=boss-finale1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=rescue-reward1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=merge-reward1'"), false);
@@ -414,7 +417,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=result-claim1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=surface-alpha1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=result-claim1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=retry-seeds1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=mission-track1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-showcase1'"), false);
@@ -591,7 +595,7 @@ test('combat board labels use generated status plates on the canvas', async () =
 
   for (const marker of [
     'boardLabelPlates: {',
-    "src: '/src/client/assets/generated/reboot-combat-status-plates.png?v=board-labels1'",
+    "src: '/src/client/assets/generated/reboot-combat-status-plates.png?v=board-labels-alpha1'",
     'width: 780,\n    height: 80,',
     'const boardLabelPlates = new Image();',
     'boardLabelPlates.src = REBOOT_EFFECT_MANIFEST.boardLabelPlates.src;',
@@ -619,7 +623,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
   const app = await readFile('src/client/app.js', 'utf8');
 
   for (const marker of [
-    '--combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons")',
+    '--combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons-alpha1")',
     '--combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready")',
     '--combat-first-command-spotlight: url("/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=first-command")',
     '--combat-critical-action-rings: url("/src/client/assets/generated/reboot-critical-action-rings.png?v=critical-action-rings")',
@@ -820,7 +824,7 @@ test('meta row compact chips use generated mini badge frames', async () => {
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
   for (const marker of [
-    '--meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges")',
+    '--meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges-alpha1")',
     'class="role-pill"',
     'class="unit-cost"',
     'class="shop-price"',
@@ -945,7 +949,7 @@ test('meta row actions use generated state buttons instead of generic web button
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '--meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions")',
+    '--meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions-alpha1")',
     '.shop-card button,\n.unit-card button,\n.mission-card button,\n.season-card button',
     'background-image: var(--meta-action-buttons);',
     'background-size: 300% 100%;',
@@ -1157,7 +1161,7 @@ test('result title and guidance copy use generated plate frames', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '--result-copy-plates: url("/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy")',
+    '--result-copy-plates: url("/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy-alpha1")',
     '#resultTitle',
     'background-image: var(--result-copy-plates);',
     'background-size: 200% 100%;',
@@ -1685,9 +1689,9 @@ test('lobby launch actions use dedicated generated button frames', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '--launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta")',
-    '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta',
-    '/src/client/assets/generated/reboot-launch-secondary.png?v=gold-cta',
+    '--launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta-alpha1")',
+    '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',
+    '/src/client/assets/generated/reboot-launch-secondary.png?v=gold-cta-alpha1',
     'class="launch-button-frame"',
     '.launch-button-frame',
     'background-image: var(--launch-buttons)',
@@ -1786,7 +1790,7 @@ test('lobby reward and next hooks use generated intel strips instead of web card
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
   for (const marker of [
-    '--lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips")',
+    '--lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1")',
     '--lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next")',
     '--lobby-battle-ready-cue: url("/src/client/assets/generated/reboot-lobby-battle-ready-cue.png?v=battle-ready-cue")',
     'class="lobby-intel-strip reward-hook"',
@@ -1796,8 +1800,8 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     'class="lobby-battle-cue"',
     'data-next-beacon="${nextAction.beacon}"',
     "nextAction.screen === 'battle'",
-    '/src/client/assets/generated/reboot-lobby-intel-gems.png?v=intel-strips',
-    '/src/client/assets/generated/reboot-lobby-intel-next.png?v=intel-strips',
+    '/src/client/assets/generated/reboot-lobby-intel-gems.png?v=intel-strips-alpha1',
+    '/src/client/assets/generated/reboot-lobby-intel-next.png?v=intel-strips-alpha1',
     '.lobby-intel-strip',
     '.lobby-intel-frame',
     '.lobby-next-beacon',
@@ -2385,7 +2389,7 @@ test('combat status line uses generated game plates instead of plain web chips',
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '--combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates")',
+    '--combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates-alpha1")',
     '.status-line span {\n  display: inline-flex;',
     'background-image: var(--combat-status-plates);',
     'background-size: 200% 100%;',

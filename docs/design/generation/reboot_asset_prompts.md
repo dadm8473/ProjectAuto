@@ -744,6 +744,17 @@ Runtime files:
 - src/client/assets/generated/reboot-result-action-buttons.png
 - src/client/assets/generated/reboot-result-detail-strips.png
 - src/client/assets/generated/reboot-meta-row-frames.png
+- src/client/assets/generated/reboot-result-copy-plates.png
+- src/client/assets/generated/reboot-combat-action-buttons.png
+- src/client/assets/generated/reboot-combat-status-plates.png
+- src/client/assets/generated/reboot-meta-action-buttons.png
+- src/client/assets/generated/reboot-meta-mini-badges.png
+- src/client/assets/generated/reboot-launch-buttons.png
+- src/client/assets/generated/reboot-launch-primary.png
+- src/client/assets/generated/reboot-launch-secondary.png
+- src/client/assets/generated/reboot-lobby-intel-strips.png
+- src/client/assets/generated/reboot-lobby-intel-gems.png
+- src/client/assets/generated/reboot-lobby-intel-next.png
 Source files remain the committed imagegen sources under docs/design/generation/source/reboot/style-lock/.
 Postprocess command pattern: run remove_chroma_key.py with --auto-key border --soft-matte --transparent-threshold 18 --opaque-threshold 210 --despill, then visually verify at 390x844.
 Acceptance: all four corners alpha < 10, soft alpha coverage stays within the frame-specific test ranges, and stable lobby/meta/result screenshots no longer show a full black web-card rectangle behind generated UI chrome.

@@ -259,13 +259,13 @@ export function buildRebootLobby(model = {}) {
       </div>
     </section>
     <section class="lobby-intel-strip reward-hook">
-      <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-gems.png?v=intel-strips" alt="" aria-hidden="true">
+      <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-gems.png?v=intel-strips-alpha1" alt="" aria-hidden="true">
       <span>보유 젬</span>
       <strong>${gems}</strong>
       <p>외형만 해금</p>
     </section>
     <section class="lobby-intel-strip next-hook" data-next-action="${nextAction.label}" data-next-beacon="${nextAction.beacon}">
-      <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-next.png?v=intel-strips" alt="" aria-hidden="true">
+      <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-next.png?v=intel-strips-alpha1" alt="" aria-hidden="true">
       <span class="lobby-next-beacon" data-next-beacon="${nextAction.beacon}" aria-hidden="true"></span>
       <span>${nextAction.label}</span>
       <strong>${nextAction.title}</strong>

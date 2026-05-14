@@ -141,7 +141,7 @@ export const REBOOT_EFFECT_MANIFEST = {
     source: 'imagegen'
   },
   boardLabelPlates: {
-    src: '/src/client/assets/generated/reboot-combat-status-plates.png?v=board-labels1',
+    src: '/src/client/assets/generated/reboot-combat-status-plates.png?v=board-labels-alpha1',
     width: 780,
     height: 80,
     source: 'imagegen'

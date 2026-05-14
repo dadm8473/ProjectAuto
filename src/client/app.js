@@ -4,7 +4,7 @@ import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js';
 import { buildCombatCoachCue, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=status-prompt1';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=reveal-vfx1';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=surface-alpha1';
 import {
   buildMetaNavAlerts,
   buildMissionScreen,
@@ -17,7 +17,7 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=result-claim1';
+} from './reboot_screens.js?v=surface-alpha1';
 import { createRebootOnlineClient } from './reboot_online.js';
 
 const qs = (selector) => document.querySelector(selector);

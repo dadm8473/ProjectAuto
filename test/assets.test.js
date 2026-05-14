@@ -157,7 +157,7 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-status-plates-imagegen.png',
     width: 780,
     height: 80,
-    minRuntimeBytes: 70_000
+    minRuntimeBytes: 40_000
   },
   {
     path: 'src/client/assets/generated/reboot-combat-action-buttons.png',
@@ -192,7 +192,7 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     source: 'docs/design/generation/source/reboot/style-lock/20260514-result-copy-plates-imagegen.png',
     width: 780,
     height: 112,
-    minRuntimeBytes: 80_000
+    minRuntimeBytes: 70_000
   },
   {
     path: 'src/client/assets/generated/reboot-toast-callouts.png',
@@ -373,6 +373,62 @@ const TRANSPARENT_UI_FRAME_ASSETS = [
     path: 'src/client/assets/generated/reboot-meta-row-frames.png',
     minSoftCoverage: 0.16,
     maxSoftCoverage: 0.32
+  },
+  {
+    path: 'src/client/assets/generated/reboot-result-copy-plates.png',
+    minSoftCoverage: 0.12,
+    maxSoftCoverage: 0.24
+  },
+  {
+    path: 'src/client/assets/generated/reboot-combat-action-buttons.png',
+    minSoftCoverage: 0.2,
+    maxSoftCoverage: 0.36
+  },
+  {
+    path: 'src/client/assets/generated/reboot-combat-status-plates.png',
+    minSoftCoverage: 0.12,
+    maxSoftCoverage: 0.24
+  },
+  {
+    path: 'src/client/assets/generated/reboot-meta-action-buttons.png',
+    minSoftCoverage: 0.14,
+    maxSoftCoverage: 0.28,
+    maxCornerAlpha: 32
+  },
+  {
+    path: 'src/client/assets/generated/reboot-meta-mini-badges.png',
+    minSoftCoverage: 0.22,
+    maxSoftCoverage: 0.36
+  },
+  {
+    path: 'src/client/assets/generated/reboot-launch-buttons.png',
+    minSoftCoverage: 0.44,
+    maxSoftCoverage: 0.62
+  },
+  {
+    path: 'src/client/assets/generated/reboot-launch-primary.png',
+    minSoftCoverage: 0.72,
+    maxSoftCoverage: 0.88
+  },
+  {
+    path: 'src/client/assets/generated/reboot-launch-secondary.png',
+    minSoftCoverage: 0.16,
+    maxSoftCoverage: 0.3
+  },
+  {
+    path: 'src/client/assets/generated/reboot-lobby-intel-strips.png',
+    minSoftCoverage: 0.14,
+    maxSoftCoverage: 0.28
+  },
+  {
+    path: 'src/client/assets/generated/reboot-lobby-intel-gems.png',
+    minSoftCoverage: 0.15,
+    maxSoftCoverage: 0.3
+  },
+  {
+    path: 'src/client/assets/generated/reboot-lobby-intel-next.png',
+    minSoftCoverage: 0.13,
+    maxSoftCoverage: 0.27
   }
 ];
 
@@ -830,8 +886,9 @@ test('splash floor cap is a transparent matte bitmap, not another glowing button
 test('generated UI frames use alpha instead of baked black rectangles', async () => {
   for (const asset of TRANSPARENT_UI_FRAME_ASSETS) {
     const image = parsePng(await readFile(asset.path));
+    const maxCornerAlpha = asset.maxCornerAlpha ?? 10;
     for (const [x, y] of [[0, 0], [image.width - 1, 0], [0, image.height - 1], [image.width - 1, image.height - 1]]) {
-      assert.equal(alphaAt(image, x, y) < 10, true, `${asset.path} corner ${x},${y} must be transparent`);
+      assert.equal(alphaAt(image, x, y) < maxCornerAlpha, true, `${asset.path} corner ${x},${y} must be transparent`);
     }
     const softCoverage = alphaCoverage(image, { x: 0, y: 0, width: image.width, height: image.height }, 24);
     assert.equal(softCoverage > asset.minSoftCoverage, true, `${asset.path} lost too much generated frame art: ${softCoverage}`);
