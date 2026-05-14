@@ -3,7 +3,7 @@ import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js';
-import { isCriticalRebootAction } from './reboot_action_ui.js';
+import { buildCombatCoachCue, isCriticalRebootAction } from './reboot_action_ui.js';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=reboot-action-ready1';
 import {
   buildMissionScreen,
@@ -110,6 +110,7 @@ function softFeedback(kind) {
 function setScreen(screen) {
   appScreen = screen;
   document.body.dataset.appScreen = screen;
+  if (screen !== 'battle') delete document.body.dataset.coachCue;
   dom.launchOverlay.dataset.screen = screen;
   for (const panel of [dom.splash, dom.lobby, dom.collection, dom.shop, dom.missions, dom.season]) {
     panel.hidden = panel.dataset.screenPanel !== screen;
@@ -316,6 +317,11 @@ function updateMeters(current) {
 
 function updateButtons(current) {
   const actions = buildRebootActionState(current, localBoardId);
+  const coachCue = appScreen === 'battle'
+    ? buildCombatCoachCue({ current, localBoardId, actions })
+    : '';
+  if (coachCue) document.body.dataset.coachCue = coachCue;
+  else delete document.body.dataset.coachCue;
   for (const [key, button] of [
     ['summon', dom.summonButton],
     ['merge', dom.mergeButton],

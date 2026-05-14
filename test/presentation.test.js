@@ -353,11 +353,19 @@ test('combat action buttons use generated icons instead of text-only web buttons
   for (const marker of [
     '--combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons")',
     '--combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready")',
+    '--combat-coach-cues: url("/src/client/assets/generated/reboot-combat-coach-cues.png?v=combat-coach")',
     '.primary-actions button {\n  display: inline-flex;',
     'background-image: var(--combat-action-buttons);',
     'background-size: 300% 100%;',
     '.primary-actions button::before',
     '.primary-actions button > span',
+    '.primary-actions::after',
+    'top: clamp(2px, 1.4vw, 6px);',
+    'width: clamp(52px, 17.67vw, 72px);',
+    'background-image: var(--combat-coach-cues);',
+    'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions::after',
+    'body[data-app-screen="battle"][data-coach-cue="merge"] .primary-actions::after',
+    'body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after',
     '.primary-actions button::after',
     'background-image: var(--combat-action-ready-pulses);',
     'animation: actionReadyPulse 1.15s ease-in-out infinite;',
@@ -377,6 +385,10 @@ test('combat action buttons use generated icons instead of text-only web buttons
 
   for (const marker of [
     "from './reboot_action_ui.js'",
+    'buildCombatCoachCue',
+    "const coachCue = appScreen === 'battle'",
+    'document.body.dataset.coachCue = coachCue;',
+    'delete document.body.dataset.coachCue;',
     'button.dataset.critical = String(isCriticalRebootAction({ actionKey: key, current, localBoardId, enabled: actions[key].enabled }));'
   ]) {
     assert.equal(app.includes(marker), true, marker);

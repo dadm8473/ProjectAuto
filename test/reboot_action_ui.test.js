@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { isCriticalRebootAction } from '../src/client/reboot_action_ui.js';
+import { buildCombatCoachCue, isCriticalRebootAction } from '../src/client/reboot_action_ui.js';
 
 function state(overrides = {}) {
   return {
     now: overrides.now ?? 0,
     boards: {
-      p1: { danger: overrides.p1Danger ?? 0 },
-      p2: { danger: overrides.p2Danger ?? 0 }
+      p1: { danger: overrides.p1Danger ?? 0, units: overrides.p1Units ?? [] },
+      p2: { danger: overrides.p2Danger ?? 0, units: overrides.p2Units ?? [] }
     }
   };
 }
@@ -28,4 +28,44 @@ test('critical rescue cue follows partner danger for either local board', () => 
   assert.equal(isCriticalRebootAction({ actionKey: 'rescue', current: state({ p2Danger: 69.9 }), localBoardId: 'p1', enabled: true }), false);
   assert.equal(isCriticalRebootAction({ actionKey: 'rescue', current: state({ p2Danger: 90 }), localBoardId: 'p1', enabled: false }), false);
   assert.equal(isCriticalRebootAction({ actionKey: 'merge', current: state({ p2Danger: 95 }), localBoardId: 'p1', enabled: true }), false);
+});
+
+test('combat coach cue teaches only the next simple first-run action', () => {
+  assert.equal(buildCombatCoachCue({
+    current: state({ now: 3 }),
+    localBoardId: 'p1',
+    actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
+  }), 'summon');
+
+  assert.equal(buildCombatCoachCue({
+    current: state({ now: 24, p1Units: [{ id: 'a' }, { id: 'b' }, { id: 'c' }] }),
+    localBoardId: 'p1',
+    actions: { summon: { enabled: true }, merge: { enabled: true }, rescue: { enabled: false } }
+  }), 'merge');
+
+  assert.equal(buildCombatCoachCue({
+    current: state({ now: 78, p2Danger: 80, p1Units: [{ id: 'a' }] }),
+    localBoardId: 'p1',
+    actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: true } }
+  }), 'rescue');
+});
+
+test('combat coach cue avoids clutter after the player has clear context', () => {
+  assert.equal(buildCombatCoachCue({
+    current: state({ now: 18, p1Units: [{ id: 'a' }] }),
+    localBoardId: 'p1',
+    actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
+  }), '');
+
+  assert.equal(buildCombatCoachCue({
+    current: state({ now: 70, p1Units: [{ id: 'a' }, { id: 'b' }, { id: 'c' }] }),
+    localBoardId: 'p1',
+    actions: { summon: { enabled: true }, merge: { enabled: true }, rescue: { enabled: false } }
+  }), '');
+
+  assert.equal(buildCombatCoachCue({
+    current: state({ now: 80, p2Danger: 80 }),
+    localBoardId: 'p1',
+    actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
+  }), '');
 });

@@ -48,6 +48,7 @@
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons");
   --combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready");
+  --combat-coach-cues: url("/src/client/assets/generated/reboot-combat-coach-cues.png?v=combat-coach");
   --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets");
   --combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates");
   --combat-hud-row: clamp(72px, 22.33vw, 96px);
@@ -458,6 +459,7 @@ body[data-app-screen="lobby"] .toast {
 
 .primary-actions {
   grid-template-columns: repeat(3, 1fr);
+  position: relative;
 }
 
 .primary-actions button {
@@ -497,6 +499,44 @@ body[data-app-screen="lobby"] .toast {
   z-index: 1;
 }
 
+.primary-actions::after {
+  content: "";
+  position: absolute;
+  top: clamp(2px, 1.4vw, 6px);
+  left: 16.667%;
+  z-index: 3;
+  width: clamp(52px, 17.67vw, 72px);
+  aspect-ratio: 16 / 9;
+  pointer-events: none;
+  background-image: var(--combat-coach-cues);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  opacity: 0;
+  transform: translateX(-50%) translateY(2px) scale(0.94);
+  filter: saturate(1.12) drop-shadow(0 5px 12px rgba(0, 0, 0, 0.46));
+}
+
+body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions::after {
+  left: 16.667%;
+  background-position: 0 0;
+  opacity: 0.92;
+  animation: coachCueFloat 1.2s ease-in-out infinite;
+}
+
+body[data-app-screen="battle"][data-coach-cue="merge"] .primary-actions::after {
+  left: 50%;
+  background-position: 50% 0;
+  opacity: 0.92;
+  animation: coachCueFloat 1.2s ease-in-out infinite;
+}
+
+body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after {
+  left: 83.333%;
+  background-position: 100% 0;
+  opacity: 0.92;
+  animation: coachCueFloat 1.2s ease-in-out infinite;
+}
+
 .primary-actions button::after {
   content: "";
   position: absolute;
@@ -534,6 +574,11 @@ body[data-app-screen="lobby"] .toast {
 @keyframes actionReadyPulse {
   0%, 100% { transform: scale(0.88); opacity: 0.48; }
   48% { transform: scale(1.02); opacity: 0.86; }
+}
+
+@keyframes coachCueFloat {
+  0%, 100% { transform: translateX(-50%) translateY(2px) scale(0.94); }
+  50% { transform: translateX(-50%) translateY(-3px) scale(1); }
 }
 
 #summonButton[data-ready="true"] {
