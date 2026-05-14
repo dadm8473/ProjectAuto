@@ -127,6 +127,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     width: 960,
     height: 128,
     source: 'imagegen'
+  },
+  playerBoardTray: {
+    src: '/src/client/assets/generated/reboot-player-board-tray.png?v=player-tray',
+    width: 780,
+    height: 320,
+    source: 'imagegen'
   }
 };
 
@@ -194,7 +200,9 @@ export function createRebootAssetImages() {
   bossAuras.src = REBOOT_EFFECT_MANIFEST.bossAuras.src;
   const cosmeticSigils = new Image();
   cosmeticSigils.src = REBOOT_EFFECT_MANIFEST.cosmeticSigils.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, cosmeticSigils };
+  const playerBoardTray = new Image();
+  playerBoardTray.src = REBOOT_EFFECT_MANIFEST.playerBoardTray.src;
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, cosmeticSigils, playerBoardTray };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -316,6 +324,16 @@ function drawBossAura(ctx, assets, x, y, now = 0) {
   return drawBossAuraSprite(ctx, assets.bossAuras, auraIndex, x, y + 18, 128, 64, pulse);
 }
 
+function drawPlayerBoardTray(ctx, assets, x, y, w, h) {
+  const image = assets?.playerBoardTray;
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  ctx.save();
+  ctx.globalAlpha *= 0.94;
+  ctx.drawImage(image, x, y, w, h);
+  ctx.restore();
+  return true;
+}
+
 function drawHitBoltSprite(ctx, image, from, to, targetType, alpha = 1) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const dx = to.x - from.x;
@@ -352,6 +370,7 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
     ctx.lineWidth = 3;
     ctx.stroke();
   }
+  if (imageBackdrop && !compact) drawPlayerBoardTray(ctx, assets, x - 6, y - 14, w + 12, h + 10);
   const showBoardText = !imageBackdrop || compact;
   const showDangerText = showBoardText || board.danger >= 50;
   if (showBoardText) {
@@ -381,8 +400,8 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
   for (let i = 0; i < count; i += 1) {
     const sx = x + 12 + i * (size + gap);
     const sy = y + h - size - 12;
-    const socketKey = imageBackdrop && !compact ? 'merge_ready_frame' : compact ? 'partner_socket' : 'player_socket';
-    const shouldDrawSocket = !imageBackdrop || !compact;
+    const socketKey = compact ? 'partner_socket' : 'player_socket';
+    const shouldDrawSocket = !imageBackdrop;
     const socketScale = imageBackdrop ? 0.44 : 1.08;
     const socketAlpha = imageBackdrop ? 0.18 : 0.7;
     const drewSocket = shouldDrawSocket && drawAtlasSprite(ctx, assets, 'board', socketKey, sx + size / 2, sy + size / 2, size * socketScale, socketAlpha);
@@ -395,14 +414,18 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
     }
     const unit = board.units[i];
     if (!unit) continue;
+    const unitLift = imageBackdrop && !compact ? -16 : 0;
+    const unitSize = size * (imageBackdrop && !compact ? 1.22 : 0.95);
+    const unitX = sx + size / 2;
+    const unitY = sy + size / 2 + unitLift;
     if (mergeReadyKeys.has(unit.spriteKey)) {
-      drawAtlasSprite(ctx, assets, 'board', 'merge_ready_frame', sx + size / 2, sy + size / 2, size * 1.16, 0.72);
+      drawAtlasSprite(ctx, assets, 'board', 'merge_ready_frame', unitX, unitY, size * 1.16, 0.72);
     }
-    if (drawAtlasSprite(ctx, assets, 'units', unit.spriteKey, sx + size / 2, sy + size / 2, size * 0.95)) {
+    if (drawAtlasSprite(ctx, assets, 'units', unit.spriteKey, unitX, unitY, unitSize)) {
       continue;
     }
     ctx.save();
-    ctx.translate(sx + size / 2, sy + size / 2);
+    ctx.translate(unitX, unitY);
     ctx.fillStyle = UNIT_COLORS[unit.spriteKey] ?? '#58d7ff';
     ctx.shadowColor = ctx.fillStyle;
     ctx.shadowBlur = 10;
@@ -587,7 +610,7 @@ function eventAlpha(state, event, windowSeconds = 0.9) {
 function boardSlotPoint(playerId, slotIndex = 0) {
   const compact = playerId === 'p2';
   const x = compact ? 28 : 24;
-  const y = compact ? 48 : 438;
+  const y = compact ? 48 : 392;
   const w = compact ? 334 : 342;
   const h = compact ? 112 : 138;
   const count = compact ? 4 : 5;
@@ -780,7 +803,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawBossWarningCutin(ctx, state, assets);
   drawPartnerDangerCutin(ctx, state, assets);
   drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
-  drawBoard(ctx, state.boards.p1, 24, 438, 342, 138, '내 보드', false, assets, imageBackdrop);
+  drawBoard(ctx, state.boards.p1, 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
   drawRescueBeam(ctx, state, assets);
   drawCombatVfx(ctx, state, assets);
   drawPartnerAssistPing(ctx, state, assets);

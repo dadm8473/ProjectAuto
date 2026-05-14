@@ -27,6 +27,7 @@ function fakeRebootAssets(overrides = {}) {
   return {
     backdrop: fakeImage(390, 620),
     board: fakeImage(1280, 256),
+    playerBoardTray: fakeImage(780, 320),
     units: fakeImage(1280, 256),
     enemies: fakeImage(1024, 256),
     ui: fakeImage(1536, 256),
@@ -93,7 +94,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js'",
-    "from './reboot_render.js?v=battle-cosmetic1'",
+    "from './reboot_render.js?v=player-tray1'",
     "from './reboot_screens.js?v=lobby-start1'",
     "from './reboot_online.js'"
   ]) {
@@ -265,7 +266,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-command1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=player-tray1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-command1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-start1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-next1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=battle-cosmetic1">'), false);
@@ -276,14 +278,16 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-start1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=player-tray1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-start1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-next1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-cosmetic1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cosmetic-equip1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=lobby-start1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=lobby-next1'"), false);
   assert.equal(app.includes("from './reboot_screens.js'"), false);
@@ -560,8 +564,14 @@ test('combat board renderer uses compact landing markers over imagegen map floor
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
   for (const marker of [
-    "const socketKey = imageBackdrop && !compact ? 'merge_ready_frame' : compact ? 'partner_socket' : 'player_socket';",
-    'const shouldDrawSocket = !imageBackdrop || !compact;',
+    "src: '/src/client/assets/generated/reboot-player-board-tray.png?v=player-tray'",
+    'const playerBoardTray = new Image();',
+    'playerBoardTray.src = REBOOT_EFFECT_MANIFEST.playerBoardTray.src;',
+    'function drawPlayerBoardTray(ctx, assets, x, y, w, h) {',
+    'drawBoard(ctx, state.boards.p1, 24, 392, 342, 138,',
+    'if (imageBackdrop && !compact) drawPlayerBoardTray(ctx, assets, x - 6, y - 14, w + 12, h + 10);',
+    "const socketKey = compact ? 'partner_socket' : 'player_socket';",
+    'const shouldDrawSocket = !imageBackdrop;',
     'const socketScale = imageBackdrop ? 0.44 : 1.08;',
     'const socketAlpha = imageBackdrop ? 0.18 : 0.7;',
     "const drewSocket = shouldDrawSocket && drawAtlasSprite(ctx, assets, 'board', socketKey, sx + size / 2, sy + size / 2, size * socketScale, socketAlpha);",

@@ -108,6 +108,65 @@ test('combat VFX uses compact hit bolts and rescue pulses instead of screen-cros
   );
 });
 
+test('player board uses a generated landing tray beneath summoned units', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 10.4,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [{ type: 'summon', at: 10.1, playerId: 'p1' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const trayIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 780
+      && command.args[0].naturalHeight === 320
+      && command.args[1] === 18
+      && command.args[2] === 378
+      && command.args[3] === 354
+      && command.args[4] === 148
+  ));
+  const unitIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[7] >= 68
+      && command.args[7] <= 78
+      && command.args[8] >= 68
+      && command.args[8] <= 78
+      && command.args[6] < 456
+  ));
+  const summonVfxIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[1] === 0
+      && command.args[2] === 0
+      && command.args[7] === 84
+  ));
+
+  assert.notEqual(trayIndex, -1, 'expected generated player board tray to draw');
+  assert.notEqual(unitIndex, -1, 'expected summoned unit to draw');
+  assert.notEqual(summonVfxIndex, -1, 'expected summon landing VFX to draw');
+  assert.equal(trayIndex < unitIndex, true, 'tray should sit beneath summoned units');
+  assert.equal(unitIndex < summonVfxIndex, true, 'summon flash should sit above the new unit');
+});
+
 test('equipped cosmetics render as a visual-only player board signature', () => {
   const ctx = mockContext();
   drawRebootBattle(

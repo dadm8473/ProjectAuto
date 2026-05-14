@@ -637,6 +637,20 @@ Constraints: transparent background, no text, no letters, no numbers, no waterma
 Export target: subject bbox 170-236px longest side, pivot x 128 y 128, center deviation <= 8px, at least 10px margin around the subject.
 ```
 
+## Runtime Prompt: Player Board Tray
+
+```text
+Use case: stylized-concept
+Asset type: transparent combat player board tray overlay for ProjectAuto reboot battle screen.
+Primary request: Create one premium mobile game bottom player-board landing tray for a portrait cooperative tower-defense battle screen. It must look like shipped Korean mobile game UI art, not a web card.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background for background removal. The background must be one uniform color with no shadows, gradients, texture, reflections, floor plane, or lighting variation.
+Subject: a wide low graphite-metal board tray with five compact toy-unit landing sockets/wells, teal glass cores, amber rim lights, chunky painted-metal bevels, subtle mechanical bolts, and a soft central teal energy rail. It should read as the player's unit deployment area beneath summoned units. No text.
+Composition: horizontal tray, centered, aspect about 2.45:1, generous transparent padding after processing. Keep the top edge slightly open so units drawn above it remain readable. The five sockets should be evenly spaced and readable at phone size.
+Style lock tokens: ProjectAuto reboot, cooperative toy-board tower defense, polished toy metal, dark graphite outline, teal glass cores, amber highlights, warm top-left key light, controlled glow, premium Korean mobile game combat UI.
+Constraints: no text, no letters, no numbers, no watermark, no dice, no casino pips, no generic emoji, no buttons, no price tags, no cast shadow on the background. Do not use #00ff00 anywhere in the subject.
+Export target after processing: final transparent PNG 780x320, subject bbox roughly 660-735px wide and 190-270px tall, at least 16px margin around the subject, straight alpha, readable beneath units and VFX.
+```
+
 ## Runtime Prompt: Navigation Icons
 
 ```text

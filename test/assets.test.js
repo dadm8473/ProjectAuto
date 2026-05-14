@@ -400,6 +400,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 10_000
   },
   {
+    path: 'src/client/assets/generated/reboot-player-board-tray.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-player-board-tray-imagegen.png',
+    width: 780,
+    height: 320,
+    minRuntimeBytes: 40_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-critical-action-rings.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-critical-action-rings-chromakey-imagegen.png',
     width: 768,
@@ -1074,6 +1081,24 @@ test('combat first command spotlight stays transparent and readable behind the f
   assert.equal(bounds.maxX <= image.width - 9, true, `first command spotlight touches right edge: ${JSON.stringify(bounds)}`);
   assert.equal(bounds.minY >= 8, true, `first command spotlight touches top edge: ${JSON.stringify(bounds)}`);
   assert.equal(bounds.maxY <= image.height - 9, true, `first command spotlight touches bottom edge: ${JSON.stringify(bounds)}`);
+});
+
+test('player board tray stays transparent and readable under summoned units', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-player-board-tray.png'));
+  const corners = [
+    alphaAt(image, 3, 3),
+    alphaAt(image, image.width - 4, 3),
+    alphaAt(image, 3, image.height - 4),
+    alphaAt(image, image.width - 4, image.height - 4)
+  ];
+  const bounds = alphaBounds(image, { x: 0, y: 0, width: image.width, height: image.height }, 28);
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, 'player board tray keeps transparent corners');
+  assert.equal(bounds.count > 18_000, true, `player board tray has no readable board subject: ${bounds.count}`);
+  assert.equal(bounds.minX >= 16, true, `player board tray touches left edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxX <= image.width - 17, true, `player board tray touches right edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.minY >= 12, true, `player board tray touches top edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxY <= image.height - 13, true, `player board tray touches bottom edge: ${JSON.stringify(bounds)}`);
 });
 
 test('meta progress bar cells keep track and fill rows readable', async () => {
