@@ -6,6 +6,7 @@ import { buildRebootActionState, commandForRebootAction } from './reboot_actions
 import { buildCombatCoachCue, isCriticalRebootAction } from './reboot_action_ui.js';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=reboot-action-ready1';
 import {
+  buildMetaNavAlerts,
   buildMissionScreen,
   buildRebootCollection,
   buildRebootLobby,
@@ -132,12 +133,22 @@ function setScreen(screen) {
   if (changed) playScreenTransition(screen);
 }
 
+function updateNavAlerts() {
+  const alerts = buildMetaNavAlerts(profile);
+  document.querySelectorAll('.bottom-dock [data-open-screen]').forEach((button) => {
+    const screen = button.dataset.openScreen;
+    if (alerts[screen]) button.dataset.navAlert = screen;
+    else delete button.dataset.navAlert;
+  });
+}
+
 function renderHomeScreens() {
   dom.lobbyContent.innerHTML = buildRebootLobby(profile);
   dom.collectionList.innerHTML = buildRebootCollection(profile);
   dom.shopList.innerHTML = buildRebootShop(profile);
   dom.missionsList.innerHTML = buildMissionScreen(profile);
   dom.seasonList.innerHTML = buildSeasonScreen(profile);
+  updateNavAlerts();
 }
 
 function resultRewards(current) {

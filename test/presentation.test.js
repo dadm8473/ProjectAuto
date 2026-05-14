@@ -1061,13 +1061,45 @@ test('home navigation buttons use generated tactile selector pads', async () => 
     assert.equal(`${html}\n${css}`.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('<button data-open-screen="collection" data-nav-icon="collection"><span>유닛</span></button>'), true);
-  assert.equal(html.includes('<button data-open-screen="shop" data-nav-icon="shop"><span>상점</span></button>'), true);
-  assert.equal(html.includes('<button data-open-screen="missions" data-nav-icon="missions"><span>미션</span></button>'), true);
-  assert.equal(html.includes('<button data-open-screen="season" data-nav-icon="season"><span>시즌</span></button>'), true);
+  assert.equal(html.includes('<button data-open-screen="collection" data-nav-icon="collection"><span class="nav-alert-badge" aria-hidden="true"></span><span>유닛</span></button>'), true);
+  assert.equal(html.includes('<button data-open-screen="shop" data-nav-icon="shop"><span class="nav-alert-badge" aria-hidden="true"></span><span>상점</span></button>'), true);
+  assert.equal(html.includes('<button data-open-screen="missions" data-nav-icon="missions"><span class="nav-alert-badge" aria-hidden="true"></span><span>미션</span></button>'), true);
+  assert.equal(html.includes('<button data-open-screen="season" data-nav-icon="season"><span class="nav-alert-badge" aria-hidden="true"></span><span>시즌</span></button>'), true);
   assert.equal(css.includes('.bottom-dock button {\n  background: linear-gradient'), false);
   assert.equal(css.includes('inset: -2px -3px;'), false);
   assert.equal(css.includes('.screen-overlay .bottom-dock button {\n  background: transparent;\n  background-image: none;'), true);
+});
+
+test('home navigation exposes generated action-ready badges without adding more buttons', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    'buildMetaNavAlerts',
+    'function updateNavAlerts()',
+    'button.dataset.navAlert = screen;',
+    'delete button.dataset.navAlert;',
+    'updateNavAlerts();',
+    '--nav-alert-badges: url("/src/client/assets/generated/reboot-nav-alert-badges.png?v=nav-alerts")',
+    '.nav-alert-badge',
+    '.bottom-dock button[data-nav-alert] .nav-alert-badge',
+    'background-image: var(--nav-alert-badges)',
+    'background-size: 400% 100%',
+    'width: clamp(25px, 7vw, 30px);',
+    '[data-nav-alert="collection"] .nav-alert-badge { background-position: 0 0; }',
+    '[data-nav-alert="shop"] .nav-alert-badge { background-position: 33.333% 0; }',
+    '[data-nav-alert="missions"] .nav-alert-badge { background-position: 66.666% 0; }',
+    '[data-nav-alert="season"] .nav-alert-badge { background-position: 100% 0; }',
+    '@keyframes navAlertPulse',
+    '@media (prefers-reduced-motion: reduce)',
+    'animation: none;'
+  ]) {
+    assert.equal(`${app}\n${css}\n${screens}`.includes(marker), true, marker);
+  }
+
+  assert.equal((html.match(/class="nav-alert-badge"/g) ?? []).length, 4);
 });
 
 test('lobby launch actions use dedicated generated button frames', async () => {

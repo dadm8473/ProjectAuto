@@ -25,6 +25,7 @@
   --screen-transition-wipe: url("/src/client/assets/generated/reboot-screen-transition-wipe.png?v=screen-wipe");
   --nav-icons: url("/src/client/assets/generated/reboot-nav-icons.png");
   --nav-button-glow: url("/src/client/assets/generated/reboot-nav-button-glow.png?v=nav-glow");
+  --nav-alert-badges: url("/src/client/assets/generated/reboot-nav-alert-badges.png?v=nav-alerts");
   --nav-button-glow-size: clamp(62px, 18vw, 76px);
   --title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png");
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
@@ -1001,6 +1002,27 @@ body[data-app-screen="season"] .app-screen::after {
   z-index: 1;
 }
 
+.nav-alert-badge {
+  position: absolute;
+  right: 11px;
+  top: 7px;
+  width: clamp(25px, 7vw, 30px);
+  aspect-ratio: 1;
+  z-index: 2;
+  opacity: 0;
+  background-image: var(--nav-alert-badges);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.58));
+  pointer-events: none;
+  transform: scale(0.96);
+}
+
+.bottom-dock button[data-nav-alert] .nav-alert-badge {
+  opacity: 0.86;
+  animation: navAlertPulse 1.24s ease-in-out infinite;
+}
+
 [data-nav-icon="collection"]::before { background-position: 0 0; }
 [data-nav-icon="shop"]::before { background-position: -42px 0; }
 [data-nav-icon="missions"]::before { background-position: -84px 0; }
@@ -1011,6 +1033,30 @@ body[data-app-screen="season"] .app-screen::after {
 [data-nav-icon="shop"]::after { background-position: 33.333% 0; }
 [data-nav-icon="missions"]::after { background-position: 66.666% 0; }
 [data-nav-icon="season"]::after { background-position: 100% 0; }
+
+[data-nav-alert="collection"] .nav-alert-badge { background-position: 0 0; }
+[data-nav-alert="shop"] .nav-alert-badge { background-position: 33.333% 0; }
+[data-nav-alert="missions"] .nav-alert-badge { background-position: 66.666% 0; }
+[data-nav-alert="season"] .nav-alert-badge { background-position: 100% 0; }
+
+@keyframes navAlertPulse {
+  0%,
+  100% {
+    transform: translateY(0) scale(0.96);
+    opacity: 0.86;
+  }
+
+  50% {
+    transform: translateY(-1px) scale(1.04);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bottom-dock button[data-nav-alert] .nav-alert-badge {
+    animation: none;
+  }
+}
 
 .bottom-dock::before {
   content: "";

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createGame, mergeRelays, serializeState, supplyRelay, tickGame, castLinkPulse } from '../src/shared/game.js';
 import {
+  buildMetaNavAlerts,
   buildMissionScreen,
   buildRebootCollection,
   buildRebootLobby,
@@ -219,4 +220,55 @@ test('lobby recommends the next profile action after rewards settle', () => {
 
   assert.equal(shopLobby.includes('data-lobby-open="shop"'), true);
   assert.equal(shopLobby.includes('외형 해금'), true);
+});
+
+test('meta navigation alerts expose only actionable profile destinations', () => {
+  const empty = buildMetaNavAlerts({
+    gems: 0,
+    xp: 0,
+    processedRuns: [],
+    claimedMissions: [],
+    claimedPassTiers: []
+  });
+
+  assert.deepEqual(empty, {
+    collection: false,
+    shop: false,
+    missions: false,
+    season: false
+  });
+
+  const actionable = buildMetaNavAlerts({
+    gems: 90,
+    xp: 80,
+    processedRuns: ['run-1'],
+    unitLevels: { spark_pin: 2 },
+    unlocks: [],
+    claimedMissions: [],
+    claimedPassTiers: []
+  });
+
+  assert.deepEqual(actionable, {
+    collection: true,
+    shop: true,
+    missions: true,
+    season: true
+  });
+
+  const claimed = buildMetaNavAlerts({
+    gems: 20,
+    xp: 80,
+    processedRuns: ['run-1'],
+    unitLevels: { spark_pin: 4, toktok_amp: 4, slow_coil: 4, burst_pin: 4, rescue_coil: 4 },
+    unlocks: ['founder-board', 'mythic-aura'],
+    claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic'],
+    claimedPassTiers: [0]
+  });
+
+  assert.deepEqual(claimed, {
+    collection: false,
+    shop: false,
+    missions: false,
+    season: false
+  });
 });

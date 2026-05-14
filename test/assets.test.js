@@ -346,6 +346,13 @@ const IMAGEGEN_REBOOT_META_FEEDBACK = [
     width: 1024,
     height: 256,
     minRuntimeBytes: 30_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-nav-alert-badges.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260514-nav-alert-badges-chromakey-imagegen.png',
+    width: 1024,
+    height: 256,
+    minRuntimeBytes: 24_000
   }
 ];
 

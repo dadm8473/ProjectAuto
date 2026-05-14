@@ -95,6 +95,15 @@ function countAffordableCosmetics(profile = {}) {
   return SHOP.items.filter((item) => item.category === 'cosmetic' && item.grant?.cosmetic && !unlocks.has(item.grant.cosmetic) && gems >= (item.price?.gems ?? 0)).length;
 }
 
+export function buildMetaNavAlerts(profile = {}) {
+  return {
+    collection: countTrainableUnits(profile) > 0,
+    shop: countAffordableCosmetics(profile) > 0,
+    missions: countClaimableMissions(profile) > 0,
+    season: countClaimablePassTiers(profile) > 0
+  };
+}
+
 function buildMetaSummary(kind, label, value, detail) {
   return `
     <article class="meta-summary screen-card" data-summary-kind="${kind}">
