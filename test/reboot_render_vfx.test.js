@@ -172,13 +172,13 @@ test('first player action clears the operation start cutin so combat feedback st
   drawRebootBattle(
     ctx,
     {
-      now: 1.2,
+      now: 0.72,
       boards: {
         p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
         p2: { danger: 0, units: [] }
       },
       enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard' }],
-      events: [{ type: 'summon', at: 1.05, playerId: 'p1' }],
+      events: [{ type: 'summon', at: 0.58, playerId: 'p1' }],
       effects: [{ type: 'hit', playerId: 'p1', slot: 0, targetProgress: 0.4, targetLane: 0.25, targetType: 'noise_shard', ttl: 0.58 }]
     },
     { width: 390, height: 620 },
@@ -216,6 +216,44 @@ test('first player action clears the operation start cutin so combat feedback st
   assert.deepEqual(startCutinDraws, []);
   assert.equal(hitBoltDraws.length >= 1, true, 'expected hit bolt to remain visible after first action');
   assert.equal(summonVfxDraws.length >= 1, true, 'expected summon VFX to remain visible after first action');
+});
+
+test('operation start cutin clears quickly even before the first player action', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 1.35,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard' }],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      startCutin: image(390, 112)
+    }
+  );
+
+  const startCutinDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 390
+      && command.args[0].naturalHeight === 112
+  ));
+  const enemyDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1024
+      && command.args[0].naturalHeight === 256
+  ));
+
+  assert.deepEqual(startCutinDraws, []);
+  assert.equal(enemyDraws.length >= 1, true, 'expected early enemies to remain readable after the intro beat');
 });
 
 test('equipped cosmetics render as a visual-only player board signature', () => {

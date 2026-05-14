@@ -1381,14 +1381,18 @@ test('combat starts with a generated operation cutin instead of a silent canvas 
     'const startCutin = new Image();',
     'startCutin.src = REBOOT_CUTIN_MANIFEST.operationStart.src;',
     'drawCombatStartCutin',
-    'if (state.now >= 3.25) return false;',
-    'drawImageCover(ctx, image, 0, 238, 390, 112',
+    'if (state.now >= 1.2) return false;',
+    '1.2 - state.now',
+    'drawImageCover(ctx, image, 0, 180, 390, 86',
     "ctx.fillText('작전 시작'",
     "ctx.fillText('소환 준비'",
     'drawCombatStartCutin(ctx, state, assets)'
   ]) {
     assert.equal(render.includes(marker), true, marker);
   }
+
+  assert.equal(render.includes('if (state.now >= 3.25) return false;'), false);
+  assert.equal(render.includes('drawImageCover(ctx, image, 0, 238, 390, 112'), false);
 });
 
 test('partner danger uses a dedicated generated rescue cutin', async () => {

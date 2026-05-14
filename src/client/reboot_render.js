@@ -515,7 +515,7 @@ function drawPartnerDangerCutin(ctx, state, assets = {}) {
 }
 
 function drawCombatStartCutin(ctx, state, assets = {}) {
-  if (state.now >= 3.25) return false;
+  if (state.now >= 1.2) return false;
   const firstActionTaken = state.events.some((event) => (
     ['summon', 'merge', 'rescue'].includes(event.type) && state.now >= event.at
   ));
@@ -523,21 +523,21 @@ function drawCombatStartCutin(ctx, state, assets = {}) {
   const image = assets?.startCutin;
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const introIn = Math.min(1, state.now / 0.34);
-  const introOut = Math.min(1, Math.max(0, 3.25 - state.now) / 0.56);
-  const alpha = Math.min(introIn, introOut) * 0.94;
+  const introOut = Math.min(1, Math.max(0, 1.2 - state.now) / 0.34);
+  const alpha = Math.min(introIn, introOut) * 0.84;
   ctx.save();
-  drawImageCover(ctx, image, 0, 238, 390, 112, alpha);
-  drawAtlasSprite(ctx, assets, 'ui', 'summon_charge', 74, 296, 38, alpha);
+  drawImageCover(ctx, image, 0, 180, 390, 86, alpha);
+  drawAtlasSprite(ctx, assets, 'ui', 'summon_charge', 74, 226, 34, alpha);
   ctx.globalAlpha *= alpha;
   ctx.fillStyle = '#fff7dc';
   ctx.shadowColor = '#58d7ff';
   ctx.shadowBlur = 15;
-  ctx.font = '900 20px system-ui';
-  ctx.fillText('작전 시작', 116, 292);
+  ctx.font = '900 18px system-ui';
+  ctx.fillText('작전 시작', 116, 221);
   ctx.shadowBlur = 0;
   ctx.fillStyle = 'rgba(245, 240, 220, 0.82)';
   ctx.font = '800 11px system-ui';
-  ctx.fillText('소환 준비', 118, 310);
+  ctx.fillText('소환 준비', 118, 238);
   ctx.restore();
   return true;
 }
