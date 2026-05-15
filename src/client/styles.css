@@ -861,6 +861,11 @@ body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after 
   animation: actionTapBurst 220ms ease-out both;
 }
 
+.primary-actions button:disabled {
+  opacity: 0.74;
+  filter: grayscale(0.22) brightness(0.74) saturate(0.82);
+}
+
 .primary-actions button:disabled::before {
   opacity: 0.54;
   filter: grayscale(0.35);

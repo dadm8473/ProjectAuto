@@ -474,7 +474,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-wipe1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-disabled1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-wipe1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=row-surface1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=chrome-surface1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-badges1">'), false);
@@ -828,6 +829,21 @@ test('combat action buttons use generated icons instead of text-only web buttons
   const spotlightBlock = cssRuleBlock(css, '.primary-actions::before');
   assert.equal(spotlightBlock.includes('z-index: 0;'), true, 'first command spotlight must sit behind button labels');
   assert.equal(actionBlock.includes('z-index: 1;'), true, 'action buttons must render above the first command spotlight');
+});
+
+test('combat disabled action buttons keep generated command frames readable', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  const disabledBlock = cssRuleBlock(css, '.primary-actions button:disabled');
+  for (const marker of [
+    'opacity: 0.74;',
+    'filter: grayscale(0.22) brightness(0.74) saturate(0.82);'
+  ]) {
+    assert.equal(disabledBlock.includes(marker), true, marker);
+  }
+
+  assert.equal(disabledBlock.includes('opacity: 0.4;'), false);
+  assert.equal(css.includes('.primary-actions button:disabled {\n  background-image: none;'), false);
 });
 
 test('result screen uses imagegen reward backdrop instead of a plain overlay', async () => {
