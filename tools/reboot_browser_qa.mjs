@@ -58,6 +58,25 @@ async function assertMetaListReachesDock(page, selector, label) {
   );
 }
 
+async function assertSplashCtaClearsBottomDeck(page) {
+  const geometry = await page.locator('#splashStartButton').evaluate((button) => {
+    const rect = button.getBoundingClientRect();
+    const shell = document.querySelector('.shell');
+    const deckHeight = parseFloat(getComputedStyle(shell, '::after').height) || 0;
+    return {
+      viewportHeight: window.innerHeight,
+      buttonBottom: Math.round(rect.bottom),
+      deckTop: Math.round(window.innerHeight - deckHeight),
+      deckHeight: Math.round(deckHeight)
+    };
+  });
+  assert.equal(
+    geometry.buttonBottom <= geometry.deckTop + 6,
+    true,
+    `splash CTA is visually buried by bottom deck: ${JSON.stringify(geometry)}`
+  );
+}
+
 async function assertCombatDockSafeArea(page) {
   const geometry = await page.locator('.action-panel').evaluate((node) => {
     const panel = node.getBoundingClientRect();
@@ -172,6 +191,7 @@ async function verifyShell(page, viewport) {
   });
   assert.equal(shell.width <= Math.min(viewport.width, 430), true, `shell width ${shell.width}`);
   assert.equal(shell.scrollWidth <= shell.clientWidth, true, 'horizontal overflow');
+  await assertSplashCtaClearsBottomDeck(page);
 
   await page.getByRole('button', { name: '시작' }).click();
   await page.getByRole('button', { name: '봇과 시작' }).waitFor({ state: 'visible' });

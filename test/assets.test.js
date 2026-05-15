@@ -76,6 +76,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 100_000
   },
   {
+    path: 'src/client/assets/generated/reboot-splash-bottom-deck.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260515-splash-bottom-deck-imagegen.png',
+    width: 430,
+    height: 270,
+    minRuntimeBytes: 120_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-training-banner.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-training-banner-imagegen.png',
     width: 430,
@@ -894,6 +901,20 @@ test('splash floor cap is a transparent matte bitmap, not another glowing button
   assert.equal(center.mean < 18, true, `center cap too bright: ${center.mean}`);
   assert.equal(center.brightRatio < 0.002, true, `center cap has button-like bright pixels: ${center.brightRatio}`);
   assert.equal(frameRatio < 0.0001, true, `center cap has cyan frame pixels: ${frameRatio}`);
+});
+
+test('splash bottom deck adds generated floor detail instead of a flat web footer', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-splash-bottom-deck.png'));
+  const centerFloor = luminanceStats(image, { x: 120, y: 86, width: 190, height: 118 }, 42);
+  const lowerMachinery = luminanceStats(image, { x: 24, y: 162, width: 382, height: 92 }, 45);
+  const cyanDetailRatio = colorRatio(image, { x: 24, y: 126, width: 382, height: 120 }, (r, g, b) => r < 95 && g > 75 && b > 85);
+  const flatBlackRatio = colorRatio(image, { x: 88, y: 72, width: 254, height: 150 }, (r, g, b) => Math.max(r, g, b) < 16);
+
+  assert.equal(centerFloor.mean > 24, true, `splash lower deck center is still too empty: ${centerFloor.mean}`);
+  assert.equal(centerFloor.mean < 64, true, `splash lower deck center is too bright behind CTA: ${centerFloor.mean}`);
+  assert.equal(lowerMachinery.brightRatio > 0.035, true, `splash lower deck lacks readable generated machinery: ${lowerMachinery.brightRatio}`);
+  assert.equal(cyanDetailRatio > 0.004, true, `splash lower deck lacks signal-lit detail: ${cyanDetailRatio}`);
+  assert.equal(flatBlackRatio < 0.5, true, `splash lower deck still reads as flat black footer: ${flatBlackRatio}`);
 });
 
 test('generated UI frames use alpha instead of baked black rectangles', async () => {

@@ -35,6 +35,7 @@
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
   --splash-title-plate: url("/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title");
   --splash-footer-shroud: url("/src/client/assets/generated/reboot-splash-footer-shroud.png?v=splash-footer-depth-clean3");
+  --splash-bottom-deck: url("/src/client/assets/generated/reboot-splash-bottom-deck.png?v=splash-bottom-deck2");
   --splash-floor-cap: url("/src/client/assets/generated/reboot-splash-floor-cap.png?v=splash-floor-cap-matte4");
   --meta-footer-shroud: url("/src/client/assets/generated/reboot-meta-footer-shroud.png?v=meta-footer-shroud");
   --meta-list-shutter: url("/src/client/assets/generated/reboot-meta-list-shutter.png?v=meta-list-shutter2");
@@ -144,10 +145,10 @@ body[data-app-screen="splash"] .shell::after {
   height: clamp(86px, 14dvh, 116px);
   transform: translateX(-50%);
   background-color: #010405;
-  background-image: var(--splash-footer-shroud);
+  background-image: var(--splash-bottom-deck);
   background-repeat: no-repeat;
   background-position: center bottom;
-  background-size: 100% 100%;
+  background-size: 100% auto;
   pointer-events: none;
 }
 
@@ -953,10 +954,10 @@ body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after 
   inset: auto 0 0;
   z-index: 0;
   height: clamp(86px, 14dvh, 116px);
-  background-image: var(--splash-floor-cap);
+  background-image: var(--splash-bottom-deck);
   background-repeat: no-repeat;
   background-position: center bottom;
-  background-size: min(260px, 61vw) min(96px, 22.5vw);
+  background-size: 100% auto;
 }
 
 .result-overlay::after {
@@ -1056,10 +1057,10 @@ body[data-app-screen="season"] .app-screen::after {
   width: 100%;
   height: clamp(210px, 34dvh, 270px);
   transform: translateX(-50%);
-  background-image: var(--splash-floor-cap), var(--splash-footer-shroud);
+  background-image: var(--splash-bottom-deck);
   background-repeat: no-repeat;
-  background-position: center bottom, center bottom;
-  background-size: min(260px, 61vw) min(96px, 22.5vw), 100% 100%;
+  background-position: center bottom;
+  background-size: 100% 100%;
   pointer-events: none;
 }
 
@@ -1072,10 +1073,10 @@ body[data-app-screen="season"] .app-screen::after {
   height: clamp(210px, 34dvh, 270px);
   transform: translateX(-50%);
   background-color: #010405;
-  background-image: var(--splash-floor-cap), var(--splash-footer-shroud);
+  background-image: var(--splash-bottom-deck);
   background-repeat: no-repeat;
-  background-position: center bottom, center bottom;
-  background-size: min(260px, 61vw) min(96px, 22.5vw), 100% 100%;
+  background-position: center bottom;
+  background-size: 100% 100%;
   pointer-events: none;
 }
 

@@ -470,7 +470,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-dock1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=splash-deck1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-dock1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-density1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-matchmaking1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=frame-alpha1">'), false);
@@ -2027,40 +2028,41 @@ test('splash title remains readable on 360px portrait screens', async () => {
   }
 });
 
-test('splash uses a generated footer shroud to hide unused lower console slots', async () => {
+test('splash uses a generated bottom deck instead of an empty lower web footer', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
     '<span class="splash-floor-cap" aria-hidden="true"></span>',
     '--splash-footer-shroud: url("/src/client/assets/generated/reboot-splash-footer-shroud.png?v=splash-footer-depth-clean3")',
+    '--splash-bottom-deck: url("/src/client/assets/generated/reboot-splash-bottom-deck.png?v=splash-bottom-deck2")',
     '--splash-floor-cap: url("/src/client/assets/generated/reboot-splash-floor-cap.png?v=splash-floor-cap-matte4")',
     '[data-screen="splash"]::after',
     'inset: auto 0 0;',
     'height: clamp(86px, 14dvh, 116px);',
-    'background-image: var(--splash-floor-cap);',
+    'background-image: var(--splash-bottom-deck);',
     'background-position: center bottom;',
-    'background-size: min(260px, 61vw) min(96px, 22.5vw);',
+    'background-size: 100% 100%;',
     '.splash-screen::after',
     'position: fixed;',
-    'background-image: var(--splash-floor-cap), var(--splash-footer-shroud);',
-    'background-position: center bottom, center bottom;',
-    'background-size: min(260px, 61vw) min(96px, 22.5vw), 100% 100%;',
+    'background-image: var(--splash-bottom-deck);',
+    'background-position: center bottom;',
+    'background-size: 100% 100%;',
     'bottom: calc(var(--app-safe-area-bottom) - 10px);',
     'height: clamp(210px, 34dvh, 270px);',
     '.splash-screen > .splash-floor-cap',
     'z-index: 0;',
     'background-color: #010405;',
-    'background-image: var(--splash-floor-cap), var(--splash-footer-shroud);',
+    'background-image: var(--splash-bottom-deck);',
     'bottom: calc(var(--app-safe-area-bottom) - 10px);',
     'width: min(100vw, 430px);',
     'height: clamp(210px, 34dvh, 270px);',
-    'background-position: center bottom, center bottom;',
-    'background-size: min(260px, 61vw) min(96px, 22.5vw), 100% 100%;',
+    'background-position: center bottom;',
+    'background-size: 100% 100%;',
     'body[data-app-screen="splash"] .shell::after',
     'z-index: 30;',
     'height: clamp(86px, 14dvh, 116px);',
-    'background-image: var(--splash-footer-shroud);',
+    'background-image: var(--splash-bottom-deck);',
     'background-size: 100% 100%;',
     'pointer-events: none;'
   ]) {
@@ -2073,7 +2075,9 @@ test('splash uses a generated footer shroud to hide unused lower console slots',
 
   const shellMaskBlock = cssRuleBlock(css, 'body[data-app-screen="splash"] .shell::after');
   assert.equal(shellMaskBlock.includes('z-index: 30;'), true);
-  assert.equal(shellMaskBlock.includes('background-image: var(--splash-footer-shroud);'), true);
+  assert.equal(shellMaskBlock.includes('background-image: var(--splash-bottom-deck);'), true);
+  assert.equal(shellMaskBlock.includes('background-size: 100% auto;'), true);
+  assert.equal(shellMaskBlock.includes('var(--splash-footer-shroud)'), false);
   assert.equal(shellMaskBlock.includes('var(--splash-floor-cap)'), false);
   assert.equal(css.includes('body[data-app-screen="battle"] .shell::after'), false);
   assert.equal(cssPxVar(css, '--lobby-screen-bottom-pad') >= 126, true);
@@ -2082,7 +2086,8 @@ test('splash uses a generated footer shroud to hide unused lower console slots',
   assert.equal(footerBlock.includes('display: none;'), false);
 
   const capBlock = css.slice(css.indexOf('.splash-screen > .splash-floor-cap'), css.indexOf('.splash-screen > *,'));
-  assert.equal(capBlock.includes('background-size: min(260px, 61vw) min(96px, 22.5vw), 100% 100%;'), true);
+  assert.equal(capBlock.includes('background-size: 100% 100%;'), true);
+  assert.equal(capBlock.includes('var(--splash-floor-cap)'), false);
   assert.equal(capBlock.includes('rgba(255, 0, 0'), false);
   assert.equal(css.includes('content: "";\n  display: none;\n  position: absolute;\n  inset: -1px;'), false);
 });
