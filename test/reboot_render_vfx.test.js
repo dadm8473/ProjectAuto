@@ -546,6 +546,32 @@ test('image backdrop board labels sit on generated combat plates', () => {
   assert.equal(plateIndices.some((index) => index < dangerTextIndex), true, 'danger label should sit above a generated plate');
 });
 
+test('image backdrop suppresses idle partner board labels', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 8.4,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      board: image(1280, 256),
+      boardLabelPlates: image(780, 80)
+    }
+  );
+
+  assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '파트너 보드'), false);
+  assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '위험 0'), false);
+});
+
 test('first player action clears the operation start cutin so combat feedback stays visible', () => {
   const ctx = mockContext();
   drawRebootBattle(

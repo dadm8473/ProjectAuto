@@ -739,8 +739,9 @@ test('combat board renderer suppresses player-board labels on imagegen map floor
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
   for (const marker of [
-    'const showBoardText = !imageBackdrop || compact;',
-    'const showDangerText = showBoardText || board.danger >= 50;',
+    'const compactBoardActive = compact && ((board.units?.length ?? 0) > 0 || board.danger >= 50);',
+    'const showBoardText = !imageBackdrop || compactBoardActive;',
+    'const showDangerText = !imageBackdrop || board.danger >= 50;',
     'if (showBoardText) {',
     'ctx.fillText(title, x + 12, y + 18);',
     'if (showDangerText) {'
