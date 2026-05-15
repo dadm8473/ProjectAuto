@@ -1,3 +1,5 @@
+import { REBOOT_RULES } from '../shared/reboot_content.js';
+
 export const REBOOT_ATLAS_MANIFEST = {
   units: {
     src: '/src/client/assets/generated/reboot-unit-atlas.png',
@@ -458,13 +460,15 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
   const count = compact ? 4 : 5;
   const gap = 8;
   const size = (w - 24 - gap * (count - 1)) / count;
-  const typeCounts = board.units.reduce((counts, unit) => {
+  const gradeCounts = board.units.reduce((counts, unit) => {
     if (!unit) return counts;
-    counts.set(unit.spriteKey, (counts.get(unit.spriteKey) ?? 0) + 1);
+    counts.set(unit.grade, (counts.get(unit.grade) ?? 0) + 1);
     return counts;
   }, new Map());
-  const mergeReadyKeys = new Set(
-    [...typeCounts.entries()].filter(([, unitCount]) => unitCount >= 3).map(([spriteKey]) => spriteKey)
+  const mergeReadyGrades = new Set(
+    [...gradeCounts.entries()]
+      .filter(([grade, unitCount]) => Number(grade) < 2 && unitCount >= REBOOT_RULES.merge.requiredSameGrade)
+      .map(([grade]) => grade)
   );
   for (let i = 0; i < count; i += 1) {
     const sx = x + 12 + i * (size + gap);
@@ -487,7 +491,7 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
     const unitSize = size * (imageBackdrop && !compact ? 1.22 : 0.95);
     const unitX = sx + size / 2;
     const unitY = sy + size / 2 + unitLift;
-    if (mergeReadyKeys.has(unit.spriteKey)) {
+    if (mergeReadyGrades.has(unit.grade)) {
       drawAtlasSprite(ctx, assets, 'board', 'merge_ready_frame', unitX, unitY, size * 1.16, 0.72);
     }
     if (drawAtlasSprite(ctx, assets, 'units', unit.spriteKey, unitX, unitY, unitSize)) {

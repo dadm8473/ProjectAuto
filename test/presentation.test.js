@@ -98,7 +98,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js'",
     "from './reboot_action_ui.js?v=action-focus1'",
-    "from './reboot_render.js?v=start-cutin1'",
+    "from './reboot_render.js?v=merge-ready1'",
     "from './reboot_screens.js?v=meta-passive-icon1'",
     "from './reboot_online.js'"
   ]) {
@@ -538,7 +538,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=start-cutin1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=merge-ready1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=start-cutin1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=moment-callout1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=reveal-vfx1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=boss-finale1'"), false);
@@ -901,7 +902,10 @@ test('combat board renderer uses generated merge and danger accent frames', asyn
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
   for (const marker of [
-    'mergeReadyKeys',
+    "import { REBOOT_RULES } from '../shared/reboot_content.js';",
+    'mergeReadyGrades',
+    'Number(grade) < 2',
+    'unitCount >= REBOOT_RULES.merge.requiredSameGrade',
     "'merge_ready_frame'",
     "'danger_pulse_frame'",
     "'rescue_beam_segment'"

@@ -283,6 +283,78 @@ test('player board uses a generated landing tray beneath summoned units', () => 
   assert.equal(unitIndex < summonVfxIndex, true, 'summon flash should sit above the new unit');
 });
 
+test('player board marks two grade-one reboot units as merge ready', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 20,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin', grade: 1 }, { spriteKey: 'toktok_amp', grade: 1 }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const mergeReadyFrames = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[1] === 512
+      && command.args[2] === 0
+      && command.args[3] === 256
+      && command.args[4] === 256
+  ));
+
+  assert.equal(mergeReadyFrames.length >= 2, true, 'two grade-one reboot units should get generated merge-ready frames');
+});
+
+test('player board does not mark grade-two reboot units as normal merge ready', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 20,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'burst_pin', grade: 2 }, { spriteKey: 'burst_pin', grade: 2 }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const mergeReadyFrames = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[1] === 512
+      && command.args[2] === 0
+      && command.args[3] === 256
+      && command.args[4] === 256
+  ));
+
+  assert.equal(mergeReadyFrames.length, 0, 'grade-two units should not get normal merge-ready frames');
+});
+
 test('first player summon gets a generated reward spotlight before the small flash', () => {
   const ctx = mockContext();
   drawRebootBattle(
