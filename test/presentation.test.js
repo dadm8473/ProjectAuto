@@ -98,7 +98,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=action-focus1'",
-    "from './reboot_render.js?v=enemy-track-trails1'",
+    "from './reboot_render.js?v=enemy-impact-bursts1'",
     "from './reboot_screens.js?v=post-reward-route1'",
     "from './reboot_online.js'"
   ]) {
@@ -554,7 +554,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-track-trails1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-impact-bursts1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-track-trails1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=view-perspective1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=dual-crisis1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-partner-link1"></script>'), false);
@@ -576,7 +577,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=enemy-track-trails1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=enemy-impact-bursts1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=enemy-track-trails1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=view-perspective1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=dual-crisis1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=merge-ready1'"), false);
@@ -1976,6 +1978,30 @@ test('hit effects draw generated short bolt sprites without screen-crossing beam
 
   const boltBlock = render.slice(render.indexOf('function drawHitBoltSprite'), render.indexOf('function drawHitBeams'));
   assert.equal(boltBlock.includes('ctx.drawImage(image, 0, -height / 2, length, height);'), false);
+});
+
+test('hit effects land with generated enemy impact bursts at the target', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'enemyImpactBursts',
+    "src: '/src/client/assets/generated/reboot-enemy-impact-bursts.png?v=enemy-impact-bursts1'",
+    'drawEnemyImpactBurst',
+    'drawEnemyImpactBurst(ctx, assets.enemyImpactBursts, to.x, to.y, effect.targetType, alpha);',
+    "drawAtlasSprite(ctx, assets, 'vfx', 'enemy_hit_spark'"
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+
+  const hitBlock = render.slice(render.indexOf('function drawHitBeams'), render.indexOf('function drawCombatVfx'));
+  assert.equal(
+    hitBlock.indexOf('drawEnemyImpactBurst(ctx, assets.enemyImpactBursts, to.x, to.y, effect.targetType, alpha);') <
+      hitBlock.indexOf("drawAtlasSprite(ctx, assets, 'vfx', 'enemy_hit_spark'"),
+    true
+  );
+  const impactBlock = render.slice(render.indexOf('function drawEnemyImpactBurst'), render.indexOf('function drawBoard'));
+  assert.equal(impactBlock.includes('fillStyle'), false);
+  assert.equal(impactBlock.includes('strokeStyle'), false);
 });
 
 test('combat renderer grounds enemies with generated track trail sprites', async () => {

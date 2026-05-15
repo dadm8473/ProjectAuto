@@ -710,6 +710,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     width: 1024,
     height: 128,
     minRuntimeBytes: 28_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-enemy-impact-bursts.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-enemy-impact-bursts-chromakey-imagegen.png',
+    width: 768,
+    height: 160,
+    minRuntimeBytes: 30_000
   }
 ];
 
@@ -1536,5 +1543,21 @@ test('enemy track trail cells keep enemies grounded on the imagegen map', async 
     assert.equal(bounds.maxX <= cellWidth - 21, true, `enemy track trail cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 10, true, `enemy track trail cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 9, true, `enemy track trail cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('enemy impact burst cells keep hits readable without becoming screen-wide beams', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-enemy-impact-bursts.png'));
+  const cellWidth = 256;
+  assert.equal(image.width, cellWidth * 3);
+  assert.equal(image.height, 160);
+
+  for (let cell = 0; cell < 3; cell += 1) {
+    const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 28);
+    assert.equal(bounds.count > 2_000, true, `enemy impact burst cell ${cell} has no readable hit contact art`);
+    assert.equal(bounds.minX >= 16, true, `enemy impact burst cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 17, true, `enemy impact burst cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 10, true, `enemy impact burst cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 11, true, `enemy impact burst cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
 });

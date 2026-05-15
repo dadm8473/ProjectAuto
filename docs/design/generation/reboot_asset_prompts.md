@@ -830,6 +830,23 @@ Postprocess: remove #ff00ff chroma key with soft matte/despill, split the genera
 Acceptance: every enemy type receives a distinct ground contact trail drawn under the sprite, atlas corners are transparent, and enemies read as map objects rather than floating UI icons.
 ```
 
+## Runtime Prompt: Enemy Impact Bursts
+
+```text
+Use case: stylized-concept
+Asset type: project-bound transparent-feel PNG source for a mobile portrait cooperative tower-defense enemy hit impact atlas, later cropped to 768x160 with three equal 256x160 cells.
+Primary request: Create one wide horizontal three-panel sprite atlas for a polished Korean portrait mobile cooperative tower-defense game. Each panel is a compact hit-contact burst drawn ON TOP OF an enemy sprite at the exact damage point, making each attack feel tactile and satisfying without becoming a long screen-wide beam.
+Panels left to right: 1. normal hit: small cyan-white spark ring with tiny teal shards and a soft radial pulse. 2. heavy hit: amber-teal impact bloom with short angular shock fragments and a compact pressure ripple. 3. boss hit: larger red-teal shield crack burst, bright core, short radial energy scratches, premium clutch impact but still compact.
+Composition: exactly three side-by-side cells in one wide image, each cell centered with generous transparent padding; no backgrounds, no floor plane, no rectangular cards, no UI panels, no text. The art should fit around enemy sprites at phone scale and remain readable at 32-70px.
+Style: shipped mobile game VFX sprite art, glossy 2.5D sci-fi toy-mech world, teal energy plus amber gold accents with one red boss variant, consistent with Signal Relay assets. Crisp silhouette, soft antialiasing, luminous but not overexposed.
+Background for transparency processing: perfectly flat solid #ff00ff chroma-key background behind all subjects. The background must be one uniform color with no shadows, gradients, texture, reflections, floor plane, or lighting variation. Keep all VFX subjects fully separated from the background with crisp edges and generous padding. Do not use #ff00ff anywhere in the subjects.
+Avoid: any words, letters, numbers, logos, watermarks, dice, casino/gacha imagery, copied game UI, square icons, character bodies, enemy bodies, long horizontal beams, full-screen explosions, realistic humans, gore.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260516-enemy-impact-bursts-chromakey-imagegen.png
+Runtime file: src/client/assets/generated/reboot-enemy-impact-bursts.png
+Postprocess: remove #ff00ff chroma key with soft matte/despill, split the generated source into three cells, trim each cell to alpha bounds, fit into transparent 256x160 cells, then composite a 768x160 atlas.
+Acceptance: every hit lands with a compact generated contact burst at the target point, normal/heavy/boss hits read differently, and the effect never becomes a screen-wide beam or CSS-drawn flash.
+```
+
 ## 후처리 기준
 
 필수:

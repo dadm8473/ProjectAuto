@@ -177,6 +177,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     width: 1024,
     height: 128,
     source: 'imagegen'
+  },
+  enemyImpactBursts: {
+    src: '/src/client/assets/generated/reboot-enemy-impact-bursts.png?v=enemy-impact-bursts1',
+    width: 768,
+    height: 160,
+    source: 'imagegen'
   }
 };
 
@@ -263,7 +269,9 @@ export function createRebootAssetImages() {
   summonIgnition.src = REBOOT_EFFECT_MANIFEST.summonIgnition.src;
   const enemyTrackTrails = new Image();
   enemyTrackTrails.src = REBOOT_EFFECT_MANIFEST.enemyTrackTrails.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight, combatRevealVfx, summonIgnition, enemyTrackTrails };
+  const enemyImpactBursts = new Image();
+  enemyImpactBursts.src = REBOOT_EFFECT_MANIFEST.enemyImpactBursts.src;
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -480,6 +488,21 @@ function drawHitBoltSprite(ctx, image, from, to, targetType, alpha = 1) {
   ctx.rotate(angle);
   ctx.globalAlpha *= alpha;
   ctx.drawImage(image, boltIndex * cellWidth, 0, cellWidth, image.naturalHeight, -boltLength / 2, -height / 2, boltLength, height);
+  ctx.restore();
+  return true;
+}
+
+function drawEnemyImpactBurst(ctx, image, cx, cy, targetType, alpha = 1) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const boss = targetType === 'boss' || targetType === 'mini_boss';
+  const heavy = targetType === 'heavy_noise';
+  const index = boss ? 2 : heavy ? 1 : 0;
+  const cellWidth = image.naturalWidth / 3;
+  const size = boss ? 72 : heavy ? 58 : 46;
+  const y = cy - (boss ? 2 : 1);
+  ctx.save();
+  ctx.globalAlpha *= Math.min(0.96, alpha * (boss ? 1.1 : 1));
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, cx - size / 2, y - size / 2, size, size);
   ctx.restore();
   return true;
 }
@@ -899,6 +922,7 @@ function drawHitBeams(ctx, state, assets = {}, localBoardId = 'p1') {
       ctx.stroke();
       ctx.restore();
     }
+    drawEnemyImpactBurst(ctx, assets.enemyImpactBursts, to.x, to.y, effect.targetType, alpha);
     drawAtlasSprite(ctx, assets, 'vfx', 'enemy_hit_spark', to.x, to.y, effect.targetType === 'boss' ? 58 : 42, alpha);
   }
 }
