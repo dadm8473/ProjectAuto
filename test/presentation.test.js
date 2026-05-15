@@ -474,7 +474,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=locked-sockets1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-command-ribbons1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=locked-sockets1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-directive1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-grid1">'), false);
@@ -1231,6 +1232,34 @@ test('meta row actions use generated state buttons instead of generic web button
   );
   assert.equal(actionBlock.includes('background: linear-gradient'), false);
   assert.equal(actionBlock.includes('background-image: var(--screen-chrome);'), false);
+});
+
+test('meta shelf cards use generated command ribbons for labels prices and states', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--meta-command-ribbons: url("/src/client/assets/generated/reboot-meta-command-ribbons.png?v=meta-command-ribbons1")',
+    '.meta-shelf-grid .card-copy strong',
+    'background-image: var(--meta-command-ribbons)',
+    '.meta-shelf-grid .unit-cost,',
+    '.meta-shelf-grid .shop-price',
+    '.meta-shelf-grid .unit-card .card-copy p',
+    '.meta-shelf-grid .card-passive-state',
+    '.meta-shelf-grid .unit-card button,',
+    '.meta-shelf-grid .shop-card button',
+    'background-size: 400% 100%'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const genericReadyIndex = css.indexOf('.shop-card button:not(:disabled),');
+  const shelfReadyOverrideIndex = css.indexOf('.meta-shelf-grid .unit-card button:not(:disabled),');
+  assert.equal(shelfReadyOverrideIndex > genericReadyIndex, true, 'shelf command ribbon button state must override generic card button states');
+
+  const shelfReadyOverrideBlock = css.slice(shelfReadyOverrideIndex, css.indexOf('.result-overlay', shelfReadyOverrideIndex));
+  assert.equal(shelfReadyOverrideBlock.includes('background-image: var(--meta-command-ribbons);'), true);
+  assert.equal(shelfReadyOverrideBlock.includes('background-size: 400% 100%;'), true);
+  assert.equal(shelfReadyOverrideBlock.includes('background-position: 66.666% 0;'), true);
 });
 
 test('result screen uses generated status badges for win and loss peaks', async () => {

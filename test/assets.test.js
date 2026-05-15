@@ -321,6 +321,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 70_000
   },
   {
+    path: 'src/client/assets/generated/reboot-meta-command-ribbons.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260515-meta-command-ribbons-chromakey-imagegen.png',
+    width: 1024,
+    height: 256,
+    minRuntimeBytes: 40_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-splash-title-plate.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-splash-title-plate-imagegen.png',
     width: 430,
@@ -448,6 +455,12 @@ const TRANSPARENT_UI_FRAME_ASSETS = [
     minSoftCoverage: 0.14,
     maxSoftCoverage: 0.28,
     maxCornerAlpha: 32
+  },
+  {
+    path: 'src/client/assets/generated/reboot-meta-command-ribbons.png',
+    minSoftCoverage: 0.16,
+    maxSoftCoverage: 0.36,
+    maxCornerAlpha: 24
   },
   {
     path: 'src/client/assets/generated/reboot-meta-mini-badges.png',

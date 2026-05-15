@@ -56,6 +56,7 @@
   --meta-shelf-grid: url("/src/client/assets/generated/reboot-meta-shelf-grid.png?v=meta-shelf-grid1");
   --meta-progress-board: url("/src/client/assets/generated/reboot-meta-progress-board.png?v=meta-progress-board1");
   --meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions-alpha1");
+  --meta-command-ribbons: url("/src/client/assets/generated/reboot-meta-command-ribbons.png?v=meta-command-ribbons1");
   --meta-progress-bars: url("/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress");
   --meta-card-state-badges: url("/src/client/assets/generated/reboot-meta-card-state-badges.png?v=meta-card-states");
   --meta-claim-bursts: url("/src/client/assets/generated/reboot-meta-claim-bursts.png?v=claim-bursts");
@@ -2664,12 +2665,25 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .meta-shelf-grid .card-copy strong {
+  display: inline-grid;
+  width: min(100%, 138px);
+  min-height: 30px;
+  padding: 3px 18px 5px;
+  align-items: center;
+  justify-content: center;
   max-width: 100%;
   overflow: hidden;
+  color: #f7f1d9;
   font-size: clamp(15px, 4.3vw, 18px);
   line-height: 1.05;
   text-overflow: ellipsis;
   white-space: nowrap;
+  background-image: var(--meta-command-ribbons);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 0 0;
+  filter: drop-shadow(0 7px 12px rgba(0, 0, 0, 0.52));
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
 }
 
 .meta-shelf-grid .card-copy p {
@@ -2690,36 +2704,54 @@ body[data-app-screen="season"] .app-screen::after {
   display: none;
 }
 
+.meta-shelf-grid .unit-card .card-copy p {
+  display: none;
+}
+
 .meta-shelf-grid .meta-progress {
   display: none;
 }
 
 .meta-shelf-grid .unit-cost,
 .meta-shelf-grid .shop-price {
-  min-width: 54px;
-  min-height: 18px;
-  padding: 2px 7px 2px 24px;
+  min-width: 66px;
+  min-height: 22px;
+  padding: 3px 8px 3px 23px;
+  color: #fff0a8;
   font-size: 10px;
+  background-image: var(--meta-command-ribbons);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 33.333% 0;
+  filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.46));
 }
 
 .meta-shelf-grid .unit-card button,
 .meta-shelf-grid .shop-card button {
-  min-width: 78px;
+  min-width: 88px;
   min-height: 44px;
-  padding: 0 7px;
+  padding: 0 12px 2px;
   font-size: 11px;
+  background-image: var(--meta-command-ribbons);
+  background-size: 400% 100%;
+  background-position: 66.666% 0;
+  filter: saturate(1.12) brightness(1.05) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.48));
 }
 
 .meta-shelf-grid .card-passive-state {
-  min-width: 28px;
-  width: 28px;
-  min-height: 28px;
+  min-width: 42px;
+  width: 42px;
+  min-height: 36px;
   grid-template-columns: 1fr;
   gap: 0;
   padding: 0;
   overflow: hidden;
   font-size: 0;
-  background-image: none;
+  background-image: var(--meta-command-ribbons);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 100% 0;
+  filter: saturate(0.95) brightness(0.96) drop-shadow(0 5px 10px rgba(0, 0, 0, 0.45));
 }
 
 .meta-shelf-grid .card-passive-state::before {
@@ -2844,6 +2876,15 @@ body[data-app-screen="season"] .app-screen::after {
   background-position: 50% 0;
   color: var(--mint);
   opacity: 1;
+}
+
+.meta-shelf-grid .unit-card button:not(:disabled),
+.meta-shelf-grid .shop-card button:not(:disabled),
+.meta-shelf-grid .shop-card[data-owned="true"] button {
+  background-image: var(--meta-command-ribbons);
+  background-size: 400% 100%;
+  background-position: 66.666% 0;
+  color: #fff2b4;
 }
 
 .result-overlay {
