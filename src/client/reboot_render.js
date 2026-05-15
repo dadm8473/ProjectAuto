@@ -159,6 +159,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     width: 1920,
     height: 512,
     source: 'imagegen'
+  },
+  summonIgnition: {
+    src: '/src/client/assets/generated/reboot-summon-ignition-vfx.png?v=summon-ignition1',
+    width: 768,
+    height: 256,
+    source: 'imagegen'
   }
 };
 
@@ -239,7 +245,9 @@ export function createRebootAssetImages() {
   firstCommandSpotlight.src = REBOOT_EFFECT_MANIFEST.firstCommandSpotlight.src;
   const combatRevealVfx = new Image();
   combatRevealVfx.src = REBOOT_EFFECT_MANIFEST.combatRevealVfx.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight, combatRevealVfx };
+  const summonIgnition = new Image();
+  summonIgnition.src = REBOOT_EFFECT_MANIFEST.summonIgnition.src;
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight, combatRevealVfx, summonIgnition };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -358,6 +366,16 @@ function drawBossAuraSprite(ctx, image, index, cx, cy, w, h, alpha = 1) {
 function drawCombatRevealVfxSprite(ctx, image, index, cx, cy, w, h, alpha = 1) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const cellWidth = image.naturalWidth / 4;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, cx - w / 2, cy - h / 2, w, h);
+  ctx.restore();
+  return true;
+}
+
+function drawSummonIgnitionSprite(ctx, image, index, cx, cy, w, h, alpha = 1) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const cellWidth = image.naturalWidth / 3;
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, cx - w / 2, cy - h / 2, w, h);
@@ -848,6 +866,21 @@ function drawFirstSummonRewardSpotlight(ctx, state, assets = {}) {
   return drawImageCover(ctx, image, point.x - w / 2, point.y + 18 - h / 2, w, h, alpha);
 }
 
+function drawFirstSummonIgnition(ctx, state, assets = {}) {
+  const event = firstPlayerSummonRewardEvent(state);
+  const image = assets?.summonIgnition;
+  if (!event || !image?.complete || image.naturalWidth <= 0) return false;
+  const point = boardVfxPoint(state, event);
+  const elapsed = Math.max(0, state.now - event.at);
+  const alpha = Math.min(0.9, eventAlpha(state, event, 1.15) * 1.18);
+  const swell = 1 + Math.max(0, Math.sin(elapsed * Math.PI * 3.4)) * 0.08;
+
+  drawSummonIgnitionSprite(ctx, image, 0, point.x, point.y + 10, 150 * swell, 112 * swell, alpha * 0.88);
+  drawSummonIgnitionSprite(ctx, image, 1, point.x + 72, point.y - 66, 184, 104, alpha * 0.74);
+  drawSummonIgnitionSprite(ctx, image, 2, point.x + 40, point.y - 28, 96, 96, alpha * 0.82);
+  return true;
+}
+
 function drawFirstMergeRewardSigil(ctx, state, assets = {}, reducedMotion = false) {
   const event = firstPlayerRecentEvent(state, 'merge', 1.35);
   const image = assets?.cosmeticSigils;
@@ -957,6 +990,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawPartnerDangerCutin(ctx, state, assets);
   drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
   drawBoard(ctx, state.boards.p1, 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
+  drawFirstSummonIgnition(ctx, state, assets);
   drawFirstSummonRewardSpotlight(ctx, state, assets);
   drawFirstMergeRewardSigil(ctx, state, assets, options.reducedMotion);
   drawFirstRescueRewardSigil(ctx, state, assets, options.reducedMotion);

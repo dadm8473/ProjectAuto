@@ -402,6 +402,52 @@ test('first player summon gets a generated reward spotlight before the small fla
   assert.equal(spotlightIndex < summonVfxIndex, true, 'reward spotlight should establish the summon moment before the flash');
 });
 
+test('first player summon sends generated ignition from board toward track before flash', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 0.84,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard' }],
+      events: [{ type: 'summon', at: 0.64, playerId: 'p1' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      summonIgnition: image(768, 256),
+      firstCommandSpotlight: image(256, 128),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const ignitionDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 768
+      && command.args[0].naturalHeight === 256
+      && [0, 256, 512].includes(command.args[1])
+  ));
+  const summonVfxIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[1] === 0
+      && command.args[7] === 84
+  ));
+
+  assert.equal(ignitionDraws.length >= 3, true, 'expected landing ring, lane wake, and spark ignition cells');
+  assert.notEqual(summonVfxIndex, -1, 'expected summon flash to still draw');
+  assert.equal(ctx.commands.indexOf(ignitionDraws[0]) < summonVfxIndex, true, 'ignition should make the board feel alive before the small flash');
+});
+
 test('first player merge gets a generated board sigil before the burst', () => {
   const ctx = mockContext();
   drawRebootBattle(

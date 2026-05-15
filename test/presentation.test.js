@@ -1512,6 +1512,11 @@ test('combat renderer uses generated VFX atlas for action feedback', async () =>
 
   for (const marker of [
     'reboot-combat-vfx.png',
+    'reboot-summon-ignition-vfx.png?v=summon-ignition1',
+    'summonIgnition',
+    'function drawSummonIgnitionSprite',
+    'function drawFirstSummonIgnition',
+    'drawFirstSummonIgnition(ctx, state, assets);',
     "src: '/src/client/assets/generated/reboot-combat-reveal-vfx.png?v=reveal-vfx1'",
     'combatRevealVfx',
     'function drawCombatRevealVfxSprite',

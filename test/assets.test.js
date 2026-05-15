@@ -656,6 +656,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     width: 1920,
     height: 512,
     minRuntimeBytes: 80_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-summon-ignition-vfx.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260515-summon-ignition-vfx-chromakey-imagegen.png',
+    width: 768,
+    height: 256,
+    minRuntimeBytes: 24_000
   }
 ];
 
@@ -1429,5 +1436,21 @@ test('combat reveal VFX atlas keeps each random-action reveal readable and padde
     assert.equal(bounds.maxX <= cellWidth - 21, true, `combat reveal VFX cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 24, true, `combat reveal VFX cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 23, true, `combat reveal VFX cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('summon ignition VFX cells keep board-to-track feedback readable', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-summon-ignition-vfx.png'));
+  const cellWidth = 256;
+  assert.equal(image.width, cellWidth * 3);
+  assert.equal(image.height, 256);
+
+  for (let cell = 0; cell < 3; cell += 1) {
+    const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 24);
+    assert.equal(bounds.count > 1_800, true, `summon ignition cell ${cell} has no visible subject`);
+    assert.equal(bounds.minX >= 4, true, `summon ignition cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 5, true, `summon ignition cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 4, true, `summon ignition cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 5, true, `summon ignition cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
 });

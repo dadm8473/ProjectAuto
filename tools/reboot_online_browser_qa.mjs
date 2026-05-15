@@ -53,7 +53,18 @@ async function enterOnline(page, baseUrl) {
 }
 
 async function assertOnlineReady(page, label) {
-  await page.waitForFunction(() => document.querySelector('#netStatus')?.textContent === '온라인 협동');
+  await page.waitForFunction(() => {
+    const summon = document.querySelector('#summonButton');
+    const merge = document.querySelector('#mergeButton');
+    const rescue = document.querySelector('#rescueButton');
+    return document.querySelector('#netStatus')?.textContent === '온라인 협동'
+      && summon
+      && merge
+      && rescue
+      && !summon.disabled
+      && merge.disabled
+      && rescue.disabled;
+  });
   assert.equal(await page.locator('#netStatus').textContent(), '온라인 협동', `${label} online label`);
   assert.equal(await page.locator('#summonButton').isEnabled(), true, `${label} summon enabled`);
   assert.equal(await page.locator('#mergeButton').isEnabled(), false, `${label} merge starts locked`);
