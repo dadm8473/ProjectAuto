@@ -98,7 +98,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js'",
     "from './reboot_action_ui.js?v=status-prompt1'",
-    "from './reboot_render.js?v=online-matchmaking1'",
+    "from './reboot_render.js?v=moment-callout1'",
     "from './reboot_screens.js?v=meta-passive1'",
     "from './reboot_online.js'"
   ]) {
@@ -508,7 +508,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-passive1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=moment-callout1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reveal-vfx1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=status-prompt1"></script>'), false);
@@ -519,7 +519,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=online-matchmaking1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=moment-callout1'"), true);
   assert.equal(app.includes("from './reboot_render.js?v=reveal-vfx1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=boss-finale1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=rescue-reward1'"), false);
@@ -1421,13 +1421,18 @@ test('combat renderer uses generated moment callouts for successful actions', as
     "src: '/src/client/assets/generated/reboot-combat-moment-callouts.png?v=combat-moment-callouts'",
     'drawCombatMomentCallout',
     'drawMomentCalloutPanel',
-    "recentEvents(state, 'summon', 1.15)",
-    "recentEvents(state, 'merge', 1.15)",
-    "recentEvents(state, 'rescue', 1.15)",
+    'const MOMENT_CALLOUT_DURATION = 1.85;',
+    'const MOMENT_CALLOUT_FADE_SECONDS = 0.5;',
+    'function momentCalloutAlpha(state, event)',
+    "recentEvents(state, 'summon', MOMENT_CALLOUT_DURATION)",
+    "recentEvents(state, 'merge', MOMENT_CALLOUT_DURATION)",
+    "recentEvents(state, 'rescue', MOMENT_CALLOUT_DURATION)",
     'if (!assets.momentCallouts?.complete || assets.momentCallouts.naturalWidth <= 0) return;',
     'drawMomentCalloutPanel(ctx, assets.momentCallouts, meta.index, x, y, w, h, alpha);',
+    'const alpha = momentCalloutAlpha(state, event);',
     'const h = 122;',
     'const w = 330;',
+    'const y = 304 - rise;',
     'MOMENT_CALLOUTS',
     "'소환 성공'",
     "'합성 성공'",

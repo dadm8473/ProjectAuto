@@ -525,6 +525,96 @@ test('first player action clears the operation start cutin so combat feedback st
   assert.equal(summonVfxDraws.length >= 1, true, 'expected summon VFX to remain visible after first action');
 });
 
+test('combat moment callout stays readable long enough after the first summon', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 11.45,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard' }],
+      events: [{ type: 'summon', at: 10.1, playerId: 'p1' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      momentCallouts: image(1170, 144),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const calloutDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1170
+      && command.args[0].naturalHeight === 144
+  ));
+  assert.ok(calloutDraw, 'expected summon moment callout to remain visible after the action flash');
+  assert.equal(calloutDraw.args[6] <= 306, true, `moment callout should sit above the lower track haze: ${calloutDraw.args[6]}`);
+  const calloutIndex = ctx.commands.indexOf(calloutDraw);
+  const calloutAlpha = ctx.commands
+    .slice(0, calloutIndex)
+    .findLast((command) => command.type === 'globalAlpha')?.value ?? 0;
+  assert.equal(calloutAlpha >= 0.82, true, `moment callout should remain legible while the unit lands: ${calloutAlpha}`);
+});
+
+test('rescue moment callout stays below boss warning copy during crisis timing', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 93.45,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'mirror_port' }] },
+        p2: { danger: 70, units: [{ spriteKey: 'bloom_amp' }] }
+      },
+      enemies: [{ enemyId: 'mini_boss', spriteKey: 'mini_boss' }],
+      events: [{ type: 'rescue', at: 92.1, playerId: 'p1' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      bossCutin: image(390, 128),
+      momentCallouts: image(1170, 144),
+      playerBoardTray: image(780, 320),
+      bossAuras: image(768, 192),
+      crisisOverlays: image(780, 320)
+    }
+  );
+
+  const bossTitleIndex = ctx.commands.findIndex((command) => (
+    command.type === 'fillText' && command.args[0] === '보스 접근'
+  ));
+  const rescueCalloutDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1170
+      && command.args[0].naturalHeight === 144
+      && command.args[1] === 780
+  ));
+  assert.notEqual(bossTitleIndex, -1, 'expected boss warning title to render during crisis timing');
+  assert.ok(rescueCalloutDraw, 'expected rescue moment callout to render during crisis timing');
+  const calloutIndex = ctx.commands.indexOf(rescueCalloutDraw);
+  assert.equal(calloutIndex > bossTitleIndex, true, 'moment callout should be layered after the boss warning art');
+  assert.equal(rescueCalloutDraw.args[6] >= 300, true, `rescue callout should stay below boss warning copy: ${rescueCalloutDraw.args[6]}`);
+  assert.equal(rescueCalloutDraw.args[6] <= 306, true, `rescue callout should stay above lower track haze: ${rescueCalloutDraw.args[6]}`);
+  const calloutAlpha = ctx.commands
+    .slice(0, calloutIndex)
+    .findLast((command) => command.type === 'globalAlpha')?.value ?? 0;
+  assert.equal(calloutAlpha >= 0.82, true, `rescue callout should remain legible during boss warning: ${calloutAlpha}`);
+});
+
 test('operation start cutin clears quickly even before the first player action', () => {
   const ctx = mockContext();
   drawRebootBattle(

@@ -179,6 +179,9 @@ const PARTNER_ASSIST_PINGS = {
   rescue: { index: 1, icon: 'rescue_action', body: '구원 지원' }
 };
 
+const MOMENT_CALLOUT_DURATION = 1.85;
+const MOMENT_CALLOUT_FADE_SECONDS = 0.5;
+
 const COSMETIC_SIGIL_INDEX = {
   'mythic-aura': 0,
   'founder-board': 1,
@@ -681,6 +684,16 @@ function eventAlpha(state, event, windowSeconds = 0.9) {
   return Math.max(0, 1 - (state.now - event.at) / windowSeconds);
 }
 
+function momentCalloutAlpha(state, event) {
+  const elapsed = Math.max(0, state.now - event.at);
+  const entrance = Math.min(1, elapsed / 0.12);
+  const fadeStart = Math.max(0, MOMENT_CALLOUT_DURATION - MOMENT_CALLOUT_FADE_SECONDS);
+  const exit = elapsed <= fadeStart
+    ? 1
+    : Math.max(0, 1 - (elapsed - fadeStart) / MOMENT_CALLOUT_FADE_SECONDS);
+  return Math.min(0.98, entrance * exit * 0.98);
+}
+
 function boardSlotPoint(playerId, slotIndex = 0) {
   const compact = playerId === 'p2';
   const x = compact ? 28 : 24;
@@ -858,20 +871,20 @@ function drawFirstRescueRewardSigil(ctx, state, assets = {}, reducedMotion = fal
 
 function drawCombatMomentCallout(ctx, state, assets = {}) {
   const moments = [
-    ...recentEvents(state, 'summon', 1.15),
-    ...recentEvents(state, 'merge', 1.15),
-    ...recentEvents(state, 'rescue', 1.15)
+    ...recentEvents(state, 'summon', MOMENT_CALLOUT_DURATION),
+    ...recentEvents(state, 'merge', MOMENT_CALLOUT_DURATION),
+    ...recentEvents(state, 'rescue', MOMENT_CALLOUT_DURATION)
   ].sort((a, b) => a.at - b.at);
   const event = moments.at(-1);
   const meta = MOMENT_CALLOUTS[event?.type];
   if (!event || !meta) return;
 
-  const alpha = Math.min(0.96, eventAlpha(state, event, 1.15) * 1.18);
-  const rise = (1 - alpha) * 8;
+  const alpha = momentCalloutAlpha(state, event);
+  const rise = (1 - alpha) * 6;
   const x = 30;
   const w = 330;
   const h = 122;
-  const y = 328 - rise;
+  const y = 304 - rise;
 
   if (!assets.momentCallouts?.complete || assets.momentCallouts.naturalWidth <= 0) return;
   ctx.save();
@@ -880,7 +893,7 @@ function drawCombatMomentCallout(ctx, state, assets = {}) {
   ctx.globalAlpha *= alpha;
   ctx.fillStyle = '#fff7dc';
   ctx.shadowColor = meta.index === 1 ? '#f4c95d' : '#58d7ff';
-  ctx.shadowBlur = 12;
+  ctx.shadowBlur = 16;
   ctx.font = '900 18px system-ui';
   ctx.fillText(meta.title, x + 92, y + 58);
   ctx.shadowBlur = 0;
