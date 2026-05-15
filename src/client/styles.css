@@ -62,6 +62,7 @@
   --meta-progress-board: url("/src/client/assets/generated/reboot-meta-progress-board.png?v=meta-progress-board1");
   --meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions-alpha1");
   --meta-command-ribbons: url("/src/client/assets/generated/reboot-meta-command-ribbons.png?v=meta-command-ribbons1");
+  --meta-item-status-overlays: url("/src/client/assets/generated/reboot-meta-item-status-overlays.png?v=meta-item-status1");
   --meta-progress-bars: url("/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress");
   --meta-card-state-badges: url("/src/client/assets/generated/reboot-meta-card-state-badges.png?v=meta-card-states");
   --meta-claim-bursts: url("/src/client/assets/generated/reboot-meta-claim-bursts.png?v=claim-bursts");
@@ -2566,7 +2567,34 @@ body[data-app-screen="season"] .app-screen::after {
 
 .meta-shelf-grid .unit-card::before,
 .meta-shelf-grid .shop-card::before {
-  background-image: none;
+  inset: -13px -12px 12px;
+  background-image: var(--meta-item-status-overlays);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 0 0;
+  opacity: 0.9;
+  filter: saturate(1.08) brightness(1.04) drop-shadow(0 10px 18px rgba(0, 0, 0, 0.46));
+}
+
+.meta-shelf-grid .unit-card[data-tile-state="ready"]::before,
+.meta-shelf-grid .shop-card[data-tile-state="ready"]::before {
+  background-position: 0 0;
+}
+
+.meta-shelf-grid .unit-card[data-tile-state="locked"]::before,
+.meta-shelf-grid .shop-card[data-tile-state="locked"]::before {
+  background-position: 33.333% 0;
+  opacity: 0.82;
+  filter: saturate(0.88) brightness(0.92) drop-shadow(0 8px 15px rgba(0, 0, 0, 0.48));
+}
+
+.meta-shelf-grid .shop-card[data-tile-state="owned"]::before {
+  background-position: 66.666% 0;
+}
+
+.meta-shelf-grid .shop-card[data-tile-state="equipped"]::before {
+  background-position: 100% 0;
+  opacity: 0.96;
 }
 
 .mission-card,

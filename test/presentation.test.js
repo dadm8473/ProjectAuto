@@ -99,7 +99,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=action-focus2'",
     "from './reboot_render.js?v=first-summon-beacon1'",
-    "from './reboot_screens.js?v=objective-stamps1'",
+    "from './reboot_screens.js?v=meta-item-status1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -497,7 +497,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-capsules1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-item-status1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-capsules1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-command-dock1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=launch-console1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-rails1">'), false);
@@ -565,7 +566,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=first-summon-beacon1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-item-status1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=first-summon-beacon1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-capsules1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=pre-summon-cue1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-stamps1"></script>'), false);
@@ -612,7 +614,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=meta-item-status1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=post-reward-route1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-shelf-grid1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-badges1'"), false);
@@ -1010,7 +1013,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=result-capsules1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=meta-item-status1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -1434,6 +1437,38 @@ test('meta shelf cards use generated command ribbons for labels prices and state
   assert.equal(shelfReadyOverrideBlock.includes('background-image: var(--meta-command-ribbons);'), true);
   assert.equal(shelfReadyOverrideBlock.includes('background-size: 400% 100%;'), true);
   assert.equal(shelfReadyOverrideBlock.includes('background-position: 66.666% 0;'), true);
+});
+
+test('meta shelf tiles use generated status overlays instead of catalog cells', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const collection = buildRebootCollection({ xp: 40, unitLevels: { spark_pin: 1 } });
+  const shop = buildRebootShop({
+    gems: 100,
+    unlocks: ['founder-board'],
+    equippedCosmetic: 'founder-board'
+  });
+
+  for (const marker of [
+    '--meta-item-status-overlays: url("/src/client/assets/generated/reboot-meta-item-status-overlays.png?v=meta-item-status1")',
+    'data-tile-state="ready"',
+    'data-tile-state="locked"',
+    'data-tile-state="owned"',
+    'data-tile-state="equipped"',
+    '.meta-shelf-grid .unit-card::before,\n.meta-shelf-grid .shop-card::before',
+    'background-image: var(--meta-item-status-overlays);',
+    '.meta-shelf-grid .unit-card[data-tile-state="ready"]::before,',
+    '.meta-shelf-grid .shop-card[data-tile-state="ready"]::before',
+    '.meta-shelf-grid .unit-card[data-tile-state="locked"]::before,',
+    '.meta-shelf-grid .shop-card[data-tile-state="locked"]::before',
+    '.meta-shelf-grid .shop-card[data-tile-state="owned"]::before',
+    '.meta-shelf-grid .shop-card[data-tile-state="equipped"]::before'
+  ]) {
+    assert.equal(`${css}\n${collection}\n${shop}`.includes(marker), true, marker);
+  }
+
+  const overlayBlock = css.slice(css.indexOf('.meta-shelf-grid .unit-card::before,'), css.indexOf('.meta-shelf-grid .card-state-badge'));
+  assert.equal(overlayBlock.includes('background-image: none;'), false);
+  assert.equal(overlayBlock.includes('linear-gradient'), false);
 });
 
 test('result screen uses generated status badges for win and loss peaks', async () => {
@@ -3091,7 +3126,8 @@ test('collection and shop use a generated display shelf instead of list-only row
   }
 
   const shelfFrameBlock = css.slice(css.indexOf('.meta-shelf-grid .unit-card::before,'), css.indexOf('.meta-shelf-grid .card-state-badge'));
-  assert.equal(shelfFrameBlock.includes('background-image: none;'), true);
+  assert.equal(shelfFrameBlock.includes('background-image: var(--meta-item-status-overlays);'), true);
+  assert.equal(shelfFrameBlock.includes('background-size: 400% 100%;'), true);
 
   const shelfActionBlock = css.slice(css.indexOf('.meta-shelf-grid .unit-card button,'), css.indexOf('.meta-shelf-grid .card-passive-state'));
   assert.equal(shelfActionBlock.includes('min-height: 44px;'), true);

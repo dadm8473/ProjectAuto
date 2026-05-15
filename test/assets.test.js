@@ -615,6 +615,14 @@ const IMAGEGEN_REBOOT_META_OBJECTIVE_RAILS = {
   minRuntimeBytes: 50_000
 };
 
+const IMAGEGEN_REBOOT_META_ITEM_STATUS_OVERLAYS = {
+  path: 'src/client/assets/generated/reboot-meta-item-status-overlays.png',
+  source: 'docs/design/generation/source/reboot/style-lock/20260516-meta-item-status-overlays-chromakey-imagegen.png',
+  width: 896,
+  height: 512,
+  minRuntimeBytes: 300_000
+};
+
 const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
   {
     path: 'src/client/assets/generated/reboot-kill-burst.png',
@@ -1406,6 +1414,34 @@ test('reboot objective status stamps are promoted from imagegen sources', async 
   assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
   assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
   assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+});
+
+test('meta item status overlays are transparent generated shelf objects', async () => {
+  const asset = IMAGEGEN_REBOOT_META_ITEM_STATUS_OVERLAYS;
+  const source = await readFile(asset.source);
+  const runtime = await readFile(asset.path);
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+  assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+  assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+  assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+  assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+  const image = parsePng(runtime);
+  const cellWidth = image.width / 4;
+  const corners = [
+    alphaAt(image, 2, 2),
+    alphaAt(image, image.width - 3, 2),
+    alphaAt(image, 2, image.height - 3),
+    alphaAt(image, image.width - 3, image.height - 3)
+  ];
+  assert.equal(corners.every((alpha) => alpha < 10), true, `meta item status atlas has opaque corners: ${corners.join(',')}`);
+
+  for (let cell = 0; cell < 4; cell += 1) {
+    const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 32);
+    assert.equal(bounds.count > 28_000, true, `meta item status cell ${cell} has no readable object`);
+    assert.equal(bounds.maxY <= image.height - 112, true, `meta item status cell ${cell} drops into action text lane: ${JSON.stringify(bounds)}`);
+  }
 });
 
 test('reboot transparent combat effects are promoted from imagegen sources', async () => {

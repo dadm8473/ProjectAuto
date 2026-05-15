@@ -332,11 +332,12 @@ export function buildRebootCollection(profile = {}) {
     const level = unitLevels[unit.id] ?? 1;
     const cost = unitUpgradeCost(level);
     const ready = xp >= cost;
+    const tileState = ready ? 'ready' : 'locked';
     const action = ready
       ? `<button type="button" data-unit-upgrade="${unit.id}">훈련</button>`
       : passiveCardState('경험치 부족', 'locked', '부족');
     return `
-    <article class="screen-card unit-card" data-unit-card="${unit.id}" data-role="${unit.role}">
+    <article class="screen-card unit-card" data-unit-card="${unit.id}" data-role="${unit.role}" data-tile-state="${tileState}">
       ${cardStateBadge(ready ? 'ready' : 'locked')}
       <span class="sprite-token unit-sprite" data-sprite="${unit.spriteKey}"></span>
       <div class="card-copy">
@@ -375,6 +376,7 @@ export function buildRebootShop(profile = {}) {
     const price = item.price?.gems ?? 0;
     const locked = !owned && gems < price;
     const cardState = owned || equipped ? 'owned' : locked ? 'locked' : 'ready';
+    const tileState = equipped ? 'equipped' : owned ? 'owned' : locked ? 'locked' : 'ready';
     const action = equipped
       ? passiveCardState('장착중', 'owned')
       : owned
@@ -383,7 +385,7 @@ export function buildRebootShop(profile = {}) {
           ? passiveCardState('젬 부족', 'locked', '부족')
           : `<button type="button" data-shop-buy="${item.id}">해금</button>`;
     return `
-    <article class="screen-card shop-card" data-item="${item.id}" data-owned="${owned}" data-equipped="${equipped}">
+    <article class="screen-card shop-card" data-item="${item.id}" data-owned="${owned}" data-equipped="${equipped}" data-tile-state="${tileState}">
       ${cardStateBadge(cardState)}
       <span class="cosmetic-equip-aura" data-cosmetic-effect="${item.id}" aria-hidden="true"></span>
       <span class="sprite-token shop-cosmetic" data-shop-cosmetic="${item.id}"></span>
