@@ -565,7 +565,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=pre-summon-cue1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-capsules1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=pre-summon-cue1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-stamps1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-label1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-stamps1"></script>'), false);
