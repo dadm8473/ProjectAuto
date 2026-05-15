@@ -160,6 +160,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 70_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-first-command-dock.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-combat-first-command-dock-chromakey-imagegen.png',
+    width: 390,
+    height: 150,
+    minRuntimeBytes: 55_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-combat-meter-sockets.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-meter-sockets-imagegen.png',
     width: 768,
@@ -1054,6 +1061,29 @@ test('combat action dock fills the command row with generated console art', asyn
   assert.equal(lowerConsole.brightRatio < 0.36, true, `action dock lower controls are too busy behind buttons: ${lowerConsole.brightRatio}`);
   assert.equal(leftEdge.mean < 28, true, `action dock left edge looks clipped: ${leftEdge.mean}`);
   assert.equal(rightEdge.mean < 28, true, `action dock right edge looks clipped: ${rightEdge.mean}`);
+});
+
+test('combat first command dock cover hides empty lower sockets during one-button onboarding', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-combat-first-command-dock.png'));
+  assert.equal(image.width, 390);
+  assert.equal(image.height, 150);
+
+  const corners = [
+    alphaAt(image, 2, 2),
+    alphaAt(image, image.width - 3, 2),
+    alphaAt(image, 2, image.height - 3),
+    alphaAt(image, image.width - 3, image.height - 3)
+  ];
+  const commandHalo = luminanceStats(image, { x: 122, y: 24, width: 146, height: 72 }, 48);
+  const lowerShroud = luminanceStats(image, { x: 34, y: 106, width: 322, height: 34 }, 36);
+  const lowerSocketCyan = colorRatio(image, { x: 34, y: 104, width: 322, height: 38 }, (r, g, b) => r < 95 && g > 82 && b > 90);
+  const centerCoverage = alphaCoverage(image, { x: 58, y: 20, width: 274, height: 106 }, 42);
+
+  assert.equal(corners.every((alpha) => alpha < 12), true, `first command dock has opaque corners: ${corners.join(',')}`);
+  assert.equal(centerCoverage > 0.34, true, `first command dock has no readable central command platform: ${centerCoverage}`);
+  assert.equal(commandHalo.brightRatio > 0.12, true, `first command dock lacks a premium summon focus: ${commandHalo.brightRatio}`);
+  assert.equal(lowerShroud.mean < 44, true, `first command dock lower shroud is too bright and busy: ${lowerShroud.mean}`);
+  assert.equal(lowerSocketCyan < 0.09, true, `first command dock still reads as empty cyan sockets: ${lowerSocketCyan}`);
 });
 
 test('splash floor cap is a transparent matte bitmap, not another glowing button', async () => {

@@ -497,7 +497,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=launch-console1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-command-dock1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=launch-console1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-rails1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-verdict1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-outcome-aura1">'), false);
@@ -1003,7 +1004,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=launch-console1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=first-command-dock1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -3289,6 +3290,26 @@ test('combat shell chrome renders the generated action dock as a full command co
   }
 
   assert.equal(css.includes('body[data-app-screen="battle"] .hud::before {\n  background-image: var(--combat-hud-frame);'), true);
+});
+
+test('first combat command state covers empty dock sockets with a generated one-button shroud', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--combat-first-command-dock: url("/src/client/assets/generated/reboot-combat-first-command-dock.png?v=first-command-dock1")',
+    'body[data-app-screen="battle"] .action-panel:has(.primary-actions[data-open-count="1"])::after',
+    'background-image: var(--combat-first-command-dock);',
+    'inset: 0 0 var(--combat-action-safe-lift);',
+    'background-size: 100% 100%;',
+    'z-index: 0;',
+    'pointer-events: none;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const block = cssRuleBlock(css, 'body[data-app-screen="battle"] .action-panel:has(.primary-actions[data-open-count="1"])::after');
+  assert.equal(block.includes('linear-gradient'), false);
+  assert.equal(block.includes('border:'), false);
 });
 
 test('combat HUD keeps three resource meters bounded on compact phones', async () => {
