@@ -470,7 +470,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=chrome-surface1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=row-surface1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=chrome-surface1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-badges1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-clarity1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-dock1">'), false);
@@ -945,12 +946,18 @@ test('meta list rows use dedicated generated game row frames', async () => {
     '.mission-card::before { background-position: 66.666% 0; }',
     '.season-card::before { background-position: 100% 0; }',
     '.unit-card,\n.shop-card,\n.mission-card,\n.season-card {\n  border-color: transparent;',
-    'linear-gradient(90deg, rgba(2, 7, 8, 0.68), rgba(8, 18, 18, 0.54) 58%, rgba(2, 7, 8, 0.72));',
-    'backdrop-filter: none;',
     '.shop-card[data-owned="true"],\n.mission-card[data-owned="true"],\n.season-card[data-owned="true"] {\n  filter: saturate(1.12) brightness(1.08);'
   ]) {
     assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
   }
+
+  const rowSurfaceBlock = css.slice(
+    css.indexOf('.unit-card,\n.shop-card,\n.mission-card,\n.season-card'),
+    css.indexOf('.unit-card::before')
+  );
+  assert.equal(rowSurfaceBlock.includes('background: rgba(2, 7, 8, 0.58);'), true);
+  assert.equal(rowSurfaceBlock.includes('linear-gradient'), false);
+  assert.equal(rowSurfaceBlock.includes('backdrop-filter'), false);
 
   for (const marker of [
     '.shop-card button,\n.unit-card button,\n.mission-card button,\n.season-card button',
