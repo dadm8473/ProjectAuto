@@ -474,7 +474,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress-board1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-directive1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-grid1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-room-banners1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive-icon1">'), false);
@@ -786,6 +787,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
     '--combat-first-command-spotlight: url("/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=first-command")',
     '--combat-critical-action-rings: url("/src/client/assets/generated/reboot-critical-action-rings.png?v=critical-action-rings")',
     '--combat-coach-cues: url("/src/client/assets/generated/reboot-combat-coach-cues.png?v=combat-coach")',
+    '--combat-directive-banner: url("/src/client/assets/generated/reboot-combat-directive-banner.png?v=combat-directive1")',
     '.primary-actions button {\n  display: inline-flex;',
     'z-index: 1;',
     'background-image: var(--combat-action-buttons);',
@@ -802,6 +804,9 @@ test('combat action buttons use generated icons instead of text-only web buttons
     'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions::after',
     'body[data-app-screen="battle"][data-coach-cue="merge"] .primary-actions::after',
     'body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after',
+    'body[data-app-screen="battle"][data-coach-cue] .status-line:has(#bossMeter[hidden]) #timeMeter',
+    'background-image: var(--combat-directive-banner);',
+    'min-height: clamp(38px, 10.7vw, 46px);',
     '.primary-actions button::after',
     'background-image: var(--combat-action-ready-pulses);',
     '.primary-actions button:active:not(:disabled)',

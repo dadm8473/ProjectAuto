@@ -167,6 +167,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 40_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-directive-banner.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260515-combat-directive-banner-chromakey-imagegen.png',
+    width: 780,
+    height: 112,
+    minRuntimeBytes: 40_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-online-matchmaking-panels.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260515-online-matchmaking-panels-imagegen.png',
     width: 1170,
@@ -418,6 +425,11 @@ const TRANSPARENT_UI_FRAME_ASSETS = [
     path: 'src/client/assets/generated/reboot-combat-status-plates.png',
     minSoftCoverage: 0.12,
     maxSoftCoverage: 0.24
+  },
+  {
+    path: 'src/client/assets/generated/reboot-combat-directive-banner.png',
+    minSoftCoverage: 0.42,
+    maxSoftCoverage: 0.62
   },
   {
     path: 'src/client/assets/generated/reboot-meta-action-buttons.png',

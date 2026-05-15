@@ -63,6 +63,7 @@
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons-alpha1");
   --combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready");
+  --combat-directive-banner: url("/src/client/assets/generated/reboot-combat-directive-banner.png?v=combat-directive1");
   --combat-first-command-spotlight: url("/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=first-command");
   --combat-critical-action-rings: url("/src/client/assets/generated/reboot-critical-action-rings.png?v=critical-action-rings");
   --combat-coach-cues: url("/src/client/assets/generated/reboot-combat-coach-cues.png?v=combat-coach");
@@ -702,6 +703,18 @@ body[data-app-screen="season"] .toast {
 
 #timeMeter { background-position: 0 0; }
 #bossMeter { background-position: 100% 0; }
+
+body[data-app-screen="battle"][data-coach-cue] .status-line:has(#bossMeter[hidden]) #timeMeter {
+  min-height: clamp(38px, 10.7vw, 46px);
+  padding: 4px clamp(44px, 13vw, 58px);
+  background-image: var(--combat-directive-banner);
+  background-size: 100% 100%;
+  color: #fff6d4;
+  font-size: clamp(16px, 4.65vw, 20px);
+  font-weight: 1000;
+  letter-spacing: 0;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.76), 0 0 14px rgba(105, 243, 255, 0.34);
+}
 
 .status-line span[hidden] {
   display: none;
