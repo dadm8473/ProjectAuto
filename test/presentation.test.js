@@ -470,7 +470,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-badges1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=chrome-surface1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-badges1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-clarity1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-dock1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-density1">'), false);
@@ -884,6 +885,13 @@ test('meta screens use generated game chrome instead of css-only panels', async 
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
+
+  const sharedCardSurface = css.slice(
+    css.indexOf('.lobby-card,\n.screen-card,\n.result-panel'),
+    css.indexOf('.lobby-card::before')
+  );
+  assert.equal(sharedCardSurface.includes('linear-gradient'), false);
+  assert.equal(sharedCardSurface.includes('backdrop-filter'), false);
 });
 
 test('collection and shop start with generated showcase stages instead of list-first cards', async () => {
