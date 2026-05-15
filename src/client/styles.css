@@ -47,6 +47,7 @@
   --lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1");
   --lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next");
   --lobby-battle-ready-cue: url("/src/client/assets/generated/reboot-lobby-battle-ready-cue.png?v=battle-ready-cue");
+  --lobby-launch-console: url("/src/client/assets/generated/reboot-lobby-launch-console.png?v=launch-console1");
   --launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta-alpha1");
   --training-banner: url("/src/client/assets/generated/reboot-training-banner.png");
   --shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png");
@@ -1426,6 +1427,30 @@ body[data-app-screen="season"] .app-screen::after {
   background-repeat: no-repeat;
   background-size: 200% 100%;
   text-shadow: 0 2px 7px rgba(0, 0, 0, 0.46);
+}
+
+.launch-command-console {
+  position: relative;
+  align-self: stretch;
+  min-height: clamp(122px, 32vw, 134px);
+  display: grid;
+  gap: 8px;
+  padding: 8px clamp(10px, 3.2vw, 14px) 10px;
+  background-image: var(--lobby-launch-console);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.46));
+}
+
+.launch-command-console > .play-button,
+.launch-command-console > .match-button {
+  width: 100%;
+}
+
+.launch-command-console > .match-button {
+  width: min(86%, 320px);
+  justify-self: center;
 }
 
 .play-button {

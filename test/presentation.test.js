@@ -497,7 +497,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-rails1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=launch-console1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-rails1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-verdict1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-outcome-aura1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), false);
@@ -1002,7 +1003,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=objective-rails1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=launch-console1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -2334,6 +2335,8 @@ test('lobby launch actions use dedicated generated button frames', async () => {
   for (const marker of [
     '<span>첫 구원 작전 시작</span>',
     '<span>온라인 협동</span>',
+    '<div class="launch-command-console">',
+    '--lobby-launch-console: url("/src/client/assets/generated/reboot-lobby-launch-console.png?v=launch-console1")',
     '--lobby-online-button-height: 46px;',
     '--launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta-alpha1")',
     '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',
@@ -2357,6 +2360,32 @@ test('lobby launch actions use dedicated generated button frames', async () => {
   }
 
   assert.equal(css.includes('.play-button {\n  background: linear-gradient'), false);
+});
+
+test('lobby launch actions sit inside one generated command console', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '<div class="launch-command-console">',
+    '<button id="launchBotButton" class="play-button">',
+    '<button id="launchOnlineButton" class="match-button">',
+    '.launch-command-console {',
+    'background-image: var(--lobby-launch-console);',
+    'background-size: 100% 100%;',
+    'min-height: clamp(122px, 32vw, 134px);',
+    'padding: 8px clamp(10px, 3.2vw, 14px) 10px;'
+  ]) {
+    assert.equal(`${html}\n${css}`.includes(marker), true, marker);
+  }
+
+  const consoleStart = html.indexOf('<div class="launch-command-console">');
+  assert.equal(consoleStart < html.indexOf('<button id="launchBotButton"'), true);
+  assert.equal(consoleStart < html.indexOf('<button id="launchOnlineButton"'), true);
+
+  const consoleBlock = cssRuleBlock(css, '.launch-command-console');
+  assert.equal(consoleBlock.includes('linear-gradient'), false);
+  assert.equal(consoleBlock.includes('border:'), false);
 });
 
 test('splash and lobby use generated hero squad art instead of empty landing space', async () => {

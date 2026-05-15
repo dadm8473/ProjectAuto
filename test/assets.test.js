@@ -293,6 +293,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 45_000
   },
   {
+    path: 'src/client/assets/generated/reboot-lobby-launch-console.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-lobby-launch-console-chromakey-imagegen.png',
+    width: 390,
+    height: 150,
+    minRuntimeBytes: 45_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-lobby-intel-strips.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-lobby-intel-strips-imagegen.png',
     width: 860,
@@ -1284,6 +1291,28 @@ test('reboot launch button atlas keeps the primary CTA visibly gold on phone sca
   assert.equal(primaryGold > 0.22, true, `primary button is not gold enough: ${primaryGold}`);
   assert.equal(primaryBrightGold > 0.12, true, `primary button is too dim at phone scale: ${primaryBrightGold}`);
   assert.equal(secondaryTeal > 0.06, true, `secondary button lost its teal read: ${secondaryTeal}`);
+});
+
+test('lobby launch console is a transparent generated cradle for both launch actions', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-lobby-launch-console.png'));
+  assert.equal(image.width, 390);
+  assert.equal(image.height, 150);
+
+  const corners = [
+    alphaAt(image, 2, 2),
+    alphaAt(image, image.width - 3, 2),
+    alphaAt(image, 2, image.height - 3),
+    alphaAt(image, image.width - 3, image.height - 3)
+  ];
+  const bounds = alphaBounds(image, { x: 0, y: 0, width: image.width, height: image.height }, 32);
+  const centerCoverage = alphaCoverage(image, { x: 18, y: 18, width: 354, height: 114 }, 48);
+
+  assert.equal(corners.every((alpha) => alpha < 12), true, `launch console has opaque corners: ${corners.join(',')}`);
+  assert.equal(bounds.count > 14_000, true, `launch console has no readable generated cradle: ${JSON.stringify(bounds)}`);
+  assert.equal(centerCoverage > 0.2, true, 'launch console center is too empty to group the buttons');
+  assert.equal(centerCoverage < 0.94, true, 'launch console became a fully opaque web panel');
+  assert.equal(bounds.minX >= 4, true, `launch console touches left edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxX <= image.width - 5, true, `launch console touches right edge: ${JSON.stringify(bounds)}`);
 });
 
 test('reboot app icons are promoted from a dedicated imagegen source', async () => {
