@@ -4,7 +4,7 @@ import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=merge-reason1';
 import { buildCombatActionExposure, buildCombatCoachCue, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-focus1';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=merge-ready1';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=dual-crisis1';
 import {
   buildMetaNavAlerts,
   buildMissionScreen,
@@ -662,6 +662,7 @@ function loop(now) {
   drawRebootBattle(ctx, current, { width: dom.canvas.width, height: dom.canvas.height }, rebootAssets, {
     equippedCosmetic: profile.equippedCosmetic,
     reducedMotion: reduceMotion.matches,
+    localBoardId,
     onlineWaiting: waitingForOnlinePartner(current)
   });
   updateMeters(current);

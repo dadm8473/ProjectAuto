@@ -759,6 +759,87 @@ test('rescue moment callout stays below boss warning copy during crisis timing',
   assert.equal(calloutAlpha >= 0.82, true, `rescue callout should remain legible during boss warning: ${calloutAlpha}`);
 });
 
+test('playable partner danger overrides boss cutin with a generated dual crisis banner', () => {
+  const ctx = mockContext();
+  const dualCrisisCutin = image(390, 128);
+  const bossCutin = image(390, 128);
+  const rescueCutin = image(390, 112);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 93.2,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'burst_pin' }] },
+        p2: { danger: 86, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      resources: { p1: { rescue: 100 } },
+      actionState: { p1: { rescue: true } },
+      enemies: [{ enemyId: 'mini_boss', spriteKey: 'mini_boss' }],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      bossCutin,
+      rescueCutin,
+      dualCrisisCutin,
+      bossAuras: image(768, 192),
+      crisisOverlays: image(780, 320)
+    }
+  );
+
+  assert.equal(ctx.commands.some((command) => command.type === 'drawImage' && command.args[0] === dualCrisisCutin), true);
+  assert.equal(ctx.commands.some((command) => command.type === 'drawImage' && command.args[0] === bossCutin), false);
+  assert.equal(ctx.commands.some((command) => command.type === 'drawImage' && command.args[0] === rescueCutin), false);
+  assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '구원 우선'), true);
+});
+
+test('second online player sees their playable partner danger as the dual crisis banner', () => {
+  const ctx = mockContext();
+  const dualCrisisCutin = image(390, 128);
+  const bossCutin = image(390, 128);
+  const rescueCutin = image(390, 112);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 94.1,
+      boards: {
+        p1: { danger: 88, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [{ spriteKey: 'burst_pin' }] }
+      },
+      resources: { p2: { rescue: 100 } },
+      actionState: { p2: { rescue: true } },
+      enemies: [{ enemyId: 'mini_boss', spriteKey: 'mini_boss' }],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      bossCutin,
+      rescueCutin,
+      dualCrisisCutin,
+      bossAuras: image(768, 192),
+      crisisOverlays: image(780, 320)
+    },
+    { localBoardId: 'p2' }
+  );
+
+  assert.equal(ctx.commands.some((command) => command.type === 'drawImage' && command.args[0] === dualCrisisCutin), true);
+  assert.equal(ctx.commands.some((command) => command.type === 'drawImage' && command.args[0] === bossCutin), false);
+  assert.equal(ctx.commands.some((command) => command.type === 'drawImage' && command.args[0] === rescueCutin), false);
+  assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '구원 우선'), true);
+});
+
 test('operation start cutin clears before the first second even without player action', () => {
   const ctx = mockContext();
   drawRebootBattle(

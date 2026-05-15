@@ -72,6 +72,12 @@ export const REBOOT_CUTIN_MANIFEST = {
     width: 390,
     height: 112,
     source: 'imagegen'
+  },
+  dualCrisis: {
+    src: '/src/client/assets/generated/reboot-dual-crisis-cutin.png?v=dual-crisis1',
+    width: 390,
+    height: 128,
+    source: 'imagegen'
   }
 };
 
@@ -217,6 +223,8 @@ export function createRebootAssetImages() {
   bossCutin.src = REBOOT_CUTIN_MANIFEST.bossWarning.src;
   const rescueCutin = new Image();
   rescueCutin.src = REBOOT_CUTIN_MANIFEST.partnerDanger.src;
+  const dualCrisisCutin = new Image();
+  dualCrisisCutin.src = REBOOT_CUTIN_MANIFEST.dualCrisis.src;
   const killBurst = new Image();
   killBurst.src = REBOOT_EFFECT_MANIFEST.killBurst.src;
   const hitBeam = new Image();
@@ -247,7 +255,7 @@ export function createRebootAssetImages() {
   combatRevealVfx.src = REBOOT_EFFECT_MANIFEST.combatRevealVfx.src;
   const summonIgnition = new Image();
   summonIgnition.src = REBOOT_EFFECT_MANIFEST.summonIgnition.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight, combatRevealVfx, summonIgnition };
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight, combatRevealVfx, summonIgnition };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -541,6 +549,27 @@ function drawCosmeticSigilSprite(ctx, image, index, x, y, w, h, alpha = 1) {
   return true;
 }
 
+function normalizeBoardId(boardId) {
+  return boardId === 'p2' ? 'p2' : 'p1';
+}
+
+function partnerBoardId(localBoardId = 'p1') {
+  return normalizeBoardId(localBoardId) === 'p1' ? 'p2' : 'p1';
+}
+
+function partnerDangerActive(state, localBoardId = 'p1') {
+  const partnerId = partnerBoardId(localBoardId);
+  return (state.boards?.[partnerId]?.danger ?? 0) >= 80;
+}
+
+function rescuePriorityCrisis(state, localBoardId = 'p1') {
+  const bossWarning = state.now >= 92 && state.now < 102;
+  const selfId = normalizeBoardId(localBoardId);
+  const partnerDanger = partnerDangerActive(state, selfId);
+  const rescueReady = state.actionState?.[selfId]?.rescue === true || (state.resources?.[selfId]?.rescue ?? 0) >= 100;
+  return bossWarning && partnerDanger && rescueReady;
+}
+
 function drawBattleCosmeticSignature(ctx, assets, equippedCosmetic, now = 0, reducedMotion = false) {
   const index = COSMETIC_SIGIL_INDEX[equippedCosmetic];
   const image = assets?.cosmeticSigils;
@@ -549,10 +578,14 @@ function drawBattleCosmeticSignature(ctx, assets, equippedCosmetic, now = 0, red
   return drawCosmeticSigilSprite(ctx, image, index, 35, 476, 320, 86, alpha);
 }
 
-function drawCombatCrisisOverlays(ctx, state, assets = {}) {
+function drawCombatCrisisOverlays(ctx, state, assets = {}, localBoardId = 'p1') {
   const bossWarning = state.now >= 92 && state.now < 102;
-  const partnerDanger = state.boards.p2.danger >= 80;
+  const partnerDanger = partnerDangerActive(state, localBoardId);
   if (bossWarning) {
+    if (rescuePriorityCrisis(state, localBoardId)) {
+      const alpha = 0.5 + Math.max(0, Math.sin(state.now * 7)) * 0.12;
+      return drawCrisisOverlayPanel(ctx, assets.crisisOverlays, 1, 0, 126, 390, 160, alpha);
+    }
     const alpha = 0.5 + Math.max(0, Math.sin(state.now * 8)) * 0.12;
     return drawCrisisOverlayPanel(ctx, assets.crisisOverlays, 0, 0, 210, 390, 160, alpha);
   }
@@ -585,8 +618,35 @@ function drawBossWarningCutin(ctx, state, assets = {}) {
   return true;
 }
 
-function drawPartnerDangerCutin(ctx, state, assets = {}) {
-  const partnerDanger = state.boards.p2.danger >= 80;
+function drawDualCrisisCutin(ctx, state, assets = {}, localBoardId = 'p1') {
+  if (!rescuePriorityCrisis(state, localBoardId)) return false;
+  const image = assets?.dualCrisisCutin;
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const alpha = 0.8 + Math.max(0, Math.sin(state.now * 8)) * 0.08;
+  ctx.save();
+  drawImageCover(ctx, image, 0, 196, 390, 128, alpha);
+  drawAtlasSprite(ctx, assets, 'ui', 'rescue_action', 50, 257, 40, 0.95);
+  drawAtlasSprite(ctx, assets, 'ui', 'boss_warning', 292, 257, 34, 0.72);
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = 'rgba(2, 6, 7, 0.72)';
+  ctx.fillStyle = '#fff7dc';
+  ctx.shadowColor = '#58d7ff';
+  ctx.shadowBlur = 16;
+  ctx.font = '900 20px system-ui';
+  ctx.strokeText?.('구원 우선', 84, 246);
+  ctx.fillText('구원 우선', 84, 246);
+  ctx.shadowBlur = 0;
+  ctx.lineWidth = 3;
+  ctx.fillStyle = 'rgba(245, 240, 220, 0.84)';
+  ctx.font = '800 11px system-ui';
+  ctx.strokeText?.('파트너 위험 · 보스 접근', 84, 265);
+  ctx.fillText('파트너 위험 · 보스 접근', 84, 265);
+  ctx.restore();
+  return true;
+}
+
+function drawPartnerDangerCutin(ctx, state, assets = {}, localBoardId = 'p1') {
+  const partnerDanger = partnerDangerActive(state, localBoardId);
   if (!partnerDanger) return false;
   if (state.now >= 92 && state.now < 102) return false;
   const rescueAssist = recentEvents(state, 'partner_auto', 1.35).some((event) => event.action === 'rescue');
@@ -985,9 +1045,13 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawBoard(ctx, state.boards.p2, 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
   drawTrack(ctx, state, assets, imageBackdrop);
   if (!options.onlineWaiting) drawCombatStartCutin(ctx, state, assets);
-  drawCombatCrisisOverlays(ctx, state, assets);
-  drawBossWarningCutin(ctx, state, assets);
-  drawPartnerDangerCutin(ctx, state, assets);
+  const localBoardId = normalizeBoardId(options.localBoardId);
+  drawCombatCrisisOverlays(ctx, state, assets, localBoardId);
+  const drewDualCrisis = drawDualCrisisCutin(ctx, state, assets, localBoardId);
+  if (!drewDualCrisis) {
+    drawBossWarningCutin(ctx, state, assets);
+    drawPartnerDangerCutin(ctx, state, assets, localBoardId);
+  }
   drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
   drawBoard(ctx, state.boards.p1, 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
   drawFirstSummonIgnition(ctx, state, assets);

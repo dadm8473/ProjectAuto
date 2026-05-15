@@ -98,7 +98,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=action-focus1'",
-    "from './reboot_render.js?v=merge-ready1'",
+    "from './reboot_render.js?v=dual-crisis1'",
     "from './reboot_screens.js?v=post-reward-route1'",
     "from './reboot_online.js'"
   ]) {
@@ -553,7 +553,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-partner-link1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=dual-crisis1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-partner-link1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=post-reward-route1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-progress-board1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-grid1"></script>'), false);
@@ -572,7 +573,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=merge-ready1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=dual-crisis1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=merge-ready1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=start-cutin1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=moment-callout1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=reveal-vfx1'"), false);
@@ -1607,6 +1609,7 @@ test('equipped cosmetics appear in battle as generated expression sigils only', 
     'drawRebootBattle(ctx, current, { width: dom.canvas.width, height: dom.canvas.height }, rebootAssets, {',
     'equippedCosmetic: profile.equippedCosmetic',
     'reducedMotion: reduceMotion.matches',
+    'localBoardId',
     'onlineWaiting: waitingForOnlinePartner(current)'
   ]) {
     assert.equal(`${app}\n${render}`.includes(marker), true, marker);
@@ -1736,10 +1739,12 @@ test('combat renderer uses generated crisis overlays for boss and partner danger
     'drawCombatCrisisOverlays',
     'drawCrisisOverlayPanel',
     'state.now >= 92 && state.now < 102',
-    'state.boards.p2.danger >= 80',
+    "function partnerBoardId(localBoardId = 'p1')",
+    'const partnerId = partnerBoardId(localBoardId);',
+    'return (state.boards?.[partnerId]?.danger ?? 0) >= 80;',
     'drawCrisisOverlayPanel(ctx, assets.crisisOverlays, 0, 0, 210, 390, 160',
     'drawCrisisOverlayPanel(ctx, assets.crisisOverlays, 1, 0, 126, 390, 160',
-    'drawCombatCrisisOverlays(ctx, state, assets)'
+    'drawCombatCrisisOverlays(ctx, state, assets, localBoardId)'
   ]) {
     assert.equal(render.includes(marker), true, marker);
   }
@@ -1778,8 +1783,18 @@ test('boss crisis presentation takes priority over partner danger overlays', asy
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
   for (const marker of [
+    'function normalizeBoardId',
+    'function rescuePriorityCrisis',
+    'const selfId = normalizeBoardId(localBoardId);',
+    'const rescueReady = state.actionState?.[selfId]?.rescue === true || (state.resources?.[selfId]?.rescue ?? 0) >= 100;',
     'if (bossWarning) {',
+    'if (rescuePriorityCrisis(state, localBoardId)) {',
+    'return drawCrisisOverlayPanel(ctx, assets.crisisOverlays, 1, 0, 126, 390, 160',
     'return drawCrisisOverlayPanel(ctx, assets.crisisOverlays, 0, 0, 210, 390, 160',
+    'function drawDualCrisisCutin',
+    'const image = assets?.dualCrisisCutin;',
+    "ctx.fillText('구원 우선'",
+    "ctx.fillText('파트너 위험 · 보스 접근'",
     'if (state.now >= 92 && state.now < 102) return false;'
   ]) {
     assert.equal(render.includes(marker), true, marker);
@@ -1857,9 +1872,9 @@ test('partner danger uses a dedicated generated rescue cutin', async () => {
     'reboot-rescue-cutin.png',
     'rescueCutin',
     'drawPartnerDangerCutin',
-    'state.boards.p2.danger >= 80',
+    'const partnerDanger = partnerDangerActive(state, localBoardId);',
     'drawImageCover(ctx, image, 0, 160, 390, 112',
-    'drawPartnerDangerCutin(ctx, state, assets)'
+    'drawPartnerDangerCutin(ctx, state, assets, localBoardId)'
   ]) {
     assert.equal(render.includes(marker), true, marker);
   }

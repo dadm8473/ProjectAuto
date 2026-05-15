@@ -756,6 +756,21 @@ Runtime files:
 - src/client/assets/generated/reboot-online-partner-link.png
 ```
 
+## Runtime Prompt: Dual Crisis Cutin
+
+```text
+Use case: stylized-concept
+Asset type: ProjectAuto runtime combat cut-in banner, final crop is 390x128.
+Primary request: Create one high-end Korean mobile sci-fi tower-defense crisis banner for a portrait game screen. It represents two simultaneous threats: the partner board is in danger and a boss is approaching, but the visual priority is a rescue response.
+Composition: wide cinematic horizontal banner, no text. Left third has a compact partner board rescue beacon with teal shield pulse and urgent warm red rim. Center has a bright teal rescue link core as the focal point. Right third has a distant red boss silhouette or portal alarm as secondary priority. Use layered glass, polished metal frame fragments, teal-gold energy, and warm red warning accents.
+Style/medium: polished 2D mobile game UI art, consistent with ProjectAuto reboot assets, tactile glossy metal/glass, compact, premium, dramatic but not noisy.
+Constraints: no words, letters, numbers, watermark, casino/dice/gacha imagery, copied game UI, or flat web-card rectangles.
+Postprocess: resize/crop generated image to 390x128 runtime PNG.
+Runtime files:
+- docs/design/generation/source/reboot/style-lock/20260515-dual-crisis-cutin-imagegen.png
+- src/client/assets/generated/reboot-dual-crisis-cutin.png
+```
+
 ## Runtime Postprocess: UI Frame Alpha Cleanup
 
 ```text
