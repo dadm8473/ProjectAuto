@@ -194,7 +194,7 @@ async function verifyShell(page, viewport) {
   await assertSplashCtaClearsBottomDeck(page);
 
   await page.getByRole('button', { name: '시작' }).click();
-  await page.getByRole('button', { name: '봇과 시작' }).waitFor({ state: 'visible' });
+  await page.getByRole('button', { name: '첫 구원 작전 시작' }).waitFor({ state: 'visible' });
   assert.equal(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await page.getByRole('button', { name: '유닛' }).click();
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
@@ -221,7 +221,7 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#seasonList .season-card').count(), 4);
   await page.getByRole('button', { name: '홈' }).click();
 
-  await page.getByRole('button', { name: '봇과 시작' }).click();
+  await page.getByRole('button', { name: '첫 구원 작전 시작' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });
   assert.equal(await page.locator('.action-panel button').count(), 3);
   assert.equal(await page.locator('#shopButton, #passButton, #adButton, #paidReviveButton').count(), 0);
@@ -235,7 +235,7 @@ async function verifyShell(page, viewport) {
 async function verifyFastPlaythrough(page) {
   await page.goto(withParam(baseUrl, 'qaFast', '1'), { waitUntil: 'load' });
   await page.getByRole('button', { name: '시작' }).click();
-  await page.getByRole('button', { name: '봇과 시작' }).click();
+  await page.getByRole('button', { name: '첫 구원 작전 시작' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });
 
   const events = [];

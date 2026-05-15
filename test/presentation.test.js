@@ -474,7 +474,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-focus1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-cta1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-focus1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-claim-primary1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-disabled1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-wipe1">'), false);
@@ -1941,6 +1942,9 @@ test('lobby launch actions use dedicated generated button frames', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
+    '<span>첫 구원 작전 시작</span>',
+    '<span>온라인 협동</span>',
+    '--lobby-online-button-height: 46px;',
     '--launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta-alpha1")',
     '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',
     '/src/client/assets/generated/reboot-launch-secondary.png?v=gold-cta-alpha1',
@@ -1949,7 +1953,12 @@ test('lobby launch actions use dedicated generated button frames', async () => {
     'background-image: var(--launch-buttons)',
     'background-size: 200% 100%',
     '.play-button {\n  background-color: transparent;\n  background-image: var(--launch-buttons);',
-    '.match-button {\n  background-color: transparent;\n  background-image: var(--launch-buttons);',
+    '.match-button {',
+    'background-color: transparent;',
+    'background-image: var(--launch-buttons);',
+    'min-height: var(--lobby-online-button-height);',
+    'width: min(82%, 320px);',
+    'opacity: 0.74;',
     '.screen-overlay .play-button,\n.screen-overlay .match-button {\n  background: transparent;',
     '.screen-overlay .play-button::before,\n.screen-overlay .match-button::before {\n  background-image: none;',
     '.play-button > span,\n.match-button > span'
@@ -2012,12 +2021,13 @@ test('lobby portrait layout budget keeps poster actions and dock from overlappin
     poster: cssPxVar(css, '--lobby-operation-poster-height'),
     intel: cssPxVar(css, '--lobby-intel-strip-height'),
     launch: cssPxVar(css, '--lobby-launch-button-height'),
+    onlineLaunch: cssPxVar(css, '--lobby-online-button-height'),
     dockButton: cssPxVar(css, '--lobby-bottom-dock-button-height'),
     dockPaddingY: cssPxVar(css, '--lobby-bottom-dock-padding-y'),
     dockRendered: cssPxVar(css, '--lobby-bottom-dock-rendered-height'),
     dockBottom: cssPxVar(css, '--lobby-bottom-dock-bottom')
   };
-  const stackHeight = layout.poster + layout.intel * 2 + layout.launch * 2 + layout.gap * 2;
+  const stackHeight = layout.poster + layout.intel * 2 + layout.launch + layout.onlineLaunch + layout.gap * 2;
   const dockHeight = layout.dockRendered;
 
   for (const viewport of [
@@ -2032,6 +2042,7 @@ test('lobby portrait layout budget keeps poster actions and dock from overlappin
     assert.ok(stackTop >= layout.topPad + 104, `${viewport.width} stack starts too high: ${stackTop}`);
     assert.ok(dockGap >= 32, `${viewport.width} dock overlaps lobby actions: ${dockGap}`);
     assert.ok(layout.launch >= 54, `${viewport.width} launch CTA lost touch height`);
+    assert.ok(layout.onlineLaunch >= 42, `${viewport.width} online option lost touch height`);
     assert.ok(layout.dockButton >= 64, `${viewport.width} dock buttons lost touch height`);
     assert.ok(layout.dockRendered >= layout.dockButton + layout.dockPaddingY * 2 + 4, `${viewport.width} dock render budget is too optimistic`);
   }

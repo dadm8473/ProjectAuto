@@ -74,6 +74,7 @@
   --lobby-operation-poster-height: 154px;
   --lobby-intel-strip-height: 72px;
   --lobby-launch-button-height: 54px;
+  --lobby-online-button-height: 46px;
   --lobby-bottom-dock-button-height: 64px;
   --lobby-bottom-dock-padding-y: 6px;
   --lobby-bottom-dock-rendered-height: 80px;
@@ -1224,9 +1225,13 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .match-button {
+  width: min(82%, 320px);
+  min-height: var(--lobby-online-button-height);
+  align-self: center;
   background-color: transparent;
   background-image: var(--launch-buttons);
   background-position: 100% 0;
+  opacity: 0.74;
 }
 
 .launch-button-frame {
@@ -1243,6 +1248,10 @@ body[data-app-screen="season"] .app-screen::after {
 .match-button > span {
   position: relative;
   z-index: 1;
+}
+
+.match-button > span {
+  font-size: clamp(18px, 5.12vw, 22px);
 }
 
 .bottom-dock {
