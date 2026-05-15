@@ -2537,6 +2537,16 @@ body[data-app-screen="season"] .app-screen::after {
   font-size: 12px;
 }
 
+#resultTitle,
+#resultReason,
+#resultNextGoal {
+  position: relative;
+  z-index: 3;
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.24);
+  paint-order: stroke fill;
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.52), 0 8px 16px rgba(0, 0, 0, 0.28);
+}
+
 .result-panel strong {
   font-size: 30px;
 }
@@ -2588,6 +2598,7 @@ body[data-app-screen="season"] .app-screen::after {
   background-size: 200% 100%;
   overflow: hidden;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.62);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.46), 0 6px 14px rgba(0, 0, 0, 0.24);
 }
 
 .result-highlights span {

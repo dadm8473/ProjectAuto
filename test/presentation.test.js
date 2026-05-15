@@ -470,7 +470,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-clarity1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-dock1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-density1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-matchmaking1">'), false);
@@ -1310,6 +1310,25 @@ test('result title and guidance copy use generated plate frames', async () => {
   const copyBlock = css.slice(css.indexOf('#resultTitle'), css.indexOf('.result-actions'));
   assert.equal(copyBlock.includes('border: 1px solid'), false);
   assert.equal(copyBlock.includes('linear-gradient'), false);
+});
+
+test('result debrief copy plates protect text from generated finale effects', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '#resultTitle,\n#resultReason,\n#resultNextGoal',
+    'z-index: 3;',
+    '-webkit-text-stroke: 1px rgba(0, 0, 0, 0.24);',
+    'box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.52), 0 8px 16px rgba(0, 0, 0, 0.28);',
+    '.result-highlights span,\n.result-reward',
+    'box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.46), 0 6px 14px rgba(0, 0, 0, 0.24);'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const copyBlock = css.slice(css.indexOf('#resultTitle'), css.indexOf('.result-actions'));
+  assert.equal(copyBlock.includes('linear-gradient'), false);
+  assert.equal(copyBlock.includes('backdrop-filter'), false);
 });
 
 test('shop equipped cosmetics use generated expression aura instead of inert owned buttons', async () => {
