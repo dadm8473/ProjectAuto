@@ -132,6 +132,32 @@ function passiveCardState(label, state = 'locked', displayLabel = label) {
   return `<span class="card-passive-state" data-passive-state="${state}" aria-label="${label}">${displayLabel}</span>`;
 }
 
+function rewardGrantLabel(grant = {}) {
+  if (grant.gems) return `${grant.gems} 젬`;
+  if (grant.cosmetic) return '외형';
+  return '보상';
+}
+
+function rewardGrantCompactLabel(grant = {}) {
+  if (grant.gems) return `${grant.gems}젬`;
+  return rewardGrantLabel(grant);
+}
+
+function objectiveStateLabel(state) {
+  if (state === 'claimed') return '받음';
+  if (state === 'ready') return '수령 가능';
+  return '진행중';
+}
+
+function objectiveAction(kind, state, control) {
+  return `
+      <div class="objective-action" data-objective-kind="${kind}" data-objective-state="${state}">
+        <span class="objective-status-stamp" data-objective-kind="${kind}" data-objective-state="${state}" aria-hidden="true"></span>
+        ${control}
+      </div>
+  `;
+}
+
 export function buildMetaNavAlerts(profile = {}) {
   return {
     collection: countTrainableUnits(profile) > 0,
@@ -383,23 +409,25 @@ export function buildMissionScreen(profile = {}) {
     const received = claimed.has(mission.id);
     const stampState = missionState(progress, mission.target, received);
     const cardState = missionCardState(stampState);
+    const actionLabel = objectiveStateLabel(stampState);
+    const rewardLabel = rewardGrantLabel(mission.reward);
     const action = received
       ? passiveCardState('받음', 'owned')
       : done
         ? `<button type="button" data-mission-claim="${mission.id}">수령</button>`
         : passiveCardState('진행중', 'locked');
     return `
-    <article class="screen-card mission-card" data-mission="${mission.id}" data-owned="${received}">
+    <article class="screen-card mission-card" data-mission="${mission.id}" data-owned="${received}" data-objective-state="${stampState}" aria-label="${mission.title} · 미션 진행 ${progress}/${mission.target} · 보상 ${rewardLabel} · ${actionLabel}">
       ${cardStateBadge(cardState)}
       <span class="reward-token mission-reward-token" data-reward-icon="${rewardIconForGrant(mission.reward, 'mission')}"></span>
       <div class="card-copy">
         <span class="role-pill">미션</span>
         <strong>${mission.title}</strong>
-        <p>${mission.goal}</p>
+        <p class="objective-detail">${mission.goal}</p>
         ${buildMetaProgress('mission', progress, mission.target, `미션 진행 ${progress}/${mission.target}`)}
-        <span class="shop-price">${mission.reward.gems} 젬</span>
+        <span class="objective-cost shop-price">${rewardLabel}</span>
       </div>
-      ${action}
+      ${objectiveAction('mission', stampState, action)}
     </article>
   `;
   }).join('');
@@ -407,9 +435,7 @@ export function buildMissionScreen(profile = {}) {
 }
 
 function seasonRewardLabel(grant = {}) {
-  if (grant.gems) return `${grant.gems} 젬`;
-  if (grant.cosmetic) return '외형';
-  return '보상';
+  return rewardGrantLabel(grant);
 }
 
 function rewardIconForGrant(grant = {}, source = 'mission') {
@@ -427,24 +453,27 @@ export function buildSeasonScreen(profile = {}) {
     const done = xp >= tier.xp;
     const received = claimed.has(index);
     const progress = Math.min(tier.xp, xp);
-    const cardState = seasonCardState(seasonState(xp, tier, index, claimed));
+    const stampState = seasonState(xp, tier, index, claimed);
+    const cardState = seasonCardState(stampState);
+    const actionLabel = objectiveStateLabel(stampState);
+    const rewardLabel = seasonRewardLabel(tier.grant);
     const action = received
       ? passiveCardState('받음', 'owned')
       : done
         ? `<button type="button" data-pass-claim="${index}">수령</button>`
         : passiveCardState('진행중', 'locked');
     return `
-    <article class="screen-card season-card" data-pass-tier="${index}" data-owned="${received}">
+    <article class="screen-card season-card" data-pass-tier="${index}" data-owned="${received}" data-objective-state="${stampState}" aria-label="${index + 1}단계 · 시즌 경험치 ${progress}/${tier.xp} · 보상 ${rewardLabel} · ${actionLabel}">
       ${cardStateBadge(cardState)}
       <span class="reward-token season-reward-token" data-reward-icon="${rewardIconForGrant(tier.grant, 'season')}"></span>
       <div class="card-copy">
         <span class="role-pill">시즌</span>
-        <strong>${index + 1}단계 · ${seasonRewardLabel(tier.grant)}</strong>
-        <p>${progress}/${tier.xp} 경험치</p>
+        <strong>${index + 1}단계 · ${rewardGrantCompactLabel(tier.grant)}</strong>
+        <p class="objective-detail">${progress}/${tier.xp} 경험치</p>
         ${buildMetaProgress('season', progress, tier.xp, `시즌 경험치 ${progress}/${tier.xp}`)}
-        <span class="shop-price">${tier.xp} 경험치</span>
+        <span class="objective-cost shop-price">${tier.xp} 경험치</span>
       </div>
-      ${action}
+      ${objectiveAction('season', stampState, action)}
     </article>
   `;
   }).join('');

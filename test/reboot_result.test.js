@@ -380,6 +380,9 @@ test('season progress board uses compact reward names for phone slots', () => {
   const season = buildSeasonScreen({ xp: 0, claimedPassTiers: [] });
 
   assert.equal(season.includes('2단계 · 외형'), true);
+  assert.equal(season.includes('<strong>1단계 · 20젬</strong>'), true);
+  assert.equal(season.includes('<strong>3단계 · 80젬</strong>'), true);
+  assert.equal(season.includes('<strong>3단계 · 80 젬</strong>'), false);
   assert.equal(season.includes('외형 보상'), false);
 });
 
@@ -444,6 +447,24 @@ test('mission screen renders profile progress and claim states', () => {
   assert.equal(missions.includes('>수령<'), true);
 });
 
+test('mission and season objective rows keep readable labels while reducing visible copy', () => {
+  const missions = buildMissionScreen({
+    processedRuns: ['run-1'],
+    unitLevels: { spark_pin: 2 },
+    unlocks: [],
+    claimedMissions: ['first-run']
+  });
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
+
+  assert.equal(missions.includes('aria-label="첫 작전 완료 · 미션 진행 1/1 · 보상 20 젬 · 받음"'), true);
+  assert.equal(missions.includes('aria-label="유닛 훈련 · 미션 진행 1/1 · 보상 20 젬 · 수령 가능"'), true);
+  assert.equal(missions.includes('aria-label="외형 해금 · 미션 진행 0/1 · 보상 25 젬 · 진행중"'), true);
+  assert.equal(season.includes('aria-label="1단계 · 시즌 경험치 60/60 · 보상 20 젬 · 받음"'), true);
+  assert.equal(season.includes('aria-label="2단계 · 시즌 경험치 80/160 · 보상 외형 · 진행중"'), true);
+  assert.equal(missions.includes('class="objective-detail"'), true);
+  assert.equal(season.includes('class="objective-cost shop-price"'), true);
+});
+
 test('meta progression surfaces render compact visual progress bars', () => {
   const collection = buildRebootCollection({ xp: 20, unitLevels: {} });
   const missions = buildMissionScreen({ processedRuns: ['run-1'], unitLevels: {}, unlocks: [], claimedMissions: [] });
@@ -496,7 +517,7 @@ test('mission goals stay compact enough for portrait mission cards', () => {
     unlocks: ['mythic-aura'],
     claimedMissions: []
   });
-  const goals = [...missions.matchAll(/<article class="screen-card mission-card"[\s\S]*?<p>(.*?)<\/p>/g)]
+  const goals = [...missions.matchAll(/<article class="screen-card mission-card"[\s\S]*?<p(?: class="objective-detail")?>(.*?)<\/p>/g)]
     .map((match) => match[1]);
 
   assert.equal(goals.length >= 3, true);

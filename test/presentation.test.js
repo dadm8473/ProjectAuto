@@ -99,7 +99,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=action-focus2'",
     "from './reboot_render.js?v=action-stamps1'",
-    "from './reboot_screens.js?v=post-reward-route1'",
+    "from './reboot_screens.js?v=objective-stamps1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -497,7 +497,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-summon-console1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-summon-console1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=nav-selector1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=cooldown-label1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-cooldown-shutters1">'), false);
@@ -558,7 +559,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-label1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-stamps1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-label1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-stamps1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-impact-bursts1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-track-trails1"></script>'), false);
@@ -599,7 +601,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=post-reward-route1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=post-reward-route1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-shelf-grid1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-badges1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-passive1'"), false);
@@ -996,7 +999,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=first-summon-console1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=objective-stamps1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -2972,7 +2975,7 @@ test('mission and season use a generated progress board instead of bare stacked 
   for (const marker of [
     'background: transparent;',
     'box-shadow: none;',
-    'grid-template-columns: clamp(58px, 17vw, 74px) 1fr clamp(54px, 16vw, 70px);'
+    'grid-template-columns: clamp(58px, 17vw, 74px) 1fr clamp(62px, 18vw, 82px);'
   ]) {
     assert.equal(boardCardBlock.includes(marker), true, marker);
   }
@@ -3032,6 +3035,49 @@ test('mission and season rows show generated reward tokens', async () => {
   ]) {
     assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
   }
+});
+
+test('mission and season rows use generated objective status stamps instead of text-heavy list actions', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const missions = buildMissionScreen({
+    processedRuns: ['run-1'],
+    unitLevels: { spark_pin: 2 },
+    unlocks: [],
+    claimedMissions: ['first-run']
+  });
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
+  const combined = `${css}\n${missions}\n${season}`;
+
+  for (const marker of [
+    '--meta-objective-status-stamps: url("/src/client/assets/generated/reboot-meta-objective-status-stamps.png?v=objective-stamps1")',
+    'class="objective-action"',
+    'class="objective-status-stamp"',
+    'class="objective-detail"',
+    'class="objective-cost shop-price"',
+    'data-objective-kind="mission"',
+    'data-objective-kind="season"',
+    'data-objective-state="claimed"',
+    'data-objective-state="ready"',
+    'data-objective-state="locked"',
+    '.objective-status-stamp',
+    'background-image: var(--meta-objective-status-stamps);',
+    'background-size: 300% 100%;',
+    '.objective-status-stamp[data-objective-state="claimed"]',
+    'background-position: 50% 0;',
+    '.objective-status-stamp[data-objective-state="locked"]',
+    'background-position: 100% 0;'
+  ]) {
+    assert.equal(combined.includes(marker), true, marker);
+  }
+
+  const detailBlock = cssRuleBlock(css, '.meta-progress-board .objective-detail,\n.meta-progress-board .objective-cost');
+  assert.equal(detailBlock.includes('position: absolute;'), true);
+  assert.equal(detailBlock.includes('clip: rect(0 0 0 0);'), true);
+  assert.equal(detailBlock.includes('white-space: nowrap;'), true);
+
+  const claimButtonBlock = cssRuleBlock(css, '.meta-progress-board .mission-card button,\n.meta-progress-board .season-card button');
+  assert.equal(claimButtonBlock.includes('min-height: 44px;'), true);
+  assert.equal(claimButtonBlock.includes('min-height: 26px;'), false);
 });
 
 test('combat resource HUD uses generated icons instead of text-only chips', async () => {

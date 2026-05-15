@@ -61,6 +61,7 @@
   --meta-progress-bars: url("/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress");
   --meta-card-state-badges: url("/src/client/assets/generated/reboot-meta-card-state-badges.png?v=meta-card-states");
   --meta-claim-bursts: url("/src/client/assets/generated/reboot-meta-claim-bursts.png?v=claim-bursts");
+  --meta-objective-status-stamps: url("/src/client/assets/generated/reboot-meta-objective-status-stamps.png?v=objective-stamps1");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons-alpha1");
@@ -2533,7 +2534,7 @@ body[data-app-screen="season"] .app-screen::after {
 .meta-progress-board .season-card {
   min-height: 0;
   display: grid;
-  grid-template-columns: clamp(58px, 17vw, 74px) 1fr clamp(54px, 16vw, 70px);
+  grid-template-columns: clamp(58px, 17vw, 74px) 1fr clamp(62px, 18vw, 82px);
   align-items: center;
   column-gap: clamp(7px, 2.4vw, 12px);
   padding: 6px clamp(16px, 4.8vw, 22px) 6px clamp(9px, 3vw, 14px);
@@ -2958,6 +2959,19 @@ body[data-app-screen="season"] .app-screen::after {
   white-space: nowrap;
 }
 
+.meta-progress-board .objective-detail,
+.meta-progress-board .objective-cost {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .meta-progress-board .meta-progress {
   width: min(100%, 148px);
   height: 16px;
@@ -2972,22 +2986,63 @@ body[data-app-screen="season"] .app-screen::after {
 
 .meta-progress-board .mission-card button,
 .meta-progress-board .season-card button {
-  min-width: 62px;
+  z-index: 2;
+  align-self: end;
+  min-width: 54px;
   min-height: 44px;
+  margin-bottom: -11px;
   padding: 0 7px;
-  font-size: 11px;
+  font-size: 10px;
+  background-size: 300% 100%;
+}
+
+.objective-action {
+  position: relative;
+  z-index: 2;
+  justify-self: end;
+  width: clamp(58px, 17vw, 74px);
+  min-height: clamp(64px, 18vw, 80px);
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 28px;
+  justify-items: center;
+  align-items: center;
+  isolation: isolate;
+}
+
+.objective-status-stamp {
+  grid-row: 1 / 3;
+  grid-column: 1;
+  width: clamp(48px, 14vw, 62px);
+  aspect-ratio: 1 / 1;
+  pointer-events: none;
+  background-image: var(--meta-objective-status-stamps);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  background-position: 0 0;
+  filter: saturate(1.1) drop-shadow(0 8px 13px rgba(0, 0, 0, 0.58));
+}
+
+.objective-status-stamp[data-objective-state="claimed"] {
+  background-position: 50% 0;
+}
+
+.objective-status-stamp[data-objective-state="locked"] {
+  background-position: 100% 0;
+  filter: saturate(0.82) brightness(0.78) drop-shadow(0 7px 11px rgba(0, 0, 0, 0.54));
 }
 
 .meta-progress-board .card-passive-state {
-  justify-self: center;
-  min-width: 28px;
-  width: 28px;
-  min-height: 28px;
-  grid-template-columns: 1fr;
-  gap: 0;
+  position: absolute;
+  width: 1px;
+  min-width: 1px;
+  height: 1px;
+  min-height: 1px;
+  margin: -1px;
   padding: 0;
   overflow: hidden;
-  font-size: 0;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
   background-image: none;
 }
 
