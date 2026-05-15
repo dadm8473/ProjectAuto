@@ -288,6 +288,11 @@ function formatResultRewards(rewards) {
   }).join(' · ');
 }
 
+function resultRewardMarkup(rewards) {
+  const rewardLabel = formatResultRewards(rewards);
+  return `<span class="result-reward-label">획득</span><strong class="result-reward-value">${rewardLabel}</strong>`;
+}
+
 function resultHighlightMarkup(model) {
   return `<span><i class="result-medal" data-result-medal="${model.highlight.medal}" aria-hidden="true"></i><b>${model.highlight.label}</b></span>`;
 }
@@ -637,7 +642,7 @@ function showResult(current) {
   dom.resultReason.textContent = model.reason.label;
   dom.resultNextGoal.textContent = model.nextGoal.label;
   dom.resultHighlights.innerHTML = resultHighlightMarkup(model);
-  dom.resultReward.textContent = formatResultRewards(model.rewards);
+  dom.resultReward.innerHTML = resultRewardMarkup(model.rewards);
   dom.resultLobbyLabel.textContent = model.secondaryAction.label;
   dom.resultLobbyButton.dataset.resultOpen = model.secondaryAction.action;
   dom.resultOverlay.hidden = false;

@@ -497,7 +497,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-command-dock1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-capsules1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-command-dock1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=launch-console1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-rails1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-verdict1">'), false);
@@ -1006,7 +1007,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=first-command-dock1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-capsules1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -1548,15 +1549,19 @@ test('result debrief stays usable on short portrait phones', async () => {
     '--result-panel-top-pad: clamp(108px, calc(var(--result-panel-width) * 0.31), 128px);',
     '@media (max-height: 620px)',
     '.result-panel {\n    gap: 6px;',
-    '.result-panel strong {\n    font-size: 24px;',
+    '#resultTitle {\n    min-height: 52px;\n    font-size: 24px;',
     '.result-panel p {\n    line-height: 1.12;',
-    '.result-highlights span,\n  .result-reward {\n    min-height: 44px;',
-    '.result-reward::before {\n    width: 28px;',
-    '.result-reward::after {\n    width: 38px;',
+    '.result-highlights span {\n    min-height: 44px;',
+    '.result-reward {\n    min-height: 68px;\n    grid-template-columns: 64px minmax(0, 1fr) 48px;',
+    '.result-reward::before {\n    left: -2px;\n    width: 78px;',
+    '.result-reward::after {\n    right: 0;\n    width: 58px;',
     '.result-overlay .result-action-button {\n    min-height: 44px;'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
+
+  assert.equal(css.includes('.result-highlights span,\n  .result-reward {\n    min-height: 44px;'), false);
+  assert.equal(css.includes('.result-panel strong {\n    font-size: 24px;'), false);
 });
 
 test('result actions use dedicated generated button frames', async () => {
@@ -1617,7 +1622,7 @@ test('result reward copy names the earned currency instead of a generic reward n
   for (const marker of [
     'function formatResultRewards(rewards)',
     "if (reward.type === 'soft') return `젬 +${reward.amount}`;",
-    'dom.resultReward.textContent = formatResultRewards(model.rewards);'
+    'resultRewardMarkup(model.rewards)'
   ]) {
     assert.equal(app.includes(marker), true, marker);
   }
@@ -1625,7 +1630,36 @@ test('result reward copy names the earned currency instead of a generic reward n
   assert.equal(app.includes('`보상 ${reward.amount}`'), false);
 });
 
-test('result highlights and reward use generated strip frames', async () => {
+test('result reward uses a generated claim capsule instead of a text strip', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    '--result-reward-capsules: url("/src/client/assets/generated/reboot-result-reward-capsules.png?v=result-capsules1")',
+    '.result-reward-label',
+    '.result-reward-value',
+    'background-image: var(--result-reward-capsules);',
+    'background-size: 300% 100%;',
+    'display: block;\n  align-self: start;\n  color: #fff4c2;',
+    'function resultRewardMarkup(rewards)',
+    'class="result-reward-label"',
+    'class="result-reward-value"',
+    'dom.resultReward.innerHTML = resultRewardMarkup(model.rewards);'
+  ]) {
+    assert.equal(`${css}\n${app}`.includes(marker), true, marker);
+  }
+
+  const rewardStart = css.indexOf('\n.result-reward {', css.indexOf('.result-medal[data-result-medal="tactics"]'));
+  assert.notEqual(rewardStart, -1, '.result-reward block is missing');
+  const rewardEnd = css.indexOf('\n}', rewardStart);
+  const rewardBlock = css.slice(rewardStart, rewardEnd + 2);
+  assert.equal(rewardBlock.includes('background-image: var(--result-detail-strips);'), false);
+  assert.equal(css.includes('.result-panel strong {\n  font-size: 30px;'), false);
+  assert.equal(css.includes('#resultTitle {\n  display: grid;'), true);
+  assert.equal(css.includes('font-size: clamp(18px, calc(var(--result-panel-width) * 0.058), 23px);'), true);
+});
+
+test('result highlights use generated strip frames while reward uses a loot capsule', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
@@ -1636,19 +1670,23 @@ test('result highlights and reward use generated strip frames', async () => {
     'min-height: 48px;',
     'border: 0;',
     '.result-highlights span {\n  background-position: 0 0;',
-    '.result-reward {\n  display: flex;',
-    'background-position: 100% 0;',
-    '.result-highlights span,\n  .result-reward {\n    min-height: 44px;'
+    '.result-highlights span {\n    min-height: 44px;'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
 
-  const stripBlock = css.slice(
+  const sharedStripBlock = css.slice(
     css.indexOf('.result-highlights span,\n.result-reward'),
     css.indexOf('.result-reward::before')
   );
-  assert.equal(stripBlock.includes('background: rgba(88, 215, 255, 0.1);'), false);
-  assert.equal(stripBlock.includes('border: 1px solid rgba(88, 215, 255, 0.22);'), false);
+  const rewardStart = css.indexOf('\n.result-reward {', css.indexOf('.result-medal[data-result-medal="tactics"]'));
+  assert.notEqual(rewardStart, -1, '.result-reward block is missing');
+  const rewardEnd = css.indexOf('\n}', rewardStart);
+  const rewardBlock = css.slice(rewardStart, rewardEnd + 2);
+  assert.equal(sharedStripBlock.includes('background: rgba(88, 215, 255, 0.1);'), false);
+  assert.equal(sharedStripBlock.includes('border: 1px solid rgba(88, 215, 255, 0.22);'), false);
+  assert.equal(rewardBlock.includes('display: grid;'), true);
+  assert.equal(rewardBlock.includes('background-image: none;'), true);
 });
 
 test('result highlights use generated run medal badges instead of text-only callouts', async () => {

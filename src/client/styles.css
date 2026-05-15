@@ -22,6 +22,7 @@
   --result-verdict-ribbons: url("/src/client/assets/generated/reboot-result-verdict-ribbons.png?v=result-verdict1");
   --result-hero-stage: url("/src/client/assets/generated/reboot-result-hero-stage.png?v=result-hero-stage1");
   --result-outcome-auras: url("/src/client/assets/generated/reboot-result-outcome-auras.png?v=result-outcome-aura1");
+  --result-reward-capsules: url("/src/client/assets/generated/reboot-result-reward-capsules.png?v=result-capsules1");
   --result-finale-bursts: url("/src/client/assets/generated/reboot-result-finale-bursts.png?v=result-finale");
   --result-medals: url("/src/client/assets/generated/reboot-result-medals.png?v=result-medals");
   --toast-callouts: url("/src/client/assets/generated/reboot-toast-callouts.png?v=toast-callouts");
@@ -3332,6 +3333,7 @@ body[data-app-screen="season"] .app-screen::after {
   min-height: 64px;
   padding: 0 18px;
   color: var(--ink);
+  font-size: 30px;
   background: transparent;
   background-image: var(--result-copy-plates);
   background-repeat: no-repeat;
@@ -3373,10 +3375,6 @@ body[data-app-screen="season"] .app-screen::after {
   -webkit-text-stroke: 1px rgba(0, 0, 0, 0.24);
   paint-order: stroke fill;
   box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.52), 0 8px 16px rgba(0, 0, 0, 0.28);
-}
-
-.result-panel strong {
-  font-size: 30px;
 }
 
 .result-actions {
@@ -3467,43 +3465,89 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .result-reward {
-  display: flex;
+  position: relative;
+  min-height: clamp(72px, calc(var(--result-panel-width) * 0.22), 88px);
+  display: grid;
+  grid-template-columns: clamp(76px, calc(var(--result-panel-width) * 0.22), 92px) minmax(0, 1fr) clamp(56px, calc(var(--result-panel-width) * 0.16), 70px);
   align-items: center;
-  gap: 8px;
-  background-position: 100% 0;
+  gap: 4px;
+  padding: 6px clamp(52px, calc(var(--result-panel-width) * 0.16), 66px) 7px clamp(78px, calc(var(--result-panel-width) * 0.24), 96px);
+  overflow: visible;
+  isolation: isolate;
+  background-image: none;
+  box-shadow: none;
 }
 
 .result-reward::before {
   content: "";
-  width: 34px;
-  height: 34px;
-  flex: 0 0 34px;
-  background-image: url("/src/client/assets/generated/reboot-reward-icons.png");
+  position: absolute;
+  left: clamp(-6px, calc(var(--result-panel-width) * -0.015), 0px);
+  top: 50%;
+  z-index: 0;
+  width: clamp(104px, calc(var(--result-panel-width) * 0.31), 126px);
+  aspect-ratio: 1 / 1;
+  transform: translateY(-50%);
+  pointer-events: none;
+  background-image: var(--result-reward-capsules);
   background-repeat: no-repeat;
-  background-size: 136px 34px;
+  background-size: 300% 100%;
   background-position: 0 0;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.42));
+  filter: saturate(1.08) drop-shadow(0 12px 18px rgba(0, 0, 0, 0.54));
 }
 
 .result-reward::after {
   content: "";
-  width: 56px;
-  height: 56px;
-  flex: 0 0 56px;
-  margin-left: auto;
-  background-image: var(--reward-burst);
+  position: absolute;
+  right: clamp(-8px, calc(var(--result-panel-width) * -0.018), 0px);
+  top: 50%;
+  z-index: 0;
+  width: clamp(82px, calc(var(--result-panel-width) * 0.24), 98px);
+  aspect-ratio: 1 / 1;
+  transform: translateY(-50%);
+  pointer-events: none;
+  background-image: var(--result-reward-capsules);
   background-repeat: no-repeat;
-  background-size: 224px 56px;
-  background-position: -112px 0;
-  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.48));
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  filter: saturate(1.14) drop-shadow(0 12px 18px rgba(0, 0, 0, 0.5));
+  opacity: 0.9;
 }
 
 .result-overlay[data-result-status="won"] .result-reward::after {
-  background-position: 0 0;
+  background-position: 100% 0;
+  opacity: 0.92;
 }
 
 .result-overlay[data-result-status="lost"] .result-reward::after {
-  background-position: -56px 0;
+  background-position: 50% 0;
+  opacity: 0.68;
+}
+
+.result-reward-label,
+.result-reward-value {
+  position: relative;
+  z-index: 1;
+  grid-column: 2;
+  min-width: 0;
+  text-align: center;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.78), 0 0 12px rgba(88, 215, 255, 0.22);
+}
+
+.result-reward-label {
+  align-self: end;
+  color: var(--mint);
+  font-size: 10px;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.result-reward-value {
+  display: block;
+  align-self: start;
+  color: #fff4c2;
+  font-size: clamp(18px, calc(var(--result-panel-width) * 0.058), 23px);
+  line-height: 1.02;
+  white-space: nowrap;
 }
 
 @media (max-height: 620px) {
@@ -3511,12 +3555,9 @@ body[data-app-screen="season"] .app-screen::after {
     gap: 6px;
   }
 
-  .result-panel strong {
-    font-size: 24px;
-  }
-
   #resultTitle {
     min-height: 52px;
+    font-size: 24px;
   }
 
   .result-panel p {
@@ -3530,33 +3571,37 @@ body[data-app-screen="season"] .app-screen::after {
     font-size: 11px;
   }
 
-  .result-highlights span,
-  .result-reward {
+  .result-highlights span {
     min-height: 44px;
     padding: 6px 10px;
   }
 
+  .result-reward {
+    min-height: 68px;
+    grid-template-columns: 64px minmax(0, 1fr) 48px;
+    padding: 5px 50px 6px 72px;
+  }
+
   .result-reward::before {
-    width: 28px;
-    height: 28px;
-    flex-basis: 28px;
-    background-size: 112px 28px;
+    left: -2px;
+    width: 78px;
   }
 
   .result-reward::after {
-    width: 38px;
-    height: 38px;
-    flex-basis: 38px;
-    background-size: 152px 38px;
-    background-position: -76px 0;
+    right: 0;
+    width: 58px;
   }
 
   .result-overlay[data-result-status="won"] .result-reward::after {
-    background-position: 0 0;
+    background-position: 100% 0;
   }
 
   .result-overlay[data-result-status="lost"] .result-reward::after {
-    background-position: -38px 0;
+    background-position: 50% 0;
+  }
+
+  .result-reward-value {
+    font-size: 17px;
   }
 
   .result-overlay .result-action-button {

@@ -244,6 +244,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 30_000
   },
   {
+    path: 'src/client/assets/generated/reboot-result-reward-capsules.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-result-reward-capsules-chromakey-imagegen.png',
+    width: 2048,
+    height: 768,
+    minRuntimeBytes: 500_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-result-copy-plates.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-result-copy-plates-imagegen.png',
     width: 780,
@@ -1719,6 +1726,40 @@ test('result medal cells stay readable and transparent for phone result strips',
     assert.equal(bounds.maxX <= cellWidth - 13, true, `result medal cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 10, true, `result medal cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 11, true, `result medal cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('result reward capsule cells stay transparent and read as collectible loot objects', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-result-reward-capsules.png'));
+  for (let cell = 0; cell < 3; cell += 1) {
+    const x0 = Math.round((cell * image.width) / 3);
+    const x1 = Math.round(((cell + 1) * image.width) / 3);
+    const cellWidth = x1 - x0;
+    const corners = [
+      alphaAt(image, x0 + 2, 2),
+      alphaAt(image, x1 - 3, 2),
+      alphaAt(image, x0 + 2, image.height - 3),
+      alphaAt(image, x1 - 3, image.height - 3)
+    ];
+    const bounds = alphaBounds(image, { x: x0, y: 0, width: cellWidth, height: image.height }, 32);
+    const centerCoverage = alphaCoverage(
+      image,
+      {
+        x: x0 + Math.round(cellWidth * 0.26),
+        y: Math.round(image.height * 0.24),
+        width: Math.round(cellWidth * 0.48),
+        height: Math.round(image.height * 0.52)
+      },
+      48
+    );
+
+    assert.equal(corners.every((alpha) => alpha < 10), true, `reward capsule cell ${cell} has opaque corners: ${corners.join(',')}`);
+    assert.equal(bounds.count > 120_000, true, `reward capsule cell ${cell} has no readable generated object`);
+    assert.equal(centerCoverage > 0.7, true, `reward capsule cell ${cell} lacks a dense loot-object center`);
+    assert.equal(bounds.minX >= 36, true, `reward capsule cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 37, true, `reward capsule cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 40, true, `reward capsule cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 41, true, `reward capsule cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
 });
 
