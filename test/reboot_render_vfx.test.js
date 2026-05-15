@@ -474,6 +474,47 @@ test('pre-summon board cue stays hidden while waiting for an online partner', ()
   assert.equal(cueDraws.length, 0, 'online waiting must not show a playable first-summon socket cue');
 });
 
+test('first summon cue owns attention after the brief operation intro', () => {
+  const ctx = mockContext();
+  const firstCommandSpotlight = image(256, 128);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 0.62,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard' }],
+      events: [],
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      startCutin: image(390, 112),
+      firstCommandSpotlight,
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const startCutinDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 390
+      && command.args[0].naturalHeight === 112
+  ));
+  const cueDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === firstCommandSpotlight
+  ));
+
+  assert.deepEqual(startCutinDraws, []);
+  assert.equal(cueDraws.length >= 1, true, 'expected first summon socket cue to remain after the intro clears');
+});
+
 test('first player summon sends generated ignition from board toward track before flash', () => {
   const ctx = mockContext();
   drawRebootBattle(

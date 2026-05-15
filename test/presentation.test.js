@@ -2071,17 +2071,19 @@ test('combat starts with a generated operation cutin instead of a silent canvas 
     'const startCutin = new Image();',
     'startCutin.src = REBOOT_CUTIN_MANIFEST.operationStart.src;',
     'drawCombatStartCutin',
-    'if (state.now >= 0.82) return false;',
-    '0.82 - state.now',
+    'OPERATION_START_CUTIN_END',
+    'if (state.now >= OPERATION_START_CUTIN_END) return false;',
+    'OPERATION_START_CUTIN_END - state.now',
     'drawImageCover(ctx, image, 0, 180, 390, 86',
     "ctx.fillText('작전 시작'",
-    "ctx.fillText('소환 준비'",
     'drawCombatStartCutin(ctx, state, assets)'
   ]) {
     assert.equal(render.includes(marker), true, marker);
   }
 
+  assert.equal(render.includes("ctx.fillText('소환 준비'"), false);
   assert.equal(render.includes('if (state.now >= 3.25) return false;'), false);
+  assert.equal(render.includes('if (state.now >= 0.82) return false;'), false);
   assert.equal(render.includes('drawImageCover(ctx, image, 0, 238, 390, 112'), false);
 });
 

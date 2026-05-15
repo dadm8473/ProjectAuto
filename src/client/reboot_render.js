@@ -1,5 +1,8 @@
 import { REBOOT_RULES } from '../shared/reboot_content.js';
 
+const OPERATION_START_CUTIN_END = 0.56;
+const OPERATION_START_CUTIN_FADE = 0.18;
+
 export const REBOOT_ATLAS_MANIFEST = {
   units: {
     src: '/src/client/assets/generated/reboot-unit-atlas.png',
@@ -727,16 +730,16 @@ function drawPartnerDangerCutin(ctx, state, assets = {}, localBoardId = 'p1') {
 }
 
 function drawCombatStartCutin(ctx, state, assets = {}) {
-  if (state.now >= 0.82) return false;
+  if (state.now >= OPERATION_START_CUTIN_END) return false;
   const firstActionTaken = state.events.some((event) => (
     ['summon', 'merge', 'rescue'].includes(event.type) && state.now >= event.at
   ));
   if (firstActionTaken) return false;
   const image = assets?.startCutin;
   if (!image?.complete || image.naturalWidth <= 0) return false;
-  const introIn = Math.min(1, state.now / 0.24);
-  const introOut = Math.min(1, Math.max(0, 0.82 - state.now) / 0.24);
-  const alpha = Math.min(introIn, introOut) * 0.78;
+  const introIn = Math.min(1, state.now / OPERATION_START_CUTIN_FADE);
+  const introOut = Math.min(1, Math.max(0, OPERATION_START_CUTIN_END - state.now) / OPERATION_START_CUTIN_FADE);
+  const alpha = Math.min(introIn, introOut) * 0.68;
   ctx.save();
   drawImageCover(ctx, image, 0, 180, 390, 86, alpha);
   drawAtlasSprite(ctx, assets, 'ui', 'summon_charge', 74, 226, 34, alpha);
@@ -746,10 +749,6 @@ function drawCombatStartCutin(ctx, state, assets = {}) {
   ctx.shadowBlur = 15;
   ctx.font = '900 18px system-ui';
   ctx.fillText('작전 시작', 116, 221);
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = 'rgba(245, 240, 220, 0.82)';
-  ctx.font = '800 11px system-ui';
-  ctx.fillText('소환 준비', 118, 238);
   ctx.restore();
   return true;
 }
