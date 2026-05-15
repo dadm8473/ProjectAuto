@@ -497,7 +497,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=nav-selector1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-summon-console1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=nav-selector1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=cooldown-label1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-cooldown-shutters1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-hero-stage1">'), false);
@@ -829,6 +830,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
     '--combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons-alpha1")',
     '--combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready")',
     '--combat-first-command-spotlight: url("/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=first-command")',
+    '--combat-first-summon-console: url("/src/client/assets/generated/reboot-combat-first-summon-console.png?v=first-summon-console1")',
     '--combat-critical-action-rings: url("/src/client/assets/generated/reboot-critical-action-rings.png?v=critical-action-rings")',
     '--combat-coach-cues: url("/src/client/assets/generated/reboot-combat-coach-cues.png?v=combat-coach")',
     '--combat-directive-banner: url("/src/client/assets/generated/reboot-combat-directive-banner.png?v=combat-directive1")',
@@ -973,6 +975,54 @@ test('combat actions collapse unearned verbs into quiet locked command sockets',
   assert.equal(lockedBlock.includes('display: none;'), false);
   assert.equal(lockedBlock.includes('visibility: hidden;'), false);
   assert.equal(lockedBlock.includes('background-image: none;'), false);
+});
+
+test('first battle command stage is one imagegen summon pod, not three equal web buttons', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const html = await readFile('index.html', 'utf8');
+
+  for (const marker of [
+    '--combat-first-summon-console: url("/src/client/assets/generated/reboot-combat-first-summon-console.png?v=first-summon-console1")',
+    '.primary-actions[data-open-count="1"]::before',
+    'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before',
+    'background-image: var(--combat-first-summon-console);',
+    'mix-blend-mode: normal;',
+    '.primary-actions[data-open-count="1"] button[data-unlocked="false"]',
+    'display: none;',
+    '.primary-actions[data-open-count="1"] button[data-focus="true"]:not(:disabled)',
+    'min-height: clamp(74px, 20.47vw, 88px);',
+    'justify-self: stretch;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  assert.equal(html.includes('/src/client/styles.css?v=first-summon-console1'), true);
+
+  const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
+  assert.equal(coachConsole.includes('animation: none;'), true);
+  assert.equal(coachConsole.includes('opacity: 1;'), true);
+});
+
+test('combat command focus uses game feedback instead of a browser outline rectangle', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    'button:focus-visible {\n  outline: none;',
+    'box-shadow: 0 0 0 1px rgba(105, 243, 255, 0.44), 0 0 14px rgba(105, 243, 255, 0.24);',
+    'filter: brightness(1.1) saturate(1.08);',
+    '.primary-actions button:focus-visible:not(:disabled)',
+    '.primary-actions button:focus-visible:not(:disabled)::after',
+    '.primary-actions[data-open-count="1"] button[data-focus="true"]:focus-visible:not(:disabled)::after',
+    '.primary-actions[data-open-count="1"] #summonButton[data-ready="true"]',
+    'background-image: none;',
+    'border-color: transparent;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const firstCommandFocus = cssRuleBlock(css, '.primary-actions[data-open-count="1"] button[data-focus="true"]:focus-visible:not(:disabled)::after');
+  assert.equal(firstCommandFocus.includes('outline'), false);
+  assert.equal(firstCommandFocus.includes('opacity: 0.72;'), true);
 });
 
 test('combat coach cues remove duplicate status text for every taught action', async () => {

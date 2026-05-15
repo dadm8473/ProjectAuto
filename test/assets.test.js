@@ -599,6 +599,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 10_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-first-summon-console.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-combat-first-summon-console-chromakey-imagegen.png',
+    width: 780,
+    height: 180,
+    minRuntimeBytes: 48_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-player-board-tray.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-player-board-tray-imagegen.png',
     width: 780,
@@ -1382,6 +1389,26 @@ test('combat first command spotlight stays transparent and readable behind the f
   assert.equal(bounds.maxX <= image.width - 9, true, `first command spotlight touches right edge: ${JSON.stringify(bounds)}`);
   assert.equal(bounds.minY >= 8, true, `first command spotlight touches top edge: ${JSON.stringify(bounds)}`);
   assert.equal(bounds.maxY <= image.height - 9, true, `first command spotlight touches bottom edge: ${JSON.stringify(bounds)}`);
+});
+
+test('combat first summon console is a transparent one-command pod instead of a three-button web row', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-combat-first-summon-console.png'));
+  const corners = [
+    alphaAt(image, 3, 3),
+    alphaAt(image, image.width - 4, 3),
+    alphaAt(image, 3, image.height - 4),
+    alphaAt(image, image.width - 4, image.height - 4)
+  ];
+  const centerPod = alphaCoverage(image, { x: 170, y: 24, width: 440, height: 132 }, 36);
+  const centerBright = luminanceStats(image, { x: 220, y: 38, width: 340, height: 104 }, 50);
+  const leftCoupler = luminanceStats(image, { x: 54, y: 48, width: 112, height: 84 }, 50);
+  const rightCoupler = luminanceStats(image, { x: 614, y: 48, width: 112, height: 84 }, 50);
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, `first summon console has opaque corners: ${corners.join(',')}`);
+  assert.equal(centerPod > 0.34, true, `first summon console has no readable central summon pod: ${centerPod}`);
+  assert.equal(centerBright.brightRatio > 0.1, true, `first summon console central pod lacks game chrome: ${centerBright.brightRatio}`);
+  assert.equal(leftCoupler.brightRatio < centerBright.brightRatio * 0.82, true, `left locked coupler is competing with the summon pod: ${leftCoupler.brightRatio} vs ${centerBright.brightRatio}`);
+  assert.equal(rightCoupler.brightRatio < centerBright.brightRatio * 0.82, true, `right locked coupler is competing with the summon pod: ${rightCoupler.brightRatio} vs ${centerBright.brightRatio}`);
 });
 
 test('player board tray stays transparent and readable under summoned units', async () => {
