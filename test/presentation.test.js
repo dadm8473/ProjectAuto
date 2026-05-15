@@ -97,7 +97,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js?v=merge-reason1'",
-    "from './reboot_action_ui.js?v=action-focus1'",
+    "from './reboot_action_ui.js?v=action-focus2'",
     "from './reboot_render.js?v=action-stamps1'",
     "from './reboot_screens.js?v=post-reward-route1'",
     "from './reboot_online.js'"
@@ -497,7 +497,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-cooldown-shutters1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=cooldown-label1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-cooldown-shutters1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-hero-stage1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-partner-link1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-command-ribbons1">'), false);
@@ -555,7 +556,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-stamps1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-label1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-stamps1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-impact-bursts1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-track-trails1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=view-perspective1"></script>'), false);
@@ -874,16 +876,20 @@ test('combat action buttons use generated icons instead of text-only web buttons
   assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::before'), false);
 
   for (const marker of [
-    "from './reboot_action_ui.js?v=action-focus1'",
+    "from './reboot_action_ui.js?v=action-focus2'",
     'buildCombatCoachCue',
+    'buildCombatCommandLabels',
     'buildCombatStatusPrompt',
     'buildCombatActionExposure',
+    'const commandLabels = buildCombatCommandLabels({ current, localBoardId, actions, onlineWaiting });',
     "const coachCue = appScreen === 'battle'",
     'dom.primaryActions.dataset.focus = exposure.focus;',
     'button.dataset.unlocked = String(exposure[key]);',
     'button.dataset.focus = String(exposure.focus === key);',
     'document.body.dataset.coachCue = coachCue;',
     'delete document.body.dataset.coachCue;',
+    "button.querySelector('span').textContent = label;",
+    "button.setAttribute('aria-label', label === ACTION_LABELS[key] ? ACTION_LABELS[key] : `${ACTION_LABELS[key]} ${label} 후 가능`);",
     'button.dataset.critical = String(isCriticalRebootAction({ actionKey: key, current, localBoardId, enabled }));'
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -983,6 +989,28 @@ test('combat coach cues remove duplicate status text for every taught action', a
 
   assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="merge"] .status-line'), false);
   assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .status-line'), false);
+});
+
+test('combat summon cooldown moves from the directive banner onto the command button', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    'const statusPrompt = buildCombatStatusPrompt({ current, localBoardId, onlineWaiting });',
+    'dom.timeMeter.textContent = statusPrompt;',
+    "document.body.dataset.statusKind = statusPrompt.startsWith('충전 ') ? 'cooldown' : 'active';",
+    'delete document.body.dataset.statusKind;',
+    'body[data-app-screen="battle"][data-status-kind="cooldown"] .status-line',
+    'display: none;',
+    'buildCombatCommandLabels',
+    'const commandLabels = buildCombatCommandLabels({ current, localBoardId, actions, onlineWaiting });',
+    'const label = commandLabels[key];',
+    "button.querySelector('span').textContent = label;",
+    "button.setAttribute('aria-label', label === ACTION_LABELS[key] ? ACTION_LABELS[key] : `${ACTION_LABELS[key]} ${label} 후 가능`);"
+  ]) {
+    const source = marker.startsWith('body[') || marker === 'display: none;' ? css : app;
+    assert.equal(source.includes(marker), true, marker);
+  }
 });
 
 test('result screen uses imagegen reward backdrop instead of a plain overlay', async () => {

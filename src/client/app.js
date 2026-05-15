@@ -3,7 +3,7 @@ import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=merge-reason1';
-import { buildCombatActionExposure, buildCombatCoachCue, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-focus1';
+import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-focus2';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=action-stamps1';
 import {
   buildMetaNavAlerts,
@@ -77,6 +77,11 @@ const SCREEN_TRANSITION_MS = 280;
 const ONLINE_CONNECT_FALLBACK_MS = 2600;
 const MATCH_BANNER_FLASH_MS = 1500;
 const rewardClaimActions = new Set(['claim-missions', 'claim-season']);
+const ACTION_LABELS = {
+  summon: '소환',
+  merge: '합성',
+  rescue: '구원'
+};
 let appScreen = 'splash';
 let game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
 let localBoardId = 'p1';
@@ -211,6 +216,7 @@ function setScreen(screen, options = {}) {
   appScreen = screen;
   document.body.dataset.appScreen = screen;
   if (screen !== 'battle') delete document.body.dataset.coachCue;
+  if (screen !== 'battle') delete document.body.dataset.statusKind;
   if (screen !== 'battle') hideMatchmakingBanner();
   if (changed && !options.preserveRewardReveal) hideRewardReveal();
   dom.launchOverlay.dataset.screen = screen;
@@ -579,7 +585,10 @@ function updateMeters(current) {
   dom.rescueMeter.textContent = `구원 ${Math.round(resources.rescue)}%`;
   dom.dangerMeter.textContent = `위험 ${Math.round(current.boards[partner]?.danger ?? 0)}`;
   const onlineWaiting = waitingForOnlinePartner(current);
-  dom.timeMeter.textContent = buildCombatStatusPrompt({ current, localBoardId, onlineWaiting });
+  const statusPrompt = buildCombatStatusPrompt({ current, localBoardId, onlineWaiting });
+  dom.timeMeter.textContent = statusPrompt;
+  if (appScreen === 'battle') document.body.dataset.statusKind = statusPrompt.startsWith('충전 ') ? 'cooldown' : 'active';
+  else delete document.body.dataset.statusKind;
   const bossWarning = current.now >= 92 && current.now < 120;
   dom.bossMeter.hidden = !bossWarning;
   dom.bossMeter.textContent = bossWarning ? '보스 경고' : '';
@@ -589,6 +598,7 @@ function updateButtons(current) {
   const actions = buildRebootActionState(current, localBoardId);
   const exposure = buildCombatActionExposure({ current, localBoardId, actions });
   const onlineWaiting = waitingForOnlinePartner(current);
+  const commandLabels = buildCombatCommandLabels({ current, localBoardId, actions, onlineWaiting });
   if (onlineWaiting && appScreen === 'battle') document.body.dataset.onlineWaiting = 'true';
   else delete document.body.dataset.onlineWaiting;
   const coachCue = appScreen === 'battle' && !onlineWaiting
@@ -604,7 +614,10 @@ function updateButtons(current) {
     ['rescue', dom.rescueButton]
   ]) {
     const enabled = actions[key].enabled && !onlineWaiting;
+    const label = commandLabels[key];
     button.disabled = !enabled;
+    button.querySelector('span').textContent = label;
+    button.setAttribute('aria-label', label === ACTION_LABELS[key] ? ACTION_LABELS[key] : `${ACTION_LABELS[key]} ${label} 후 가능`);
     button.dataset.ready = String(enabled);
     button.dataset.unlocked = String(exposure[key]);
     button.dataset.focus = String(exposure.focus === key);

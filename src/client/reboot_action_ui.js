@@ -7,6 +7,19 @@ const SUMMON_COACH_END = 16;
 const MERGE_COACH_END = 64;
 const MERGE_EXPOSURE_TIME = 18;
 const RESCUE_EXPOSURE_TIME = 58;
+const BASE_COMMAND_LABELS = {
+  summon: '소환',
+  merge: '합성',
+  rescue: '구원'
+};
+
+function summonCooldownLabel(current, localBoardId) {
+  const resources = current.resources?.[localBoardId] ?? { summon: 0 };
+  if ((resources.summon ?? 0) >= REBOOT_RULES.summon.cost) return '';
+  const nextGrant = REBOOT_RULES.summon.grants.find((grant) => grant.at > current.now);
+  if (!nextGrant) return '';
+  return `${Math.max(1, Math.ceil(nextGrant.at - current.now))}초`;
+}
 
 export function buildCombatActionExposure({ current, localBoardId, actions }) {
   const board = current.boards?.[localBoardId] ?? current.boards?.p1 ?? { units: [] };
@@ -65,4 +78,12 @@ export function buildCombatStatusPrompt({ current, localBoardId, onlineWaiting =
   }
 
   return '전투 중';
+}
+
+export function buildCombatCommandLabels({ current, localBoardId, actions, onlineWaiting = false }) {
+  const labels = { ...BASE_COMMAND_LABELS };
+  if (current.result || onlineWaiting || actions.summon?.enabled) return labels;
+  const cooldown = summonCooldownLabel(current, localBoardId);
+  if (cooldown) labels.summon = cooldown;
+  return labels;
 }

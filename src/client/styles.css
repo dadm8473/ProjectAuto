@@ -986,6 +986,10 @@ body[data-app-screen="battle"][data-coach-cue] .status-line {
   display: none;
 }
 
+body[data-app-screen="battle"][data-status-kind="cooldown"] .status-line {
+  display: none;
+}
+
 body[data-app-screen="battle"][data-coach-cue] .action-panel {
   padding-top: clamp(16px, 4.65vw, 20px);
 }

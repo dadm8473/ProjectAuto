@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { buildRebootActionState } from '../src/client/reboot_actions.js';
-import { buildCombatActionExposure, buildCombatCoachCue, buildCombatStatusPrompt, isCriticalRebootAction } from '../src/client/reboot_action_ui.js';
+import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusPrompt, isCriticalRebootAction } from '../src/client/reboot_action_ui.js';
 
 function state(overrides = {}) {
   return {
@@ -141,6 +141,36 @@ test('combat status prompt shows online partner wait before normal action prompt
     localBoardId: 'p1',
     onlineWaiting: true
   }), '파트너 대기');
+});
+
+test('combat command labels keep summon cooldown on the button instead of the directive banner', () => {
+  assert.deepEqual(buildCombatCommandLabels({
+    current: {
+      ...state({ now: 9 }),
+      resources: { p1: { summon: 0, rescue: 0 } },
+      actionState: { p1: { summon: false, merge: false, rescue: false } }
+    },
+    localBoardId: 'p1',
+    actions: { summon: { enabled: false }, merge: { enabled: false }, rescue: { enabled: false } }
+  }), {
+    summon: '9초',
+    merge: '합성',
+    rescue: '구원'
+  });
+
+  assert.deepEqual(buildCombatCommandLabels({
+    current: {
+      ...state({ now: 24 }),
+      resources: { p1: { summon: 10, rescue: 0 } },
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    localBoardId: 'p1',
+    actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
+  }), {
+    summon: '소환',
+    merge: '합성',
+    rescue: '구원'
+  });
 });
 
 test('combat action exposure reveals only earned controls during onboarding', () => {
