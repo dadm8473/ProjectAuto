@@ -54,6 +54,7 @@
   --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
   --meta-showcase-stage: url("/src/client/assets/generated/reboot-meta-showcase-stage.png?v=showcase-stage");
   --meta-shelf-grid: url("/src/client/assets/generated/reboot-meta-shelf-grid.png?v=meta-shelf-grid1");
+  --meta-progress-board: url("/src/client/assets/generated/reboot-meta-progress-board.png?v=meta-progress-board1");
   --meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions-alpha1");
   --meta-progress-bars: url("/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress");
   --meta-card-state-badges: url("/src/client/assets/generated/reboot-meta-card-state-badges.png?v=meta-card-states");
@@ -1824,6 +1825,22 @@ body[data-app-screen="season"] .app-screen::after {
   filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.46));
 }
 
+.meta-progress-board {
+  position: relative;
+  min-height: clamp(520px, 132vw, 640px);
+  display: grid;
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: clamp(5px, 1.7vw, 8px);
+  padding: clamp(92px, 24vw, 116px) clamp(25px, 6.7vw, 32px) clamp(42px, 10vw, 52px);
+  overflow: hidden;
+  isolation: isolate;
+  background-image: var(--meta-progress-board);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.46));
+}
+
 .mission-stamp-board,
 .season-track-board {
   position: relative;
@@ -2307,6 +2324,25 @@ body[data-app-screen="season"] .app-screen::after {
   grid-template-columns: 52px 1fr 88px;
 }
 
+.meta-progress-board .mission-card,
+.meta-progress-board .season-card {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: clamp(58px, 17vw, 74px) 1fr clamp(54px, 16vw, 70px);
+  align-items: center;
+  column-gap: clamp(7px, 2.4vw, 12px);
+  padding: 6px clamp(16px, 4.8vw, 22px) 6px clamp(9px, 3vw, 14px);
+  overflow: visible;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.meta-progress-board .mission-card::before,
+.meta-progress-board .season-card::before {
+  background-image: none;
+}
+
 .shop-card[data-owned="true"],
 .mission-card[data-owned="true"],
 .season-card[data-owned="true"] {
@@ -2637,6 +2673,89 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .meta-shelf-grid .card-passive-state::before {
+  width: 22px;
+  height: 22px;
+}
+
+.meta-progress-board .card-state-badge {
+  top: 50%;
+  left: 10px;
+  width: 28px;
+  transform: translateY(-50%);
+}
+
+.meta-progress-board .reward-token {
+  width: clamp(46px, 14vw, 58px);
+  height: clamp(46px, 14vw, 58px);
+  justify-self: center;
+  background-size: 400% 100%;
+  filter: drop-shadow(0 9px 14px rgba(0, 0, 0, 0.58));
+}
+
+.meta-progress-board .reward-token[data-reward-icon="soft_currency"] { background-position: 0 0; }
+.meta-progress-board .reward-token[data-reward-icon="cosmetic_shard"] { background-position: 33.333% 0; }
+.meta-progress-board .reward-token[data-reward-icon="season_progress"] { background-position: 66.666% 0; }
+.meta-progress-board .reward-token[data-reward-icon="unlock_capsule"] { background-position: 100% 0; }
+
+.meta-progress-board .card-copy {
+  gap: 2px;
+  min-width: 0;
+}
+
+.meta-progress-board .role-pill {
+  display: none;
+}
+
+.meta-progress-board .card-copy strong {
+  overflow: hidden;
+  font-size: clamp(17px, 5.4vw, 23px);
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta-progress-board .card-copy p {
+  overflow: hidden;
+  font-size: clamp(12px, 3.7vw, 15px);
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta-progress-board .meta-progress {
+  width: min(100%, 148px);
+  height: 16px;
+}
+
+.meta-progress-board .shop-price {
+  min-height: 18px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  font-size: 10px;
+}
+
+.meta-progress-board .mission-card button,
+.meta-progress-board .season-card button {
+  min-width: 62px;
+  min-height: 44px;
+  padding: 0 7px;
+  font-size: 11px;
+}
+
+.meta-progress-board .card-passive-state {
+  justify-self: center;
+  min-width: 28px;
+  width: 28px;
+  min-height: 28px;
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  font-size: 0;
+  background-image: none;
+}
+
+.meta-progress-board .card-passive-state::before {
   width: 22px;
   height: 22px;
 }

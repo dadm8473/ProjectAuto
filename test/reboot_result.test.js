@@ -338,6 +338,25 @@ test('collection and shop items sit inside a generated shelf grid', () => {
   assert.equal(shop.indexOf('class="meta-shelf-grid"') < shop.indexOf('class="screen-card shop-card"'), true);
 });
 
+test('mission and season rows sit inside a generated progress board', () => {
+  const missions = buildMissionScreen({ processedRuns: [], claimedMissions: [] });
+  const season = buildSeasonScreen({ xp: 0, claimedPassTiers: [] });
+
+  assert.equal(missions.includes('class="meta-progress-board" data-progress-board="missions"'), true);
+  assert.equal(season.includes('class="meta-progress-board" data-progress-board="season"'), true);
+  assert.equal(missions.indexOf('class="mission-stamp-board"') < missions.indexOf('class="meta-progress-board"'), true);
+  assert.equal(season.indexOf('class="season-track-board"') < season.indexOf('class="meta-progress-board"'), true);
+  assert.equal(missions.indexOf('class="meta-progress-board"') < missions.indexOf('class="screen-card mission-card"'), true);
+  assert.equal(season.indexOf('class="meta-progress-board"') < season.indexOf('class="screen-card season-card"'), true);
+});
+
+test('season progress board uses compact reward names for phone slots', () => {
+  const season = buildSeasonScreen({ xp: 0, claimedPassTiers: [] });
+
+  assert.equal(season.includes('2단계 · 외형'), true);
+  assert.equal(season.includes('외형 보상'), false);
+});
+
 test('mission screen starts with a stamp board instead of a web list summary', () => {
   const missions = buildMissionScreen({
     processedRuns: ['run-1'],

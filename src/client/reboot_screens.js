@@ -397,12 +397,12 @@ export function buildMissionScreen(profile = {}) {
     </article>
   `;
   }).join('');
-  return `${board}${missions}`;
+  return `${board}<section class="meta-progress-board" data-progress-board="missions">${missions}</section>`;
 }
 
 function seasonRewardLabel(grant = {}) {
   if (grant.gems) return `${grant.gems} 젬`;
-  if (grant.cosmetic) return '외형 보상';
+  if (grant.cosmetic) return '외형';
   return '보상';
 }
 
@@ -442,7 +442,7 @@ export function buildSeasonScreen(profile = {}) {
     </article>
   `;
   }).join('');
-  return `${board}${tiers}`;
+  return `${board}<section class="meta-progress-board" data-progress-board="season">${tiers}</section>`;
 }
 
 export function buildRebootResultModel({ result, rewards = [], profile } = {}) {

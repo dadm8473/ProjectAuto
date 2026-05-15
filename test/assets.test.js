@@ -343,6 +343,14 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     requiresAlpha: false
   },
   {
+    path: 'src/client/assets/generated/reboot-meta-progress-board.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260515-meta-progress-board-imagegen.png',
+    width: 1024,
+    height: 1536,
+    minRuntimeBytes: 200_000,
+    requiresAlpha: false
+  },
+  {
     path: 'src/client/assets/generated/reboot-screen-transition-wipe.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-screen-transition-wipe-chromakey-imagegen.png',
     width: 430,

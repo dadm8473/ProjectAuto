@@ -99,7 +99,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=action-focus1'",
     "from './reboot_render.js?v=merge-ready1'",
-    "from './reboot_screens.js?v=meta-shelf-grid1'",
+    "from './reboot_screens.js?v=meta-progress-board1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -474,7 +474,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-grid1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress-board1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-grid1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-room-banners1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive-icon1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-cta1">'), false);
@@ -525,7 +526,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-grid1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-progress-board1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-grid1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=start-cutin1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim-primary1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=screen-wipe1"></script>'), false);
@@ -552,7 +554,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=meta-shelf-grid1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=meta-progress-board1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=meta-shelf-grid1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-badges1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-passive1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-claim1'"), false);
@@ -1090,7 +1093,7 @@ test('meta rows use generated progress bars for growth and pass progress', async
     assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
   }
 
-  const progressBlock = css.slice(css.indexOf('.meta-progress'), css.indexOf('.meta-progress[data-progress-kind="training"]'));
+  const progressBlock = css.slice(css.indexOf('.meta-progress {'), css.indexOf('.meta-progress[data-progress-kind="training"]'));
   assert.equal(progressBlock.includes('linear-gradient'), false);
   assert.equal(progressBlock.includes('border: 1px solid'), false);
 });
@@ -2644,6 +2647,38 @@ test('collection and shop use a generated display shelf instead of list-only row
 
   const shelfActionBlock = css.slice(css.indexOf('.meta-shelf-grid .unit-card button,'), css.indexOf('.meta-shelf-grid .card-passive-state'));
   assert.equal(shelfActionBlock.includes('min-height: 44px;'), true);
+});
+
+test('mission and season use a generated progress board instead of bare stacked rows', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const missions = buildMissionScreen({ processedRuns: [], claimedMissions: [] });
+  const season = buildSeasonScreen({ xp: 0, claimedPassTiers: [] });
+
+  assert.equal(css.includes('--meta-progress-board: url("/src/client/assets/generated/reboot-meta-progress-board.png?v=meta-progress-board1")'), true);
+  assert.equal(missions.includes('class="meta-progress-board" data-progress-board="missions"'), true);
+  assert.equal(season.includes('class="meta-progress-board" data-progress-board="season"'), true);
+
+  const boardBlock = cssRuleBlock(css, '.meta-progress-board');
+  for (const marker of [
+    'grid-template-rows: repeat(4, minmax(0, 1fr));',
+    'background-image: var(--meta-progress-board);',
+    'background-size: 100% 100%;',
+    'min-height: clamp(520px, 132vw, 640px);'
+  ]) {
+    assert.equal(boardBlock.includes(marker), true, marker);
+  }
+
+  const boardCardBlock = css.slice(css.indexOf('.meta-progress-board .mission-card,'), css.indexOf('.meta-progress-board .mission-card::before,'));
+  for (const marker of [
+    'background: transparent;',
+    'box-shadow: none;',
+    'grid-template-columns: clamp(58px, 17vw, 74px) 1fr clamp(54px, 16vw, 70px);'
+  ]) {
+    assert.equal(boardCardBlock.includes(marker), true, marker);
+  }
+
+  const boardFrameBlock = css.slice(css.indexOf('.meta-progress-board .mission-card::before,'), css.indexOf('.meta-progress-board .card-state-badge'));
+  assert.equal(boardFrameBlock.includes('background-image: none;'), true);
 });
 
 test('mission and season screens use generated stamp and reward-track boards', async () => {
