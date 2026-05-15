@@ -99,7 +99,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js'",
     "from './reboot_action_ui.js?v=status-prompt1'",
     "from './reboot_render.js?v=moment-callout1'",
-    "from './reboot_screens.js?v=meta-passive1'",
+    "from './reboot_screens.js?v=meta-badges1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -470,7 +470,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-clarity1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-badges1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-clarity1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-dock1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-density1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-matchmaking1">'), false);
@@ -508,7 +509,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=moment-callout1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-badges1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=moment-callout1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reveal-vfx1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=status-prompt1"></script>'), false);
@@ -528,7 +530,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=meta-passive1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=meta-badges1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=meta-passive1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-claim1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=retry-seeds1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=mission-track1'"), false);
@@ -895,7 +898,10 @@ test('collection and shop start with generated showcase stages instead of list-f
     'class="meta-showcase"',
     'class="meta-showcase-preview"',
     'class="meta-showcase-copy"',
+    'class="meta-showcase-stats"',
     'class="meta-showcase-chip"',
+    '.meta-showcase-stats',
+    'grid-template-rows: minmax(0, 1fr) auto;',
     'data-showcase-kind="collection"',
     'data-showcase-kind="shop"',
     '.meta-showcase',
@@ -2422,6 +2428,7 @@ test('unit training screen uses the active generated showcase stage', async () =
     'function buildMetaShowcase',
     'data-showcase-kind="collection"',
     '대표 유닛',
+    'stats: [`Lv.${featuredLevel}`, `${Math.min(xp, featuredCost)}/${featuredCost} 경험치`]',
     'class="meta-showcase-preview"',
     'class="sprite-token unit-sprite"'
   ]) {
@@ -2458,6 +2465,7 @@ test('shop screen uses the active generated showcase stage', async () => {
     'function buildMetaShowcase',
     'data-showcase-kind="shop"',
     '추천 외형',
+    'stats: [`보유 ${gems} 젬`, `가격 ${featuredItem.price?.gems ?? 0} 젬`]',
     'class="meta-showcase-preview"',
     'class="sprite-token shop-cosmetic"'
   ]) {

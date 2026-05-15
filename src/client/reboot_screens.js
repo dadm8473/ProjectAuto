@@ -141,7 +141,8 @@ export function buildMetaNavAlerts(profile = {}) {
   };
 }
 
-function buildMetaShowcase({ kind, label, title, detail, chip, spriteClass, spriteAttr, spriteValue }) {
+function buildMetaShowcase({ kind, label, title, detail, chip, stats, spriteClass, spriteAttr, spriteValue }) {
+  const statBadges = (stats ?? (chip ? [chip] : [])).map((stat) => `<span class="meta-showcase-chip">${stat}</span>`).join('');
   return `
     <section class="meta-showcase" data-showcase-kind="${kind}" data-summary-kind="${kind}">
       <div class="meta-showcase-preview">
@@ -151,8 +152,8 @@ function buildMetaShowcase({ kind, label, title, detail, chip, spriteClass, spri
         <span>${label}</span>
         <strong>${title}</strong>
         <p>${detail}</p>
-        <span class="meta-showcase-chip">${chip}</span>
       </div>
+      <div class="meta-showcase-stats" aria-label="${kind} 상태">${statBadges}</div>
     </section>
   `;
 }
@@ -290,7 +291,7 @@ export function buildRebootCollection(profile = {}) {
     label: '대표 유닛',
     title: featuredUnit.name,
     detail: `${ROLE_LABELS[featuredUnit.role] ?? featuredUnit.role} · ${countTrainableUnits(profile)}명 훈련 가능`,
-    chip: `Lv.${featuredLevel} · ${Math.min(xp, featuredCost)}/${featuredCost} 경험치`,
+    stats: [`Lv.${featuredLevel}`, `${Math.min(xp, featuredCost)}/${featuredCost} 경험치`],
     spriteClass: 'unit-sprite',
     spriteAttr: 'data-sprite',
     spriteValue: featuredUnit.spriteKey
@@ -330,7 +331,7 @@ export function buildRebootShop(profile = {}) {
     label: '추천 외형',
     title: featuredItem.name,
     detail: featuredItem.description,
-    chip: `${gems} 젬 보유 · ${featuredItem.price?.gems ?? 0} 젬`,
+    stats: [`보유 ${gems} 젬`, `가격 ${featuredItem.price?.gems ?? 0} 젬`],
     spriteClass: 'shop-cosmetic',
     spriteAttr: 'data-shop-cosmetic',
     spriteValue: featuredItem.id

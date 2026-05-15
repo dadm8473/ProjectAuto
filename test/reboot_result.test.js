@@ -256,7 +256,8 @@ test('meta screens start with compact actionable status headers', () => {
   const shop = buildRebootShop({ gems: 100, unlocks: [] });
   assert.equal(shop.includes('meta-showcase'), true);
   assert.equal(shop.includes('추천 외형'), true);
-  assert.equal(shop.includes('100 젬 보유 · 90 젬'), true);
+  assert.equal(shop.includes('보유 100 젬'), true);
+  assert.equal(shop.includes('가격 90 젬'), true);
 
   const missions = buildMissionScreen({
     processedRuns: ['run-1'],
@@ -294,6 +295,21 @@ test('meta summary detail copy stays compact for generated header banners', () =
     assert.equal(compactLength <= 12, true, `${detail} is too long for a meta header banner`);
     assert.equal(/하세요|습니다|[.。]/.test(detail), false, `${detail} reads like paragraph copy`);
   }
+});
+
+test('collection and shop showcases split numeric state into compact game badges', () => {
+  const collection = buildRebootCollection({ xp: 0, unitLevels: {} });
+  const shop = buildRebootShop({ gems: 0, unlocks: [] });
+
+  assert.equal(collection.includes('class="meta-showcase-stats"'), true);
+  assert.equal(collection.includes('<span class="meta-showcase-chip">Lv.1</span>'), true);
+  assert.equal(collection.includes('<span class="meta-showcase-chip">0/40 경험치</span>'), true);
+  assert.equal(collection.includes('Lv.1 · 0/40 경험치'), false);
+
+  assert.equal(shop.includes('class="meta-showcase-stats"'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip">보유 0 젬</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip">가격 90 젬</span>'), true);
+  assert.equal(shop.includes('0 젬 보유 · 90 젬'), false);
 });
 
 test('mission screen starts with a stamp board instead of a web list summary', () => {
