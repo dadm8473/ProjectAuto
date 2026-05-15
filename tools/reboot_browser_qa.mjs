@@ -58,6 +58,55 @@ async function assertMetaListReachesDock(page, selector, label) {
   );
 }
 
+async function assertCombatDockSafeArea(page) {
+  const geometry = await page.locator('.action-panel').evaluate((node) => {
+    const panel = node.getBoundingClientRect();
+    const actions = document.querySelector('.primary-actions')?.getBoundingClientRect();
+    return {
+      viewportHeight: window.innerHeight,
+      panelTop: Math.round(panel.top),
+      panelBottom: Math.round(panel.bottom),
+      panelHeight: Math.round(panel.height),
+      actionsBottom: Math.round(actions?.bottom ?? 0)
+    };
+  });
+  assert.equal(geometry.panelHeight >= 130, true, `combat dock too shallow: ${JSON.stringify(geometry)}`);
+  assert.equal(
+    geometry.actionsBottom <= geometry.viewportHeight - 24,
+    true,
+    `combat buttons sit too close to bottom: ${JSON.stringify(geometry)}`
+  );
+}
+
+async function assertCombatToastClearsDock(page) {
+  const geometry = await page.evaluate(() => {
+    const toast = document.querySelector('.toast');
+    const panel = document.querySelector('.action-panel');
+    if (!toast || !panel) {
+      return { missing: true };
+    }
+    const wasHidden = toast.hidden;
+    const previousText = toast.textContent;
+    toast.hidden = false;
+    toast.textContent = '검수 메시지';
+    const toastBox = toast.getBoundingClientRect();
+    const panelBox = panel.getBoundingClientRect();
+    toast.hidden = wasHidden;
+    toast.textContent = previousText;
+    return {
+      toastBottom: Math.round(toastBox.bottom),
+      panelTop: Math.round(panelBox.top),
+      gap: Math.round(panelBox.top - toastBox.bottom)
+    };
+  });
+  assert.equal(geometry.missing, undefined, `combat toast geometry unavailable: ${JSON.stringify(geometry)}`);
+  assert.equal(
+    geometry.toastBottom <= geometry.panelTop - 8,
+    true,
+    `combat toast overlaps action dock: ${JSON.stringify(geometry)}`
+  );
+}
+
 async function verifyShell(page, viewport) {
   await page.goto(baseUrl, { waitUntil: 'load' });
   await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
@@ -109,6 +158,8 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#shopButton, #passButton, #adButton, #paidReviveButton').count(), 0);
   assert.equal(await page.locator('#bossMeter').isVisible(), false);
   assert.notEqual(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
+  await assertCombatDockSafeArea(page);
+  await assertCombatToastClearsDock(page);
 }
 
 async function verifyFastPlaythrough(page) {

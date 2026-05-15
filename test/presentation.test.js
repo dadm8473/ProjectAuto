@@ -468,7 +468,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-density1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-dock1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-density1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-matchmaking1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=frame-alpha1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-nav1">'), false);
@@ -2247,7 +2248,7 @@ test('successful combat actions use canvas moment callouts instead of duplicate 
     'border-color: transparent;',
     'border-radius: 0;',
     'min-width: 168px;',
-    'body[data-app-screen="battle"] .toast {\n  bottom: calc(126px + env(safe-area-inset-bottom));'
+    'body[data-app-screen="battle"] .toast {\n  bottom: calc(var(--combat-action-row) + var(--combat-action-safe-lift) + clamp(10px, 3.26vw, 14px) + env(safe-area-inset-bottom));'
   ]) {
     assert.equal(`${css}\n${app}\n${render}`.includes(marker), true, marker);
   }
@@ -2588,8 +2589,11 @@ test('combat shell chrome renders the generated action dock as a full command co
 
   for (const marker of [
     '--combat-hud-row: clamp(72px, 22.33vw, 96px);',
-    '--combat-action-row: clamp(112px, 29.77vw, 128px);',
-    'grid-template-rows: calc(var(--combat-hud-row) + env(safe-area-inset-top)) minmax(0, 1fr) calc(var(--combat-action-row) + env(safe-area-inset-bottom));',
+    '--combat-action-row: clamp(132px, 34.42vw, 148px);',
+    '--combat-action-safe-lift: clamp(10px, 3.26vw, 14px);',
+    'grid-template-rows: calc(var(--combat-hud-row) + env(safe-area-inset-top)) minmax(0, 1fr) calc(var(--combat-action-row) + var(--combat-action-safe-lift) + env(safe-area-inset-bottom));',
+    'padding: clamp(8px, 2.79vw, 12px) clamp(10px, 3.26vw, 14px) calc(clamp(18px, 5.12vw, 22px) + var(--combat-action-safe-lift) + env(safe-area-inset-bottom));',
+    'inset: 0 0 var(--combat-action-safe-lift);',
     'background-size: 100% auto;',
     'background-position: center bottom;',
     'background-size: 100% 100%;',

@@ -63,7 +63,8 @@
   --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets");
   --combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates-alpha1");
   --combat-hud-row: clamp(72px, 22.33vw, 96px);
-  --combat-action-row: clamp(112px, 29.77vw, 128px);
+  --combat-action-row: clamp(132px, 34.42vw, 148px);
+  --combat-action-safe-lift: clamp(10px, 3.26vw, 14px);
   --lobby-screen-top-pad: 22px;
   --lobby-screen-bottom-pad: 130px;
   --lobby-screen-gap: 14px;
@@ -123,7 +124,7 @@ button:disabled {
   height: 100dvh;
   margin: 0 auto;
   display: grid;
-  grid-template-rows: calc(var(--combat-hud-row) + env(safe-area-inset-top)) minmax(0, 1fr) calc(var(--combat-action-row) + env(safe-area-inset-bottom));
+  grid-template-rows: calc(var(--combat-hud-row) + env(safe-area-inset-top)) minmax(0, 1fr) calc(var(--combat-action-row) + var(--combat-action-safe-lift) + env(safe-area-inset-bottom));
   overflow: hidden;
   isolation: isolate;
   background:
@@ -231,6 +232,7 @@ body[data-app-screen="battle"] .hud::before {
 
 body[data-app-screen="battle"] .action-panel::before {
   background-image: var(--combat-action-dock);
+  inset: 0 0 var(--combat-action-safe-lift);
   background-position: center bottom;
   background-size: 100% 100%;
   opacity: 0.92;
@@ -510,7 +512,7 @@ body:not([data-app-screen="battle"]) .matchmaking-banner {
 }
 
 body[data-app-screen="battle"] .toast {
-  bottom: calc(126px + env(safe-area-inset-bottom));
+  bottom: calc(var(--combat-action-row) + var(--combat-action-safe-lift) + clamp(10px, 3.26vw, 14px) + env(safe-area-inset-bottom));
 }
 
 body[data-app-screen="lobby"] .toast {
@@ -657,7 +659,7 @@ body[data-app-screen="season"] .toast {
 }
 
 .action-panel {
-  padding: clamp(8px, 2.79vw, 12px) clamp(10px, 3.26vw, 14px) calc(clamp(8px, 3.26vw, 14px) + env(safe-area-inset-bottom));
+  padding: clamp(8px, 2.79vw, 12px) clamp(10px, 3.26vw, 14px) calc(clamp(18px, 5.12vw, 22px) + var(--combat-action-safe-lift) + env(safe-area-inset-bottom));
 }
 
 .status-line,
