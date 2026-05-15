@@ -269,9 +269,11 @@ async function verifyFastPlaythrough(page) {
   assert.equal(events.filter((entry) => entry.startsWith('rescue@')).length, 1, events.join(', '));
   assert.equal(await page.locator('#resultRetryButton').isVisible(), true);
   await page.locator('#resultLobbyButton').click();
-  await page.locator('#missionsList .mission-card').first().waitFor({ state: 'visible' });
+  await page.locator('#seasonList .season-card').first().waitFor({ state: 'visible' });
+  assert.equal(await page.locator('body').getAttribute('data-app-screen'), 'season');
   assert.equal(await page.locator('#rewardReveal').isVisible(), true);
   assert.match(await page.locator('#rewardReveal').textContent(), /미션 보상/);
+  assert.match(await page.locator('#seasonList').textContent(), /수령/);
   assert.match(await page.locator('#missionsList .mission-card').first().textContent(), /받음/);
 }
 

@@ -11,6 +11,7 @@ import {
   buildRebootResultModel,
   buildRebootShop,
   buildSeasonScreen,
+  postRewardRoute,
   startRebootRetry
 } from '../src/client/reboot_screens.js';
 
@@ -104,6 +105,31 @@ test('lobby next action maps each priority to a generated beacon key', () => {
   assert.equal(nextLobbyAction({ ...allClaimed, xp: 40 }).beacon, 'training');
   assert.equal(nextLobbyAction({ ...allClaimed, gems: 1_000, unlocks: [] }).beacon, 'shop');
   assert.equal(nextLobbyAction(allClaimed).beacon, 'battle');
+});
+
+test('post reward route keeps the reward loop moving to the next useful screen', () => {
+  const allMissionsClaimed = {
+    processedRuns: ['run-1'],
+    claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic'],
+    unlocks: []
+  };
+
+  assert.equal(
+    postRewardRoute({ ...allMissionsClaimed, xp: 60, claimedPassTiers: [] }, 'missions'),
+    'season'
+  );
+  assert.equal(
+    postRewardRoute({ ...allMissionsClaimed, xp: 60, claimedPassTiers: [0, 1, 2, 3] }, 'missions'),
+    'collection'
+  );
+  assert.equal(
+    postRewardRoute({ ...allMissionsClaimed, xp: 0, gems: 1_000, claimedPassTiers: [0, 1, 2, 3], unitLevels: { spark_pin: 20 } }, 'missions'),
+    'shop'
+  );
+  assert.equal(
+    postRewardRoute({ ...allMissionsClaimed, xp: 0, gems: 0, claimedPassTiers: [0, 1, 2, 3], unitLevels: { spark_pin: 20 } }, 'missions'),
+    'missions'
+  );
 });
 
 test('result model exposes loss status for generated result badges', () => {

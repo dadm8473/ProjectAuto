@@ -244,6 +244,12 @@ export function nextLobbyAction(profile = {}) {
   return { label: '다음 작전', title: '첫 구원 작전', detail: '유닛/외형 성장', screen: 'battle', cta: '출전', beacon: 'battle' };
 }
 
+export function postRewardRoute(profile = {}, fallbackScreen = 'lobby') {
+  const nextAction = nextLobbyAction(profile);
+  if (!nextAction?.screen || nextAction.screen === 'battle') return fallbackScreen;
+  return nextAction.screen;
+}
+
 function buildLobbyNextActionControl(nextAction) {
   if (nextAction.screen === 'battle') {
     return '<span class="lobby-battle-cue" aria-hidden="true"></span>';

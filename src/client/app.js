@@ -14,10 +14,11 @@ import {
   buildRebootShop,
   buildSeasonScreen,
   missionProgress,
+  postRewardRoute,
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=meta-progress-board1';
+} from './reboot_screens.js?v=post-reward-route1';
 import { createRebootOnlineClient } from './reboot_online.js';
 
 const qs = (selector) => document.querySelector(selector);
@@ -640,12 +641,12 @@ function handleResultSecondary() {
   dom.resultOverlay.hidden = true;
   if (target === 'claim-missions') {
     if (!claimReadyMissionsFromResult()) showToast('수령할 미션 보상이 없습니다', 'warning');
-    setScreen('missions', { preserveRewardReveal: true });
+    setScreen(postRewardRoute(profile, 'missions'), { preserveRewardReveal: true });
     return;
   }
   if (target === 'claim-season') {
     if (!claimReadySeasonFromResult()) showToast('수령할 시즌 보상이 없습니다', 'warning');
-    setScreen('season', { preserveRewardReveal: true });
+    setScreen(postRewardRoute(profile, 'season'), { preserveRewardReveal: true });
     return;
   }
   setScreen(target === 'home' ? 'lobby' : target);

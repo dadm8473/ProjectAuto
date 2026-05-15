@@ -99,7 +99,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=action-focus1'",
     "from './reboot_render.js?v=merge-ready1'",
-    "from './reboot_screens.js?v=meta-progress-board1'",
+    "from './reboot_screens.js?v=post-reward-route1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -529,7 +529,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-progress-board1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=post-reward-route1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-progress-board1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-grid1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=start-cutin1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim-primary1"></script>'), false);
@@ -557,7 +558,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=meta-progress-board1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=post-reward-route1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-shelf-grid1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-badges1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-passive1'"), false);
@@ -2352,10 +2353,11 @@ test('result secondary action can claim ready rewards without an extra tap', asy
     "action: 'claim-season'",
     'function claimReadyMissionsFromResult()',
     'function claimReadySeasonFromResult()',
+    'postRewardRoute,',
     "if (target === 'claim-missions')",
     "if (target === 'claim-season')",
-    "setScreen('missions', { preserveRewardReveal: true });",
-    "setScreen('season', { preserveRewardReveal: true });",
+    "setScreen(postRewardRoute(profile, 'missions'), { preserveRewardReveal: true });",
+    "setScreen(postRewardRoute(profile, 'season'), { preserveRewardReveal: true });",
     'function setScreen(screen, options = {})',
     'changed && !options.preserveRewardReveal',
     "showRewardReveal('미션 보상'",
