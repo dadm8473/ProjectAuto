@@ -237,6 +237,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 70_000
   },
   {
+    path: 'src/client/assets/generated/reboot-result-hero-stage.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260515-result-hero-stage-imagegen.png',
+    width: 780,
+    height: 180,
+    minRuntimeBytes: 90_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-toast-callouts.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-toast-callouts-imagegen.png',
     width: 1024,
@@ -1383,6 +1390,27 @@ test('result medal cells stay readable and transparent for phone result strips',
     assert.equal(bounds.maxX <= cellWidth - 13, true, `result medal cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 10, true, `result medal cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 11, true, `result medal cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('result outcome stage cells stay transparent and readable behind the result medal', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-result-hero-stage.png'));
+  const corners = [
+    alphaAt(image, 2, 2),
+    alphaAt(image, image.width - 3, 2),
+    alphaAt(image, 2, image.height - 3),
+    alphaAt(image, image.width - 3, image.height - 3)
+  ];
+  const cellWidth = 390;
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, 'result outcome stage keeps transparent atlas corners');
+  for (let cell = 0; cell < 2; cell += 1) {
+    const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 32);
+    assert.equal(bounds.count > 10_000, true, `result outcome stage cell ${cell} has no readable diorama`);
+    assert.equal(bounds.minX >= 48, true, `result outcome stage cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 49, true, `result outcome stage cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 8, true, `result outcome stage cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 9, true, `result outcome stage cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
 });
 

@@ -797,6 +797,22 @@ Acceptance: all four corners alpha < 10, soft alpha coverage stays within the fr
 Reason: these assets are still imagegen-authored game UI art, but the runtime PNG must expose straight alpha so the app reads as one layered mobile game scene instead of stacked HTML/CSS cards.
 ```
 
+## Runtime Prompt: Result Outcome Stage
+
+```text
+Use case: stylized-concept
+Asset type: project-bound transparent-feel PNG source for a mobile game result outcome stage atlas, later cropped to 780x180 with two equal 390x180 cells.
+Primary request: Create one wide horizontal two-panel sprite atlas for a polished Korean portrait mobile cooperative tower-defense game result screen. Left half is victory: five cute premium sci-fi toy defenders around a golden teal signal trophy, celebratory sparks and warm confetti, heroic but compact. Right half is defeat/retry: the same signal platform dimmed, a cracked red boss gate silhouette in the background, repair beacons glowing, determined comeback mood rather than scary gore.
+Composition: exactly two side-by-side panels in one wide image, each panel has a centered diorama that reads clearly when scaled small; leave soft empty space at bottom for overlaid UI title; no hard rectangular cards or web panels.
+Style: shipped mobile game UI key art, glossy 2.5D toy-mech sci-fi, teal energy plus amber gold accents, consistent with existing Signal Relay assets, premium Korean mobile game reward screen art.
+Background for transparency processing: perfectly flat solid #ff00ff chroma-key background behind all subjects. The background must be one uniform color with no shadows, gradients, texture, reflections, floor plane, or lighting variation. Keep all subjects fully separated from the background with crisp edges and generous padding. Do not use #ff00ff anywhere in the subjects.
+Avoid: any words, letters, numbers, logos, watermarks, dice, casino/gacha imagery, copied game UI, flat CSS rectangles, website card shapes, excessive darkness, gore, realistic humans.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260515-result-hero-stage-imagegen.png
+Runtime file: src/client/assets/generated/reboot-result-hero-stage.png
+Postprocess: remove #ff00ff chroma key with soft matte/despill, split the generated source into left/right halves, fit each half into a transparent 390x180 cell, then composite a 780x180 atlas.
+Acceptance: result panel header shows a victory/defeat diorama behind the generated badge without adding a web card, text remains readable, both cells have alpha and no baked magenta background.
+```
+
 ## 후처리 기준
 
 필수:

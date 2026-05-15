@@ -497,7 +497,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-partner-link1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-hero-stage1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-partner-link1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-command-ribbons1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=locked-sockets1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-directive1">'), false);
@@ -1334,6 +1335,28 @@ test('result screen uses a generated finale burst instead of css-only celebratio
   assert.equal(finaleBlock.includes('opacity: 0.62;'), false);
   assert.equal(finaleBlock.includes('calc(var(--result-panel-width) * 0.72)'), false);
   assert.equal(finaleBlock.includes('opacity: 0.94;'), false);
+});
+
+test('result screen uses a generated outcome stage instead of an empty medal header', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '<span id="resultHeroStage" class="result-hero-stage" aria-hidden="true"></span>',
+    '--result-hero-stage: url("/src/client/assets/generated/reboot-result-hero-stage.png?v=result-hero-stage1")',
+    '.result-hero-stage {',
+    'background-image: var(--result-hero-stage);',
+    'background-size: 200% 100%;',
+    '.result-overlay[data-result-status="won"] .result-hero-stage',
+    '.result-overlay[data-result-status="lost"] .result-hero-stage'
+  ]) {
+    assert.equal(`${html}\n${css}`.includes(marker), true, marker);
+  }
+
+  const heroBlock = css.slice(css.indexOf('.result-hero-stage {'), css.indexOf('.result-overlay[data-result-status="won"] .result-hero-stage'));
+  assert.equal(heroBlock.includes('background:'), false);
+  assert.equal(heroBlock.includes('border'), false);
+  assert.equal(heroBlock.includes('box-shadow'), false);
 });
 
 test('result screen uses a dedicated generated debrief panel frame', async () => {

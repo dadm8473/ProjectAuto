@@ -19,6 +19,7 @@
   --result-action-buttons: url("/src/client/assets/generated/reboot-result-action-buttons.png?v=result-actions-alpha1");
   --result-detail-strips: url("/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail-alpha1");
   --result-copy-plates: url("/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy-alpha1");
+  --result-hero-stage: url("/src/client/assets/generated/reboot-result-hero-stage.png?v=result-hero-stage1");
   --result-finale-bursts: url("/src/client/assets/generated/reboot-result-finale-bursts.png?v=result-finale");
   --result-medals: url("/src/client/assets/generated/reboot-result-medals.png?v=result-medals");
   --toast-callouts: url("/src/client/assets/generated/reboot-toast-callouts.png?v=toast-callouts");
@@ -3023,6 +3024,26 @@ body[data-app-screen="season"] .app-screen::after {
 
 .result-overlay[data-result-status="won"] .result-finale { background-position: 0 0; }
 .result-overlay[data-result-status="lost"] .result-finale { background-position: 50% 0; }
+
+.result-hero-stage {
+  position: absolute;
+  top: clamp(30px, calc(var(--result-panel-width) * 0.105), 42px);
+  left: 50%;
+  z-index: 1;
+  width: clamp(240px, calc(var(--result-panel-width) * 0.75), 292px);
+  aspect-ratio: 13 / 6;
+  transform: translateX(-50%);
+  background-image: var(--result-hero-stage);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  background-position: 0 0;
+  opacity: 0.72;
+  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.54));
+  pointer-events: none;
+}
+
+.result-overlay[data-result-status="won"] .result-hero-stage { background-position: 0 0; }
+.result-overlay[data-result-status="lost"] .result-hero-stage { background-position: 100% 0; }
 
 #resultCode {
   justify-self: start;
