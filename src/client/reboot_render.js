@@ -777,8 +777,9 @@ function momentCalloutAlpha(state, event) {
   return Math.min(0.98, entrance * exit * 0.98);
 }
 
-function boardSlotPoint(playerId, slotIndex = 0) {
-  const compact = playerId === 'p2';
+function boardSlotPoint(playerId, slotIndex = 0, localBoardId = 'p1') {
+  const selfId = normalizeBoardId(localBoardId);
+  const compact = normalizeBoardId(playerId) !== selfId;
   const x = compact ? 28 : 24;
   const y = compact ? 48 : 392;
   const w = compact ? 334 : 342;
@@ -793,9 +794,9 @@ function boardSlotPoint(playerId, slotIndex = 0) {
   };
 }
 
-function boardVfxPoint(state, event) {
+function boardVfxPoint(state, event, localBoardId = 'p1') {
   const board = state.boards[event.playerId] ?? state.boards.p1;
-  return boardSlotPoint(event.playerId, Math.max(0, board.units.length - 1));
+  return boardSlotPoint(event.playerId, Math.max(0, board.units.length - 1), localBoardId);
 }
 
 function drawRescueBeam(ctx, state, assets = {}) {
@@ -837,12 +838,12 @@ function drawDeathBursts(ctx, state, assets = {}) {
   }
 }
 
-function drawHitBeams(ctx, state, assets = {}) {
+function drawHitBeams(ctx, state, assets = {}, localBoardId = 'p1') {
   const hits = (state.effects ?? [])
     .filter((effect) => effect.type === 'hit')
     .slice(-6);
   for (const effect of hits) {
-    const from = boardSlotPoint(effect.playerId, effect.slot);
+    const from = boardSlotPoint(effect.playerId, effect.slot, localBoardId);
     const to = trackPointFromProgress(effect.targetProgress, effect.targetLane);
     const alpha = Math.max(0.16, Math.min(0.86, (effect.ttl ?? 0.62) / 0.62));
     if (!drawHitBoltSprite(ctx, assets.hitBolts, from, to, effect.targetType, alpha)) {
@@ -868,16 +869,16 @@ function drawHitBeams(ctx, state, assets = {}) {
   }
 }
 
-function drawCombatVfx(ctx, state, assets = {}) {
+function drawCombatVfx(ctx, state, assets = {}, localBoardId = 'p1') {
   for (const event of recentEvents(state, 'summon')) {
-    const point = boardVfxPoint(state, event);
+    const point = boardVfxPoint(state, event, localBoardId);
     const alpha = eventAlpha(state, event);
     drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 0, point.x, point.y + 2, 126, 112, alpha * 0.92);
     if (event.highlight) drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 2, point.x, point.y - 2, 128, 128, alpha * 0.78);
     drawAtlasSprite(ctx, assets, 'vfx', 'summon_flash', point.x, point.y, 84, alpha);
   }
   for (const event of recentEvents(state, 'merge')) {
-    const point = boardVfxPoint(state, event);
+    const point = boardVfxPoint(state, event, localBoardId);
     const alpha = eventAlpha(state, event);
     drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 1, point.x, point.y, 146, 132, alpha * 0.88);
     if (event.highlight) drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 2, point.x, point.y - 2, 132, 132, alpha * 0.74);
@@ -888,7 +889,7 @@ function drawCombatVfx(ctx, state, assets = {}) {
     drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 3, 195, 328, 156, 118, alpha * 0.9);
     drawAtlasSprite(ctx, assets, 'vfx', 'rescue_flare', 195, 328, 132, alpha);
   }
-  drawHitBeams(ctx, state, assets);
+  drawHitBeams(ctx, state, assets, localBoardId);
   drawDeathBursts(ctx, state, assets);
   if (state.enemies.length > 0) {
     const point = enemyScreenPoint(state, 0);
@@ -900,24 +901,25 @@ function drawCombatVfx(ctx, state, assets = {}) {
   }
 }
 
-function firstPlayerSummonRewardEvent(state) {
-  return firstPlayerRecentEvent(state, 'summon', 1.35);
+function firstPlayerSummonRewardEvent(state, localBoardId = 'p1') {
+  return firstPlayerRecentEvent(state, 'summon', 1.35, localBoardId);
 }
 
-function firstPlayerRecentEvent(state, type, windowSeconds) {
+function firstPlayerRecentEvent(state, type, windowSeconds, localBoardId = 'p1') {
+  const selfId = normalizeBoardId(localBoardId);
   const playerEvents = state.events
-    .filter((event) => event.type === type && (event.playerId ?? 'p1') === 'p1' && state.now >= event.at)
+    .filter((event) => event.type === type && (event.playerId ?? 'p1') === selfId && state.now >= event.at)
     .sort((a, b) => a.at - b.at);
   const event = playerEvents[0];
   if (!event || state.now - event.at > windowSeconds) return null;
   return event;
 }
 
-function drawFirstSummonRewardSpotlight(ctx, state, assets = {}) {
-  const event = firstPlayerSummonRewardEvent(state);
+function drawFirstSummonRewardSpotlight(ctx, state, assets = {}, localBoardId = 'p1') {
+  const event = firstPlayerSummonRewardEvent(state, localBoardId);
   const image = assets?.firstCommandSpotlight;
   if (!event || !image?.complete || image.naturalWidth <= 0) return false;
-  const point = boardVfxPoint(state, event);
+  const point = boardVfxPoint(state, event, localBoardId);
   const elapsed = Math.max(0, state.now - event.at);
   const alpha = Math.min(0.94, eventAlpha(state, event, 1.35) * 1.2);
   const swell = 1 + Math.max(0, Math.sin(elapsed * Math.PI * 3.2)) * 0.08;
@@ -926,11 +928,11 @@ function drawFirstSummonRewardSpotlight(ctx, state, assets = {}) {
   return drawImageCover(ctx, image, point.x - w / 2, point.y + 18 - h / 2, w, h, alpha);
 }
 
-function drawFirstSummonIgnition(ctx, state, assets = {}) {
-  const event = firstPlayerSummonRewardEvent(state);
+function drawFirstSummonIgnition(ctx, state, assets = {}, localBoardId = 'p1') {
+  const event = firstPlayerSummonRewardEvent(state, localBoardId);
   const image = assets?.summonIgnition;
   if (!event || !image?.complete || image.naturalWidth <= 0) return false;
-  const point = boardVfxPoint(state, event);
+  const point = boardVfxPoint(state, event, localBoardId);
   const elapsed = Math.max(0, state.now - event.at);
   const alpha = Math.min(0.9, eventAlpha(state, event, 1.15) * 1.18);
   const swell = 1 + Math.max(0, Math.sin(elapsed * Math.PI * 3.4)) * 0.08;
@@ -941,8 +943,8 @@ function drawFirstSummonIgnition(ctx, state, assets = {}) {
   return true;
 }
 
-function drawFirstMergeRewardSigil(ctx, state, assets = {}, reducedMotion = false) {
-  const event = firstPlayerRecentEvent(state, 'merge', 1.35);
+function drawFirstMergeRewardSigil(ctx, state, assets = {}, reducedMotion = false, localBoardId = 'p1') {
+  const event = firstPlayerRecentEvent(state, 'merge', 1.35, localBoardId);
   const image = assets?.cosmeticSigils;
   const index = COSMETIC_SIGIL_INDEX['merge-effect'];
   if (!event || !image?.complete || image.naturalWidth <= 0) return false;
@@ -954,8 +956,8 @@ function drawFirstMergeRewardSigil(ctx, state, assets = {}, reducedMotion = fals
   return drawCosmeticSigilSprite(ctx, image, index, 36 - (w - 318) / 2, 422 - (h - 92) / 2, w, h, alpha);
 }
 
-function drawFirstRescueRewardSigil(ctx, state, assets = {}, reducedMotion = false) {
-  const event = firstPlayerRecentEvent(state, 'rescue', 1.45);
+function drawFirstRescueRewardSigil(ctx, state, assets = {}, reducedMotion = false, localBoardId = 'p1') {
+  const event = firstPlayerRecentEvent(state, 'rescue', 1.45, localBoardId);
   const image = assets?.cosmeticSigils;
   const index = COSMETIC_SIGIL_INDEX['rescue-effect'];
   if (!event || !image?.complete || image.naturalWidth <= 0) return false;
@@ -1042,10 +1044,11 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
     for (let y = 40; y < layout.height; y += 46) ctx.fillRect(24, y, layout.width - 48, 1);
   }
 
-  drawBoard(ctx, state.boards.p2, 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
+  const localBoardId = normalizeBoardId(options.localBoardId);
+  const partnerId = partnerBoardId(localBoardId);
+  drawBoard(ctx, state.boards[partnerId], 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
   drawTrack(ctx, state, assets, imageBackdrop);
   if (!options.onlineWaiting) drawCombatStartCutin(ctx, state, assets);
-  const localBoardId = normalizeBoardId(options.localBoardId);
   drawCombatCrisisOverlays(ctx, state, assets, localBoardId);
   const drewDualCrisis = drawDualCrisisCutin(ctx, state, assets, localBoardId);
   if (!drewDualCrisis) {
@@ -1053,13 +1056,13 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
     drawPartnerDangerCutin(ctx, state, assets, localBoardId);
   }
   drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
-  drawBoard(ctx, state.boards.p1, 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
-  drawFirstSummonIgnition(ctx, state, assets);
-  drawFirstSummonRewardSpotlight(ctx, state, assets);
-  drawFirstMergeRewardSigil(ctx, state, assets, options.reducedMotion);
-  drawFirstRescueRewardSigil(ctx, state, assets, options.reducedMotion);
+  drawBoard(ctx, state.boards[localBoardId], 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
+  drawFirstSummonIgnition(ctx, state, assets, localBoardId);
+  drawFirstSummonRewardSpotlight(ctx, state, assets, localBoardId);
+  drawFirstMergeRewardSigil(ctx, state, assets, options.reducedMotion, localBoardId);
+  drawFirstRescueRewardSigil(ctx, state, assets, options.reducedMotion, localBoardId);
   drawRescueBeam(ctx, state, assets);
-  drawCombatVfx(ctx, state, assets);
+  drawCombatVfx(ctx, state, assets, localBoardId);
   drawPartnerAssistPing(ctx, state, assets);
   drawCombatMomentCallout(ctx, state, assets);
 }

@@ -448,6 +448,52 @@ test('first player summon sends generated ignition from board toward track befor
   assert.equal(ctx.commands.indexOf(ignitionDraws[0]) < summonVfxIndex, true, 'ignition should make the board feel alive before the small flash');
 });
 
+test('second online player gets first summon premium VFX on their own lower board', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 0.84,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard' }],
+      events: [{ type: 'summon', at: 0.64, playerId: 'p2' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      summonIgnition: image(768, 256),
+      firstCommandSpotlight: image(256, 128),
+      playerBoardTray: image(780, 320)
+    },
+    { localBoardId: 'p2' }
+  );
+
+  const spotlightDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 256
+      && command.args[0].naturalHeight === 128
+      && command.args[6] >= 390
+  ));
+  const ignitionDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 768
+      && command.args[0].naturalHeight === 256
+      && [0, 256, 512].includes(command.args[1])
+      && command.args[6] >= 300
+  ));
+
+  assert.ok(spotlightDraw, 'expected p2 first-summon spotlight on the lower own board');
+  assert.equal(ignitionDraws.length >= 3, true, 'expected p2 first-summon ignition cells near the lower own board');
+});
+
 test('first player merge gets a generated board sigil before the burst', () => {
   const ctx = mockContext();
   drawRebootBattle(
@@ -838,6 +884,47 @@ test('second online player sees their playable partner danger as the dual crisis
   assert.equal(ctx.commands.some((command) => command.type === 'drawImage' && command.args[0] === bossCutin), false);
   assert.equal(ctx.commands.some((command) => command.type === 'drawImage' && command.args[0] === rescueCutin), false);
   assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '구원 우선'), true);
+});
+
+test('second online player sees their own board and summon VFX in the lower combat area', () => {
+  const ctx = mockContext();
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 20,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [{ spriteKey: 'burst_pin' }] }
+      },
+      enemies: [],
+      events: [{ type: 'summon', at: 19.72, playerId: 'p2', highlight: true }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      board: image(1280, 256),
+      combatRevealVfx: image(1920, 512)
+    },
+    { localBoardId: 'p2' }
+  );
+
+  const burstColorIndex = ctx.commands.findIndex((command) => command.type === 'fillStyle' && command.value === '#ffd166');
+  const sparkColorIndex = ctx.commands.findIndex((command) => command.type === 'fillStyle' && command.value === '#58d7ff');
+  const burstPoint = ctx.commands.slice(0, burstColorIndex).findLast((command) => command.type === 'translate');
+  const sparkPoint = ctx.commands.slice(0, sparkColorIndex).findLast((command) => command.type === 'translate');
+  assert.equal(burstPoint.y > 430, true, `p2 local unit should sit on the lower own board: ${JSON.stringify(burstPoint)}`);
+  assert.equal(sparkPoint.y < 170, true, `p1 partner unit should sit on the upper partner board: ${JSON.stringify(sparkPoint)}`);
+
+  const summonReveal = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1920
+      && command.args[0].naturalHeight === 512
+      && command.args[1] === 0
+  ));
+  assert.ok(summonReveal, 'expected the p2 summon reveal to draw');
+  assert.equal(summonReveal.args[6] > 420, true, `p2 local summon VFX should appear near the lower board: ${summonReveal.args[6]}`);
 });
 
 test('operation start cutin clears before the first second even without player action', () => {

@@ -98,7 +98,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=action-focus1'",
-    "from './reboot_render.js?v=dual-crisis1'",
+    "from './reboot_render.js?v=view-perspective1'",
     "from './reboot_screens.js?v=post-reward-route1'",
     "from './reboot_online.js'"
   ]) {
@@ -553,7 +553,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=dual-crisis1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=view-perspective1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=dual-crisis1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-partner-link1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=post-reward-route1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-progress-board1"></script>'), false);
@@ -573,7 +574,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=dual-crisis1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=view-perspective1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=dual-crisis1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=merge-ready1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=start-cutin1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=moment-callout1'"), false);
@@ -972,7 +974,8 @@ test('combat board renderer uses compact landing markers over imagegen map floor
     'const playerBoardTray = new Image();',
     'playerBoardTray.src = REBOOT_EFFECT_MANIFEST.playerBoardTray.src;',
     'function drawPlayerBoardTray(ctx, assets, x, y, w, h) {',
-    'drawBoard(ctx, state.boards.p1, 24, 392, 342, 138,',
+    'const partnerId = partnerBoardId(localBoardId);',
+    'drawBoard(ctx, state.boards[localBoardId], 24, 392, 342, 138,',
     'if (imageBackdrop && !compact) drawPlayerBoardTray(ctx, assets, x - 6, y - 14, w + 12, h + 10);',
     "const socketKey = compact ? 'partner_socket' : 'player_socket';",
     'const shouldDrawSocket = !imageBackdrop;',
@@ -1573,7 +1576,7 @@ test('combat renderer uses generated VFX atlas for action feedback', async () =>
     'summonIgnition',
     'function drawSummonIgnitionSprite',
     'function drawFirstSummonIgnition',
-    'drawFirstSummonIgnition(ctx, state, assets);',
+    'drawFirstSummonIgnition(ctx, state, assets, localBoardId);',
     "src: '/src/client/assets/generated/reboot-combat-reveal-vfx.png?v=reveal-vfx1'",
     'combatRevealVfx',
     'function drawCombatRevealVfxSprite',
@@ -1937,7 +1940,7 @@ test('hit effects draw generated short bolt sprites without screen-crossing beam
     'drawHitBoltSprite',
     'drawHitBeams',
     "effect.type === 'hit'",
-    'boardSlotPoint(effect.playerId, effect.slot)',
+    'boardSlotPoint(effect.playerId, effect.slot, localBoardId)',
     'trackPointFromProgress(effect.targetProgress, effect.targetLane)',
     'const boltLength = Math.min(Math.max(48, length * 0.34), 108);',
     'const centerX = to.x - Math.cos(angle) * boltLength * 0.42;',
