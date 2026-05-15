@@ -652,6 +652,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 10_000
   },
   {
+    path: 'src/client/assets/generated/reboot-first-summon-landing-beacon.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-first-summon-landing-beacon-chromakey-imagegen.png',
+    width: 512,
+    height: 512,
+    minRuntimeBytes: 250_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-combat-first-summon-console.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260516-combat-first-summon-console-chromakey-imagegen.png',
     width: 780,
@@ -1852,6 +1859,26 @@ test('combat coach cue cells keep each teaching prompt visible and padded', asyn
     assert.equal(bounds.minY >= 4, true, `combat coach cue cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 5, true, `combat coach cue cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
+});
+
+test('first summon landing beacon is a transparent generated battlefield object', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-first-summon-landing-beacon.png'));
+  const corners = [
+    alphaAt(image, 2, 2),
+    alphaAt(image, image.width - 3, 2),
+    alphaAt(image, 2, image.height - 3),
+    alphaAt(image, image.width - 3, image.height - 3)
+  ];
+  const bounds = alphaBounds(image, { x: 0, y: 0, width: image.width, height: image.height }, 32);
+  const centerCoverage = alphaCoverage(image, { x: 143, y: 143, width: 226, height: 226 }, 48);
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, `landing beacon has opaque corners: ${corners.join(',')}`);
+  assert.equal(bounds.count > 90_000, true, `landing beacon has no readable generated subject: ${bounds.count}`);
+  assert.equal(centerCoverage > 0.9, true, `landing beacon center is too sparse: ${centerCoverage}`);
+  assert.equal(bounds.minX >= 24, true, `landing beacon touches left edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxX <= image.width - 25, true, `landing beacon touches right edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.minY >= 32, true, `landing beacon touches top edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxY <= image.height - 33, true, `landing beacon touches bottom edge: ${JSON.stringify(bounds)}`);
 });
 
 test('combat action stamp cells stay compact so success feedback does not cover the battlefield', async () => {

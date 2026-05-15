@@ -474,6 +474,116 @@ test('pre-summon board cue stays hidden while waiting for an online partner', ()
   assert.equal(cueDraws.length, 0, 'online waiting must not show a playable first-summon socket cue');
 });
 
+test('first summon landing beacon keeps the target socket alive through the coach window', () => {
+  const ctx = mockContext();
+  const firstSummonBeacon = image(256, 256);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 10,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard' }],
+      events: [],
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      firstSummonBeacon,
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const beaconDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === firstSummonBeacon
+      && command.args[5] >= 8
+      && command.args[5] <= 28
+      && command.args[6] >= 432
+      && command.args[6] <= 452
+      && command.args[7] >= 86
+      && command.args[8] >= 86
+  ));
+
+  assert.ok(beaconDraw, 'expected a persistent generated landing beacon on the first summon socket');
+});
+
+test('first summon landing beacon clears after the first player action', () => {
+  const ctx = mockContext();
+  const firstSummonBeacon = image(256, 256);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 10,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard' }],
+      events: [{ type: 'summon', at: 2, playerId: 'p1' }],
+      effects: [],
+      actionState: { p1: { summon: false, merge: false, rescue: false } }
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      firstSummonBeacon,
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const beaconDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === firstSummonBeacon
+  ));
+
+  assert.equal(beaconDraws.length, 0, 'landing beacon must clear once the player has summoned');
+});
+
+test('first summon landing beacon stays hidden while waiting for an online partner', () => {
+  const ctx = mockContext();
+  const firstSummonBeacon = image(256, 256);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 10,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard' }],
+      events: [],
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      firstSummonBeacon,
+      playerBoardTray: image(780, 320)
+    },
+    { onlineWaiting: true }
+  );
+
+  const beaconDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === firstSummonBeacon
+  ));
+
+  assert.equal(beaconDraws.length, 0, 'online waiting must not show a playable first-summon landing beacon');
+});
+
 test('first summon cue owns attention after the brief operation intro', () => {
   const ctx = mockContext();
   const firstCommandSpotlight = image(256, 128);

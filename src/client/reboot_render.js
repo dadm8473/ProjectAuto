@@ -2,6 +2,7 @@ import { REBOOT_RULES } from '../shared/reboot_content.js';
 
 const OPERATION_START_CUTIN_END = 0.56;
 const OPERATION_START_CUTIN_FADE = 0.18;
+const FIRST_SUMMON_BEACON_END = 16;
 
 export const REBOOT_ATLAS_MANIFEST = {
   units: {
@@ -163,6 +164,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     height: 128,
     source: 'imagegen'
   },
+  firstSummonBeacon: {
+    src: '/src/client/assets/generated/reboot-first-summon-landing-beacon.png?v=first-summon-beacon1',
+    width: 512,
+    height: 512,
+    source: 'imagegen'
+  },
   combatRevealVfx: {
     src: '/src/client/assets/generated/reboot-combat-reveal-vfx.png?v=reveal-vfx1',
     width: 1920,
@@ -266,6 +273,8 @@ export function createRebootAssetImages() {
   boardLabelPlates.src = REBOOT_EFFECT_MANIFEST.boardLabelPlates.src;
   const firstCommandSpotlight = new Image();
   firstCommandSpotlight.src = REBOOT_EFFECT_MANIFEST.firstCommandSpotlight.src;
+  const firstSummonBeacon = new Image();
+  firstSummonBeacon.src = REBOOT_EFFECT_MANIFEST.firstSummonBeacon.src;
   const combatRevealVfx = new Image();
   combatRevealVfx.src = REBOOT_EFFECT_MANIFEST.combatRevealVfx.src;
   const summonIgnition = new Image();
@@ -274,7 +283,7 @@ export function createRebootAssetImages() {
   enemyTrackTrails.src = REBOOT_EFFECT_MANIFEST.enemyTrackTrails.src;
   const enemyImpactBursts = new Image();
   enemyImpactBursts.src = REBOOT_EFFECT_MANIFEST.enemyImpactBursts.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts };
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -1000,6 +1009,22 @@ function drawPreSummonSocketCue(ctx, state, assets = {}, localBoardId = 'p1') {
   return drawImageCover(ctx, image, x, y, w, h, 0.42 + pulse);
 }
 
+function drawFirstSummonLandingBeacon(ctx, state, assets = {}, localBoardId = 'p1') {
+  const selfId = normalizeBoardId(localBoardId);
+  const board = state.boards?.[selfId];
+  const image = assets?.firstSummonBeacon;
+  if (!board || !image?.complete || image.naturalWidth <= 0) return false;
+  if ((board.units?.length ?? 0) > 0) return false;
+  if (state.actionState?.[selfId]?.summon !== true) return false;
+  if (firstPlayerActionTaken(state, selfId)) return false;
+  if (state.now > FIRST_SUMMON_BEACON_END) return false;
+
+  const point = boardSlotPoint(selfId, 0, selfId);
+  const pulse = 1 + Math.max(0, Math.sin(state.now * 4.2)) * 0.08;
+  const size = 94 * pulse;
+  return drawImageCover(ctx, image, point.x - size / 2, point.y - size / 2, size, size, 0.74);
+}
+
 function drawFirstSummonRewardSpotlight(ctx, state, assets = {}, localBoardId = 'p1') {
   const event = firstPlayerSummonRewardEvent(state, localBoardId);
   const image = assets?.firstCommandSpotlight;
@@ -1139,6 +1164,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
   drawBoard(ctx, state.boards[localBoardId], 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
   if (!options.onlineWaiting) drawPreSummonSocketCue(ctx, state, assets, localBoardId);
+  if (!options.onlineWaiting) drawFirstSummonLandingBeacon(ctx, state, assets, localBoardId);
   drawFirstSummonIgnition(ctx, state, assets, localBoardId);
   drawFirstSummonRewardSpotlight(ctx, state, assets, localBoardId);
   drawFirstMergeRewardSigil(ctx, state, assets, options.reducedMotion, localBoardId);
