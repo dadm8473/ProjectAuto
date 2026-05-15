@@ -53,6 +53,7 @@
   --meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges-alpha1");
   --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
   --meta-showcase-stage: url("/src/client/assets/generated/reboot-meta-showcase-stage.png?v=showcase-stage");
+  --meta-shelf-grid: url("/src/client/assets/generated/reboot-meta-shelf-grid.png?v=meta-shelf-grid1");
   --meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions-alpha1");
   --meta-progress-bars: url("/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress");
   --meta-card-state-badges: url("/src/client/assets/generated/reboot-meta-card-state-badges.png?v=meta-card-states");
@@ -1806,6 +1807,23 @@ body[data-app-screen="season"] .app-screen::after {
   display: none;
 }
 
+.meta-shelf-grid {
+  position: relative;
+  min-height: clamp(520px, 132vw, 640px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: clamp(7px, 2vw, 10px) clamp(8px, 2.8vw, 12px);
+  padding: clamp(60px, 15.5vw, 74px) clamp(23px, 6.2vw, 30px) clamp(36px, 9vw, 46px);
+  overflow: hidden;
+  isolation: isolate;
+  background-image: var(--meta-shelf-grid);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.46));
+}
+
 .mission-stamp-board,
 .season-track-board {
   position: relative;
@@ -2174,6 +2192,11 @@ body[data-app-screen="season"] .app-screen::after {
   50% { transform: translateY(-50%) scale(0.98); filter: saturate(1.28) drop-shadow(0 10px 18px rgba(74, 211, 196, 0.36)); }
 }
 
+@keyframes cosmeticShelfEquipPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.88); filter: saturate(1.08) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.54)); }
+  50% { transform: translate(-50%, -50%) scale(0.98); filter: saturate(1.28) drop-shadow(0 10px 18px rgba(74, 211, 196, 0.36)); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .shop-card[data-equipped="true"] .cosmetic-equip-aura {
     animation: none;
@@ -2256,6 +2279,27 @@ body[data-app-screen="season"] .app-screen::after {
 
 .shop-card {
   grid-template-columns: 64px 1fr 88px;
+}
+
+.meta-shelf-grid .unit-card,
+.meta-shelf-grid .shop-card {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(84px, 1fr) auto auto;
+  justify-items: center;
+  align-items: end;
+  gap: 2px;
+  padding: 7px 7px 9px;
+  overflow: visible;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.meta-shelf-grid .unit-card::before,
+.meta-shelf-grid .shop-card::before {
+  background-image: none;
 }
 
 .mission-card,
@@ -2477,6 +2521,124 @@ body[data-app-screen="season"] .app-screen::after {
 
 .card-passive-state[data-passive-state="owned"]::before {
   background-position: 50% 0;
+}
+
+.meta-shelf-grid .card-state-badge {
+  top: 8px;
+  left: auto;
+  right: 9px;
+  width: 28px;
+}
+
+.meta-shelf-grid .unit-sprite {
+  width: clamp(76px, 23vw, 90px);
+  height: clamp(76px, 23vw, 90px);
+  align-self: end;
+  background-size: 500% 100%;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.66));
+}
+
+.meta-shelf-grid .unit-sprite[data-sprite="spark_pin"] { background-position: 0 0; }
+.meta-shelf-grid .unit-sprite[data-sprite="toktok_amp"] { background-position: 25% 0; }
+.meta-shelf-grid .unit-sprite[data-sprite="slow_coil"] { background-position: 50% 0; }
+.meta-shelf-grid .unit-sprite[data-sprite="burst_pin"] { background-position: 75% 0; }
+.meta-shelf-grid .unit-sprite[data-sprite="rescue_coil"] { background-position: 100% 0; }
+
+.meta-shelf-grid .shop-cosmetic {
+  width: clamp(62px, 18vw, 74px);
+  height: clamp(62px, 18vw, 74px);
+  align-self: end;
+  background-size: 500% 100%;
+  filter: drop-shadow(0 11px 17px rgba(0, 0, 0, 0.62));
+}
+
+.meta-shelf-grid .shop-cosmetic[data-shop-cosmetic="mythic-aura"] { background-position: 0 0; }
+.meta-shelf-grid .shop-cosmetic[data-shop-cosmetic="founder-board"] { background-position: 25% 0; }
+.meta-shelf-grid .shop-cosmetic[data-shop-cosmetic="merge-effect"] { background-position: 50% 0; }
+.meta-shelf-grid .shop-cosmetic[data-shop-cosmetic="rescue-effect"] { background-position: 75% 0; }
+.meta-shelf-grid .shop-cosmetic[data-shop-cosmetic="profile-frame"] { background-position: 100% 0; }
+
+.meta-shelf-grid .cosmetic-equip-aura {
+  left: 50%;
+  top: 41%;
+  width: 90px;
+  height: 90px;
+  transform: translate(-50%, -50%) scale(0.92);
+}
+
+.meta-shelf-grid .shop-card[data-equipped="true"] .cosmetic-equip-aura {
+  animation: cosmeticShelfEquipPulse 1.9s ease-in-out infinite;
+}
+
+.meta-shelf-grid .card-copy {
+  width: 100%;
+  justify-items: center;
+  text-align: center;
+  gap: 1px;
+}
+
+.meta-shelf-grid .card-copy strong {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: clamp(15px, 4.3vw, 18px);
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta-shelf-grid .card-copy p {
+  max-width: 100%;
+  overflow: hidden;
+  color: rgba(245, 240, 220, 0.78);
+  font-size: 10px;
+  line-height: 1.08;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta-shelf-grid .role-pill {
+  display: none;
+}
+
+.meta-shelf-grid .shop-card .card-copy p {
+  display: none;
+}
+
+.meta-shelf-grid .meta-progress {
+  display: none;
+}
+
+.meta-shelf-grid .unit-cost,
+.meta-shelf-grid .shop-price {
+  min-width: 54px;
+  min-height: 18px;
+  padding: 2px 7px 2px 24px;
+  font-size: 10px;
+}
+
+.meta-shelf-grid .unit-card button,
+.meta-shelf-grid .shop-card button {
+  min-width: 78px;
+  min-height: 44px;
+  padding: 0 7px;
+  font-size: 11px;
+}
+
+.meta-shelf-grid .card-passive-state {
+  min-width: 28px;
+  width: 28px;
+  min-height: 28px;
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  font-size: 0;
+  background-image: none;
+}
+
+.meta-shelf-grid .card-passive-state::before {
+  width: 22px;
+  height: 22px;
 }
 
 .unit-card button::before,

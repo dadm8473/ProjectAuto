@@ -99,7 +99,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=action-focus1'",
     "from './reboot_render.js?v=merge-ready1'",
-    "from './reboot_screens.js?v=meta-passive-icon1'",
+    "from './reboot_screens.js?v=meta-shelf-grid1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -474,7 +474,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-room-banners1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-grid1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-room-banners1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive-icon1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-cta1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-focus1">'), false);
@@ -523,7 +524,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-grid1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=start-cutin1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim-primary1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=screen-wipe1"></script>'), false);
@@ -550,7 +552,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=meta-passive-icon1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=meta-shelf-grid1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-badges1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-passive1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-claim1'"), false);
@@ -2607,6 +2609,41 @@ test('shop screen uses the active generated showcase stage', async () => {
   }
 
   assert.equal(css.includes('.meta-summary[data-summary-kind="shop"]'), false);
+});
+
+test('collection and shop use a generated display shelf instead of list-only rows', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const collection = buildRebootCollection({ xp: 0, unitLevels: {} });
+  const shop = buildRebootShop({ gems: 0, unlocks: [] });
+
+  assert.equal(css.includes('--meta-shelf-grid: url("/src/client/assets/generated/reboot-meta-shelf-grid.png?v=meta-shelf-grid1")'), true);
+  assert.equal(collection.includes('class="meta-shelf-grid" data-shelf-kind="collection"'), true);
+  assert.equal(shop.includes('class="meta-shelf-grid" data-shelf-kind="shop"'), true);
+
+  const shelfBlock = cssRuleBlock(css, '.meta-shelf-grid');
+  for (const marker of [
+    'grid-template-columns: repeat(2, minmax(0, 1fr));',
+    'background-image: var(--meta-shelf-grid);',
+    'background-size: 100% 100%;',
+    'min-height: clamp(520px, 132vw, 640px);'
+  ]) {
+    assert.equal(shelfBlock.includes(marker), true, marker);
+  }
+
+  const shelfCardBlock = css.slice(css.indexOf('.meta-shelf-grid .unit-card,'), css.indexOf('.meta-shelf-grid .unit-card::before,'));
+  for (const marker of [
+    'background: transparent;',
+    'box-shadow: none;',
+    'grid-template-rows: minmax(84px, 1fr) auto auto;'
+  ]) {
+    assert.equal(shelfCardBlock.includes(marker), true, marker);
+  }
+
+  const shelfFrameBlock = css.slice(css.indexOf('.meta-shelf-grid .unit-card::before,'), css.indexOf('.meta-shelf-grid .card-state-badge'));
+  assert.equal(shelfFrameBlock.includes('background-image: none;'), true);
+
+  const shelfActionBlock = css.slice(css.indexOf('.meta-shelf-grid .unit-card button,'), css.indexOf('.meta-shelf-grid .card-passive-state'));
+  assert.equal(shelfActionBlock.includes('min-height: 44px;'), true);
 });
 
 test('mission and season screens use generated stamp and reward-track boards', async () => {

@@ -335,6 +335,14 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 80_000
   },
   {
+    path: 'src/client/assets/generated/reboot-meta-shelf-grid.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260515-meta-shelf-grid-imagegen.png',
+    width: 1024,
+    height: 1536,
+    minRuntimeBytes: 200_000,
+    requiresAlpha: false
+  },
+  {
     path: 'src/client/assets/generated/reboot-screen-transition-wipe.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-screen-transition-wipe-chromakey-imagegen.png',
     width: 430,
@@ -1052,7 +1060,7 @@ test('reboot runtime overlay art is promoted from imagegen sources', async () =>
     const runtime = await readFile(asset.path);
     assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
     assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
-    assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+    if (asset.requiresAlpha !== false) assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
     assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
     assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
     assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
@@ -1065,7 +1073,7 @@ test('reboot lobby UI scene art is promoted from imagegen sources', async () => 
     const runtime = await readFile(asset.path);
     assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
     assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
-    assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+    if (asset.requiresAlpha !== false) assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
     assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
     assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
     assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);

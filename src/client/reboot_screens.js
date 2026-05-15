@@ -318,7 +318,7 @@ export function buildRebootCollection(profile = {}) {
     </article>
   `;
   }).join('');
-  return `${showcase}${units}`;
+  return `${showcase}<section class="meta-shelf-grid" data-shelf-kind="collection">${units}</section>`;
 }
 
 export function buildRebootShop(profile = {}) {
@@ -365,7 +365,7 @@ export function buildRebootShop(profile = {}) {
     </article>
   `;
   }).join('');
-  return `${showcase}${shopItems}`;
+  return `${showcase}<section class="meta-shelf-grid" data-shelf-kind="shop">${shopItems}</section>`;
 }
 
 export function buildMissionScreen(profile = {}) {

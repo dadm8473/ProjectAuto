@@ -326,6 +326,18 @@ test('collection and shop showcases split numeric state into compact game badges
   assert.equal(shop.includes('0 젬 보유 · 90 젬'), false);
 });
 
+test('collection and shop items sit inside a generated shelf grid', () => {
+  const collection = buildRebootCollection({ xp: 0, unitLevels: {} });
+  const shop = buildRebootShop({ gems: 0, unlocks: [] });
+
+  assert.equal(collection.includes('class="meta-shelf-grid" data-shelf-kind="collection"'), true);
+  assert.equal(shop.includes('class="meta-shelf-grid" data-shelf-kind="shop"'), true);
+  assert.equal(collection.indexOf('class="meta-showcase"') < collection.indexOf('class="meta-shelf-grid"'), true);
+  assert.equal(shop.indexOf('class="meta-showcase"') < shop.indexOf('class="meta-shelf-grid"'), true);
+  assert.equal(collection.indexOf('class="meta-shelf-grid"') < collection.indexOf('class="screen-card unit-card"'), true);
+  assert.equal(shop.indexOf('class="meta-shelf-grid"') < shop.indexOf('class="screen-card shop-card"'), true);
+});
+
 test('mission screen starts with a stamp board instead of a web list summary', () => {
   const missions = buildMissionScreen({
     processedRuns: ['run-1'],
