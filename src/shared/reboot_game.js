@@ -108,13 +108,22 @@ function makeUnit(unitId, owner, sequence) {
   };
 }
 
-function hasMergeCandidate(board) {
+function mergeCandidateIndexes(board) {
   const gradeCounts = new Map();
-  for (const unit of board.units) {
+  const gradeIndexes = new Map();
+  for (const [index, unit] of board.units.entries()) {
     if (unit.grade >= 2) continue;
     gradeCounts.set(unit.grade, (gradeCounts.get(unit.grade) ?? 0) + 1);
+    if (!gradeIndexes.has(unit.grade)) gradeIndexes.set(unit.grade, []);
+    gradeIndexes.get(unit.grade).push(index);
   }
-  return [...gradeCounts.values()].some((count) => count >= REBOOT_RULES.merge.requiredSameGrade);
+  const readyGrade = [...gradeCounts.entries()]
+    .find(([, count]) => count >= REBOOT_RULES.merge.requiredSameGrade)?.[0];
+  return readyGrade == null ? [] : gradeIndexes.get(readyGrade).slice(0, REBOOT_RULES.merge.requiredSameGrade);
+}
+
+function hasMergeCandidate(board) {
+  return mergeCandidateIndexes(board).length >= REBOOT_RULES.merge.requiredSameGrade;
 }
 
 function refreshActionState(game) {
@@ -458,16 +467,23 @@ export function mergeToys(game, { playerId = 'p1', unitIds = [] } = {}) {
   if (game.result) return { ok: false, reason: '이미 종료된 판입니다.' };
   const owner = player(game, playerId);
   const board = game.boards[owner];
-  if (!hasMergeCandidate(board) && !canBossMerge(game) && unitIds.length === 0) {
+  const candidateIndexes = mergeCandidateIndexes(board);
+  const hasNormalCandidate = candidateIndexes.length >= REBOOT_RULES.merge.requiredSameGrade;
+  const bossMerge = canBossMerge(game);
+  if (!hasNormalCandidate && !bossMerge) {
     return { ok: false, reason: '합성할 유닛이 없습니다.' };
   }
 
   const unitId = nextMergeUnit(game);
   const unit = makeUnit(unitId, owner, game.internal.unitSequence++);
-  const consumed = [];
-  while (board.units.length > 0 && consumed.length < REBOOT_RULES.merge.requiredSameGrade) {
-    consumed.push(board.units.shift().id);
+  const indexesToConsume = hasNormalCandidate
+    ? candidateIndexes
+    : board.units.slice(0, REBOOT_RULES.merge.requiredSameGrade).map((_, index) => index);
+  const consumedUnits = indexesToConsume.map((index) => board.units[index]).filter(Boolean);
+  for (const index of [...indexesToConsume].sort((a, b) => b - a)) {
+    board.units.splice(index, 1);
   }
+  const consumed = consumedUnits.map((consumedUnit) => consumedUnit.id);
   board.units.push(unit);
   game.internal.mergeIndex += 1;
 

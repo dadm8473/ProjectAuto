@@ -113,6 +113,40 @@ test('tutorial_success teaches summon, merge, and rescue within 120 seconds', ()
   assert.equal(game.boards.p2.danger < 100, true);
 });
 
+test('merge consumes eligible grade-one units without deleting higher grade units', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 102 });
+  game.resources.p1.summon = 40;
+
+  summonToy(game, { playerId: 'p1' });
+  summonToy(game, { playerId: 'p1' });
+  mergeToys(game, { playerId: 'p1' });
+  summonToy(game, { playerId: 'p1' });
+  summonToy(game, { playerId: 'p1' });
+
+  const [higherGrade, firstGradeOne, secondGradeOne] = game.boards.p1.units;
+  assert.equal(higherGrade.grade, 2);
+  assert.equal(firstGradeOne.grade, 1);
+  assert.equal(secondGradeOne.grade, 1);
+
+  const result = mergeToys(game, { playerId: 'p1' });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.consumed, [firstGradeOne.id, secondGradeOne.id]);
+  assert.equal(game.boards.p1.units.some((unit) => unit.id === higherGrade.id), true);
+});
+
+test('reboot merge rejects supplied unit ids when no merge candidate exists', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 103 });
+  summonToy(game, { playerId: 'p1' });
+
+  const onlyUnit = game.boards.p1.units[0];
+  const result = mergeToys(game, { playerId: 'p1', unitIds: ['bogus'] });
+
+  assert.equal(result.ok, false);
+  assert.deepEqual(game.boards.p1.units.map((unit) => unit.id), [onlyUnit.id]);
+  assert.equal(game.actionState.p1.merge, false);
+});
+
 test('rescue spends charge and cannot be spammed after the tutorial window', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 111 });
   advanceTo(game, 78);
