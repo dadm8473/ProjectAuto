@@ -497,7 +497,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-verdict1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-rails1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-verdict1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-outcome-aura1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-summon-console1">'), false);
@@ -1001,7 +1002,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=result-verdict1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=objective-rails1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -3010,6 +3011,7 @@ test('mission and season use a generated progress board instead of bare stacked 
   const season = buildSeasonScreen({ xp: 0, claimedPassTiers: [] });
 
   assert.equal(css.includes('--meta-progress-board: url("/src/client/assets/generated/reboot-meta-progress-board.png?v=meta-progress-board1")'), true);
+  assert.equal(css.includes('--meta-objective-rails: url("/src/client/assets/generated/reboot-meta-objective-rails.png?v=objective-rails1")'), true);
   assert.equal(missions.includes('class="meta-progress-board" data-progress-board="missions"'), true);
   assert.equal(season.includes('class="meta-progress-board" data-progress-board="season"'), true);
 
@@ -3033,7 +3035,16 @@ test('mission and season use a generated progress board instead of bare stacked 
   }
 
   const boardFrameBlock = css.slice(css.indexOf('.meta-progress-board .mission-card::before,'), css.indexOf('.meta-progress-board .card-state-badge'));
-  assert.equal(boardFrameBlock.includes('background-image: none;'), true);
+  for (const marker of [
+    'background-image: var(--meta-objective-rails);',
+    'background-size: 200% 100%;',
+    'inset: clamp(1px, 0.8vw, 4px) clamp(2px, 1.2vw, 5px);',
+    '.meta-progress-board .mission-card::before { background-position: 0 0; }',
+    '.meta-progress-board .season-card::before { background-position: 100% 0; }'
+  ]) {
+    assert.equal(boardFrameBlock.includes(marker), true, marker);
+  }
+  assert.equal(boardFrameBlock.includes('background-image: none;'), false);
 });
 
 test('mission and season screens use generated stamp and reward-track boards', async () => {

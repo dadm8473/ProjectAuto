@@ -586,6 +586,14 @@ const IMAGEGEN_REBOOT_RESULT_VERDICT_RIBBONS = {
   minRuntimeBytes: 55_000
 };
 
+const IMAGEGEN_REBOOT_META_OBJECTIVE_RAILS = {
+  path: 'src/client/assets/generated/reboot-meta-objective-rails.png',
+  source: 'docs/design/generation/source/reboot/style-lock/20260516-meta-objective-rails-chromakey-imagegen.png',
+  width: 780,
+  height: 112,
+  minRuntimeBytes: 50_000
+};
+
 const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
   {
     path: 'src/client/assets/generated/reboot-kill-burst.png',
@@ -1586,6 +1594,41 @@ test('result verdict ribbon cells make result copy read as one generated game pa
     assert.equal(bounds.maxX <= cellWidth - 7, true, `verdict ribbon cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 4, true, `verdict ribbon cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 5, true, `verdict ribbon cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('meta objective rail cells turn mission and season rows into generated board nodes', async () => {
+  const asset = IMAGEGEN_REBOOT_META_OBJECTIVE_RAILS;
+  const source = await readFile(asset.source);
+  const runtime = await readFile(asset.path);
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+  assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+  assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+  assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+  assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+  const image = parsePng(runtime);
+  const cellWidth = 390;
+  for (let cell = 0; cell < 2; cell += 1) {
+    const x0 = cell * cellWidth;
+    const corners = [
+      alphaAt(image, x0 + 2, 2),
+      alphaAt(image, x0 + cellWidth - 3, 2),
+      alphaAt(image, x0 + 2, image.height - 3),
+      alphaAt(image, x0 + cellWidth - 3, image.height - 3)
+    ];
+    const bounds = alphaBounds(image, { x: x0, y: 0, width: cellWidth, height: image.height }, 32);
+    const centerCoverage = alphaCoverage(image, { x: x0 + 28, y: 20, width: 334, height: 72 }, 48);
+
+    assert.equal(corners.every((alpha) => alpha < 12), true, `objective rail cell ${cell} has opaque corners: ${corners.join(',')}`);
+    assert.equal(bounds.count > 8_000, true, `objective rail cell ${cell} has no readable generated rail`);
+    assert.equal(centerCoverage > 0.12, true, `objective rail cell ${cell} lacks a readable central track`);
+    assert.equal(centerCoverage < 0.99, true, `objective rail cell ${cell} is a fully opaque slab behind row copy`);
+    assert.equal(bounds.minX >= 6, true, `objective rail cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 7, true, `objective rail cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 4, true, `objective rail cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 5, true, `objective rail cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
 });
 
