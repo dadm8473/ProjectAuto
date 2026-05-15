@@ -982,11 +982,11 @@ body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after 
   min-height: clamp(58px, 16.28vw, 70px);
 }
 
-body[data-app-screen="battle"][data-coach-cue="summon"] .status-line {
+body[data-app-screen="battle"][data-coach-cue] .status-line {
   display: none;
 }
 
-body[data-app-screen="battle"][data-coach-cue="summon"] .action-panel {
+body[data-app-screen="battle"][data-coach-cue] .action-panel {
   padding-top: clamp(16px, 4.65vw, 20px);
 }
 

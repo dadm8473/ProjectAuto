@@ -952,7 +952,7 @@ test('combat actions collapse unearned verbs into quiet locked command sockets',
     '.primary-actions button[data-unlocked="false"]',
     'background-image: var(--combat-locked-sockets);',
     'gap: 0;',
-    'body[data-app-screen="battle"][data-coach-cue="summon"] .status-line',
+    'body[data-app-screen="battle"][data-coach-cue] .status-line',
     '.primary-actions button[data-unlocked="false"] > span',
     'max-width: 0;',
     '.primary-actions button[data-focus="true"]:not(:disabled)'
@@ -966,6 +966,23 @@ test('combat actions collapse unearned verbs into quiet locked command sockets',
   assert.equal(lockedBlock.includes('display: none;'), false);
   assert.equal(lockedBlock.includes('visibility: hidden;'), false);
   assert.equal(lockedBlock.includes('background-image: none;'), false);
+});
+
+test('combat coach cues remove duplicate status text for every taught action', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    'body[data-app-screen="battle"][data-coach-cue] .status-line',
+    'body[data-app-screen="battle"][data-coach-cue] .action-panel',
+    'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions::after',
+    'body[data-app-screen="battle"][data-coach-cue="merge"] .primary-actions::after',
+    'body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="merge"] .status-line'), false);
+  assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .status-line'), false);
 });
 
 test('result screen uses imagegen reward backdrop instead of a plain overlay', async () => {
