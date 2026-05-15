@@ -570,6 +570,14 @@ const IMAGEGEN_REBOOT_OBJECTIVE_STAMPS = {
   minRuntimeBytes: 24_000
 };
 
+const IMAGEGEN_REBOOT_RESULT_AURAS = {
+  path: 'src/client/assets/generated/reboot-result-outcome-auras.png',
+  source: 'docs/design/generation/source/reboot/style-lock/20260516-result-outcome-auras-chromakey-imagegen.png',
+  width: 780,
+  height: 260,
+  minRuntimeBytes: 45_000
+};
+
 const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
   {
     path: 'src/client/assets/generated/reboot-kill-burst.png',
@@ -1502,6 +1510,39 @@ test('objective status stamp cells stay transparent and readable as mobile rewar
     assert.equal(bounds.maxX <= cellWidth - 9, true, `objective stamp cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 8, true, `objective stamp cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 9, true, `objective stamp cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('result outcome aura cells stay transparent and readable without covering result copy', async () => {
+  const asset = IMAGEGEN_REBOOT_RESULT_AURAS;
+  const source = await readFile(asset.source);
+  const runtime = await readFile(asset.path);
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+  assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+  assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+  assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+  assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+  const image = parsePng(runtime);
+  const cellWidth = 390;
+  for (let cell = 0; cell < 2; cell += 1) {
+    const x0 = cell * cellWidth;
+    const corners = [
+      alphaAt(image, x0 + 2, 2),
+      alphaAt(image, x0 + cellWidth - 3, 2),
+      alphaAt(image, x0 + 2, image.height - 3),
+      alphaAt(image, x0 + cellWidth - 3, image.height - 3)
+    ];
+    const bounds = alphaBounds(image, { x: x0, y: 0, width: cellWidth, height: image.height }, 32);
+    const centerCoverage = alphaCoverage(image, { x: x0 + 80, y: 50, width: 230, height: 140 }, 48);
+
+    assert.equal(corners.every((alpha) => alpha < 12), true, `result aura cell ${cell} has opaque corners: ${corners.join(',')}`);
+    assert.equal(bounds.count > 8_000, true, `result aura cell ${cell} has no readable subject`);
+    assert.equal(centerCoverage > 0.16, true, `result aura cell ${cell} lacks a readable payoff center`);
+    assert.equal(centerCoverage < 0.72, true, `result aura cell ${cell} is too opaque behind copy`);
+    assert.equal(bounds.minX >= 6, true, `result aura cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 7, true, `result aura cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
   }
 });
 

@@ -497,7 +497,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-outcome-aura1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-summon-console1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=nav-selector1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=cooldown-label1">'), false);
@@ -999,7 +1000,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=objective-stamps1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-outcome-aura1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -1488,6 +1489,31 @@ test('result screen uses a generated outcome stage instead of an empty medal hea
   assert.equal(heroBlock.includes('background:'), false);
   assert.equal(heroBlock.includes('border'), false);
   assert.equal(heroBlock.includes('box-shadow'), false);
+});
+
+test('result screen fills the upper payoff area with generated outcome aura art', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '<span id="resultOutcomeAura" class="result-outcome-aura" aria-hidden="true"></span>',
+    '--result-outcome-auras: url("/src/client/assets/generated/reboot-result-outcome-auras.png?v=result-outcome-aura1")',
+    '.result-outcome-aura {',
+    'background-image: var(--result-outcome-auras);',
+    'background-size: 200% 100%;',
+    '.result-overlay[data-result-status="won"] .result-outcome-aura',
+    '.result-overlay[data-result-status="lost"] .result-outcome-aura'
+  ]) {
+    assert.equal(`${html}\n${css}`.includes(marker), true, marker);
+  }
+
+  const auraBlock = cssRuleBlock(css, '.result-outcome-aura');
+  assert.equal(auraBlock.includes('width: clamp(270px, calc(var(--result-panel-width) * 0.88), 344px);'), true);
+  assert.equal(auraBlock.includes('top: clamp(34px, calc(var(--result-panel-width) * 0.125), 48px);'), true);
+  assert.equal(auraBlock.includes('pointer-events: none;'), true);
+  assert.equal(auraBlock.includes('linear-gradient'), false);
+  assert.equal(auraBlock.includes('radial-gradient'), false);
+  assert.equal(auraBlock.includes('border'), false);
 });
 
 test('result screen uses a dedicated generated debrief panel frame', async () => {
