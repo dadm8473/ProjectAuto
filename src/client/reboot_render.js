@@ -171,6 +171,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     width: 768,
     height: 256,
     source: 'imagegen'
+  },
+  enemyTrackTrails: {
+    src: '/src/client/assets/generated/reboot-enemy-track-trails.png?v=enemy-track-trails1',
+    width: 1024,
+    height: 128,
+    source: 'imagegen'
   }
 };
 
@@ -255,7 +261,9 @@ export function createRebootAssetImages() {
   combatRevealVfx.src = REBOOT_EFFECT_MANIFEST.combatRevealVfx.src;
   const summonIgnition = new Image();
   summonIgnition.src = REBOOT_EFFECT_MANIFEST.summonIgnition.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight, combatRevealVfx, summonIgnition };
+  const enemyTrackTrails = new Image();
+  enemyTrackTrails.src = REBOOT_EFFECT_MANIFEST.enemyTrackTrails.src;
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight, combatRevealVfx, summonIgnition, enemyTrackTrails };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -405,6 +413,31 @@ function drawBossAura(ctx, assets, x, y, now = 0) {
   const auraIndex = now >= 112 ? 2 : now >= 102 ? 1 : 0;
   const pulse = 0.78 + Math.max(0, Math.sin(now * 5.4)) * 0.16;
   return drawBossAuraSprite(ctx, assets.bossAuras, auraIndex, x, y + 18, 128, 64, pulse);
+}
+
+function drawEnemyTrackTrail(ctx, assets, enemy, x, y, now = 0) {
+  const image = assets?.enemyTrackTrails;
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const trailIndexByEnemy = {
+    noise_shard: 0,
+    quick_noise: 1,
+    heavy_noise: 2,
+    mini_boss: 3
+  };
+  const key = enemy.spriteKey ?? enemy.enemyId;
+  const index = trailIndexByEnemy[key] ?? 0;
+  const cellWidth = image.naturalWidth / 4;
+  const boss = key === 'mini_boss';
+  const heavy = key === 'heavy_noise';
+  const fast = key === 'quick_noise';
+  const w = boss ? 100 : heavy ? 82 : fast ? 76 : 60;
+  const h = boss ? 46 : heavy ? 38 : fast ? 30 : 26;
+  const alpha = Math.min(0.92, (boss ? 0.76 : 0.58) + Math.max(0, Math.sin(now * (fast ? 8.5 : 5.5))) * 0.08);
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, x - w / 2, y + (boss ? 10 : 8), w, h);
+  ctx.restore();
+  return true;
 }
 
 function drawPlayerBoardTray(ctx, assets, x, y, w, h) {
@@ -726,6 +759,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
     if (enemy.enemyId === 'mini_boss') {
       drawBossAura(ctx, assets, x, y, state.now);
     }
+    drawEnemyTrackTrail(ctx, assets, enemy, x, y, state.now);
     if (drawAtlasSprite(ctx, assets, 'enemies', enemy.spriteKey ?? enemy.enemyId, x, y, size)) {
       return;
     }

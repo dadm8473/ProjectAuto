@@ -703,6 +703,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     width: 768,
     height: 256,
     minRuntimeBytes: 24_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-enemy-track-trails.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-enemy-track-trails-chromakey-imagegen.png',
+    width: 1024,
+    height: 128,
+    minRuntimeBytes: 28_000
   }
 ];
 
@@ -1513,5 +1520,21 @@ test('summon ignition VFX cells keep board-to-track feedback readable', async ()
     assert.equal(bounds.maxX <= cellWidth - 5, true, `summon ignition cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 4, true, `summon ignition cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 5, true, `summon ignition cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('enemy track trail cells keep enemies grounded on the imagegen map', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-enemy-track-trails.png'));
+  const cellWidth = 256;
+  assert.equal(image.width, cellWidth * 4);
+  assert.equal(image.height, 128);
+
+  for (let cell = 0; cell < 4; cell += 1) {
+    const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 24);
+    assert.equal(bounds.count > 1_500, true, `enemy track trail cell ${cell} has no readable ground contact art`);
+    assert.equal(bounds.minX >= 20, true, `enemy track trail cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 21, true, `enemy track trail cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 10, true, `enemy track trail cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 9, true, `enemy track trail cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
 });

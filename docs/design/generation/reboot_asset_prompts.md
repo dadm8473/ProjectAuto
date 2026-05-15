@@ -813,6 +813,23 @@ Postprocess: remove #ff00ff chroma key with soft matte/despill, split the genera
 Acceptance: result panel header shows a victory/defeat diorama behind the generated badge without adding a web card, text remains readable, both cells have alpha and no baked magenta background.
 ```
 
+## Runtime Prompt: Enemy Track Trails
+
+```text
+Use case: stylized-concept
+Asset type: project-bound transparent-feel PNG source for a mobile portrait cooperative tower-defense enemy track contact atlas, later cropped to 1024x128 with four equal 256x128 cells.
+Primary request: Create one wide horizontal four-panel sprite atlas for a polished Korean portrait mobile cooperative tower-defense game. Each panel is a ground-contact shadow and motion trail that sits UNDER an enemy sprite on a sci-fi arena track, making the enemy feel physically attached to the map.
+Panels left to right: 1. small teal-black oval contact shadow with faint cyan scanline dust for normal shard enemies. 2. quick enemy streak: narrow cyan speed smear and tiny sparks, readable but subtle. 3. heavy enemy wake: wider amber-teal weight shadow, dust vibration, compact shock ripple. 4. mini-boss contact: larger red-teal ominous aura ring with heavy shadow and short cracked-energy pulse.
+Composition: exactly four side-by-side cells in one wide image, each cell centered with generous transparent padding; no backgrounds, no floor plane, no rectangular cards, no UI panels, no text. The art should be low and horizontal, designed to be drawn beneath enemy sprites at phone scale.
+Style: shipped mobile game VFX sprite art, glossy 2.5D sci-fi toy-mech world, teal energy plus amber gold accents with one red boss variant, consistent with Signal Relay assets. Soft antialiasing, crisp silhouette, premium game polish.
+Background for transparency processing: perfectly flat solid #ff00ff chroma-key background behind all subjects. The background must be one uniform color with no shadows, gradients, texture, reflections, floor plane, or lighting variation. Keep all VFX subjects fully separated from the background with crisp edges and generous padding. Do not use #ff00ff anywhere in the subjects.
+Avoid: any words, letters, numbers, logos, watermarks, dice, casino/gacha imagery, copied game UI, square icons, character bodies, enemy bodies, large vertical explosions, realistic humans, gore.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260516-enemy-track-trails-chromakey-imagegen.png
+Runtime file: src/client/assets/generated/reboot-enemy-track-trails.png
+Postprocess: remove #ff00ff chroma key with soft matte/despill, split the generated source into four cells, trim each cell to alpha bounds, fit into transparent 256x128 cells, then composite a 1024x128 atlas.
+Acceptance: every enemy type receives a distinct ground contact trail drawn under the sprite, atlas corners are transparent, and enemies read as map objects rather than floating UI icons.
+```
+
 ## 후처리 기준
 
 필수:
