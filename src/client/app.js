@@ -17,7 +17,7 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=surface-alpha1';
+} from './reboot_screens.js?v=meta-passive1';
 import { createRebootOnlineClient } from './reboot_online.js';
 
 const qs = (selector) => document.querySelector(selector);
@@ -314,7 +314,7 @@ function handleShopPurchase(event) {
     });
     saveProfile();
     renderHomeScreens();
-    flashMetaClaim(dom.shopList, `[data-shop-buy="${selectorValue(item.id)}"]`, 'shop');
+    flashMetaClaim(dom.shopList, `[data-item="${selectorValue(item.id)}"]`, 'shop');
     showRewardReveal('외형 장착', item.name, 'cosmetic_shard');
     showToast(`${item.name} 장착`, 'reward');
     return;
@@ -332,7 +332,7 @@ function handleShopPurchase(event) {
   });
   saveProfile();
   renderHomeScreens();
-  flashMetaClaim(dom.shopList, `[data-shop-buy="${selectorValue(item.id)}"]`, 'shop');
+  flashMetaClaim(dom.shopList, `[data-item="${selectorValue(item.id)}"]`, 'shop');
   showRewardReveal('외형 해금', item.name, 'unlock_capsule');
   showToast(`${item.name} 해금`, 'reward');
 }
@@ -369,7 +369,7 @@ function handleUnitUpgrade(event) {
   });
   saveProfile();
   renderHomeScreens();
-  flashMetaClaim(dom.collectionList, `[data-unit-upgrade="${selectorValue(unit.id)}"]`, 'training');
+  flashMetaClaim(dom.collectionList, `[data-unit-card="${selectorValue(unit.id)}"]`, 'training');
   showRewardReveal('훈련 완료', `${unit.name} Lv.${currentLevel + 1}`, 'season_progress');
   showToast(`${unit.name} Lv.${currentLevel + 1}`, 'reward');
 }
@@ -406,7 +406,7 @@ function claimReadyMissionsFromResult() {
   });
   saveProfile();
   renderHomeScreens();
-  flashMetaClaim(dom.missionsList, `[data-mission-claim="${selectorValue(ready[0].id)}"]`, 'mission');
+  flashMetaClaim(dom.missionsList, `[data-mission="${selectorValue(ready[0].id)}"]`, 'mission');
   showRewardReveal('미션 보상', ready.length > 1 ? `보상 ${ready.length}개` : `${bundle.gems} 젬`, 'soft_currency');
   showToast(`미션 보상 ${ready.length}개`, 'reward');
   return true;
@@ -427,7 +427,7 @@ function claimReadySeasonFromResult() {
   });
   saveProfile();
   renderHomeScreens();
-  flashMetaClaim(dom.seasonList, `[data-pass-claim="${ready[0].index}"]`, 'season');
+  flashMetaClaim(dom.seasonList, `.season-card[data-pass-tier="${ready[0].index}"]`, 'season');
   const hasCosmetic = ready.some(({ tier }) => tier.grant.cosmetic);
   showRewardReveal('시즌 보상', hasCosmetic ? '외형 해금' : `${bundle.gems} 젬`, hasCosmetic ? 'cosmetic_shard' : 'season_progress');
   showToast(`시즌 보상 ${ready.length}개`, 'reward');
@@ -446,7 +446,7 @@ function handleMissionClaim(event) {
   });
   saveProfile();
   renderHomeScreens();
-  flashMetaClaim(dom.missionsList, `[data-mission-claim="${selectorValue(mission.id)}"]`, 'mission');
+  flashMetaClaim(dom.missionsList, `[data-mission="${selectorValue(mission.id)}"]`, 'mission');
   showRewardReveal('미션 보상', `${mission.reward.gems} 젬`, 'soft_currency');
   showToast(`${mission.title} 보상`, 'reward');
 }
@@ -464,7 +464,7 @@ function handlePassClaim(event) {
   });
   saveProfile();
   renderHomeScreens();
-  flashMetaClaim(dom.seasonList, `[data-pass-claim="${index}"]`, 'season');
+  flashMetaClaim(dom.seasonList, `.season-card[data-pass-tier="${index}"]`, 'season');
   showRewardReveal('시즌 보상', tier.grant.cosmetic ? '외형 해금' : `${tier.grant.gems ?? 0} 젬`, tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress');
   showToast(`${index + 1}단계 보상`, 'reward');
 }

@@ -128,6 +128,10 @@ function cardStateBadge(state) {
   return CARD_STATE_BADGES[state] ?? CARD_STATE_BADGES.locked;
 }
 
+function passiveCardState(label, state = 'locked') {
+  return `<span class="card-passive-state" data-passive-state="${state}">${label}</span>`;
+}
+
 export function buildMetaNavAlerts(profile = {}) {
   return {
     collection: countTrainableUnits(profile) > 0,
@@ -295,8 +299,11 @@ export function buildRebootCollection(profile = {}) {
     const level = unitLevels[unit.id] ?? 1;
     const cost = unitUpgradeCost(level);
     const ready = xp >= cost;
+    const action = ready
+      ? `<button type="button" data-unit-upgrade="${unit.id}">훈련</button>`
+      : passiveCardState('경험치 부족', 'locked');
     return `
-    <article class="screen-card unit-card" data-role="${unit.role}">
+    <article class="screen-card unit-card" data-unit-card="${unit.id}" data-role="${unit.role}">
       ${cardStateBadge(ready ? 'ready' : 'locked')}
       <span class="sprite-token unit-sprite" data-sprite="${unit.spriteKey}"></span>
       <div class="card-copy">
@@ -306,7 +313,7 @@ export function buildRebootCollection(profile = {}) {
         ${buildMetaProgress('training', Math.min(xp, cost), cost, `훈련 경험치 ${Math.min(xp, cost)}/${cost}`)}
         <span class="unit-cost">${cost} 경험치</span>
       </div>
-      <button type="button" data-unit-upgrade="${unit.id}"${ready ? '' : ' disabled'}>${ready ? '훈련' : '경험치 부족'}</button>
+      ${action}
     </article>
   `;
   }).join('');
@@ -335,7 +342,13 @@ export function buildRebootShop(profile = {}) {
     const price = item.price?.gems ?? 0;
     const locked = !owned && gems < price;
     const cardState = owned || equipped ? 'owned' : locked ? 'locked' : 'ready';
-    const actionLabel = equipped ? '장착중' : owned ? '착용' : locked ? '젬 부족' : '해금';
+    const action = equipped
+      ? passiveCardState('장착중', 'owned')
+      : owned
+        ? `<button type="button" data-shop-buy="${item.id}">착용</button>`
+        : locked
+          ? passiveCardState('젬 부족', 'locked')
+          : `<button type="button" data-shop-buy="${item.id}">해금</button>`;
     return `
     <article class="screen-card shop-card" data-item="${item.id}" data-owned="${owned}" data-equipped="${equipped}">
       ${cardStateBadge(cardState)}
@@ -347,7 +360,7 @@ export function buildRebootShop(profile = {}) {
         <p>${item.description}</p>
         <span class="shop-price">${price} 젬</span>
       </div>
-      <button type="button" data-shop-buy="${item.id}"${equipped || locked ? ' disabled' : ''}>${actionLabel}</button>
+      ${action}
     </article>
   `;
   }).join('');
@@ -363,7 +376,11 @@ export function buildMissionScreen(profile = {}) {
     const received = claimed.has(mission.id);
     const stampState = missionState(progress, mission.target, received);
     const cardState = missionCardState(stampState);
-    const label = received ? '받음' : done ? '수령' : '진행중';
+    const action = received
+      ? passiveCardState('받음', 'owned')
+      : done
+        ? `<button type="button" data-mission-claim="${mission.id}">수령</button>`
+        : passiveCardState('진행중', 'locked');
     return `
     <article class="screen-card mission-card" data-mission="${mission.id}" data-owned="${received}">
       ${cardStateBadge(cardState)}
@@ -375,7 +392,7 @@ export function buildMissionScreen(profile = {}) {
         ${buildMetaProgress('mission', progress, mission.target, `미션 진행 ${progress}/${mission.target}`)}
         <span class="shop-price">${mission.reward.gems} 젬</span>
       </div>
-      <button type="button" data-mission-claim="${mission.id}"${done && !received ? '' : ' disabled'}>${label}</button>
+      ${action}
     </article>
   `;
   }).join('');
@@ -402,9 +419,13 @@ export function buildSeasonScreen(profile = {}) {
   const tiers = SHOP.pass.tiers.map((tier, index) => {
     const done = xp >= tier.xp;
     const received = claimed.has(index);
-    const label = received ? '받음' : done ? '수령' : '진행중';
     const progress = Math.min(tier.xp, xp);
     const cardState = seasonCardState(seasonState(xp, tier, index, claimed));
+    const action = received
+      ? passiveCardState('받음', 'owned')
+      : done
+        ? `<button type="button" data-pass-claim="${index}">수령</button>`
+        : passiveCardState('진행중', 'locked');
     return `
     <article class="screen-card season-card" data-pass-tier="${index}" data-owned="${received}">
       ${cardStateBadge(cardState)}
@@ -416,7 +437,7 @@ export function buildSeasonScreen(profile = {}) {
         ${buildMetaProgress('season', progress, tier.xp, `시즌 경험치 ${progress}/${tier.xp}`)}
         <span class="shop-price">${tier.xp} 경험치</span>
       </div>
-      <button type="button" data-pass-claim="${index}"${done && !received ? '' : ' disabled'}>${label}</button>
+      ${action}
     </article>
   `;
   }).join('');

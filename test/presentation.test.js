@@ -99,7 +99,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js'",
     "from './reboot_action_ui.js?v=status-prompt1'",
     "from './reboot_render.js?v=online-matchmaking1'",
-    "from './reboot_screens.js?v=surface-alpha1'",
+    "from './reboot_screens.js?v=meta-passive1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -470,7 +470,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=splash-deck1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-dock1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-density1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-matchmaking1">'), false);
@@ -508,7 +508,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-matchmaking1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-passive1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reveal-vfx1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=status-prompt1"></script>'), false);
@@ -528,7 +528,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=surface-alpha1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=meta-passive1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=result-claim1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=retry-seeds1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=mission-track1'"), false);
@@ -1322,7 +1322,8 @@ test('shop equipped cosmetics use generated expression aura instead of inert own
     'data-equipped="${equipped}"',
     'class="cosmetic-equip-aura"',
     'data-cosmetic-effect="${item.id}"',
-    'equipped ? \'장착중\' : owned ? \'착용\' : locked ? \'젬 부족\' : \'해금\'',
+    'const action = equipped',
+    'passiveCardState(\'장착중\', \'owned\')',
     'equippedCosmetic: cosmetic',
     'showRewardReveal(\'외형 장착\'',
     '.cosmetic-equip-aura',
@@ -2223,10 +2224,10 @@ test('meta reward actions flash their source cards with generated claim bursts',
     'function flashMetaClaim(container, selector, kind)',
     'target.dataset.claimFlash = kind;',
     'delete target.dataset.claimFlash;',
-    "flashMetaClaim(dom.shopList, `[data-shop-buy=\"${selectorValue(item.id)}\"]`, 'shop');",
-    "flashMetaClaim(dom.collectionList, `[data-unit-upgrade=\"${selectorValue(unit.id)}\"]`, 'training');",
-    "flashMetaClaim(dom.missionsList, `[data-mission-claim=\"${selectorValue(mission.id)}\"]`, 'mission');",
-    "flashMetaClaim(dom.seasonList, `[data-pass-claim=\"${index}\"]`, 'season');",
+    "flashMetaClaim(dom.shopList, `[data-item=\"${selectorValue(item.id)}\"]`, 'shop');",
+    "flashMetaClaim(dom.collectionList, `[data-unit-card=\"${selectorValue(unit.id)}\"]`, 'training');",
+    "flashMetaClaim(dom.missionsList, `[data-mission=\"${selectorValue(mission.id)}\"]`, 'mission');",
+    "flashMetaClaim(dom.seasonList, `.season-card[data-pass-tier=\"${index}\"]`, 'season');",
     '.unit-card[data-claim-flash]::after,\n.shop-card[data-claim-flash]::after,\n.mission-card[data-claim-flash]::after,\n.season-card[data-claim-flash]::after',
     'background-image: var(--meta-claim-bursts);',
     '.unit-card[data-claim-flash="training"]::after { background-position: 0 0; }',
@@ -2237,6 +2238,7 @@ test('meta reward actions flash their source cards with generated claim bursts',
   ]) {
     assert.equal(`${css}\n${app}`.includes(marker), true, marker);
   }
+  assert.equal(app.includes('flashMetaClaim(dom.seasonList, `[data-pass-tier='), false);
 });
 
 test('successful combat actions use canvas moment callouts instead of duplicate toasts', async () => {

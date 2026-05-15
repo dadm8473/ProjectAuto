@@ -221,13 +221,30 @@ test('reboot shop renders earned-gem cosmetic purchases with owned and locked st
 test('reboot collection renders unit training state from profile XP and levels', () => {
   const collection = buildRebootCollection({ xp: 50, unitLevels: { spark_pin: 2 } });
 
-  assert.equal(collection.includes('data-unit-upgrade="spark_pin"'), true);
+  assert.equal(collection.includes('data-unit-card="spark_pin"'), true);
   assert.equal(collection.includes('Lv.2'), true);
   assert.equal(collection.includes('60 경험치'), true);
   assert.equal(collection.includes('>훈련<'), true);
   assert.equal(collection.includes('data-unit-upgrade="burst_pin"'), true);
   assert.equal(collection.includes('40 경험치'), true);
   assert.equal(collection.includes('>경험치 부족<'), true);
+});
+
+test('inactive meta states render as passive chips instead of disabled fake action buttons', () => {
+  const collection = buildRebootCollection({ xp: 0, unitLevels: {} });
+  const shop = buildRebootShop({ gems: 0, unlocks: [] });
+  const missions = buildMissionScreen({ processedRuns: [], claimedMissions: [] });
+  const season = buildSeasonScreen({ xp: 0, claimedPassTiers: [] });
+
+  for (const html of [collection, shop, missions, season]) {
+    assert.equal(html.includes('disabled>'), false);
+    assert.equal(html.includes('class="card-passive-state"'), true);
+  }
+
+  assert.equal((collection.match(/<button type="button" data-unit-upgrade=/g) ?? []).length, 0);
+  assert.equal((shop.match(/<button type="button" data-shop-buy=/g) ?? []).length, 0);
+  assert.equal((missions.match(/<button type="button" data-mission-claim=/g) ?? []).length, 0);
+  assert.equal((season.match(/<button type="button" data-pass-claim=/g) ?? []).length, 0);
 });
 
 test('meta screens start with compact actionable status headers', () => {
@@ -330,7 +347,7 @@ test('mission screen renders profile progress and claim states', () => {
     claimedMissions: ['first-run']
   });
 
-  assert.equal(missions.includes('data-mission-claim="first-run"'), true);
+  assert.equal(missions.includes('data-mission="first-run"'), true);
   assert.equal(missions.includes('data-mission-claim="train-unit"'), true);
   assert.equal(missions.includes('class="reward-token mission-reward-token"'), true);
   assert.equal(missions.includes('data-reward-icon="soft_currency"'), true);
@@ -379,7 +396,7 @@ test('shop turns owned cosmetics into equipped expression instead of dead BM car
   assert.equal(shop.includes('data-equipped="false"'), true);
   assert.equal(shop.includes('class="cosmetic-equip-aura"'), true);
   assert.equal(shop.includes('data-cosmetic-effect="mythic-aura"'), true);
-  assert.equal(shop.includes('data-shop-buy="mythic-aura" disabled>장착중<'), true);
+  assert.equal(shop.includes('class="card-passive-state" data-passive-state="owned">장착중<'), true);
   assert.equal(shop.includes('data-shop-buy="merge-effect">착용<'), true);
   assert.equal(shop.includes('data-shop-buy="founder-board">해금<'), true);
   assert.equal(shop.includes('>보유<'), false);
@@ -406,8 +423,8 @@ test('mission goals stay compact enough for portrait mission cards', () => {
 test('season screen renders pass tiers from profile XP and claim states', () => {
   const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
 
-  assert.equal(season.includes('data-pass-claim="0"'), true);
-  assert.equal(season.includes('data-pass-claim="1"'), true);
+  assert.equal(season.includes('data-pass-tier="0"'), true);
+  assert.equal(season.includes('data-pass-tier="1"'), true);
   assert.equal(season.includes('class="reward-token season-reward-token"'), true);
   assert.equal(season.includes('data-reward-icon="season_progress"'), true);
   assert.equal(season.includes('data-reward-icon="cosmetic_shard"'), true);
