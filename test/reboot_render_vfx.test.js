@@ -615,12 +615,12 @@ test('rescue moment callout stays below boss warning copy during crisis timing',
   assert.equal(calloutAlpha >= 0.82, true, `rescue callout should remain legible during boss warning: ${calloutAlpha}`);
 });
 
-test('operation start cutin clears quickly even before the first player action', () => {
+test('operation start cutin clears before the first second even without player action', () => {
   const ctx = mockContext();
   drawRebootBattle(
     ctx,
     {
-      now: 1.35,
+      now: 0.95,
       boards: {
         p1: { danger: 0, units: [] },
         p2: { danger: 0, units: [] }

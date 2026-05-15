@@ -98,7 +98,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js'",
     "from './reboot_action_ui.js?v=status-prompt1'",
-    "from './reboot_render.js?v=moment-callout1'",
+    "from './reboot_render.js?v=start-cutin1'",
     "from './reboot_screens.js?v=meta-badges1'",
     "from './reboot_online.js'"
   ]) {
@@ -518,7 +518,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim-primary1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=start-cutin1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim-primary1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=screen-wipe1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-badges1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=moment-callout1"></script>'), false);
@@ -532,7 +533,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=moment-callout1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=start-cutin1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=moment-callout1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=reveal-vfx1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=boss-finale1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=rescue-reward1'"), false);
@@ -1695,8 +1697,8 @@ test('combat starts with a generated operation cutin instead of a silent canvas 
     'const startCutin = new Image();',
     'startCutin.src = REBOOT_CUTIN_MANIFEST.operationStart.src;',
     'drawCombatStartCutin',
-    'if (state.now >= 1.2) return false;',
-    '1.2 - state.now',
+    'if (state.now >= 0.82) return false;',
+    '0.82 - state.now',
     'drawImageCover(ctx, image, 0, 180, 390, 86',
     "ctx.fillText('작전 시작'",
     "ctx.fillText('소환 준비'",

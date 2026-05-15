@@ -588,16 +588,16 @@ function drawPartnerDangerCutin(ctx, state, assets = {}) {
 }
 
 function drawCombatStartCutin(ctx, state, assets = {}) {
-  if (state.now >= 1.2) return false;
+  if (state.now >= 0.82) return false;
   const firstActionTaken = state.events.some((event) => (
     ['summon', 'merge', 'rescue'].includes(event.type) && state.now >= event.at
   ));
   if (firstActionTaken) return false;
   const image = assets?.startCutin;
   if (!image?.complete || image.naturalWidth <= 0) return false;
-  const introIn = Math.min(1, state.now / 0.34);
-  const introOut = Math.min(1, Math.max(0, 1.2 - state.now) / 0.34);
-  const alpha = Math.min(introIn, introOut) * 0.84;
+  const introIn = Math.min(1, state.now / 0.24);
+  const introOut = Math.min(1, Math.max(0, 0.82 - state.now) / 0.24);
+  const alpha = Math.min(introIn, introOut) * 0.78;
   ctx.save();
   drawImageCover(ctx, image, 0, 180, 390, 86, alpha);
   drawAtlasSprite(ctx, assets, 'ui', 'summon_charge', 74, 226, 34, alpha);
