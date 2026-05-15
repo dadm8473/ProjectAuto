@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildCombatCoachCue, buildCombatStatusPrompt, isCriticalRebootAction } from '../src/client/reboot_action_ui.js';
+import { buildCombatActionExposure, buildCombatCoachCue, buildCombatStatusPrompt, isCriticalRebootAction } from '../src/client/reboot_action_ui.js';
 
 function state(overrides = {}) {
   return {
@@ -78,7 +78,7 @@ test('combat status prompt names the next useful action instead of only elapsed 
       actionState: { p1: { summon: true, merge: false, rescue: false } }
     },
     localBoardId: 'p1'
-  }), '소환 가능');
+  }), '첫 유닛 배치');
 
   assert.equal(buildCombatStatusPrompt({
     current: {
@@ -108,6 +108,28 @@ test('combat status prompt names the next useful action instead of only elapsed 
   }), '구원 가능');
 });
 
+test('combat status prioritizes rescue preparation over extra summoning during partner danger', () => {
+  assert.equal(buildCombatStatusPrompt({
+    current: {
+      ...state({ now: 70, p2Danger: 82, p1Units: [{ id: 'a' }, { id: 'b' }] }),
+      resources: { p1: { summon: 10, rescue: 45 } },
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    localBoardId: 'p1'
+  }), '구원 충전 중');
+});
+
+test('combat status aligns with rescue focus when rescue becomes ready below danger warning', () => {
+  assert.equal(buildCombatStatusPrompt({
+    current: {
+      ...state({ now: 76, p2Danger: 68, p1Units: [{ id: 'a' }, { id: 'b' }] }),
+      resources: { p1: { summon: 10, rescue: 100 } },
+      actionState: { p1: { summon: true, merge: false, rescue: true } }
+    },
+    localBoardId: 'p1'
+  }), '구원 가능');
+});
+
 test('combat status prompt shows online partner wait before normal action prompts', () => {
   assert.equal(buildCombatStatusPrompt({
     current: {
@@ -118,4 +140,44 @@ test('combat status prompt shows online partner wait before normal action prompt
     localBoardId: 'p1',
     onlineWaiting: true
   }), '파트너 대기');
+});
+
+test('combat action exposure reveals only earned controls during onboarding', () => {
+  assert.deepEqual(buildCombatActionExposure({
+    current: {
+      ...state({ now: 4 }),
+      resources: { p1: { summon: 10, rescue: 0 } }
+    },
+    localBoardId: 'p1',
+    actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
+  }), { summon: true, merge: false, rescue: false, focus: 'summon' });
+
+  assert.deepEqual(buildCombatActionExposure({
+    current: {
+      ...state({ now: 24, p1Units: [{ id: 'a' }, { id: 'b' }] }),
+      resources: { p1: { summon: 10, rescue: 0 } }
+    },
+    localBoardId: 'p1',
+    actions: { summon: { enabled: true }, merge: { enabled: true }, rescue: { enabled: false } }
+  }), { summon: true, merge: true, rescue: false, focus: 'merge' });
+
+  assert.deepEqual(buildCombatActionExposure({
+    current: {
+      ...state({ now: 70, p2Danger: 82, p1Units: [{ id: 'a' }, { id: 'b' }] }),
+      resources: { p1: { summon: 10, rescue: 60 } }
+    },
+    localBoardId: 'p1',
+    actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
+  }), { summon: true, merge: true, rescue: true, focus: 'rescue' });
+});
+
+test('combat action exposure keeps rescue locked during minor early partner danger', () => {
+  assert.deepEqual(buildCombatActionExposure({
+    current: {
+      ...state({ now: 18, p2Danger: 29 }),
+      resources: { p1: { summon: 20, rescue: 0 } }
+    },
+    localBoardId: 'p1',
+    actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
+  }), { summon: true, merge: true, rescue: false, focus: 'summon' });
 });

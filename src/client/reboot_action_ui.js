@@ -5,6 +5,24 @@ const BOSS_DECISION_END = 102;
 const RESCUE_DANGER_CUE = 70;
 const SUMMON_COACH_END = 16;
 const MERGE_COACH_END = 64;
+const MERGE_EXPOSURE_TIME = 18;
+const RESCUE_EXPOSURE_TIME = 58;
+
+export function buildCombatActionExposure({ current, localBoardId, actions }) {
+  const board = current.boards?.[localBoardId] ?? current.boards?.p1 ?? { units: [] };
+  const partner = localBoardId === 'p1' ? 'p2' : 'p1';
+  const partnerDanger = current.boards?.[partner]?.danger ?? 0;
+  const resources = current.resources?.[localBoardId] ?? { rescue: 0 };
+  const merge = Boolean(actions.merge?.enabled) || (board.units?.length ?? 0) >= 2 || current.now >= MERGE_EXPOSURE_TIME;
+  const rescue = Boolean(actions.rescue?.enabled) || partnerDanger >= RESCUE_DANGER_CUE || (resources.rescue ?? 0) > 0 || current.now >= RESCUE_EXPOSURE_TIME;
+  let focus = 'summon';
+  if (rescue && (partnerDanger >= RESCUE_DANGER_CUE || actions.rescue?.enabled)) focus = 'rescue';
+  else if (merge && actions.merge?.enabled) focus = 'merge';
+  else if (actions.summon?.enabled) focus = 'summon';
+  else if (rescue) focus = 'rescue';
+  else if (merge) focus = 'merge';
+  return { summon: true, merge, rescue, focus };
+}
 
 export function isCriticalRebootAction({ actionKey, current, localBoardId, enabled }) {
   if (!enabled) return false;
@@ -31,12 +49,14 @@ export function buildCombatStatusPrompt({ current, localBoardId, onlineWaiting =
   if (onlineWaiting) return '파트너 대기';
   const actions = current.actionState?.[localBoardId] ?? {};
   const resources = current.resources?.[localBoardId] ?? { summon: 0, rescue: 0 };
+  const board = current.boards?.[localBoardId] ?? current.boards?.p1 ?? { units: [] };
   const partner = localBoardId === 'p1' ? 'p2' : 'p1';
   const partnerDanger = current.boards?.[partner]?.danger ?? 0;
 
-  if (actions.rescue && partnerDanger >= RESCUE_DANGER_CUE) return '구원 가능';
+  if (!actions.rescue && partnerDanger >= RESCUE_DANGER_CUE) return '구원 충전 중';
+  if (actions.rescue) return '구원 가능';
   if (actions.merge) return '합성 가능';
-  if (actions.summon) return '소환 가능';
+  if (actions.summon) return (board.units?.length ?? 0) === 0 && current.now < SUMMON_COACH_END ? '첫 유닛 배치' : '소환 가능';
 
   if ((resources.summon ?? 0) < REBOOT_RULES.summon.cost) {
     const nextGrant = REBOOT_RULES.summon.grants.find((grant) => grant.at > current.now);

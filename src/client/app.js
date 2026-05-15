@@ -3,7 +3,7 @@ import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js';
-import { buildCombatCoachCue, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=status-prompt1';
+import { buildCombatActionExposure, buildCombatCoachCue, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-focus1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=start-cutin1';
 import {
   buildMetaNavAlerts,
@@ -57,6 +57,7 @@ const dom = {
   resultRetryButton: qs('#resultRetryButton'),
   resultLobbyButton: qs('#resultLobbyButton'),
   resultLobbyLabel: qs('#resultLobbyButton span'),
+  primaryActions: qs('.primary-actions'),
   rewardReveal: qs('#rewardReveal'),
   rewardRevealIcon: qs('#rewardRevealIcon'),
   rewardRevealTitle: qs('#rewardRevealTitle'),
@@ -585,12 +586,14 @@ function updateMeters(current) {
 
 function updateButtons(current) {
   const actions = buildRebootActionState(current, localBoardId);
+  const exposure = buildCombatActionExposure({ current, localBoardId, actions });
   const onlineWaiting = waitingForOnlinePartner(current);
   const coachCue = appScreen === 'battle'
     ? buildCombatCoachCue({ current, localBoardId, actions })
     : '';
   if (coachCue) document.body.dataset.coachCue = coachCue;
   else delete document.body.dataset.coachCue;
+  dom.primaryActions.dataset.focus = exposure.focus;
   for (const [key, button] of [
     ['summon', dom.summonButton],
     ['merge', dom.mergeButton],
@@ -599,6 +602,8 @@ function updateButtons(current) {
     const enabled = actions[key].enabled && !onlineWaiting;
     button.disabled = !enabled;
     button.dataset.ready = String(enabled);
+    button.dataset.unlocked = String(exposure[key]);
+    button.dataset.focus = String(exposure.focus === key);
     button.dataset.critical = String(isCriticalRebootAction({ actionKey: key, current, localBoardId, enabled }));
     button.title = onlineWaiting ? '파트너 입장 대기 중' : actions[key].reason;
   }

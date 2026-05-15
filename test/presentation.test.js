@@ -97,7 +97,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js'",
-    "from './reboot_action_ui.js?v=status-prompt1'",
+    "from './reboot_action_ui.js?v=action-focus1'",
     "from './reboot_render.js?v=start-cutin1'",
     "from './reboot_screens.js?v=meta-badges1'",
     "from './reboot_online.js'"
@@ -474,7 +474,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-claim-primary1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-focus1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-claim-primary1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-disabled1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-wipe1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=row-surface1">'), false);
@@ -518,7 +519,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=start-cutin1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=start-cutin1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim-primary1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=screen-wipe1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-badges1"></script>'), false);
@@ -815,10 +817,14 @@ test('combat action buttons use generated icons instead of text-only web buttons
   assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::before'), false);
 
   for (const marker of [
-    "from './reboot_action_ui.js?v=status-prompt1'",
+    "from './reboot_action_ui.js?v=action-focus1'",
     'buildCombatCoachCue',
     'buildCombatStatusPrompt',
+    'buildCombatActionExposure',
     "const coachCue = appScreen === 'battle'",
+    'dom.primaryActions.dataset.focus = exposure.focus;',
+    'button.dataset.unlocked = String(exposure[key]);',
+    'button.dataset.focus = String(exposure.focus === key);',
     'document.body.dataset.coachCue = coachCue;',
     'delete document.body.dataset.coachCue;',
     'button.dataset.critical = String(isCriticalRebootAction({ actionKey: key, current, localBoardId, enabled }));'
@@ -848,6 +854,28 @@ test('combat disabled action buttons keep generated command frames readable', as
 
   assert.equal(disabledBlock.includes('opacity: 0.4;'), false);
   assert.equal(css.includes('.primary-actions button:disabled {\n  background-image: none;'), false);
+});
+
+test('combat actions collapse unearned verbs into quiet locked command sockets', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '.primary-actions[data-focus="summon"]',
+    '.primary-actions[data-focus="merge"]',
+    '.primary-actions[data-focus="rescue"]',
+    '.primary-actions button[data-unlocked="false"]',
+    'gap: 0;',
+    '.primary-actions button[data-unlocked="false"] > span',
+    'max-width: 0;',
+    '.primary-actions button[data-focus="true"]:not(:disabled)'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const lockedBlock = cssRuleBlock(css, '.primary-actions button[data-unlocked="false"]');
+  assert.equal(lockedBlock.includes('display: none;'), false);
+  assert.equal(lockedBlock.includes('visibility: hidden;'), false);
+  assert.equal(lockedBlock.includes('background-image: none;'), false);
 });
 
 test('result screen uses imagegen reward backdrop instead of a plain overlay', async () => {

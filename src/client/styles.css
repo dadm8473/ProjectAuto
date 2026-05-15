@@ -705,6 +705,19 @@ body[data-app-screen="season"] .toast {
 .primary-actions {
   grid-template-columns: repeat(3, 1fr);
   position: relative;
+  transition: grid-template-columns 160ms ease;
+}
+
+.primary-actions[data-focus="summon"] {
+  grid-template-columns: minmax(0, 1.46fr) minmax(48px, 0.68fr) minmax(48px, 0.68fr);
+}
+
+.primary-actions[data-focus="merge"] {
+  grid-template-columns: minmax(48px, 0.76fr) minmax(0, 1.42fr) minmax(48px, 0.72fr);
+}
+
+.primary-actions[data-focus="rescue"] {
+  grid-template-columns: minmax(48px, 0.72fr) minmax(48px, 0.72fr) minmax(0, 1.46fr);
 }
 
 .primary-actions button {
@@ -770,6 +783,8 @@ body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions::before
 .primary-actions button > span {
   position: relative;
   z-index: 1;
+  max-width: 76px;
+  overflow: hidden;
   transition: transform 90ms ease;
 }
 
@@ -874,6 +889,26 @@ body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after 
 .primary-actions button:disabled::after {
   opacity: 0;
   animation: none;
+}
+
+.primary-actions button[data-unlocked="false"] {
+  gap: 0;
+  opacity: 0.5;
+  filter: grayscale(0.42) brightness(0.58) saturate(0.68);
+}
+
+.primary-actions button[data-unlocked="false"]::before {
+  opacity: 0.42;
+  transform: scale(0.84);
+}
+
+.primary-actions button[data-unlocked="false"] > span {
+  max-width: 0;
+  opacity: 0;
+}
+
+.primary-actions button[data-focus="true"]:not(:disabled) {
+  filter: brightness(1.18) saturate(1.12) drop-shadow(0 0 12px rgba(244, 201, 93, 0.26));
 }
 
 @keyframes actionReadyPulse {
