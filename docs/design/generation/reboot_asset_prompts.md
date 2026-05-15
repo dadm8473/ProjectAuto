@@ -847,6 +847,23 @@ Postprocess: remove #ff00ff chroma key with soft matte/despill, split the genera
 Acceptance: every hit lands with a compact generated contact burst at the target point, normal/heavy/boss hits read differently, and the effect never becomes a screen-wide beam or CSS-drawn flash.
 ```
 
+## Runtime Prompt: Combat Cooldown Shutters
+
+```text
+Use case: stylized-concept
+Asset type: project-bound source image for a transparent-feel PNG atlas used as combat command cooldown shutter overlays in a portrait Korean cooperative tower-defense mobile game. The final runtime atlas will be cropped to 1170x112 with three equal 390x112 cells.
+Primary request: Create one wide horizontal three-panel sprite atlas. Each panel is a premium sci-fi command button cooldown shutter overlay that sits ON TOP OF an existing long command button when the command is charging or unavailable. It should make the disabled state feel like a mechanical game-console lockout, not a web disabled fade.
+Panels left to right: 1. summon cooldown: amber-gold energy capacitor shutter with short diagonal metal slats and small cyan charge vents. 2. merge cooldown: teal-blue relay shutter with interlocking hex panels and short glowing circuit rails. 3. rescue cooldown: cyan-mint emergency shutter with protective shield shutters, small red warning accents, and compact charge ticks.
+Composition: exactly three side-by-side long horizontal cells. Each cell is centered, wide, and low, shaped like a transparent overlay for a rounded sci-fi button. Leave transparent-feel padding around the overlay. No text, no numbers, no icons, no full button backgrounds, no rectangular card, no UI labels. The overlay should be semi-open in the center so Korean button text underneath remains readable.
+Style: shipped mobile game UI sprite art, glossy 2.5D sci-fi toy-mech command console, metallic charcoal frames, teal/cyan energy, amber highlights, crisp silhouette, anti-aliased edges, polished but compact. Consistent with Signal Relay assets.
+Background for transparency processing: perfectly flat solid #ff00ff chroma-key background behind all subjects. The background must be one uniform color with no shadows, gradients, texture, reflections, floor plane, or lighting variation. Keep all overlay subjects fully separated from the background with crisp edges and generous padding. Do not use #ff00ff anywhere in the subjects.
+Avoid: any words, letters, numbers, logos, watermarks, dice, casino/gacha imagery, copied game UI, full button plates that hide the existing button, opaque black rectangles, long screen-wide beams, characters, enemies, realistic humans.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260516-combat-cooldown-shutters-chromakey-imagegen.png
+Runtime file: src/client/assets/generated/reboot-combat-cooldown-shutters.png
+Postprocess: remove #ff00ff chroma key with soft matte/despill, split the generated source into three cells, trim each cell to alpha bounds, fit each cell into a transparent 390x112 runtime cell, then composite a 1170x112 atlas.
+Acceptance: disabled-but-unlocked combat commands receive generated mechanical cooldown shutters, Korean command labels remain readable, locked unearned commands still use the quieter socket atlas, and the command dock no longer depends on a web-style disabled fade.
+```
+
 ## 후처리 기준
 
 필수:

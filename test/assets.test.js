@@ -209,6 +209,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 120_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-cooldown-shutters.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-combat-cooldown-shutters-chromakey-imagegen.png',
+    width: 1170,
+    height: 112,
+    minRuntimeBytes: 45_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-result-panel-frame.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-result-panel-frame-imagegen.png',
     width: 390,
@@ -460,6 +467,12 @@ const TRANSPARENT_UI_FRAME_ASSETS = [
     path: 'src/client/assets/generated/reboot-combat-locked-sockets.png',
     minSoftCoverage: 0.18,
     maxSoftCoverage: 0.44
+  },
+  {
+    path: 'src/client/assets/generated/reboot-combat-cooldown-shutters.png',
+    minSoftCoverage: 0.18,
+    maxSoftCoverage: 0.44,
+    maxCornerAlpha: 24
   },
   {
     path: 'src/client/assets/generated/reboot-combat-status-plates.png',
@@ -1308,6 +1321,22 @@ test('locked combat command socket cells stay readable and padded', async () => 
     assert.equal(bounds.maxX <= cellWidth - 13, true, `locked command socket cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 12, true, `locked command socket cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 13, true, `locked command socket cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('combat cooldown shutter cells look like generated console overlays, not web disabled buttons', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-combat-cooldown-shutters.png'));
+  const cellWidth = 390;
+  assert.equal(image.width, cellWidth * 3);
+  assert.equal(image.height, 112);
+
+  for (let cell = 0; cell < 3; cell += 1) {
+    const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 32);
+    const centerCoverage = alphaCoverage(image, { x: cell * cellWidth + 70, y: 22, width: 250, height: 68 }, 40);
+    assert.equal(bounds.count > 8_000, true, `cooldown shutter cell ${cell} is too sparse for a readable command state`);
+    assert.equal(centerCoverage > 0.22, true, `cooldown shutter cell ${cell} has no readable center shutter`);
+    assert.equal(bounds.minY >= 4, true, `cooldown shutter cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 5, true, `cooldown shutter cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
 });
 

@@ -65,6 +65,7 @@
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons-alpha1");
   --combat-locked-sockets: url("/src/client/assets/generated/reboot-combat-locked-sockets.png?v=locked-sockets1");
+  --combat-cooldown-shutters: url("/src/client/assets/generated/reboot-combat-cooldown-shutters.png?v=cooldown-shutters1");
   --combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready");
   --combat-directive-banner: url("/src/client/assets/generated/reboot-combat-directive-banner.png?v=combat-directive1");
   --combat-first-command-spotlight: url("/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=first-command");
@@ -928,6 +929,26 @@ body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after 
 .primary-actions button:disabled::after {
   opacity: 0;
   animation: none;
+}
+
+.primary-actions button:disabled:not([data-unlocked="false"])::after {
+  inset: -9px -7px;
+  z-index: 2;
+  background-image: var(--combat-cooldown-shutters);
+  background-size: 300% 100%;
+  opacity: 0.72;
+  mix-blend-mode: normal;
+  filter: saturate(0.95) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.38));
+  transform: scale(1);
+}
+
+#summonButton:disabled:not([data-unlocked="false"])::after { background-position: 0 0; }
+#mergeButton:disabled:not([data-unlocked="false"])::after { background-position: 50% 0; }
+#rescueButton:disabled:not([data-unlocked="false"])::after { background-position: 100% 0; }
+
+.primary-actions button:disabled:not([data-unlocked="false"])::before,
+.primary-actions button:disabled:not([data-unlocked="false"]) > span {
+  z-index: 3;
 }
 
 .primary-actions button[data-unlocked="false"] {

@@ -497,7 +497,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-hero-stage1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-cooldown-shutters1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-hero-stage1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-partner-link1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-command-ribbons1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=locked-sockets1">'), false);
@@ -908,6 +909,31 @@ test('combat disabled action buttons keep generated command frames readable', as
 
   assert.equal(disabledBlock.includes('opacity: 0.4;'), false);
   assert.equal(css.includes('.primary-actions button:disabled {\n  background-image: none;'), false);
+});
+
+test('combat cooldown buttons use generated shutter overlays instead of a web disabled fade', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--combat-cooldown-shutters: url("/src/client/assets/generated/reboot-combat-cooldown-shutters.png?v=cooldown-shutters1")',
+    '.primary-actions button:disabled:not([data-unlocked="false"])::after',
+    'background-image: var(--combat-cooldown-shutters);',
+    'background-size: 300% 100%;',
+    'mix-blend-mode: normal;',
+    'z-index: 2;',
+    '#summonButton:disabled:not([data-unlocked="false"])::after { background-position: 0 0; }',
+    '#mergeButton:disabled:not([data-unlocked="false"])::after { background-position: 50% 0; }',
+    '#rescueButton:disabled:not([data-unlocked="false"])::after { background-position: 100% 0; }'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const baseDisabledAfter = css.indexOf('.primary-actions button:disabled::after');
+  const shutterAfter = css.indexOf('.primary-actions button:disabled:not([data-unlocked="false"])::after');
+  assert.equal(shutterAfter > baseDisabledAfter, true, 'cooldown shutter must override the generic disabled after rule');
+  const shutterBlock = cssRuleBlock(css, '.primary-actions button:disabled:not([data-unlocked="false"])::after');
+  assert.equal(shutterBlock.includes('opacity: 0;'), false);
+  assert.equal(shutterBlock.includes('background-image: none;'), false);
 });
 
 test('combat actions collapse unearned verbs into quiet locked command sockets', async () => {
