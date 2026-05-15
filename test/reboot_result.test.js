@@ -227,7 +227,9 @@ test('reboot collection renders unit training state from profile XP and levels',
   assert.equal(collection.includes('>훈련<'), true);
   assert.equal(collection.includes('data-unit-upgrade="burst_pin"'), true);
   assert.equal(collection.includes('40 경험치'), true);
-  assert.equal(collection.includes('>경험치 부족<'), true);
+  assert.equal(collection.includes('aria-label="경험치 부족"'), true);
+  assert.equal(collection.includes('>부족<'), true);
+  assert.equal(collection.includes('>경험치 부족<'), false);
 });
 
 test('inactive meta states render as passive chips instead of disabled fake action buttons', () => {
@@ -245,6 +247,18 @@ test('inactive meta states render as passive chips instead of disabled fake acti
   assert.equal((shop.match(/<button type="button" data-shop-buy=/g) ?? []).length, 0);
   assert.equal((missions.match(/<button type="button" data-mission-claim=/g) ?? []).length, 0);
   assert.equal((season.match(/<button type="button" data-pass-claim=/g) ?? []).length, 0);
+});
+
+test('locked unit and shop rows use short visual state tokens instead of repeated shortage copy', () => {
+  const collection = buildRebootCollection({ xp: 0, unitLevels: {} });
+  const shop = buildRebootShop({ gems: 0, unlocks: [] });
+
+  assert.equal(collection.includes('aria-label="경험치 부족"'), true);
+  assert.equal(shop.includes('aria-label="젬 부족"'), true);
+  assert.equal(collection.includes('>경험치 부족<'), false);
+  assert.equal(shop.includes('>젬 부족<'), false);
+  assert.equal((collection.match(/class="card-passive-state" data-passive-state="locked" aria-label="경험치 부족">부족/g) ?? []).length >= 1, true);
+  assert.equal((shop.match(/class="card-passive-state" data-passive-state="locked" aria-label="젬 부족">부족/g) ?? []).length >= 1, true);
 });
 
 test('meta screens start with compact actionable status headers', () => {
@@ -412,7 +426,7 @@ test('shop turns owned cosmetics into equipped expression instead of dead BM car
   assert.equal(shop.includes('data-equipped="false"'), true);
   assert.equal(shop.includes('class="cosmetic-equip-aura"'), true);
   assert.equal(shop.includes('data-cosmetic-effect="mythic-aura"'), true);
-  assert.equal(shop.includes('class="card-passive-state" data-passive-state="owned">장착중<'), true);
+  assert.equal(shop.includes('class="card-passive-state" data-passive-state="owned" aria-label="장착중">장착중<'), true);
   assert.equal(shop.includes('data-shop-buy="merge-effect">착용<'), true);
   assert.equal(shop.includes('data-shop-buy="founder-board">해금<'), true);
   assert.equal(shop.includes('>보유<'), false);

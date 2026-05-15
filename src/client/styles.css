@@ -2418,11 +2418,14 @@ body[data-app-screen="season"] .app-screen::after {
 
 .card-passive-state {
   justify-self: center;
-  min-width: 70px;
+  min-width: 58px;
   min-height: 30px;
   display: inline-grid;
-  place-items: center;
-  padding: 0 9px 1px;
+  grid-template-columns: 16px auto;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0 8px 1px;
   color: rgba(245, 240, 220, 0.78);
   font-size: 11px;
   font-weight: 1000;
@@ -2436,10 +2439,29 @@ body[data-app-screen="season"] .app-screen::after {
   filter: saturate(0.92) brightness(0.9) drop-shadow(0 4px 9px rgba(0, 0, 0, 0.38));
 }
 
+.card-passive-state::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  background-image: var(--meta-card-state-badges);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  background-position: 0 0;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.48));
+}
+
+.card-passive-state[data-passive-state="locked"]::before {
+  background-position: 100% 0;
+}
+
 .card-passive-state[data-passive-state="owned"] {
   color: var(--mint);
   background-position: 50% 0;
   filter: saturate(1.08) brightness(1.05) drop-shadow(0 5px 10px rgba(0, 0, 0, 0.4));
+}
+
+.card-passive-state[data-passive-state="owned"]::before {
+  background-position: 50% 0;
 }
 
 .unit-card button::before,

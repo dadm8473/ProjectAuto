@@ -99,7 +99,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js'",
     "from './reboot_action_ui.js?v=action-focus1'",
     "from './reboot_render.js?v=start-cutin1'",
-    "from './reboot_screens.js?v=meta-badges1'",
+    "from './reboot_screens.js?v=meta-passive-icon1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -474,7 +474,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-cta1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive-icon1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-cta1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-focus1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-claim-primary1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-disabled1">'), false);
@@ -546,7 +547,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=meta-badges1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=meta-passive-icon1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=meta-badges1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-passive1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-claim1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=retry-seeds1'"), false);
@@ -1123,6 +1125,28 @@ test('meta card state badges stay in the icon lane instead of the action button 
   assert.equal(Number.isFinite(leftMax), true, stateBlock);
   assert.equal(Number.isFinite(widthMax), true, stateBlock);
   assert.equal(leftMax + widthMax <= 72, true, `badge can overlap copy/action lanes: ${leftMax + widthMax}px`);
+});
+
+test('inactive meta state chips use generated icons and compact copy', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    "function passiveCardState(label, state = 'locked', displayLabel = label)",
+    'aria-label="${label}"',
+    '${displayLabel}',
+    "passiveCardState('경험치 부족', 'locked', '부족')",
+    "passiveCardState('젬 부족', 'locked', '부족')",
+    '.card-passive-state::before',
+    'background-image: var(--meta-card-state-badges);',
+    '.card-passive-state[data-passive-state="locked"]::before',
+    '.card-passive-state[data-passive-state="owned"]::before'
+  ]) {
+    assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+
+  assert.equal(screens.includes('>경험치 부족<'), false);
+  assert.equal(screens.includes('>젬 부족<'), false);
 });
 
 test('meta screen titles use generated header plates instead of browser default h1', async () => {

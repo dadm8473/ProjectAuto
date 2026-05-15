@@ -128,8 +128,8 @@ function cardStateBadge(state) {
   return CARD_STATE_BADGES[state] ?? CARD_STATE_BADGES.locked;
 }
 
-function passiveCardState(label, state = 'locked') {
-  return `<span class="card-passive-state" data-passive-state="${state}">${label}</span>`;
+function passiveCardState(label, state = 'locked', displayLabel = label) {
+  return `<span class="card-passive-state" data-passive-state="${state}" aria-label="${label}">${displayLabel}</span>`;
 }
 
 export function buildMetaNavAlerts(profile = {}) {
@@ -302,7 +302,7 @@ export function buildRebootCollection(profile = {}) {
     const ready = xp >= cost;
     const action = ready
       ? `<button type="button" data-unit-upgrade="${unit.id}">훈련</button>`
-      : passiveCardState('경험치 부족', 'locked');
+      : passiveCardState('경험치 부족', 'locked', '부족');
     return `
     <article class="screen-card unit-card" data-unit-card="${unit.id}" data-role="${unit.role}">
       ${cardStateBadge(ready ? 'ready' : 'locked')}
@@ -348,7 +348,7 @@ export function buildRebootShop(profile = {}) {
       : owned
         ? `<button type="button" data-shop-buy="${item.id}">착용</button>`
         : locked
-          ? passiveCardState('젬 부족', 'locked')
+          ? passiveCardState('젬 부족', 'locked', '부족')
           : `<button type="button" data-shop-buy="${item.id}">해금</button>`;
     return `
     <article class="screen-card shop-card" data-item="${item.id}" data-owned="${owned}" data-equipped="${equipped}">
