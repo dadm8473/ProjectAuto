@@ -433,6 +433,8 @@ test('portrait CSS keeps the app shell fixed and thumb-first', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
+    '--app-safe-area-top: env(safe-area-inset-top);',
+    '--app-safe-area-bottom: env(safe-area-inset-bottom);',
     'height: 100dvh',
     'width: min(100vw, 430px)',
     '.action-panel',
@@ -2044,13 +2046,13 @@ test('splash uses a generated footer shroud to hide unused lower console slots',
     'background-image: var(--splash-floor-cap), var(--splash-footer-shroud);',
     'background-position: center bottom, center bottom;',
     'background-size: min(260px, 61vw) min(96px, 22.5vw), 100% 100%;',
-    'bottom: calc(env(safe-area-inset-bottom) - 10px);',
+    'bottom: calc(var(--app-safe-area-bottom) - 10px);',
     'height: clamp(210px, 34dvh, 270px);',
     '.splash-screen > .splash-floor-cap',
     'z-index: 0;',
     'background-color: #010405;',
     'background-image: var(--splash-floor-cap), var(--splash-footer-shroud);',
-    'bottom: calc(env(safe-area-inset-bottom) - 10px);',
+    'bottom: calc(var(--app-safe-area-bottom) - 10px);',
     'width: min(100vw, 430px);',
     'height: clamp(210px, 34dvh, 270px);',
     'background-position: center bottom, center bottom;',
@@ -2248,7 +2250,7 @@ test('successful combat actions use canvas moment callouts instead of duplicate 
     'border-color: transparent;',
     'border-radius: 0;',
     'min-width: 168px;',
-    'body[data-app-screen="battle"] .toast {\n  bottom: calc(var(--combat-action-row) + var(--combat-action-safe-lift) + clamp(10px, 3.26vw, 14px) + env(safe-area-inset-bottom));'
+    'body[data-app-screen="battle"] .toast {\n  bottom: calc(var(--combat-action-row) + var(--combat-action-safe-lift) + clamp(10px, 3.26vw, 14px) + var(--app-safe-area-bottom));'
   ]) {
     assert.equal(`${css}\n${app}\n${render}`.includes(marker), true, marker);
   }
@@ -2591,8 +2593,8 @@ test('combat shell chrome renders the generated action dock as a full command co
     '--combat-hud-row: clamp(72px, 22.33vw, 96px);',
     '--combat-action-row: clamp(132px, 34.42vw, 148px);',
     '--combat-action-safe-lift: clamp(10px, 3.26vw, 14px);',
-    'grid-template-rows: calc(var(--combat-hud-row) + env(safe-area-inset-top)) minmax(0, 1fr) calc(var(--combat-action-row) + var(--combat-action-safe-lift) + env(safe-area-inset-bottom));',
-    'padding: clamp(8px, 2.79vw, 12px) clamp(10px, 3.26vw, 14px) calc(clamp(18px, 5.12vw, 22px) + var(--combat-action-safe-lift) + env(safe-area-inset-bottom));',
+    'grid-template-rows: calc(var(--combat-hud-row) + var(--app-safe-area-top)) minmax(0, 1fr) calc(var(--combat-action-row) + var(--combat-action-safe-lift) + var(--app-safe-area-bottom));',
+    'padding: clamp(8px, 2.79vw, 12px) clamp(10px, 3.26vw, 14px) calc(clamp(18px, 5.12vw, 22px) + var(--combat-action-safe-lift) + var(--app-safe-area-bottom));',
     'inset: 0 0 var(--combat-action-safe-lift);',
     'background-size: 100% auto;',
     'background-position: center bottom;',

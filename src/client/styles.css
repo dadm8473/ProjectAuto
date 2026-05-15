@@ -9,6 +9,8 @@
   --amber: #f4c95d;
   --coral: #ff6f59;
   --mint: #8ee6d2;
+  --app-safe-area-top: env(safe-area-inset-top);
+  --app-safe-area-bottom: env(safe-area-inset-bottom);
   --lobby-backdrop: url("/src/client/assets/generated/reboot-lobby-backdrop.png");
   --meta-backdrop: url("/src/client/assets/generated/reboot-meta-backdrop.png");
   --result-backdrop: url("/src/client/assets/generated/reboot-result-backdrop.png");
@@ -124,7 +126,7 @@ button:disabled {
   height: 100dvh;
   margin: 0 auto;
   display: grid;
-  grid-template-rows: calc(var(--combat-hud-row) + env(safe-area-inset-top)) minmax(0, 1fr) calc(var(--combat-action-row) + var(--combat-action-safe-lift) + env(safe-area-inset-bottom));
+  grid-template-rows: calc(var(--combat-hud-row) + var(--app-safe-area-top)) minmax(0, 1fr) calc(var(--combat-action-row) + var(--combat-action-safe-lift) + var(--app-safe-area-bottom));
   overflow: hidden;
   isolation: isolate;
   background:
@@ -262,7 +264,7 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 
 .hud {
   gap: 4px;
-  padding: calc(13px + env(safe-area-inset-top)) 14px 10px;
+  padding: calc(13px + var(--app-safe-area-top)) 14px 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -416,7 +418,7 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 .matchmaking-banner {
   position: absolute;
   left: 50%;
-  top: calc(var(--combat-hud-row) + env(safe-area-inset-top) + clamp(118px, 30vw, 138px));
+  top: calc(var(--combat-hud-row) + var(--app-safe-area-top) + clamp(118px, 30vw, 138px));
   z-index: 6;
   width: min(calc(100% - 24px), 390px);
   min-height: clamp(48px, 13.4vw, 58px);
@@ -483,7 +485,7 @@ body:not([data-app-screen="battle"]) .matchmaking-banner {
 .toast {
   position: absolute;
   left: 50%;
-  bottom: calc(22px + env(safe-area-inset-bottom));
+  bottom: calc(22px + var(--app-safe-area-bottom));
   transform: translateX(-50%);
   z-index: 40;
   isolation: isolate;
@@ -512,18 +514,18 @@ body:not([data-app-screen="battle"]) .matchmaking-banner {
 }
 
 body[data-app-screen="battle"] .toast {
-  bottom: calc(var(--combat-action-row) + var(--combat-action-safe-lift) + clamp(10px, 3.26vw, 14px) + env(safe-area-inset-bottom));
+  bottom: calc(var(--combat-action-row) + var(--combat-action-safe-lift) + clamp(10px, 3.26vw, 14px) + var(--app-safe-area-bottom));
 }
 
 body[data-app-screen="lobby"] .toast {
-  bottom: calc(104px + env(safe-area-inset-bottom));
+  bottom: calc(104px + var(--app-safe-area-bottom));
 }
 
 body[data-app-screen="collection"] .toast,
 body[data-app-screen="shop"] .toast,
 body[data-app-screen="missions"] .toast,
 body[data-app-screen="season"] .toast {
-  bottom: calc(126px + env(safe-area-inset-bottom));
+  bottom: calc(126px + var(--app-safe-area-bottom));
 }
 
 .toast[data-toast-kind="reward"] {
@@ -659,7 +661,7 @@ body[data-app-screen="season"] .toast {
 }
 
 .action-panel {
-  padding: clamp(8px, 2.79vw, 12px) clamp(10px, 3.26vw, 14px) calc(clamp(18px, 5.12vw, 22px) + var(--combat-action-safe-lift) + env(safe-area-inset-bottom));
+  padding: clamp(8px, 2.79vw, 12px) clamp(10px, 3.26vw, 14px) calc(clamp(18px, 5.12vw, 22px) + var(--combat-action-safe-lift) + var(--app-safe-area-bottom));
 }
 
 .status-line,
@@ -988,7 +990,7 @@ body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after 
 .app-screen {
   position: relative;
   z-index: 1;
-  padding: calc(var(--lobby-screen-top-pad) + env(safe-area-inset-top)) 18px calc(var(--lobby-screen-bottom-pad) + env(safe-area-inset-bottom));
+  padding: calc(var(--lobby-screen-top-pad) + var(--app-safe-area-top)) 18px calc(var(--lobby-screen-bottom-pad) + var(--app-safe-area-bottom));
   overflow: hidden;
 }
 
@@ -1027,7 +1029,7 @@ body[data-app-screen="season"] .app-screen::after {
   content: "";
   position: absolute;
   left: 50%;
-  top: calc(78px + env(safe-area-inset-top));
+  top: calc(78px + var(--app-safe-area-top));
   z-index: 0;
   width: min(372px, 90vw);
   height: min(298px, 38dvh);
@@ -1041,7 +1043,7 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .lobby-screen::before {
-  top: calc(62px + env(safe-area-inset-top));
+  top: calc(62px + var(--app-safe-area-top));
   opacity: 0.92;
 }
 
@@ -1049,7 +1051,7 @@ body[data-app-screen="season"] .app-screen::after {
   content: "";
   position: absolute;
   left: 50%;
-  bottom: calc(env(safe-area-inset-bottom) - 10px);
+  bottom: calc(var(--app-safe-area-bottom) - 10px);
   z-index: 0;
   width: 100%;
   height: clamp(210px, 34dvh, 270px);
@@ -1064,7 +1066,7 @@ body[data-app-screen="season"] .app-screen::after {
 .splash-screen > .splash-floor-cap {
   position: fixed;
   left: 50%;
-  bottom: calc(env(safe-area-inset-bottom) - 10px);
+  bottom: calc(var(--app-safe-area-bottom) - 10px);
   z-index: 0;
   width: min(100vw, 430px);
   height: clamp(210px, 34dvh, 270px);
@@ -1206,7 +1208,7 @@ body[data-app-screen="season"] .app-screen::after {
   position: absolute;
   left: 12px;
   right: 12px;
-  bottom: calc(var(--lobby-bottom-dock-bottom) + env(safe-area-inset-bottom));
+  bottom: calc(var(--lobby-bottom-dock-bottom) + var(--app-safe-area-bottom));
   z-index: 32;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1719,7 +1721,7 @@ body[data-app-screen="season"] .app-screen::after {
 
 .hub-screen .screen-back {
   position: absolute;
-  top: calc(var(--lobby-screen-top-pad) + env(safe-area-inset-top) + 7px);
+  top: calc(var(--lobby-screen-top-pad) + var(--app-safe-area-top) + 7px);
   left: 25px;
   z-index: 3;
   width: clamp(50px, 13.95vw, 60px);

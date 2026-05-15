@@ -107,6 +107,55 @@ async function assertCombatToastClearsDock(page) {
   );
 }
 
+async function assertInjectedSafeAreaKeepsCombatTouchable(page) {
+  const geometry = await page.evaluate(async () => {
+    const root = document.documentElement;
+    const previousSafeAreaBottom = root.style.getPropertyValue('--app-safe-area-bottom');
+    root.style.setProperty('--app-safe-area-bottom', '34px');
+    try {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const panel = document.querySelector('.action-panel')?.getBoundingClientRect();
+      const actions = document.querySelector('.primary-actions')?.getBoundingClientRect();
+      const toast = document.querySelector('.toast');
+      if (!panel || !actions || !toast) {
+        return { missing: true };
+      }
+      const wasHidden = toast.hidden;
+      const previousText = toast.textContent;
+      toast.hidden = false;
+      toast.textContent = '검수 메시지';
+      const toastBox = toast.getBoundingClientRect();
+      toast.hidden = wasHidden;
+      toast.textContent = previousText;
+      return {
+        viewportHeight: window.innerHeight,
+        panelHeight: Math.round(panel.height),
+        actionsBottom: Math.round(actions.bottom),
+        toastBottom: Math.round(toastBox.bottom),
+        panelTop: Math.round(panel.top)
+      };
+    } finally {
+      if (previousSafeAreaBottom) {
+        root.style.setProperty('--app-safe-area-bottom', previousSafeAreaBottom);
+      } else {
+        root.style.removeProperty('--app-safe-area-bottom');
+      }
+    }
+  });
+  assert.equal(geometry.missing, undefined, `safe-area combat geometry unavailable: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.panelHeight >= 164, true, `combat dock ignores injected safe area: ${JSON.stringify(geometry)}`);
+  assert.equal(
+    geometry.actionsBottom <= geometry.viewportHeight - 58,
+    true,
+    `combat buttons do not clear injected home indicator: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(
+    geometry.toastBottom <= geometry.panelTop - 8,
+    true,
+    `combat toast overlaps safe-area dock: ${JSON.stringify(geometry)}`
+  );
+}
+
 async function verifyShell(page, viewport) {
   await page.goto(baseUrl, { waitUntil: 'load' });
   await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
@@ -160,6 +209,7 @@ async function verifyShell(page, viewport) {
   assert.notEqual(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await assertCombatDockSafeArea(page);
   await assertCombatToastClearsDock(page);
+  await assertInjectedSafeAreaKeepsCombatTouchable(page);
 }
 
 async function verifyFastPlaythrough(page) {
