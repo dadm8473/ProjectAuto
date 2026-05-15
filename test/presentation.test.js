@@ -412,18 +412,22 @@ test('screen transition wipe stays brief and does not hide the next playable scr
   const app = await readFile('src/client/app.js', 'utf8');
 
   for (const marker of [
-    'animation: screenWipeSweepA 340ms cubic-bezier(0.22, 0.8, 0.2, 1) both;',
-    'animation: screenWipeSweepB 340ms cubic-bezier(0.22, 0.8, 0.2, 1) both;',
+    'animation: screenWipeSweepA 260ms cubic-bezier(0.22, 0.8, 0.2, 1) both;',
+    'animation: screenWipeSweepB 260ms cubic-bezier(0.22, 0.8, 0.2, 1) both;',
     'body[data-screen-wipe][data-screen-wipe-pulse="a"] .screen-transition-fx',
     'body[data-screen-wipe][data-screen-wipe-pulse="b"] .screen-transition-fx',
-    '18% { opacity: 0.58; }',
-    '58% { opacity: 0.36;',
-    'filter: saturate(1.08) drop-shadow(0 12px 22px rgba(0, 0, 0, 0.36));',
-    'const SCREEN_TRANSITION_MS = 360;'
+    '18% { opacity: 0.18; }',
+    '58% { opacity: 0.08;',
+    'filter: saturate(1.02) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));',
+    'const SCREEN_TRANSITION_MS = 280;'
   ]) {
     assert.equal(`${css}\n${app}`.includes(marker), true, marker);
   }
 
+  assert.equal(css.includes('animation: screenWipeSweepA 340ms'), false);
+  assert.equal(css.includes('18% { opacity: 0.34; }'), false);
+  assert.equal(css.includes('18% { opacity: 0.58; }'), false);
+  assert.equal(app.includes('const SCREEN_TRANSITION_MS = 360;'), false);
   assert.equal(css.includes('animation: screenWipeSweep 520ms'), false);
   assert.equal(app.includes('const SCREEN_TRANSITION_MS = 520;'), false);
   assert.equal(css.includes('18% { opacity: 0.9; }'), false);
@@ -470,7 +474,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=row-surface1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-wipe1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=row-surface1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=chrome-surface1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-badges1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-clarity1">'), false);
@@ -511,7 +516,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-badges1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=screen-wipe1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-badges1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=moment-callout1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reveal-vfx1"></script>'), false);

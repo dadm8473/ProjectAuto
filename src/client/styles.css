@@ -163,28 +163,28 @@ body[data-app-screen="splash"] .shell::after {
   background-size: 100% 100%;
   opacity: 0;
   transform: translate3d(-18%, -5%, 0) scale(1.08);
-  filter: saturate(1.08) drop-shadow(0 12px 22px rgba(0, 0, 0, 0.36));
+  filter: saturate(1.02) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
 }
 
 body[data-screen-wipe][data-screen-wipe-pulse="a"] .screen-transition-fx {
-  animation: screenWipeSweepA 340ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
+  animation: screenWipeSweepA 260ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
 }
 
 body[data-screen-wipe][data-screen-wipe-pulse="b"] .screen-transition-fx {
-  animation: screenWipeSweepB 340ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
+  animation: screenWipeSweepB 260ms cubic-bezier(0.22, 0.8, 0.2, 1) both;
 }
 
 @keyframes screenWipeSweepA {
   0% { opacity: 0; transform: translate3d(-44%, -13%, 0) scale(1.1); }
-  18% { opacity: 0.58; }
-  58% { opacity: 0.36; transform: translate3d(5%, 0, 0) scale(1.02); }
+  18% { opacity: 0.18; }
+  58% { opacity: 0.08; transform: translate3d(5%, 0, 0) scale(1.02); }
   100% { opacity: 0; transform: translate3d(44%, 12%, 0) scale(1.08); }
 }
 
 @keyframes screenWipeSweepB {
   0% { opacity: 0; transform: translate3d(-44%, -13%, 0) scale(1.1); }
-  18% { opacity: 0.58; }
-  58% { opacity: 0.36; transform: translate3d(5%, 0, 0) scale(1.02); }
+  18% { opacity: 0.18; }
+  58% { opacity: 0.08; transform: translate3d(5%, 0, 0) scale(1.02); }
   100% { opacity: 0; transform: translate3d(44%, 12%, 0) scale(1.08); }
 }
 
