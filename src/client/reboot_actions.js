@@ -13,7 +13,7 @@ export function buildRebootActionState(state, playerId = 'p1') {
       label: '합성',
       action: 'merge',
       enabled: Boolean(actions.merge),
-      reason: actions.merge ? '합성 가능' : '같은 등급 2개 필요'
+      reason: actions.merge ? '합성 가능' : '1등급 2개 필요'
     },
     rescue: {
       label: '구원',

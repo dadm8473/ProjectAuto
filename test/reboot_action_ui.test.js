@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { buildRebootActionState } from '../src/client/reboot_actions.js';
 import { buildCombatActionExposure, buildCombatCoachCue, buildCombatStatusPrompt, isCriticalRebootAction } from '../src/client/reboot_action_ui.js';
 
 function state(overrides = {}) {
@@ -180,4 +181,13 @@ test('combat action exposure keeps rescue locked during minor early partner dang
     localBoardId: 'p1',
     actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
   }), { summon: true, merge: true, rescue: false, focus: 'summon' });
+});
+
+test('locked merge action reason names grade-one merge candidates', () => {
+  const actions = buildRebootActionState({
+    actionState: { p1: { summon: false, merge: false, rescue: false } },
+    resources: { p1: { summon: 0, rescue: 0 } }
+  }, 'p1');
+
+  assert.equal(actions.merge.reason, '1등급 2개 필요');
 });
