@@ -804,7 +804,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
     'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions::after',
     'body[data-app-screen="battle"][data-coach-cue="merge"] .primary-actions::after',
     'body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after',
-    'body[data-app-screen="battle"][data-coach-cue] .status-line:has(#bossMeter[hidden]) #timeMeter',
+    'body[data-app-screen="battle"] .status-line:has(#bossMeter[hidden]) #timeMeter',
     'background-image: var(--combat-directive-banner);',
     'min-height: clamp(38px, 10.7vw, 46px);',
     '.primary-actions button::after',

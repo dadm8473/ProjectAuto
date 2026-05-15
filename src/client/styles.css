@@ -704,7 +704,7 @@ body[data-app-screen="season"] .toast {
 #timeMeter { background-position: 0 0; }
 #bossMeter { background-position: 100% 0; }
 
-body[data-app-screen="battle"][data-coach-cue] .status-line:has(#bossMeter[hidden]) #timeMeter {
+body[data-app-screen="battle"] .status-line:has(#bossMeter[hidden]) #timeMeter {
   min-height: clamp(38px, 10.7vw, 46px);
   padding: 4px clamp(44px, 13vw, 58px);
   background-image: var(--combat-directive-banner);
