@@ -29,7 +29,7 @@
   --screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png");
   --screen-transition-wipe: url("/src/client/assets/generated/reboot-screen-transition-wipe.png?v=screen-wipe");
   --nav-icons: url("/src/client/assets/generated/reboot-nav-icons.png");
-  --nav-button-glow: url("/src/client/assets/generated/reboot-nav-button-glow.png?v=nav-glow");
+  --nav-button-glow: url("/src/client/assets/generated/reboot-nav-button-glow.png?v=nav-selector1");
   --nav-alert-badges: url("/src/client/assets/generated/reboot-nav-alert-badges.png?v=nav-alerts");
   --nav-button-glow-size: clamp(62px, 18vw, 76px);
   --title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png");
@@ -1415,6 +1415,7 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .bottom-dock button {
+  position: relative;
   display: grid;
   place-items: center;
   gap: 1px;

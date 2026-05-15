@@ -315,7 +315,7 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
   },
   {
     path: 'src/client/assets/generated/reboot-nav-button-glow.png',
-    source: 'docs/design/generation/source/reboot/style-lock/20260514-nav-button-glow-imagegen.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-nav-selector-pads-chromakey-imagegen.png',
     width: 512,
     height: 128,
     minRuntimeBytes: 28_000
@@ -1203,6 +1203,25 @@ test('splash title plate has transparent corners instead of an opaque web banner
   ];
   assert.equal(corners.every((alpha) => alpha < 10), true, 'splash title plate must not render as a black rectangle');
   assert.equal(alphaAt(image, Math.floor(image.width / 2), Math.floor(image.height / 2)) > 220, true);
+});
+
+test('bottom navigation selector pads use transparent imagegen cells instead of black rectangles', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-nav-button-glow.png'));
+  const cellWidth = 128;
+  assert.equal(image.width, cellWidth * 4);
+  assert.equal(image.height, 128);
+
+  for (let cell = 0; cell < 4; cell += 1) {
+    const x0 = cell * cellWidth;
+    const corners = [
+      alphaAt(image, x0 + 1, 1),
+      alphaAt(image, x0 + cellWidth - 2, 1),
+      alphaAt(image, x0 + 1, image.height - 2),
+      alphaAt(image, x0 + cellWidth - 2, image.height - 2)
+    ];
+    assert.equal(corners.every((alpha) => alpha < 10), true, `nav selector cell ${cell} has opaque corners: ${corners.join(',')}`);
+    assert.equal(alphaAt(image, x0 + Math.floor(cellWidth / 2), Math.floor(image.height / 2)) > 120, true, `nav selector cell ${cell} has no readable center`);
+  }
 });
 
 test('reboot launch button atlas keeps the primary CTA visibly gold on phone scale', async () => {

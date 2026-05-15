@@ -497,7 +497,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=cooldown-label1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=nav-selector1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=cooldown-label1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-cooldown-shutters1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-hero-stage1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-partner-link1">'), false);
@@ -2152,7 +2153,7 @@ test('home navigation buttons use generated tactile selector pads', async () => 
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '--nav-button-glow: url("/src/client/assets/generated/reboot-nav-button-glow.png?v=nav-glow")',
+    '--nav-button-glow: url("/src/client/assets/generated/reboot-nav-button-glow.png?v=nav-selector1")',
     '.bottom-dock button::after',
     '.screen-overlay .bottom-dock button',
     'background-image: var(--nav-button-glow)',
@@ -2164,6 +2165,7 @@ test('home navigation buttons use generated tactile selector pads', async () => 
     'transform: translate(-50%, -50%);',
     'mix-blend-mode: screen',
     'pointer-events: none;',
+    '.bottom-dock button {\n  position: relative;',
     '.bottom-dock button > span',
     'position: relative;\n  z-index: 1;',
     '[data-nav-icon="collection"]::after { background-position: 0 0; }',
