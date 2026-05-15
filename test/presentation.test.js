@@ -3063,7 +3063,7 @@ test('mission and season use a generated progress board instead of bare stacked 
   for (const marker of [
     'background: transparent;',
     'box-shadow: none;',
-    'grid-template-columns: clamp(58px, 17vw, 74px) 1fr clamp(62px, 18vw, 82px);'
+    'grid-template-columns: clamp(62px, 18vw, 78px) minmax(0, 1fr) clamp(70px, 19vw, 84px);'
   ]) {
     assert.equal(boardCardBlock.includes(marker), true, marker);
   }
@@ -3079,6 +3079,35 @@ test('mission and season use a generated progress board instead of bare stacked 
     assert.equal(boardFrameBlock.includes(marker), true, marker);
   }
   assert.equal(boardFrameBlock.includes('background-image: none;'), false);
+});
+
+test('mission and season rows compress into reward-track slots instead of large text cards', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  const boardCardBlock = css.slice(css.indexOf('.meta-progress-board .mission-card,'), css.indexOf('.meta-progress-board .mission-card::before,'));
+  for (const marker of [
+    'min-height: clamp(76px, 20vw, 90px);',
+    'grid-template-columns: clamp(62px, 18vw, 78px) minmax(0, 1fr) clamp(70px, 19vw, 84px);',
+    'padding: 4px clamp(14px, 4.2vw, 20px) 4px clamp(8px, 2.6vw, 12px);'
+  ]) {
+    assert.equal(boardCardBlock.includes(marker), true, marker);
+  }
+
+  const boardTitleBlock = cssRuleBlock(css, '.meta-progress-board .card-copy strong');
+  for (const marker of [
+    'display: inline-grid;',
+    'width: min(100%, 132px);',
+    'min-height: 30px;',
+    'font-size: clamp(12px, 3.6vw, 15px);',
+    'background-image: var(--meta-command-ribbons);',
+    'background-size: 400% 100%;'
+  ]) {
+    assert.equal(boardTitleBlock.includes(marker), true, marker);
+  }
+
+  const progressBlock = cssRuleBlock(css, '.meta-progress-board .meta-progress');
+  assert.equal(progressBlock.includes('width: min(100%, 132px);'), true);
+  assert.equal(progressBlock.includes('height: 14px;'), true);
 });
 
 test('mission and season screens use generated stamp and reward-track boards', async () => {
