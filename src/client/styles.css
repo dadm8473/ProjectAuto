@@ -2596,6 +2596,15 @@ body[data-app-screen="season"] .app-screen::after {
 .result-overlay .result-action-primary { background-position: 0 0; }
 .result-overlay .result-action-secondary { background-position: 100% 0; }
 
+.result-overlay[data-result-cta="claim"] .result-action-secondary {
+  order: -1;
+  background-position: 0 0;
+}
+
+.result-overlay[data-result-cta="claim"] .result-action-primary {
+  background-position: 100% 0;
+}
+
 .result-overlay .result-action-button::before {
   background-image: none;
 }

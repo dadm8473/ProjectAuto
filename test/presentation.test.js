@@ -474,7 +474,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-disabled1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-claim-primary1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-disabled1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-wipe1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=row-surface1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=chrome-surface1">'), false);
@@ -517,7 +518,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-medals1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=screen-wipe1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim-primary1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=screen-wipe1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-badges1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=moment-callout1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim1"></script>'), false);
@@ -1261,6 +1263,25 @@ test('result actions use dedicated generated button frames', async () => {
   assert.equal(css.includes('.result-actions button {\n    min-height: 40px;'), false);
   assert.equal(/(^|\n)\.result-action-button \{\n  display: grid;/.test(css), false);
   assert.equal(/(^|\n)\.result-action-secondary \{ background-position: 100% 0; \}/.test(css), false);
+});
+
+test('result reward claim action is promoted to the generated primary button', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    "const rewardClaimActions = new Set(['claim-missions', 'claim-season']);",
+    "dom.resultOverlay.dataset.resultCta = rewardClaimActions.has(model.secondaryAction.action) ? 'claim' : 'default';",
+    '.result-overlay[data-result-cta="claim"] .result-action-secondary',
+    'order: -1;',
+    'background-position: 0 0;',
+    '.result-overlay[data-result-cta="claim"] .result-action-primary',
+    'background-position: 100% 0;'
+  ]) {
+    assert.equal(`${css}\n${app}`.includes(marker), true, marker);
+  }
+
+  assert.equal(css.includes('.result-overlay[data-result-cta="claim"] .result-action-secondary {\n  display: none;'), false);
 });
 
 test('result reward copy names the earned currency instead of a generic reward number', async () => {

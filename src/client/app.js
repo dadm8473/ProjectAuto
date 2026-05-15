@@ -74,6 +74,7 @@ const REWARD_REVEAL_MS = 1500;
 const SCREEN_TRANSITION_MS = 280;
 const ONLINE_CONNECT_FALLBACK_MS = 2600;
 const MATCH_BANNER_FLASH_MS = 1500;
+const rewardClaimActions = new Set(['claim-missions', 'claim-season']);
 let appScreen = 'splash';
 let game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
 let localBoardId = 'p1';
@@ -609,6 +610,7 @@ function showResult(current) {
   const rewards = settleResultRewards(current);
   const model = buildRebootResultModel({ result: current.result, rewards, profile });
   dom.resultOverlay.dataset.resultStatus = model.status;
+  dom.resultOverlay.dataset.resultCta = rewardClaimActions.has(model.secondaryAction.action) ? 'claim' : 'default';
   dom.resultTitle.textContent = model.title;
   dom.resultReason.textContent = model.reason.label;
   dom.resultNextGoal.textContent = model.nextGoal.label;
