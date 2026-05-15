@@ -402,6 +402,78 @@ test('first player summon gets a generated reward spotlight before the small fla
   assert.equal(spotlightIndex < summonVfxIndex, true, 'reward spotlight should establish the summon moment before the flash');
 });
 
+test('pre-summon board cue links the first command to the player socket', () => {
+  const ctx = mockContext();
+  const firstCommandSpotlight = image(256, 128);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 0.28,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      firstCommandSpotlight,
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const cueDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === firstCommandSpotlight
+      && command.args[5] >= 0
+      && command.args[5] <= 20
+      && command.args[6] >= 450
+      && command.args[6] <= 470
+      && command.args[7] >= 124
+      && command.args[7] <= 146
+  ));
+
+  assert.ok(cueDraw, 'expected generated pre-summon cue to glow over the first player socket');
+});
+
+test('pre-summon board cue stays hidden while waiting for an online partner', () => {
+  const ctx = mockContext();
+  const firstCommandSpotlight = image(256, 128);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 0.28,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      firstCommandSpotlight,
+      playerBoardTray: image(780, 320)
+    },
+    { onlineWaiting: true }
+  );
+
+  const cueDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === firstCommandSpotlight
+  ));
+
+  assert.equal(cueDraws.length, 0, 'online waiting must not show a playable first-summon socket cue');
+});
+
 test('first player summon sends generated ignition from board toward track before flash', () => {
   const ctx = mockContext();
   drawRebootBattle(

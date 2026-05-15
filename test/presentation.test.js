@@ -98,7 +98,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=action-focus2'",
-    "from './reboot_render.js?v=action-stamps1'",
+    "from './reboot_render.js?v=pre-summon-cue1'",
     "from './reboot_screens.js?v=objective-stamps1'",
     "from './reboot_online.js'"
   ]) {
@@ -564,7 +564,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-stamps1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=pre-summon-cue1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-stamps1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-label1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-stamps1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-impact-bursts1"></script>'), false);
@@ -590,7 +591,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=action-stamps1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=pre-summon-cue1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=action-stamps1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=enemy-impact-bursts1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=enemy-track-trails1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=view-perspective1'"), false);

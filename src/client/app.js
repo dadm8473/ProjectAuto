@@ -4,7 +4,7 @@ import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=merge-reason1';
 import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-focus2';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=action-stamps1';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=pre-summon-cue1';
 import {
   buildMetaNavAlerts,
   buildMissionScreen,

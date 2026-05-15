@@ -973,6 +973,34 @@ function firstPlayerRecentEvent(state, type, windowSeconds, localBoardId = 'p1')
   return event;
 }
 
+function firstPlayerActionTaken(state, localBoardId = 'p1') {
+  const selfId = normalizeBoardId(localBoardId);
+  return state.events.some((event) => (
+    ['summon', 'merge', 'rescue'].includes(event.type)
+      && (event.playerId ?? 'p1') === selfId
+      && state.now >= event.at
+  ));
+}
+
+function drawPreSummonSocketCue(ctx, state, assets = {}, localBoardId = 'p1') {
+  const selfId = normalizeBoardId(localBoardId);
+  const board = state.boards?.[selfId];
+  const image = assets?.firstCommandSpotlight;
+  if (!board || !image?.complete || image.naturalWidth <= 0) return false;
+  if ((board.units?.length ?? 0) > 0) return false;
+  if (state.actionState?.[selfId]?.summon !== true) return false;
+  if (firstPlayerActionTaken(state, selfId)) return false;
+  if (state.now > 4.5) return false;
+
+  const point = boardSlotPoint(selfId, 0, selfId);
+  const pulse = Math.max(0, Math.sin(state.now * 5.8)) * 0.08;
+  const w = 136;
+  const h = 68;
+  const x = Math.max(4, Math.min(390 - w - 4, point.x - w / 2));
+  const y = point.y - h / 2 + 8;
+  return drawImageCover(ctx, image, x, y, w, h, 0.42 + pulse);
+}
+
 function drawFirstSummonRewardSpotlight(ctx, state, assets = {}, localBoardId = 'p1') {
   const event = firstPlayerSummonRewardEvent(state, localBoardId);
   const image = assets?.firstCommandSpotlight;
@@ -1111,6 +1139,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   }
   drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
   drawBoard(ctx, state.boards[localBoardId], 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
+  if (!options.onlineWaiting) drawPreSummonSocketCue(ctx, state, assets, localBoardId);
   drawFirstSummonIgnition(ctx, state, assets, localBoardId);
   drawFirstSummonRewardSpotlight(ctx, state, assets, localBoardId);
   drawFirstMergeRewardSigil(ctx, state, assets, options.reducedMotion, localBoardId);
