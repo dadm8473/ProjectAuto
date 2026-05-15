@@ -474,7 +474,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive-icon1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-room-banners1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive-icon1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-cta1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-focus1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-claim-primary1">'), false);
@@ -2548,6 +2549,9 @@ test('unit training screen uses the active generated showcase stage', async () =
   for (const marker of [
     '--meta-showcase-stage: url("/src/client/assets/generated/reboot-meta-showcase-stage.png?v=showcase-stage")',
     'background-image: var(--meta-showcase-stage);',
+    '--training-banner: url("/src/client/assets/generated/reboot-training-banner.png")',
+    '.meta-showcase[data-showcase-kind="collection"]',
+    'background-image: var(--training-banner);',
     'function buildMetaShowcase',
     'data-showcase-kind="collection"',
     '대표 유닛',
@@ -2559,7 +2563,6 @@ test('unit training screen uses the active generated showcase stage', async () =
   }
 
   assert.equal(css.includes('.meta-summary[data-summary-kind="collection"]'), false);
-  assert.equal(css.includes('--training-banner:'), false);
 });
 
 test('shop cosmetics use a dedicated imagegen item atlas', async () => {
@@ -2585,6 +2588,9 @@ test('shop screen uses the active generated showcase stage', async () => {
   for (const marker of [
     '--meta-showcase-stage: url("/src/client/assets/generated/reboot-meta-showcase-stage.png?v=showcase-stage")',
     'background-image: var(--meta-showcase-stage);',
+    '--shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png")',
+    '.meta-showcase[data-showcase-kind="shop"]',
+    'background-image: var(--shop-banner);',
     'function buildMetaShowcase',
     'data-showcase-kind="shop"',
     '추천 외형',
@@ -2596,7 +2602,6 @@ test('shop screen uses the active generated showcase stage', async () => {
   }
 
   assert.equal(css.includes('.meta-summary[data-summary-kind="shop"]'), false);
-  assert.equal(css.includes('--shop-banner:'), false);
 });
 
 test('mission and season screens use generated stamp and reward-track boards', async () => {

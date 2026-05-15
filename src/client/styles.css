@@ -45,6 +45,8 @@
   --lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next");
   --lobby-battle-ready-cue: url("/src/client/assets/generated/reboot-lobby-battle-ready-cue.png?v=battle-ready-cue");
   --launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta-alpha1");
+  --training-banner: url("/src/client/assets/generated/reboot-training-banner.png");
+  --shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png");
   --missions-banner: url("/src/client/assets/generated/reboot-missions-banner.png");
   --season-banner: url("/src/client/assets/generated/reboot-season-banner.png");
   --meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row-alpha1");
@@ -1970,6 +1972,19 @@ body[data-app-screen="season"] .app-screen::after {
   z-index: 0;
   background: rgba(2, 7, 8, 0.28);
   pointer-events: none;
+}
+
+.meta-showcase[data-showcase-kind="collection"] {
+  background-image: var(--training-banner);
+}
+
+.meta-showcase[data-showcase-kind="shop"] {
+  background-image: var(--shop-banner);
+}
+
+.meta-showcase[data-showcase-kind="collection"]::after,
+.meta-showcase[data-showcase-kind="shop"]::after {
+  background: rgba(2, 7, 8, 0.46);
 }
 
 .meta-showcase-preview,
