@@ -735,6 +735,27 @@ Constraints: background must be one uniform #ff00ff with no gradients, shadows, 
 Postprocess: remove #ff00ff chroma key with soft matte/despill, crop and pad runtime atlas to 1920x512, 4 columns x 1 row, 480x512 cells, centered straight-alpha subjects.
 ```
 
+## Runtime Prompt: Online Partner Link Console
+
+```text
+Use case: stylized-concept
+Asset type: mobile game UI sprite atlas for ProjectAuto / 신호릴레이
+Primary request: Create one polished sci-fi mobile game UI sprite atlas containing THREE equal-width horizontal co-op partner-link console panels in a single row. Each cell is a compact two-slot matchmaking console: left slot is the local player core, center has a glowing energy link rail, right slot changes by state.
+State 1: partner searching, right slot is a scanning hologram socket with small radar glow.
+State 2: partner connected, right slot is fully lit and linked to the left slot.
+State 3: partner reset/disconnected, right slot has a warning pulse and fractured signal ring.
+Scene/backdrop: perfectly flat solid #ff00ff chroma-key background for background removal.
+Style/medium: high-end 2D game UI art, Korean mobile sci-fi tower-defense, glossy metal frame, teal energy, warm amber accents, consistent with premium generated game assets, not a web component.
+Composition/framing: one atlas row, three equal cells, generous padding, centered panels, no cropping, no shadows cast onto the background.
+Text: no text, no letters, no numbers, no logos.
+Constraints: background must be one uniform #ff00ff color with no gradient, texture, shadow, reflection, or lighting variation; do not use #ff00ff anywhere in the subject; crisp edges suitable for chroma-key alpha removal; each cell must be visually distinct and readable at phone scale.
+Avoid: CSS-like flat rectangles, website cards, text, watermark, black rectangular baked background, cropped corners.
+Postprocess: remove #ff00ff chroma key with soft matte/despill, slice the generated row into three equal cells, trim transparent padding per cell, and pad each state into a 390x144 runtime cell for final atlas 1170x144.
+Runtime files:
+- docs/design/generation/source/reboot/style-lock/20260515-online-partner-link-chromakey-imagegen.png
+- src/client/assets/generated/reboot-online-partner-link.png
+```
+
 ## Runtime Postprocess: UI Frame Alpha Cleanup
 
 ```text

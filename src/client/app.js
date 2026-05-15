@@ -589,7 +589,9 @@ function updateButtons(current) {
   const actions = buildRebootActionState(current, localBoardId);
   const exposure = buildCombatActionExposure({ current, localBoardId, actions });
   const onlineWaiting = waitingForOnlinePartner(current);
-  const coachCue = appScreen === 'battle'
+  if (onlineWaiting && appScreen === 'battle') document.body.dataset.onlineWaiting = 'true';
+  else delete document.body.dataset.onlineWaiting;
+  const coachCue = appScreen === 'battle' && !onlineWaiting
     ? buildCombatCoachCue({ current, localBoardId, actions })
     : '';
   if (coachCue) document.body.dataset.coachCue = coachCue;

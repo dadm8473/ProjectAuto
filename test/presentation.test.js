@@ -324,6 +324,26 @@ test('online waiting state blocks combat until the second player arrives', async
   }
 });
 
+test('online waiting state turns the command dock into a generated matchmaking lock', async () => {
+  const app = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const source = `${app}\n${css}`;
+
+  for (const marker of [
+    "document.body.dataset.onlineWaiting = 'true';",
+    'delete document.body.dataset.onlineWaiting',
+    'body[data-app-screen="battle"][data-online-waiting="true"] .primary-actions::before',
+    'background-image: var(--online-matchmaking-panels);',
+    'body[data-app-screen="battle"][data-online-waiting="true"] .status-line',
+    'body[data-app-screen="battle"][data-online-waiting="true"] .primary-actions button {\n  display: none;',
+    'body[data-app-screen="battle"][data-online-waiting="true"] .primary-actions button',
+    'opacity: 0;',
+    '파트너 매칭 중'
+  ]) {
+    assert.equal(source.includes(marker), true, marker);
+  }
+});
+
 test('online matchmaking states use generated app-game panels instead of plain text status', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
@@ -340,7 +360,9 @@ test('online matchmaking states use generated app-game panels instead of plain t
 
   for (const marker of [
     '--online-matchmaking-panels: url("/src/client/assets/generated/reboot-online-matchmaking-panels.png?v=online-matchmaking")',
+    '--online-partner-link: url("/src/client/assets/generated/reboot-online-partner-link.png?v=partner-link1")',
     '.matchmaking-banner',
+    'background-image: var(--online-partner-link);',
     'background-image: var(--online-matchmaking-panels);',
     '.matchmaking-banner[data-match-state="waiting"]',
     '.matchmaking-banner[data-match-state="ready"]',
@@ -371,6 +393,7 @@ test('online matchmaking states use generated app-game panels instead of plain t
 
   for (const marker of [
     '#matchmakingBanner',
+    'body[data-app-screen="battle"]',
     '파트너 대기',
     '협동 시작',
     '파트너 이탈',
@@ -474,7 +497,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-command-ribbons1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-partner-link1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-command-ribbons1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=locked-sockets1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-directive1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress-board1">'), false);
@@ -529,7 +553,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=post-reward-route1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-partner-link1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=post-reward-route1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-progress-board1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-grid1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=start-cutin1"></script>'), false);

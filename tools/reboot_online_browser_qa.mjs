@@ -49,7 +49,7 @@ async function enterOnline(page, baseUrl) {
   await page.goto(`${baseUrl}/?mute=1`, { waitUntil: 'load' });
   await page.getByRole('button', { name: '시작' }).click();
   await page.getByRole('button', { name: '온라인 협동' }).click();
-  await page.locator('#summonButton').waitFor({ state: 'visible' });
+  await page.locator('body[data-app-screen="battle"]').waitFor({ state: 'attached' });
 }
 
 async function assertOnlineReady(page, label) {
@@ -85,12 +85,32 @@ async function assertMatchBanner(page, title, state) {
   );
   assert.equal(await page.locator('#matchmakingBannerTitle').textContent(), title);
   assert.equal(await page.locator('#matchmakingBanner').getAttribute('data-match-state'), state);
+  assert.match(
+    await page.locator('#matchmakingBanner').evaluate((node) => getComputedStyle(node).backgroundImage),
+    /reboot-online-partner-link/,
+    'matchmaking banner uses generated partner-link console art'
+  );
 }
 
 async function assertOnlineWaiting(page) {
   await page.waitForFunction(() => document.querySelector('#netStatus')?.textContent === '온라인 대기');
   assert.equal(await page.locator('#netStatus').textContent(), '온라인 대기', 'single client waits for partner');
   assert.equal(await page.locator('#timeMeter').textContent(), '파트너 대기', 'waiting prompt replaces action prompt');
+  const dockState = await page.evaluate(() => {
+    const primaryActions = document.querySelector('.primary-actions');
+    return {
+      onlineWaiting: document.body.dataset.onlineWaiting,
+      statusDisplay: getComputedStyle(document.querySelector('.status-line')).display,
+      summonDisplay: getComputedStyle(document.querySelector('#summonButton')).display,
+      dockLabel: getComputedStyle(primaryActions, '::after').content,
+      dockImage: getComputedStyle(primaryActions, '::before').backgroundImage
+    };
+  });
+  assert.equal(dockState.onlineWaiting, 'true', 'online waiting body state');
+  assert.equal(dockState.statusDisplay, 'none', 'waiting command dock hides combat prompt row');
+  assert.equal(dockState.summonDisplay, 'none', 'waiting command dock removes combat buttons from layout');
+  assert.equal(dockState.dockLabel, '"파트너 매칭 중"', 'waiting command dock label');
+  assert.match(dockState.dockImage, /reboot-online-matchmaking-panels/, 'waiting command dock uses generated matchmaking art');
   await assertMatchBanner(page, '파트너 대기', 'waiting');
   assert.equal(await page.locator('#summonButton').isEnabled(), false, 'summon disabled before partner joins');
   assert.equal(await page.locator('#mergeButton').isEnabled(), false, 'merge disabled before partner joins');

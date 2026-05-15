@@ -181,6 +181,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 60_000
   },
   {
+    path: 'src/client/assets/generated/reboot-online-partner-link.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260515-online-partner-link-chromakey-imagegen.png',
+    width: 1170,
+    height: 144,
+    minRuntimeBytes: 150_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-combat-action-buttons.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-action-buttons-imagegen.png',
     width: 1170,
@@ -502,6 +509,12 @@ const TRANSPARENT_UI_FRAME_ASSETS = [
     minSoftCoverage: 0.7,
     maxSoftCoverage: 0.92,
     maxCornerAlpha: 24
+  },
+  {
+    path: 'src/client/assets/generated/reboot-online-partner-link.png',
+    minSoftCoverage: 0.42,
+    maxSoftCoverage: 0.58,
+    maxCornerAlpha: 8
   }
 ];
 
