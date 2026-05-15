@@ -19,6 +19,7 @@
   --result-action-buttons: url("/src/client/assets/generated/reboot-result-action-buttons.png?v=result-actions-alpha1");
   --result-detail-strips: url("/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail-alpha1");
   --result-copy-plates: url("/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy-alpha1");
+  --result-verdict-ribbons: url("/src/client/assets/generated/reboot-result-verdict-ribbons.png?v=result-verdict1");
   --result-hero-stage: url("/src/client/assets/generated/reboot-result-hero-stage.png?v=result-hero-stage1");
   --result-outcome-auras: url("/src/client/assets/generated/reboot-result-outcome-auras.png?v=result-outcome-aura1");
   --result-finale-bursts: url("/src/client/assets/generated/reboot-result-finale-bursts.png?v=result-finale");
@@ -3219,8 +3220,40 @@ body[data-app-screen="season"] .app-screen::after {
 .result-overlay[data-result-status="won"] .result-hero-stage { background-position: 0 0; }
 .result-overlay[data-result-status="lost"] .result-hero-stage { background-position: 100% 0; }
 
+.result-verdict-stack {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  min-height: clamp(128px, calc(var(--result-panel-width) * 0.41), 160px);
+  padding: clamp(14px, calc(var(--result-panel-width) * 0.042), 18px) clamp(24px, calc(var(--result-panel-width) * 0.082), 32px);
+  background: transparent;
+  background-image: var(--result-verdict-ribbons);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  background-position: 0 0;
+  filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.44));
+}
+
+.result-overlay[data-result-status="won"] .result-verdict-stack {
+  background-position: 0 0;
+}
+
+.result-overlay[data-result-status="lost"] .result-verdict-stack {
+  background-position: 100% 0;
+}
+
+#resultCode,
+#resultTitle,
+#resultReason,
+#resultNextGoal {
+  justify-self: center;
+  width: 100%;
+  text-align: center;
+}
+
 #resultCode {
-  justify-self: start;
   padding: 0 8px;
   color: var(--ink);
   font-size: 12px;

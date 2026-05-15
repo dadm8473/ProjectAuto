@@ -578,6 +578,14 @@ const IMAGEGEN_REBOOT_RESULT_AURAS = {
   minRuntimeBytes: 45_000
 };
 
+const IMAGEGEN_REBOOT_RESULT_VERDICT_RIBBONS = {
+  path: 'src/client/assets/generated/reboot-result-verdict-ribbons.png',
+  source: 'docs/design/generation/source/reboot/style-lock/20260516-result-verdict-ribbons-chromakey-imagegen.png',
+  width: 780,
+  height: 176,
+  minRuntimeBytes: 55_000
+};
+
 const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
   {
     path: 'src/client/assets/generated/reboot-kill-burst.png',
@@ -1543,6 +1551,41 @@ test('result outcome aura cells stay transparent and readable without covering r
     assert.equal(centerCoverage < 0.72, true, `result aura cell ${cell} is too opaque behind copy`);
     assert.equal(bounds.minX >= 6, true, `result aura cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxX <= cellWidth - 7, true, `result aura cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('result verdict ribbon cells make result copy read as one generated game panel', async () => {
+  const asset = IMAGEGEN_REBOOT_RESULT_VERDICT_RIBBONS;
+  const source = await readFile(asset.source);
+  const runtime = await readFile(asset.path);
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+  assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+  assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+  assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+  assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+  const image = parsePng(runtime);
+  const cellWidth = 390;
+  for (let cell = 0; cell < 2; cell += 1) {
+    const x0 = cell * cellWidth;
+    const corners = [
+      alphaAt(image, x0 + 2, 2),
+      alphaAt(image, x0 + cellWidth - 3, 2),
+      alphaAt(image, x0 + 2, image.height - 3),
+      alphaAt(image, x0 + cellWidth - 3, image.height - 3)
+    ];
+    const bounds = alphaBounds(image, { x: x0, y: 0, width: cellWidth, height: image.height }, 32);
+    const centerCoverage = alphaCoverage(image, { x: x0 + 34, y: 30, width: 322, height: 104 }, 48);
+
+    assert.equal(corners.every((alpha) => alpha < 12), true, `verdict ribbon cell ${cell} has opaque corners: ${corners.join(',')}`);
+    assert.equal(bounds.count > 12_000, true, `verdict ribbon cell ${cell} has no readable panel art`);
+    assert.equal(centerCoverage > 0.28, true, `verdict ribbon cell ${cell} lacks a solid copy plate center`);
+    assert.equal(centerCoverage < 0.86, true, `verdict ribbon cell ${cell} is too opaque for readable copy`);
+    assert.equal(bounds.minX >= 6, true, `verdict ribbon cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 7, true, `verdict ribbon cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 4, true, `verdict ribbon cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 5, true, `verdict ribbon cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
 });
 

@@ -497,7 +497,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-outcome-aura1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-verdict1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-outcome-aura1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-summon-console1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=nav-selector1">'), false);
@@ -1000,7 +1001,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=result-outcome-aura1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-verdict1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -1695,6 +1696,31 @@ test('result title and guidance copy use generated plate frames', async () => {
   const copyBlock = css.slice(css.indexOf('#resultTitle'), css.indexOf('.result-actions'));
   assert.equal(copyBlock.includes('border: 1px solid'), false);
   assert.equal(copyBlock.includes('linear-gradient'), false);
+});
+
+test('result verdict copy is grouped inside one generated victory or loss ribbon', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '<div class="result-verdict-stack">',
+    '--result-verdict-ribbons: url("/src/client/assets/generated/reboot-result-verdict-ribbons.png?v=result-verdict1")',
+    '.result-verdict-stack {',
+    'background-image: var(--result-verdict-ribbons);',
+    'background-size: 200% 100%;',
+    '.result-overlay[data-result-status="won"] .result-verdict-stack',
+    '.result-overlay[data-result-status="lost"] .result-verdict-stack',
+    '#resultCode,\n#resultTitle,\n#resultReason,\n#resultNextGoal'
+  ]) {
+    assert.equal(`${html}\n${css}`.includes(marker), true, marker);
+  }
+
+  const stackBlock = cssRuleBlock(css, '.result-verdict-stack');
+  assert.equal(stackBlock.includes('min-height: clamp(128px, calc(var(--result-panel-width) * 0.41), 160px);'), true);
+  assert.equal(stackBlock.includes('background: transparent;'), true);
+  assert.equal(stackBlock.includes('border'), false);
+  assert.equal(stackBlock.includes('linear-gradient'), false);
+  assert.equal(stackBlock.includes('radial-gradient'), false);
 });
 
 test('result debrief copy plates protect text from generated finale effects', async () => {
