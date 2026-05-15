@@ -100,10 +100,10 @@ export const REBOOT_EFFECT_MANIFEST = {
     height: 128,
     source: 'imagegen'
   },
-  momentCallouts: {
-    src: '/src/client/assets/generated/reboot-combat-moment-callouts.png?v=combat-moment-callouts',
-    width: 1170,
-    height: 144,
+  actionStamps: {
+    src: '/src/client/assets/generated/reboot-combat-action-stamps.png?v=action-stamps1',
+    width: 768,
+    height: 128,
     source: 'imagegen'
   },
   partnerAssistPings: {
@@ -243,8 +243,8 @@ export function createRebootAssetImages() {
   hitBeam.src = REBOOT_EFFECT_MANIFEST.hitBeam.src;
   const hitBolts = new Image();
   hitBolts.src = REBOOT_EFFECT_MANIFEST.hitBolts.src;
-  const momentCallouts = new Image();
-  momentCallouts.src = REBOOT_EFFECT_MANIFEST.momentCallouts.src;
+  const actionStamps = new Image();
+  actionStamps.src = REBOOT_EFFECT_MANIFEST.actionStamps.src;
   const partnerAssistPings = new Image();
   partnerAssistPings.src = REBOOT_EFFECT_MANIFEST.partnerAssistPings.src;
   const crisisOverlays = new Image();
@@ -271,7 +271,7 @@ export function createRebootAssetImages() {
   enemyTrackTrails.src = REBOOT_EFFECT_MANIFEST.enemyTrackTrails.src;
   const enemyImpactBursts = new Image();
   enemyImpactBursts.src = REBOOT_EFFECT_MANIFEST.enemyImpactBursts.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, momentCallouts, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts };
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -337,7 +337,7 @@ function drawImageCover(ctx, image, x, y, w, h, alpha = 1) {
   return true;
 }
 
-function drawMomentCalloutPanel(ctx, image, index, x, y, w, h, alpha = 1) {
+function drawActionStampPanel(ctx, image, index, x, y, w, h, alpha = 1) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const cellWidth = image.naturalWidth / 3;
   ctx.save();
@@ -1039,25 +1039,21 @@ function drawCombatMomentCallout(ctx, state, assets = {}) {
 
   const alpha = momentCalloutAlpha(state, event);
   const rise = (1 - alpha) * 6;
-  const x = 30;
-  const w = 330;
-  const h = 122;
-  const y = 304 - rise;
+  const x = 68;
+  const w = 252;
+  const h = 74;
+  const y = 326 - rise;
 
-  if (!assets.momentCallouts?.complete || assets.momentCallouts.naturalWidth <= 0) return;
+  if (!assets.actionStamps?.complete || assets.actionStamps.naturalWidth <= 0) return;
   ctx.save();
-  drawMomentCalloutPanel(ctx, assets.momentCallouts, meta.index, x, y, w, h, alpha);
-  drawAtlasSprite(ctx, assets, 'ui', meta.icon, x + 50, y + 62, 42, alpha);
+  drawActionStampPanel(ctx, assets.actionStamps, meta.index, x, y, w, h, alpha);
+  drawAtlasSprite(ctx, assets, 'ui', meta.icon, x + 44, y + 38, 32, alpha);
   ctx.globalAlpha *= alpha;
   ctx.fillStyle = '#fff7dc';
   ctx.shadowColor = meta.index === 1 ? '#f4c95d' : '#58d7ff';
-  ctx.shadowBlur = 16;
-  ctx.font = '900 18px system-ui';
-  ctx.fillText(meta.title, x + 92, y + 58);
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = 'rgba(245, 240, 220, 0.82)';
-  ctx.font = '800 11px system-ui';
-  ctx.fillText(meta.body, x + 92, y + 76);
+  ctx.shadowBlur = 13;
+  ctx.font = '900 16px system-ui';
+  ctx.fillText(meta.title, x + 82, y + 43);
   ctx.restore();
 }
 

@@ -864,6 +864,23 @@ Postprocess: remove #ff00ff chroma key with soft matte/despill, split the genera
 Acceptance: disabled-but-unlocked combat commands receive generated mechanical cooldown shutters, Korean command labels remain readable, locked unearned commands still use the quieter socket atlas, and the command dock no longer depends on a web-style disabled fade.
 ```
 
+## Runtime Prompt: Combat Action Stamps
+
+```text
+Use case: stylized-concept
+Asset type: project-bound transparent-feel PNG source for a compact combat action success stamp atlas in a portrait Korean cooperative tower-defense mobile game. The final runtime atlas will be cropped to 768x128 with three equal 256x128 cells.
+Primary request: Create one wide horizontal three-panel sprite atlas. Each panel is a compact premium action-success stamp that briefly appears over the battlefield after a player command succeeds, replacing a large instructional banner. The stamp should feel tactile and celebratory while covering very little of the game map.
+Panels left to right: 1. summon success stamp: amber-gold capacitor spark badge with cyan relay pulse and a tiny mechanical bracket. 2. merge success stamp: teal-blue interlocking hex badge with a short upward energy join and small gold rivets. 3. rescue success stamp: cyan-mint shield pulse badge with compact red emergency accent and protective ring.
+Composition: exactly three side-by-side cells, each centered in its 256x128 cell with generous transparent padding. Each stamp should be compact, about 70 percent cell width and 55 percent cell height, with an open center/side space where code-rendered Korean text can sit. No text, no numbers, no icons that look like letters, no full-width banner, no rectangular web card, no character or enemy body.
+Style: shipped mobile game VFX/UI sprite art, glossy 2.5D sci-fi toy-mech command feedback, metallic charcoal micro-frame, teal/cyan energy, amber highlights, crisp silhouette, anti-aliased edges, polished but small. Consistent with Signal Relay assets.
+Background for transparency processing: perfectly flat solid #ff00ff chroma-key background behind all subjects. The background must be one uniform color with no shadows, gradients, texture, reflections, floor plane, or lighting variation. Keep all stamp subjects fully separated from the background with crisp edges and generous padding. Do not use #ff00ff anywhere in the subjects.
+Avoid: any words, letters, numbers, logos, watermarks, dice, casino/gacha imagery, copied game UI, full-width long banners, opaque black rectangles, screen-covering panels, characters, enemies, realistic humans.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260516-combat-action-stamps-chromakey-imagegen.png
+Runtime file: src/client/assets/generated/reboot-combat-action-stamps.png
+Postprocess: remove #ff00ff chroma key with soft matte/despill, split the generated source into three cells, trim each cell to alpha bounds, fit each stamp into a transparent 256x128 runtime cell, then composite a 768x128 atlas.
+Acceptance: successful summon/merge/rescue feedback uses compact generated stamps instead of a large battlefield-covering banner, Korean result copy remains readable, and combat map visibility is preserved during frequent actions.
+```
+
 ## 후처리 기준
 
 필수:

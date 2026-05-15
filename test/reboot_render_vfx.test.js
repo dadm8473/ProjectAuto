@@ -687,7 +687,7 @@ test('first player action clears the operation start cutin so combat feedback st
       vfx: image(1280, 256),
       hitBolts: image(768, 128),
       startCutin: image(390, 112),
-      momentCallouts: image(1170, 144),
+      actionStamps: image(768, 128),
       playerBoardTray: image(780, 320)
     }
   );
@@ -715,7 +715,7 @@ test('first player action clears the operation start cutin so combat feedback st
   assert.equal(summonVfxDraws.length >= 1, true, 'expected summon VFX to remain visible after first action');
 });
 
-test('combat moment callout stays readable long enough after the first summon', () => {
+test('compact combat action stamp stays readable long enough after the first summon', () => {
   const ctx = mockContext();
   drawRebootBattle(
     ctx,
@@ -736,26 +736,27 @@ test('combat moment callout stays readable long enough after the first summon', 
       enemies: image(1024, 256),
       board: image(1280, 256),
       vfx: image(1280, 256),
-      momentCallouts: image(1170, 144),
+      actionStamps: image(768, 128),
       playerBoardTray: image(780, 320)
     }
   );
 
-  const calloutDraw = ctx.commands.find((command) => (
+  const stampDraw = ctx.commands.find((command) => (
     command.type === 'drawImage'
-      && command.args[0].naturalWidth === 1170
-      && command.args[0].naturalHeight === 144
+      && command.args[0].naturalWidth === 768
+      && command.args[0].naturalHeight === 128
   ));
-  assert.ok(calloutDraw, 'expected summon moment callout to remain visible after the action flash');
-  assert.equal(calloutDraw.args[6] <= 306, true, `moment callout should sit above the lower track haze: ${calloutDraw.args[6]}`);
-  const calloutIndex = ctx.commands.indexOf(calloutDraw);
-  const calloutAlpha = ctx.commands
-    .slice(0, calloutIndex)
+  assert.ok(stampDraw, 'expected compact summon action stamp to remain visible after the action flash');
+  assert.equal(stampDraw.args[6] >= 320, true, `action stamp should sit below the center track: ${stampDraw.args[6]}`);
+  assert.equal(stampDraw.args[8] <= 78, true, `action stamp should stay compact: ${stampDraw.args[8]}`);
+  const stampIndex = ctx.commands.indexOf(stampDraw);
+  const stampAlpha = ctx.commands
+    .slice(0, stampIndex)
     .findLast((command) => command.type === 'globalAlpha')?.value ?? 0;
-  assert.equal(calloutAlpha >= 0.82, true, `moment callout should remain legible while the unit lands: ${calloutAlpha}`);
+  assert.equal(stampAlpha >= 0.82, true, `action stamp should remain legible while the unit lands: ${stampAlpha}`);
 });
 
-test('rescue moment callout stays below boss warning copy during crisis timing', () => {
+test('rescue action stamp stays below boss warning copy during crisis timing', () => {
   const ctx = mockContext();
   drawRebootBattle(
     ctx,
@@ -777,7 +778,7 @@ test('rescue moment callout stays below boss warning copy during crisis timing',
       board: image(1280, 256),
       vfx: image(1280, 256),
       bossCutin: image(390, 128),
-      momentCallouts: image(1170, 144),
+      actionStamps: image(768, 128),
       playerBoardTray: image(780, 320),
       bossAuras: image(768, 192),
       crisisOverlays: image(780, 320)
@@ -787,22 +788,22 @@ test('rescue moment callout stays below boss warning copy during crisis timing',
   const bossTitleIndex = ctx.commands.findIndex((command) => (
     command.type === 'fillText' && command.args[0] === '보스 접근'
   ));
-  const rescueCalloutDraw = ctx.commands.find((command) => (
+  const rescueStampDraw = ctx.commands.find((command) => (
     command.type === 'drawImage'
-      && command.args[0].naturalWidth === 1170
-      && command.args[0].naturalHeight === 144
-      && command.args[1] === 780
+      && command.args[0].naturalWidth === 768
+      && command.args[0].naturalHeight === 128
+      && command.args[1] === 512
   ));
   assert.notEqual(bossTitleIndex, -1, 'expected boss warning title to render during crisis timing');
-  assert.ok(rescueCalloutDraw, 'expected rescue moment callout to render during crisis timing');
-  const calloutIndex = ctx.commands.indexOf(rescueCalloutDraw);
-  assert.equal(calloutIndex > bossTitleIndex, true, 'moment callout should be layered after the boss warning art');
-  assert.equal(rescueCalloutDraw.args[6] >= 300, true, `rescue callout should stay below boss warning copy: ${rescueCalloutDraw.args[6]}`);
-  assert.equal(rescueCalloutDraw.args[6] <= 306, true, `rescue callout should stay above lower track haze: ${rescueCalloutDraw.args[6]}`);
-  const calloutAlpha = ctx.commands
-    .slice(0, calloutIndex)
+  assert.ok(rescueStampDraw, 'expected compact rescue action stamp to render during crisis timing');
+  const stampIndex = ctx.commands.indexOf(rescueStampDraw);
+  assert.equal(stampIndex > bossTitleIndex, true, 'action stamp should be layered after the boss warning art');
+  assert.equal(rescueStampDraw.args[6] >= 320, true, `rescue stamp should stay below boss warning copy: ${rescueStampDraw.args[6]}`);
+  assert.equal(rescueStampDraw.args[8] <= 78, true, `rescue stamp should stay compact: ${rescueStampDraw.args[8]}`);
+  const stampAlpha = ctx.commands
+    .slice(0, stampIndex)
     .findLast((command) => command.type === 'globalAlpha')?.value ?? 0;
-  assert.equal(calloutAlpha >= 0.82, true, `rescue callout should remain legible during boss warning: ${calloutAlpha}`);
+  assert.equal(stampAlpha >= 0.82, true, `rescue stamp should remain legible during boss warning: ${stampAlpha}`);
 });
 
 test('playable partner danger overrides boss cutin with a generated dual crisis banner', () => {

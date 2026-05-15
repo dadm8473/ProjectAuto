@@ -676,6 +676,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 20_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-action-stamps.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-combat-action-stamps-chromakey-imagegen.png',
+    width: 768,
+    height: 128,
+    minRuntimeBytes: 24_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-partner-assist-pings.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-partner-assist-pings-chromakey-imagegen.png',
     width: 640,
@@ -1524,6 +1531,22 @@ test('combat coach cue cells keep each teaching prompt visible and padded', asyn
     assert.equal(bounds.maxX <= cellWidth - 9, true, `combat coach cue cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 4, true, `combat coach cue cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 5, true, `combat coach cue cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('combat action stamp cells stay compact so success feedback does not cover the battlefield', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-combat-action-stamps.png'));
+  const cellWidth = 256;
+  assert.equal(image.width, cellWidth * 3);
+  assert.equal(image.height, 128);
+
+  for (let cell = 0; cell < 3; cell += 1) {
+    const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 28);
+    assert.equal(bounds.count > 3_000, true, `action stamp cell ${cell} has no readable stamp`);
+    assert.equal(bounds.minX >= 10, true, `action stamp cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 11, true, `action stamp cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 8, true, `action stamp cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 9, true, `action stamp cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
 });
 

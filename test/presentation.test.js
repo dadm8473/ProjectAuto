@@ -38,7 +38,7 @@ function fakeRebootAssets(overrides = {}) {
     killBurst: fakeImage(1024, 256),
     hitBeam: fakeImage(320, 64),
     hitBolts: fakeImage(768, 128),
-    momentCallouts: fakeImage(1170, 144),
+    actionStamps: fakeImage(768, 128),
     partnerAssistPings: fakeImage(640, 100),
     crisisOverlays: fakeImage(780, 160),
     rewardPickups: fakeImage(768, 128),
@@ -98,7 +98,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=action-focus1'",
-    "from './reboot_render.js?v=enemy-impact-bursts1'",
+    "from './reboot_render.js?v=action-stamps1'",
     "from './reboot_screens.js?v=post-reward-route1'",
     "from './reboot_online.js'"
   ]) {
@@ -555,7 +555,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-impact-bursts1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-stamps1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-impact-bursts1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-track-trails1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=view-perspective1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=dual-crisis1"></script>'), false);
@@ -578,7 +579,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=enemy-impact-bursts1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=action-stamps1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=enemy-impact-bursts1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=enemy-track-trails1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=view-perspective1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=dual-crisis1'"), false);
@@ -1677,26 +1679,26 @@ test('equipped cosmetics appear in battle as generated expression sigils only', 
   assert.equal(signatureBlock.includes('fillText'), false);
 });
 
-test('combat renderer uses generated moment callouts for successful actions', async () => {
+test('combat renderer uses compact generated action stamps for successful actions', async () => {
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
   for (const marker of [
-    'momentCallouts',
-    "src: '/src/client/assets/generated/reboot-combat-moment-callouts.png?v=combat-moment-callouts'",
+    'actionStamps',
+    "src: '/src/client/assets/generated/reboot-combat-action-stamps.png?v=action-stamps1'",
     'drawCombatMomentCallout',
-    'drawMomentCalloutPanel',
+    'drawActionStampPanel',
     'const MOMENT_CALLOUT_DURATION = 1.85;',
     'const MOMENT_CALLOUT_FADE_SECONDS = 0.5;',
     'function momentCalloutAlpha(state, event)',
     "recentEvents(state, 'summon', MOMENT_CALLOUT_DURATION)",
     "recentEvents(state, 'merge', MOMENT_CALLOUT_DURATION)",
     "recentEvents(state, 'rescue', MOMENT_CALLOUT_DURATION)",
-    'if (!assets.momentCallouts?.complete || assets.momentCallouts.naturalWidth <= 0) return;',
-    'drawMomentCalloutPanel(ctx, assets.momentCallouts, meta.index, x, y, w, h, alpha);',
+    'if (!assets.actionStamps?.complete || assets.actionStamps.naturalWidth <= 0) return;',
+    'drawActionStampPanel(ctx, assets.actionStamps, meta.index, x, y, w, h, alpha);',
     'const alpha = momentCalloutAlpha(state, event);',
-    'const h = 122;',
-    'const w = 330;',
-    'const y = 304 - rise;',
+    'const h = 74;',
+    'const w = 252;',
+    'const y = 326 - rise;',
     'MOMENT_CALLOUTS',
     "'소환 성공'",
     "'합성 성공'",
@@ -1704,6 +1706,12 @@ test('combat renderer uses generated moment callouts for successful actions', as
   ]) {
     assert.equal(render.includes(marker), true, marker);
   }
+
+  const calloutBlock = render.slice(render.indexOf('function drawCombatMomentCallout'), render.indexOf('function drawPartnerAssistPing'));
+  assert.equal(render.includes('momentCallouts'), false);
+  assert.equal(calloutBlock.includes('assets.momentCallouts'), false);
+  assert.equal(calloutBlock.includes('drawMomentCalloutPanel'), false);
+  assert.equal(calloutBlock.includes('meta.body'), false);
 });
 
 test('combat renderer uses generated partner assist pings for bot co-op actions', async () => {
@@ -2600,7 +2608,7 @@ test('meta reward actions flash their source cards with generated claim bursts',
   assert.equal(app.includes('flashMetaClaim(dom.seasonList, `[data-pass-tier='), false);
 });
 
-test('successful combat actions use canvas moment callouts instead of duplicate toasts', async () => {
+test('successful combat actions use canvas action stamps instead of duplicate toasts', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
   const render = await readFile('src/client/reboot_render.js', 'utf8');
