@@ -21,7 +21,8 @@ export function buildCombatActionExposure({ current, localBoardId, actions }) {
   else if (actions.summon?.enabled) focus = 'summon';
   else if (rescue) focus = 'rescue';
   else if (merge) focus = 'merge';
-  return { summon: true, merge, rescue, focus };
+  const openCount = [true, merge, rescue].filter(Boolean).length;
+  return { summon: true, merge, rescue, focus, openCount };
 }
 
 export function isCriticalRebootAction({ actionKey, current, localBoardId, enabled }) {

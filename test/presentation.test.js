@@ -474,7 +474,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-directive1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=locked-sockets1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-directive1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-progress-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-grid1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-room-banners1">'), false);
@@ -875,19 +876,27 @@ test('combat disabled action buttons keep generated command frames readable', as
 
 test('combat actions collapse unearned verbs into quiet locked command sockets', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
 
   for (const marker of [
+    '--combat-locked-sockets: url("/src/client/assets/generated/reboot-combat-locked-sockets.png?v=locked-sockets1")',
     '.primary-actions[data-focus="summon"]',
     '.primary-actions[data-focus="merge"]',
     '.primary-actions[data-focus="rescue"]',
+    '.primary-actions[data-open-count="1"]',
+    '.primary-actions[data-open-count="2"]',
     '.primary-actions button[data-unlocked="false"]',
+    'background-image: var(--combat-locked-sockets);',
     'gap: 0;',
+    'body[data-app-screen="battle"][data-coach-cue="summon"] .status-line',
     '.primary-actions button[data-unlocked="false"] > span',
     'max-width: 0;',
     '.primary-actions button[data-focus="true"]:not(:disabled)'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
+
+  assert.equal(app.includes('dom.primaryActions.dataset.openCount = String(exposure.openCount);'), true);
 
   const lockedBlock = cssRuleBlock(css, '.primary-actions button[data-unlocked="false"]');
   assert.equal(lockedBlock.includes('display: none;'), false);

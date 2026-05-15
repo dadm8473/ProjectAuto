@@ -62,6 +62,7 @@
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons-alpha1");
+  --combat-locked-sockets: url("/src/client/assets/generated/reboot-combat-locked-sockets.png?v=locked-sockets1");
   --combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready");
   --combat-directive-banner: url("/src/client/assets/generated/reboot-combat-directive-banner.png?v=combat-directive1");
   --combat-first-command-spotlight: url("/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=first-command");
@@ -738,6 +739,23 @@ body[data-app-screen="battle"] .status-line:has(#bossMeter[hidden]) #timeMeter {
   grid-template-columns: minmax(48px, 0.72fr) minmax(48px, 0.72fr) minmax(0, 1.46fr);
 }
 
+.primary-actions[data-open-count="1"] {
+  grid-template-columns: minmax(0, 1fr) clamp(42px, 11.63vw, 50px) clamp(42px, 11.63vw, 50px);
+  gap: 6px;
+}
+
+.primary-actions[data-open-count="2"][data-focus="summon"] {
+  grid-template-columns: minmax(0, 1.42fr) minmax(0, 1fr) clamp(42px, 11.63vw, 50px);
+}
+
+.primary-actions[data-open-count="2"][data-focus="merge"] {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.42fr) clamp(42px, 11.63vw, 50px);
+}
+
+.primary-actions[data-open-count="2"][data-focus="rescue"] {
+  grid-template-columns: clamp(42px, 11.63vw, 50px) minmax(0, 1fr) minmax(0, 1.42fr);
+}
+
 .primary-actions button {
   display: inline-flex;
   align-items: center;
@@ -911,13 +929,20 @@ body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after 
 
 .primary-actions button[data-unlocked="false"] {
   gap: 0;
-  opacity: 0.5;
-  filter: grayscale(0.42) brightness(0.58) saturate(0.68);
+  align-self: center;
+  min-height: clamp(42px, 11.63vw, 50px);
+  border-color: transparent;
+  background-color: transparent;
+  background-image: var(--combat-locked-sockets);
+  box-shadow: none;
+  opacity: 0.86;
+  filter: grayscale(0.22) brightness(0.76) saturate(0.76);
 }
 
 .primary-actions button[data-unlocked="false"]::before {
-  opacity: 0.42;
-  transform: scale(0.84);
+  opacity: 0.36;
+  transform: scale(0.68);
+  filter: grayscale(0.45) brightness(0.72);
 }
 
 .primary-actions button[data-unlocked="false"] > span {
@@ -927,6 +952,18 @@ body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after 
 
 .primary-actions button[data-focus="true"]:not(:disabled) {
   filter: brightness(1.18) saturate(1.12) drop-shadow(0 0 12px rgba(244, 201, 93, 0.26));
+}
+
+.primary-actions[data-open-count="1"] button[data-focus="true"]:not(:disabled) {
+  min-height: clamp(58px, 16.28vw, 70px);
+}
+
+body[data-app-screen="battle"][data-coach-cue="summon"] .status-line {
+  display: none;
+}
+
+body[data-app-screen="battle"][data-coach-cue="summon"] .action-panel {
+  padding-top: clamp(16px, 4.65vw, 20px);
 }
 
 @keyframes actionReadyPulse {

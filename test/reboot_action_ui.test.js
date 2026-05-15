@@ -151,7 +151,7 @@ test('combat action exposure reveals only earned controls during onboarding', ()
     },
     localBoardId: 'p1',
     actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
-  }), { summon: true, merge: false, rescue: false, focus: 'summon' });
+  }), { summon: true, merge: false, rescue: false, focus: 'summon', openCount: 1 });
 
   assert.deepEqual(buildCombatActionExposure({
     current: {
@@ -160,7 +160,7 @@ test('combat action exposure reveals only earned controls during onboarding', ()
     },
     localBoardId: 'p1',
     actions: { summon: { enabled: true }, merge: { enabled: true }, rescue: { enabled: false } }
-  }), { summon: true, merge: true, rescue: false, focus: 'merge' });
+  }), { summon: true, merge: true, rescue: false, focus: 'merge', openCount: 2 });
 
   assert.deepEqual(buildCombatActionExposure({
     current: {
@@ -169,7 +169,36 @@ test('combat action exposure reveals only earned controls during onboarding', ()
     },
     localBoardId: 'p1',
     actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
-  }), { summon: true, merge: true, rescue: true, focus: 'rescue' });
+  }), { summon: true, merge: true, rescue: true, focus: 'rescue', openCount: 3 });
+});
+
+test('combat action exposure counts only visible learned commands for console staging', () => {
+  assert.equal(buildCombatActionExposure({
+    current: {
+      ...state({ now: 4 }),
+      resources: { p1: { summon: 10, rescue: 0 } }
+    },
+    localBoardId: 'p1',
+    actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
+  }).openCount, 1);
+
+  assert.equal(buildCombatActionExposure({
+    current: {
+      ...state({ now: 24, p1Units: [{ id: 'a' }, { id: 'b' }] }),
+      resources: { p1: { summon: 10, rescue: 0 } }
+    },
+    localBoardId: 'p1',
+    actions: { summon: { enabled: true }, merge: { enabled: true }, rescue: { enabled: false } }
+  }).openCount, 2);
+
+  assert.equal(buildCombatActionExposure({
+    current: {
+      ...state({ now: 70, p2Danger: 82, p1Units: [{ id: 'a' }, { id: 'b' }] }),
+      resources: { p1: { summon: 10, rescue: 60 } }
+    },
+    localBoardId: 'p1',
+    actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
+  }).openCount, 3);
 });
 
 test('combat action exposure keeps rescue locked during minor early partner danger', () => {
@@ -180,7 +209,7 @@ test('combat action exposure keeps rescue locked during minor early partner dang
     },
     localBoardId: 'p1',
     actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
-  }), { summon: true, merge: true, rescue: false, focus: 'summon' });
+  }), { summon: true, merge: true, rescue: false, focus: 'summon', openCount: 2 });
 });
 
 test('locked merge action reason names grade-one merge candidates', () => {

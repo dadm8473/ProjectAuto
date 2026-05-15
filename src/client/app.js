@@ -594,6 +594,7 @@ function updateButtons(current) {
   if (coachCue) document.body.dataset.coachCue = coachCue;
   else delete document.body.dataset.coachCue;
   dom.primaryActions.dataset.focus = exposure.focus;
+  dom.primaryActions.dataset.openCount = String(exposure.openCount);
   for (const [key, button] of [
     ['summon', dom.summonButton],
     ['merge', dom.mergeButton],

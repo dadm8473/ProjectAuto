@@ -188,6 +188,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 90_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-locked-sockets.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260515-combat-locked-sockets-chromakey-imagegen.png',
+    width: 768,
+    height: 256,
+    minRuntimeBytes: 120_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-result-panel-frame.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-result-panel-frame-imagegen.png',
     width: 390,
@@ -420,6 +427,11 @@ const TRANSPARENT_UI_FRAME_ASSETS = [
     path: 'src/client/assets/generated/reboot-combat-action-buttons.png',
     minSoftCoverage: 0.2,
     maxSoftCoverage: 0.36
+  },
+  {
+    path: 'src/client/assets/generated/reboot-combat-locked-sockets.png',
+    minSoftCoverage: 0.18,
+    maxSoftCoverage: 0.44
   },
   {
     path: 'src/client/assets/generated/reboot-combat-status-plates.png',
@@ -1222,6 +1234,19 @@ test('critical action ring cells keep each button cue readable and padded', asyn
     assert.equal(bounds.maxX <= cellWidth - 11, true, `critical action ring cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 8, true, `critical action ring cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 9, true, `critical action ring cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('locked combat command socket cells stay readable and padded', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-combat-locked-sockets.png'));
+  const cellWidth = 256;
+  for (let cell = 0; cell < 3; cell += 1) {
+    const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 32);
+    assert.equal(bounds.count > 6_000, true, `locked command socket cell ${cell} has no visible subject`);
+    assert.equal(bounds.minX >= 12, true, `locked command socket cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 13, true, `locked command socket cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 12, true, `locked command socket cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 13, true, `locked command socket cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
 });
 
