@@ -91,7 +91,7 @@ test('result model routes secondary action to direct reward claims or clear prof
   });
 
   assert.equal(trainingModel.secondaryAction.action, 'collection');
-  assert.equal(trainingModel.secondaryAction.label, '유닛 보기');
+  assert.equal(trainingModel.secondaryAction.label, '훈련');
 });
 
 test('lobby next action maps each priority to a generated beacon key', () => {
@@ -599,6 +599,41 @@ test('lobby currency strip uses an icon numeric chip with accessible economy mea
   assert.equal(lobby.includes('<span class="lobby-currency-label">젬</span>'), true);
   assert.equal(lobby.includes('<span>보유 젬</span>'), false);
   assert.equal(lobby.includes('<p>외형만 해금</p>'), false);
+});
+
+test('lobby next action uses compact game-state chips while preserving meaning for assistive tech', () => {
+  const missionLobby = buildRebootLobby({
+    gems: 24,
+    xp: 60,
+    processedRuns: ['run-1'],
+    claimedMissions: [],
+    claimedPassTiers: []
+  });
+
+  assert.equal(
+    missionLobby.includes('class="lobby-intel-strip next-hook" aria-label="미션 보상: 받을 미션 보상. 완료 목표 수령"'),
+    true
+  );
+  assert.equal(missionLobby.includes('class="lobby-next-state" aria-label="미션 보상">수령</span>'), true);
+  assert.equal(missionLobby.includes('data-lobby-open="missions" aria-label="미션 보상 수령"'), true);
+  assert.equal(missionLobby.includes('>보상 보기<'), false);
+  assert.equal(missionLobby.includes('<span>미션 보상</span>'), false);
+
+  const battleLobby = buildRebootLobby({
+    gems: 0,
+    xp: 0,
+    processedRuns: [],
+    claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic'],
+    claimedPassTiers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    unlocks: ['mythic-aura', 'founder-board', 'merge-effect', 'rescue-effect', 'profile-frame']
+  });
+
+  assert.equal(
+    battleLobby.includes('class="lobby-intel-strip next-hook" aria-label="다음 작전: 첫 구원 작전. 유닛/외형 성장"'),
+    true
+  );
+  assert.equal(battleLobby.includes('class="lobby-next-state" aria-label="다음 작전">준비</span>'), true);
+  assert.equal(battleLobby.includes('<span>다음 작전</span>'), false);
 });
 
 test('battle-ready lobby does not duplicate the primary launch button inside the next-action strip', () => {

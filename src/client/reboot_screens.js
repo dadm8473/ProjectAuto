@@ -256,18 +256,18 @@ function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
 
 export function nextLobbyAction(profile = {}) {
   if (countClaimableMissions(profile) > 0) {
-    return { label: '미션 보상', title: '받을 미션 보상', detail: '완료 목표 수령', screen: 'missions', cta: '보상 보기', beacon: 'mission' };
+    return { label: '미션 보상', status: '수령', title: '받을 미션 보상', detail: '완료 목표 수령', screen: 'missions', cta: '수령', beacon: 'mission' };
   }
   if (countClaimablePassTiers(profile) > 0) {
-    return { label: '시즌 보상', title: '시즌 보상 도착', detail: '시즌 보상 열기', screen: 'season', cta: '시즌 보기', beacon: 'season' };
+    return { label: '시즌 보상', status: '보상', title: '시즌 보상 도착', detail: '시즌 보상 열기', screen: 'season', cta: '열기', beacon: 'season' };
   }
   if (countTrainableUnits(profile) > 0) {
-    return { label: '훈련 가능', title: '유닛 강화 가능', detail: '전투 유닛 성장', screen: 'collection', cta: '유닛 보기', beacon: 'training' };
+    return { label: '훈련 가능', status: '훈련', title: '유닛 강화 가능', detail: '전투 유닛 성장', screen: 'collection', cta: '훈련', beacon: 'training' };
   }
   if (countAffordableCosmetics(profile) > 0) {
-    return { label: '외형 해금', title: '외형 해금 가능', detail: '젬으로 외형 해금', screen: 'shop', cta: '상점 보기', beacon: 'shop' };
+    return { label: '외형 해금', status: '해금', title: '외형 해금 가능', detail: '젬으로 외형 해금', screen: 'shop', cta: '해금', beacon: 'shop' };
   }
-  return { label: '다음 작전', title: '첫 구원 작전', detail: '유닛/외형 성장', screen: 'battle', cta: '출전', beacon: 'battle' };
+  return { label: '다음 작전', status: '준비', title: '첫 구원 작전', detail: '유닛/외형 성장', screen: 'battle', cta: '출전', beacon: 'battle' };
 }
 
 export function postRewardRoute(profile = {}, fallbackScreen = 'lobby') {
@@ -280,7 +280,7 @@ function buildLobbyNextActionControl(nextAction) {
   if (nextAction.screen === 'battle') {
     return '<span class="lobby-battle-cue" aria-hidden="true"></span>';
   }
-  return `<button type="button" data-lobby-open="${nextAction.screen}">${nextAction.cta}</button>`;
+  return `<button type="button" data-lobby-open="${nextAction.screen}" aria-label="${nextAction.label} ${nextAction.cta}">${nextAction.cta}</button>`;
 }
 
 export function buildRebootLobby(model = {}) {
@@ -301,10 +301,10 @@ export function buildRebootLobby(model = {}) {
       <strong class="lobby-currency-value">${gems}</strong>
       <span class="lobby-currency-label">젬</span>
     </section>
-    <section class="lobby-intel-strip next-hook" data-next-action="${nextAction.label}" data-next-beacon="${nextAction.beacon}">
+    <section class="lobby-intel-strip next-hook" aria-label="${nextAction.label}: ${nextAction.title}. ${nextAction.detail}" data-next-action="${nextAction.label}" data-next-beacon="${nextAction.beacon}">
       <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-next.png?v=intel-strips-alpha1" alt="" aria-hidden="true">
       <span class="lobby-next-beacon" data-next-beacon="${nextAction.beacon}" aria-hidden="true"></span>
-      <span>${nextAction.label}</span>
+      <span class="lobby-next-state" aria-label="${nextAction.label}">${nextAction.status}</span>
       <strong>${nextAction.title}</strong>
       <p>${nextAction.detail}</p>
       ${buildLobbyNextActionControl(nextAction)}

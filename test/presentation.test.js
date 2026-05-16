@@ -104,7 +104,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=action-chip1'",
     "from './reboot_render.js?v=unit-roster1'",
-    "from './reboot_screens.js?v=lobby-currency1'",
+    "from './reboot_screens.js?v=lobby-next-state1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -540,7 +540,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-currency1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-next-state1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-chip1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-icons1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=title-icon1">'), false);
@@ -622,7 +622,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-currency1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-next-state1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-chip1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-icons1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=title-icon1"></script>'), false);
@@ -692,7 +692,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=lobby-currency1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=lobby-next-state1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=shelf-price1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-item-status1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), false);
@@ -1099,7 +1099,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=lobby-currency1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-next-state1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -2825,8 +2825,10 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     'class="lobby-currency-value"',
     'class="lobby-currency-label"',
     'class="lobby-intel-strip next-hook"',
+    'aria-label="${nextAction.label}: ${nextAction.title}. ${nextAction.detail}"',
     'class="lobby-intel-frame"',
     'class="lobby-next-beacon"',
+    'class="lobby-next-state" aria-label="${nextAction.label}"',
     'class="lobby-battle-cue"',
     'data-next-beacon="${nextAction.beacon}"',
     "nextAction.screen === 'battle'",
@@ -2846,7 +2848,9 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     '[data-next-beacon="battle"]',
     'background-image: var(--lobby-next-beacons);',
     'background-image: var(--lobby-battle-ready-cue);',
+    'background-image: var(--meta-mini-badges);',
     '.lobby-intel-strip > span,\n.lobby-intel-strip > strong,\n.lobby-intel-strip > p,\n.lobby-intel-strip > button',
+    '.next-hook > .lobby-next-state',
     '.reward-hook .lobby-intel-frame',
     '.reward-hook .lobby-currency-icon',
     '.reward-hook .lobby-currency-value',
@@ -2873,6 +2877,10 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     'data-lobby-open="battle"',
     '<span>보유 젬</span>',
     '<p>외형만 해금</p>',
+    '<span>${nextAction.label}</span>',
+    '>보상 보기<',
+    '>유닛 보기<',
+    '>상점 보기<',
     '전투력 판매 없이 외형만 해금합니다',
     '보상을 모아 유닛과 외형을 여세요'
   ]) {
