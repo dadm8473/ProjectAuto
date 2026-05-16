@@ -553,7 +553,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter-state1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=loading-gate1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter-state1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-chip1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-icons1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=title-icon1">'), false);
@@ -635,7 +636,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-meter-state1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=loading-gate1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-meter-state1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-chip1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-icons1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=title-icon1"></script>'), false);
@@ -725,6 +727,44 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(render.includes("src: '/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=summon-reward1'"), true);
   assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1")'), true);
   assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1")'), false);
+});
+
+test('startup uses a generated game loading gate while critical assets warm up', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    'id="loadingGate"',
+    'class="loading-gate"',
+    'data-loading-state="loading"',
+    'src="/src/client/assets/generated/reboot-app-icon-192.png"',
+    'class="loading-gate-title-plate"',
+    'class="loading-gate-bar"',
+    "import { preloadCriticalRebootAssets } from './reboot_preload.js?v=loading-gate1';",
+    'preloadCriticalRebootAssets().then(hideLoadingGate, hideLoadingGate);',
+    'function hideLoadingGate()',
+    "dom.loadingGate.dataset.loadingState = 'ready';",
+    'dom.loadingGate.hidden = true;',
+    "await page.locator('#loadingGate').waitFor({ state: 'hidden' });",
+    '.loading-gate',
+    '--loading-gate-plate: var(--splash-title-plate);',
+    '--loading-gate-emblem: var(--title-emblem);',
+    '.loading-gate[hidden]'
+  ]) {
+    assert.equal(`${html}\n${app}\n${css}\n${qa}`.includes(marker), true, marker);
+  }
+
+  for (const selector of [
+    '.loading-gate-icon',
+    '.loading-gate-title-plate',
+    '.loading-gate-emblem',
+    '.loading-gate strong',
+    '.loading-gate-bar'
+  ]) {
+    assert.equal(cssRuleBlock(css, selector).includes('grid-column: 1;'), true, selector);
+  }
 });
 
 test('meta screens use reboot sprite tokens instead of placeholder swatches', async () => {
@@ -1130,7 +1170,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=hud-meter-state1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=loading-gate1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);

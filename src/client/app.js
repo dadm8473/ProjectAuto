@@ -4,6 +4,7 @@ import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=merge-reason1';
 import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-chip1';
+import { preloadCriticalRebootAssets } from './reboot_preload.js?v=loading-gate1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=unit-roster1';
 import {
   buildMetaNavAlerts,
@@ -27,6 +28,7 @@ const muted = new URLSearchParams(location.search).get('mute') === '1';
 const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)') ?? { matches: false };
 
 const dom = {
+  loadingGate: qs('#loadingGate'),
   canvas: qs('#gameCanvas'),
   launchOverlay: qs('#launchOverlay'),
   resultOverlay: qs('#resultOverlay'),
@@ -142,6 +144,12 @@ function showRewardReveal(title, detail, icon = 'soft_currency') {
   dom.rewardReveal.hidden = false;
   clearTimeout(showRewardReveal.timer);
   showRewardReveal.timer = setTimeout(hideRewardReveal, REWARD_REVEAL_MS);
+}
+
+function hideLoadingGate() {
+  if (!dom.loadingGate) return;
+  dom.loadingGate.dataset.loadingState = 'ready';
+  dom.loadingGate.hidden = true;
 }
 
 function hideMatchmakingBanner() {
@@ -760,4 +768,5 @@ function bind() {
 renderHomeScreens();
 bind();
 setScreen('splash');
+preloadCriticalRebootAssets().then(hideLoadingGate, hideLoadingGate);
 requestAnimationFrame(loop);

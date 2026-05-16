@@ -1,0 +1,63 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+
+import { CRITICAL_REBOOT_ASSETS, preloadCriticalRebootAssets } from '../src/client/reboot_preload.js';
+
+test('critical reboot preload list starts with generated game identity and first-play assets', () => {
+  const required = [
+    '/src/client/assets/generated/reboot-app-icon-192.png',
+    '/src/client/assets/generated/reboot-title-emblem.png',
+    '/src/client/assets/generated/reboot-hero-squad.png',
+    '/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title',
+    '/src/client/assets/generated/reboot-lobby-backdrop.png',
+    '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',
+    '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1',
+    '/src/client/assets/generated/reboot-combat-hud-frame.png',
+    '/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1'
+  ];
+
+  for (const asset of required) {
+    assert.equal(CRITICAL_REBOOT_ASSETS.includes(asset), true, asset);
+  }
+
+  assert.equal(CRITICAL_REBOOT_ASSETS.every((asset) => asset.startsWith('/src/client/assets/generated/')), true);
+});
+
+test('preloadCriticalRebootAssets resolves after loading every requested image', async () => {
+  const requested = [];
+
+  class FakeImage {
+    set src(value) {
+      requested.push(value);
+      queueMicrotask(() => this.onload?.());
+    }
+  }
+
+  const result = await preloadCriticalRebootAssets({
+    ImageCtor: FakeImage,
+    assets: ['/a.png', '/b.png'],
+    timeoutMs: 100
+  });
+
+  assert.deepEqual(requested, ['/a.png', '/b.png']);
+  assert.deepEqual(result, { loaded: 2, failed: 0, total: 2 });
+});
+
+test('preloadCriticalRebootAssets degrades gracefully when an image fails', async () => {
+  class FakeImage {
+    set src(value) {
+      queueMicrotask(() => {
+        if (value.includes('broken')) this.onerror?.(new Error('missing asset'));
+        else this.onload?.();
+      });
+    }
+  }
+
+  const result = await preloadCriticalRebootAssets({
+    ImageCtor: FakeImage,
+    assets: ['/ok.png', '/broken.png'],
+    timeoutMs: 100
+  });
+
+  assert.deepEqual(result, { loaded: 1, failed: 1, total: 2 });
+});

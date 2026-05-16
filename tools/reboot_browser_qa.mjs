@@ -185,6 +185,7 @@ async function assertFirstSummonTapFeedback(page) {
 
 async function verifyShell(page, viewport) {
   await page.goto(baseUrl, { waitUntil: 'load' });
+  await page.locator('#loadingGate').waitFor({ state: 'hidden' });
   await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
   assert.equal(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   assert.equal(await page.locator('audio, video').count(), 0);
