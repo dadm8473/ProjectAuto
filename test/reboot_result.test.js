@@ -288,8 +288,11 @@ test('retry advances bot runs through authored seeds without opening monetizatio
   const previousGame = runTutorial();
   const retry = buildRebootResultModel({ result: previousGame.result }).primaryAction;
   const nextGame = startRebootRetry({ previousGame, action: retry });
+  nextGame.result = { status: 'won', reason: 'boss_final_hit' };
   const thirdGame = startRebootRetry({ previousGame: nextGame, action: retry });
+  thirdGame.result = { status: 'won', reason: 'boss_slowed' };
   const fourthGame = startRebootRetry({ previousGame: thirdGame, action: retry });
+  fourthGame.result = { status: 'won', reason: 'boss_final_hit' };
   const wrappedGame = startRebootRetry({ previousGame: fourthGame, action: retry });
   const nextState = serializeState(nextGame);
 
@@ -299,7 +302,7 @@ test('retry advances bot runs through authored seeds without opening monetizatio
   assert.equal(fourthGame.seedName, 'boss_clutch');
   assert.equal(wrappedGame.seedName, 'tutorial_success');
   assert.equal(nextGame.seed, previousGame.seed + 1);
-  assert.equal(nextGame.result, null);
+  assert.equal(wrappedGame.result, null);
   assert.equal(nextGame.events.length, 0);
   assert.equal(nextGame.now, 0);
   assert.equal(nextGame.resources.p1.summon, 10);
@@ -319,6 +322,18 @@ test('retry preserves non-bot or unlisted seed identity while still creating a f
   assert.equal(unlistedRetry.seed, 51);
   assert.notEqual(onlineRetry.runId, onlineGame.runId);
   assert.notEqual(unlistedRetry.runId, unlistedGame.runId);
+});
+
+test('retry repeats a failed authored bot operation instead of advancing the sequence', () => {
+  const failedBoss = createGame({ mode: 'bot', seedName: 'boss_clutch', seed: 60, branch: 'wait' });
+  failedBoss.result = { status: 'lost', reason: 'boss_leaked' };
+  const retry = startRebootRetry({ previousGame: failedBoss, action: { action: 'retry' } });
+
+  assert.equal(retry.seedName, 'boss_clutch');
+  assert.equal(retry.branch, 'wait');
+  assert.equal(retry.seed, 61);
+  assert.equal(retry.result, null);
+  assert.notEqual(retry.runId, failedBoss.runId);
 });
 
 test('reboot shop renders earned-gem cosmetic purchases with owned and locked states', () => {

@@ -643,7 +643,9 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
 export function startRebootRetry({ previousGame, action }) {
   if (action?.action !== 'retry') return previousGame;
   const botSeedIndex = REBOOT_RETRY_SEED_SEQUENCE.indexOf(previousGame.seedName);
-  const shouldRotateSeed = previousGame.mode === 'bot' && botSeedIndex >= 0;
+  const shouldRotateSeed = previousGame.mode === 'bot'
+    && previousGame.result?.status === 'won'
+    && botSeedIndex >= 0;
   const nextSeedName = shouldRotateSeed
     ? REBOOT_RETRY_SEED_SEQUENCE[(botSeedIndex + 1) % REBOOT_RETRY_SEED_SEQUENCE.length]
     : previousGame.seedName;
