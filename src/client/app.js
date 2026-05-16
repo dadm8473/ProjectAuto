@@ -422,7 +422,6 @@ function claimReadyMissionsFromResult() {
   renderHomeScreens();
   flashMetaClaim(dom.missionsList, `[data-mission="${selectorValue(ready[0].id)}"]`, 'mission');
   showRewardReveal('미션 보상', ready.length > 1 ? `보상 ${ready.length}개` : `${bundle.gems} 젬`, 'soft_currency');
-  showToast(`미션 보상 ${ready.length}개`, 'reward');
   return true;
 }
 
@@ -444,7 +443,6 @@ function claimReadySeasonFromResult() {
   flashMetaClaim(dom.seasonList, `.season-card[data-pass-tier="${ready[0].index}"]`, 'season');
   const hasCosmetic = ready.some(({ tier }) => tier.grant.cosmetic);
   showRewardReveal('시즌 보상', hasCosmetic ? '외형 해금' : `${bundle.gems} 젬`, hasCosmetic ? 'cosmetic_shard' : 'season_progress');
-  showToast(`시즌 보상 ${ready.length}개`, 'reward');
   return true;
 }
 

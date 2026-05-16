@@ -573,7 +573,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-cooldown-label1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim-focus1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-cooldown-label1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-surges1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=unit-activation-ring1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-launch-bay1"></script>'), false);
@@ -2911,6 +2912,26 @@ test('result secondary action can claim ready rewards without an extra tap', asy
     'nextLobbyAction(profile)'
   ]) {
     assert.equal(`${app}\n${screens}`.includes(marker), true, marker);
+  }
+});
+
+test('result reward claims focus on one generated reveal instead of duplicate reward toasts', async () => {
+  const app = await readFile('src/client/app.js', 'utf8');
+  const missionStart = app.indexOf('function claimReadyMissionsFromResult()');
+  const seasonStart = app.indexOf('function claimReadySeasonFromResult()');
+  const directClaimStart = app.indexOf('function handleMissionClaim(event)');
+
+  assert.notEqual(missionStart, -1);
+  assert.notEqual(seasonStart, -1);
+  assert.notEqual(directClaimStart, -1);
+
+  const missionResultClaim = app.slice(missionStart, seasonStart);
+  const seasonResultClaim = app.slice(seasonStart, directClaimStart);
+
+  for (const block of [missionResultClaim, seasonResultClaim]) {
+    assert.equal(block.includes('showRewardReveal('), true);
+    assert.equal(block.includes('flashMetaClaim('), true);
+    assert.equal(block.includes('showToast('), false);
   }
 });
 
