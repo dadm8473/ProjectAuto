@@ -840,6 +840,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     width: 768,
     height: 160,
     minRuntimeBytes: 30_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-enemy-spawn-gates.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-enemy-spawn-gates-chromakey-imagegen.png',
+    width: 768,
+    height: 192,
+    minRuntimeBytes: 35_000
   }
 ];
 

@@ -108,6 +108,45 @@ test('combat VFX uses compact hit bolts and rescue pulses instead of screen-cros
   );
 });
 
+test('enemy spawn gate draws as a generated battlefield object before enemy sprites', () => {
+  const ctx = mockContext();
+  const enemySpawnGates = image(768, 192);
+  const enemies = image(1024, 256);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 12,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [
+        { enemyId: 'noise_shard', spriteKey: 'noise_shard' },
+        { enemyId: 'quick_noise', spriteKey: 'quick_noise' }
+      ],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies,
+      board: image(1280, 256),
+      enemySpawnGates
+    }
+  );
+
+  const spawnGateIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === enemySpawnGates);
+  const enemyIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === enemies);
+  const spawnGateDraw = ctx.commands[spawnGateIndex];
+
+  assert.notEqual(spawnGateIndex, -1, 'expected generated enemy spawn gate to anchor the intrusion point');
+  assert.notEqual(enemyIndex, -1, 'expected enemy sprites to render');
+  assert.equal(spawnGateDraw.args[5] >= 24, true, 'spawn gate should sit inside the visible track entrance');
+  assert.equal(spawnGateIndex < enemyIndex, true, 'spawn gate should sit behind enemies on the track');
+});
+
 test('random combat actions draw generated reveal VFX before the small legacy flash', () => {
   const ctx = mockContext();
   drawRebootBattle(
