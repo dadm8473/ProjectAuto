@@ -540,7 +540,9 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-price1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=nav-label2">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=nav-label1">'), false);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-price1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=unit-roster1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-idle1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=match-banner-cutin1">'), false);
@@ -616,7 +618,9 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shelf-price1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=nav-label2"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=nav-label1"></script>'), false);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shelf-price1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=unit-roster1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=match-banner-cutin1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-wait-focus1"></script>'), false);
@@ -1086,7 +1090,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=shelf-price1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=nav-label2'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -2560,13 +2564,50 @@ test('home navigation buttons use generated tactile selector pads', async () => 
     assert.equal(`${html}\n${css}`.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('<button data-open-screen="collection" data-nav-icon="collection"><span class="nav-alert-badge" aria-hidden="true"></span><span>유닛</span></button>'), true);
-  assert.equal(html.includes('<button data-open-screen="shop" data-nav-icon="shop"><span class="nav-alert-badge" aria-hidden="true"></span><span>상점</span></button>'), true);
-  assert.equal(html.includes('<button data-open-screen="missions" data-nav-icon="missions"><span class="nav-alert-badge" aria-hidden="true"></span><span>미션</span></button>'), true);
-  assert.equal(html.includes('<button data-open-screen="season" data-nav-icon="season"><span class="nav-alert-badge" aria-hidden="true"></span><span>시즌</span></button>'), true);
+  assert.equal(html.includes('<button data-open-screen="collection" data-nav-icon="collection" aria-label="유닛"><span class="nav-alert-badge" aria-hidden="true"></span><span class="nav-label">유닛</span></button>'), true);
+  assert.equal(html.includes('<button data-open-screen="shop" data-nav-icon="shop" aria-label="상점"><span class="nav-alert-badge" aria-hidden="true"></span><span class="nav-label">상점</span></button>'), true);
+  assert.equal(html.includes('<button data-open-screen="missions" data-nav-icon="missions" aria-label="미션"><span class="nav-alert-badge" aria-hidden="true"></span><span class="nav-label">미션</span></button>'), true);
+  assert.equal(html.includes('<button data-open-screen="season" data-nav-icon="season" aria-label="시즌"><span class="nav-alert-badge" aria-hidden="true"></span><span class="nav-label">시즌</span></button>'), true);
   assert.equal(css.includes('.bottom-dock button {\n  background: linear-gradient'), false);
   assert.equal(css.includes('inset: -2px -3px;'), false);
   assert.equal(css.includes('.screen-overlay .bottom-dock button {\n  background: transparent;\n  background-image: none;'), true);
+});
+
+test('home navigation keeps labels accessible but only shows the active station label', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    '<button data-open-screen="collection" data-nav-icon="collection" aria-label="유닛">',
+    '<button data-open-screen="shop" data-nav-icon="shop" aria-label="상점">',
+    '<button data-open-screen="missions" data-nav-icon="missions" aria-label="미션">',
+    '<button data-open-screen="season" data-nav-icon="season" aria-label="시즌">',
+    '<span class="nav-label">유닛</span>',
+    '<span class="nav-label">상점</span>',
+    '<span class="nav-label">미션</span>',
+    '<span class="nav-label">시즌</span>',
+    '.bottom-dock button > .nav-label',
+    'position: absolute;',
+    '.bottom-dock button:not([data-nav-active="true"]) > .nav-label',
+    'display: none;',
+    'opacity: 0;',
+    'visibility: hidden;',
+    '.bottom-dock button[data-nav-active="true"] > .nav-label',
+    'display: block;',
+    'opacity: 1;',
+    'visibility: visible;',
+    '.bottom-dock button:focus-visible > .nav-label',
+    '.bottom-dock button[data-nav-active="true"]::before',
+    'transform: translateY(-2px) scale(1.04);',
+    'let pointerNavButton = null;',
+    "button.addEventListener('pointerdown'",
+    'pointerNavButton = button;',
+    'if (pointerNavButton === button) {',
+    'button.blur();'
+  ]) {
+    assert.equal(`${html}\n${css}\n${app}`.includes(marker), true, marker);
+  }
 });
 
 test('home navigation exposes generated action-ready badges without adding more buttons', async () => {

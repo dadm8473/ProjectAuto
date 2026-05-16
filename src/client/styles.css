@@ -1594,9 +1594,8 @@ body[data-app-screen="season"] .app-screen::after {
   position: relative;
   display: grid;
   place-items: center;
-  gap: 1px;
   min-height: var(--lobby-bottom-dock-button-height);
-  padding: 7px 4px 6px;
+  padding: 6px 4px;
   border-color: transparent;
   color: rgba(245, 240, 220, 0.86);
   background-color: transparent;
@@ -1660,11 +1659,50 @@ body[data-app-screen="season"] .app-screen::after {
   width: 42px;
   height: 42px;
   background-size: 210px 42px;
+  transform: translateY(4px);
+  transition: transform 140ms ease, filter 140ms ease;
+}
+
+.bottom-dock button[data-nav-active="true"]::before {
+  transform: translateY(-2px) scale(1.04);
 }
 
 .bottom-dock button > span {
   position: relative;
   z-index: 1;
+}
+
+.bottom-dock button > .nav-label {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: 5px;
+  z-index: 2;
+  min-width: 2.6em;
+  padding: 2px 5px 3px;
+  border-radius: 999px;
+  color: #fff4bd;
+  background: rgba(2, 15, 15, 0.76);
+  box-shadow: 0 0 9px rgba(88, 215, 255, 0.2);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 4px) scale(0.92);
+  transition: opacity 130ms ease, transform 130ms ease, visibility 130ms ease;
+  pointer-events: none;
+}
+
+.bottom-dock button:not([data-nav-active="true"]) > .nav-label {
+  display: none;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.bottom-dock button[data-nav-active="true"] > .nav-label,
+.bottom-dock button:focus-visible > .nav-label {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0) scale(1);
 }
 
 .nav-alert-badge {

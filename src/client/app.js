@@ -90,6 +90,7 @@ let onlineFallbackTimer = null;
 let lastTime = performance.now();
 let resultShownFor = '';
 let profile = loadProfile();
+let pointerNavButton = null;
 
 function loadProfile() {
   const base = createMetaProfile();
@@ -708,7 +709,16 @@ function bind() {
   dom.resultLobbyButton.addEventListener('click', handleResultSecondary);
   dom.rewardReveal.addEventListener('click', hideRewardReveal);
   document.querySelectorAll('[data-open-screen]').forEach((button) => {
-    button.addEventListener('click', () => setScreen(button.dataset.openScreen));
+    button.addEventListener('pointerdown', () => {
+      pointerNavButton = button;
+    }, { passive: true });
+    button.addEventListener('click', () => {
+      setScreen(button.dataset.openScreen);
+      if (pointerNavButton === button) {
+        button.blur();
+        pointerNavButton = null;
+      }
+    });
   });
 }
 
