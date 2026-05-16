@@ -227,6 +227,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     height: 192,
     source: 'imagegen'
   },
+  openingThreatPreview: {
+    src: '/src/client/assets/generated/reboot-opening-threat-preview.png?v=opening-threat-preview1',
+    width: 512,
+    height: 256,
+    source: 'imagegen'
+  },
   signalCoreGates: {
     src: '/src/client/assets/generated/reboot-signal-core-gates.png?v=signal-core-gates1',
     width: 512,
@@ -335,9 +341,11 @@ export function createRebootAssetImages() {
   enemyImpactBursts.src = REBOOT_EFFECT_MANIFEST.enemyImpactBursts.src;
   const enemySpawnGates = new Image();
   enemySpawnGates.src = REBOOT_EFFECT_MANIFEST.enemySpawnGates.src;
+  const openingThreatPreview = new Image();
+  openingThreatPreview.src = REBOOT_EFFECT_MANIFEST.openingThreatPreview.src;
   const signalCoreGates = new Image();
   signalCoreGates.src = REBOOT_EFFECT_MANIFEST.signalCoreGates.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, directiveBanner, partnerAssistPings, partnerStandbySigils, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts, enemySpawnGates, signalCoreGates };
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, directiveBanner, partnerAssistPings, partnerStandbySigils, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts, enemySpawnGates, openingThreatPreview, signalCoreGates };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -574,6 +582,17 @@ function drawOpeningThreatPreview(ctx, state, assets = {}, options = {}) {
 
   const previewEnemy = { enemyId: 'noise_shard', spriteKey: 'noise_shard', progress: 0.08, lane: 0.25 };
   const point = trackPointFromProgress(0.075 + Math.max(0, Math.sin(state.now * 2.3)) * 0.012, 0.25);
+  const preview = assets?.openingThreatPreview;
+  if (preview?.complete && preview.naturalWidth > 0) {
+    const width = 116;
+    const height = 58;
+    ctx.save();
+    ctx.globalAlpha *= alpha;
+    ctx.drawImage(preview, 0, 0, preview.naturalWidth, preview.naturalHeight, point.x - width * 0.42, point.y - height * 0.82, width, height);
+    ctx.restore();
+    return true;
+  }
+
   ctx.save();
   ctx.globalAlpha *= alpha;
   drawEnemySpawnGate(ctx, assets.enemySpawnGates, [previewEnemy], state.now);

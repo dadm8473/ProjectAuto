@@ -192,12 +192,15 @@ test('reboot render uses only reboot atlases and manifest keys', async () => {
     'reboot-battle-backdrop.png',
     'reboot-unit-atlas.png',
     'reboot-enemy-atlas.png?v=enemy-atlas-v2',
+    'openingThreatPreview: {',
+    'reboot-opening-threat-preview.png?v=opening-threat-preview1',
     'reboot-ui-icons.png',
     'reboot-reward-icons.png',
     'reboot-board-accents.png',
     'order.indexOf(spriteKey)',
     "order: ['spark_pin', 'toktok_amp', 'slow_coil', 'burst_pin', 'rescue_coil', 'mirror_port', 'bloom_amp', 'nova_mast']",
     'createRebootAssetImages',
+    'openingThreatPreview.src = REBOOT_EFFECT_MANIFEST.openingThreatPreview.src;',
     'drawAtlasSprite',
     'drawBattleBackdrop'
   ]) {

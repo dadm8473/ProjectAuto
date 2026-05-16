@@ -863,6 +863,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 35_000
   },
   {
+    path: 'src/client/assets/generated/reboot-opening-threat-preview.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260517-opening-threat-preview-chromakey-imagegen.png',
+    width: 512,
+    height: 256,
+    minRuntimeBytes: 20_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-signal-core-gates.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260516-signal-core-gates-chromakey-imagegen.png',
     width: 512,

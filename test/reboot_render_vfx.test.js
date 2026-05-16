@@ -152,6 +152,7 @@ test('opening combat previews an incoming threat before the first serialized ene
   const enemySpawnGates = image(768, 192);
   const enemyTrackTrails = image(1024, 128);
   const enemies = image(1024, 256);
+  const openingThreatPreview = image(512, 256);
   drawRebootBattle(
     ctx,
     {
@@ -171,19 +172,23 @@ test('opening combat previews an incoming threat before the first serialized ene
       enemies,
       board: image(1280, 256),
       enemySpawnGates,
-      enemyTrackTrails
+      enemyTrackTrails,
+      openingThreatPreview
     }
   );
 
   const spawnGateIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === enemySpawnGates);
   const enemyIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === enemies);
   const trailIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === enemyTrackTrails);
+  const previewIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === openingThreatPreview);
+  const previewDraw = ctx.commands[previewIndex];
 
-  assert.notEqual(spawnGateIndex, -1, 'expected opening threat gate even before enemies serialize');
-  assert.notEqual(enemyIndex, -1, 'expected an imagegen enemy preview so the first second is not an empty board');
-  assert.notEqual(trailIndex, -1, 'expected the preview enemy to stay grounded on the track');
-  assert.equal(spawnGateIndex < trailIndex, true, 'spawn gate should sit under the incoming preview');
-  assert.equal(trailIndex < enemyIndex, true, 'track trail should sit under the enemy preview');
+  assert.notEqual(previewIndex, -1, 'expected dedicated imagegen opening threat preview before enemies serialize');
+  assert.equal(spawnGateIndex, -1, 'dedicated preview should replace composited spawn-gate placeholder art');
+  assert.equal(enemyIndex, -1, 'dedicated preview should avoid drawing a loose enemy atlas icon before enemies serialize');
+  assert.equal(trailIndex, -1, 'dedicated preview should carry its own grounded track trail');
+  assert.equal(previewDraw.args[5] >= 24, true, 'preview should sit inside the visible track entrance');
+  assert.equal(previewDraw.args[7] <= 118, true, 'preview should stay compact enough for the mobile playfield');
 });
 
 test('signal core gate anchors the protected end of the track before enemies arrive', () => {
@@ -1679,7 +1684,8 @@ test('online waiting hides opening combat cutins and threat previews so matchmak
       startCutin: image(390, 112),
       enemies,
       enemySpawnGates: image(768, 192),
-      enemyTrackTrails: image(1024, 128)
+      enemyTrackTrails: image(1024, 128),
+      openingThreatPreview: image(512, 256)
     },
     { onlineWaiting: true }
   );
@@ -1690,9 +1696,15 @@ test('online waiting hides opening combat cutins and threat previews so matchmak
       && command.args[0].naturalHeight === 112
   ));
   const enemyDraws = ctx.commands.filter((command) => command.type === 'drawImage' && command.args[0] === enemies);
+  const threatPreviewDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 512
+      && command.args[0].naturalHeight === 256
+  ));
 
   assert.deepEqual(startCutinDraws, []);
   assert.deepEqual(enemyDraws, []);
+  assert.deepEqual(threatPreviewDraws, []);
 });
 
 test('matchmaking event banner hides the operation start cutin so ready copy stays readable', () => {
