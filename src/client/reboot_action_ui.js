@@ -66,7 +66,10 @@ export function buildCombatStatusPrompt({ current, localBoardId, onlineWaiting =
   const board = current.boards?.[localBoardId] ?? current.boards?.p1 ?? { units: [] };
   const partner = localBoardId === 'p1' ? 'p2' : 'p1';
   const partnerDanger = current.boards?.[partner]?.danger ?? 0;
+  const bossDecisionWindow = current.now >= BOSS_DECISION_START && current.now < BOSS_DECISION_END;
 
+  if (bossDecisionWindow && actions.rescue && partnerDanger >= RESCUE_DANGER_CUE) return '구원 우선';
+  if (bossDecisionWindow && (actions.summon || actions.merge)) return '보스 대응';
   if (!actions.rescue && partnerDanger >= RESCUE_DANGER_CUE) return '구원 충전 중';
   if (actions.rescue) return '구원 가능';
   if (actions.merge) return '합성 가능';

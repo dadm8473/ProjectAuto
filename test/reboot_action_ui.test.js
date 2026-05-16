@@ -131,6 +131,28 @@ test('combat status aligns with rescue focus when rescue becomes ready below dan
   }), '구원 가능');
 });
 
+test('combat status names the boss clutch decision instead of generic action availability', () => {
+  assert.equal(buildCombatStatusPrompt({
+    current: {
+      ...state({ now: 94, p1Units: [{ id: 'a' }] }),
+      resources: { p1: { summon: 10, rescue: 0 } },
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    localBoardId: 'p1'
+  }), '보스 대응');
+});
+
+test('combat status prioritizes rescue during dual boss and partner danger', () => {
+  assert.equal(buildCombatStatusPrompt({
+    current: {
+      ...state({ now: 95, p2Danger: 84, p1Units: [{ id: 'a' }, { id: 'b' }] }),
+      resources: { p1: { summon: 10, rescue: 100 } },
+      actionState: { p1: { summon: true, merge: false, rescue: true } }
+    },
+    localBoardId: 'p1'
+  }), '구원 우선');
+});
+
 test('combat status prompt shows online partner wait before normal action prompts', () => {
   assert.equal(buildCombatStatusPrompt({
     current: {
