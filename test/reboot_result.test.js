@@ -131,10 +131,13 @@ test('lobby operation advances through authored combat beats after runs', () => 
   );
   assert.equal(boss.seedName, 'lucky_clutch');
   assert.equal(boss.title, '보스 막타 작전');
+  assert.equal(boss.poster, 'boss');
   assert.equal(recovery.seedName, 'bad_recoverable');
   assert.equal(recovery.title, '역전 구원 작전');
+  assert.equal(recovery.poster, 'recovery');
   assert.equal(final.seedName, 'boss_clutch');
   assert.equal(final.title, '보스 대응 작전');
+  assert.equal(final.poster, 'response');
 });
 
 test('post reward route keeps the reward loop moving to the next useful screen', () => {
@@ -700,6 +703,8 @@ test('lobby operation card shows the next authored combat beat', () => {
 
   assert.equal(lobby.includes('<strong>보스 막타 작전</strong>'), true);
   assert.equal(lobby.includes('<p>막판 소환 · 결정타</p>'), true);
+  assert.equal(lobby.includes('data-operation-poster="boss"'), true);
+  assert.equal(lobby.includes('reboot-lobby-operation-posters.png?v=operation-posters1'), true);
 });
 
 test('lobby currency strip uses an icon numeric chip with accessible economy meaning', () => {

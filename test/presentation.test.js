@@ -2802,13 +2802,16 @@ test('lobby operation card uses a dedicated generated mission poster', async () 
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
   for (const marker of [
-    '--lobby-operation-poster: url("/src/client/assets/generated/reboot-lobby-operation-poster.png?v=operation-poster")',
+    '--lobby-operation-posters: url("/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1")',
     'class="operation-card"',
+    'data-operation-poster="${operation.poster}"',
     'class="operation-poster-frame"',
-    '/src/client/assets/generated/reboot-lobby-operation-poster.png?v=operation-poster',
+    '/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1',
     '.operation-card',
     '.operation-poster-frame',
-    'background-image: var(--lobby-operation-poster)',
+    'width: 400%;',
+    '.operation-card[data-operation-poster="boss"]',
+    '--operation-poster-x: -25%;',
     '--lobby-operation-poster-height: 154px',
     'min-height: var(--lobby-operation-poster-height);',
     'class="operation-copy"',

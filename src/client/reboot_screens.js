@@ -86,25 +86,29 @@ const LOBBY_OPERATION_SEQUENCE = [
     seedName: 'tutorial_success',
     title: '첫 구원 작전',
     detail: '파트너 구원 · 보스 저지',
-    cta: '첫 구원 작전 시작'
+    cta: '첫 구원 작전 시작',
+    poster: 'first'
   },
   {
     seedName: 'lucky_clutch',
     title: '보스 막타 작전',
     detail: '막판 소환 · 결정타',
-    cta: '보스 막타 작전 시작'
+    cta: '보스 막타 작전 시작',
+    poster: 'boss'
   },
   {
     seedName: 'bad_recoverable',
     title: '역전 구원 작전',
     detail: '나쁜 운 회복 · 구원',
-    cta: '역전 구원 작전 시작'
+    cta: '역전 구원 작전 시작',
+    poster: 'recovery'
   },
   {
     seedName: 'boss_clutch',
     title: '보스 대응 작전',
     detail: '소환/합성 선택',
-    cta: '보스 대응 작전 시작'
+    cta: '보스 대응 작전 시작',
+    poster: 'response'
   }
 ];
 
@@ -323,8 +327,8 @@ export function buildRebootLobby(model = {}) {
   const nextAction = nextLobbyAction(model);
   const operation = nextLobbyOperation(model);
   return `
-    <section class="operation-card">
-      <img class="operation-poster-frame" src="/src/client/assets/generated/reboot-lobby-operation-poster.png?v=operation-poster" alt="" aria-hidden="true">
+    <section class="operation-card" data-operation-poster="${operation.poster}">
+      <img class="operation-poster-frame" src="/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1" alt="" aria-hidden="true">
       <div class="operation-copy">
         <span>협동 작전</span>
         <strong>${operation.title}</strong>

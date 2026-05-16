@@ -76,6 +76,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 100_000
   },
   {
+    path: 'src/client/assets/generated/reboot-lobby-operation-posters.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-lobby-operation-posters-imagegen.png',
+    width: 1720,
+    height: 184,
+    minRuntimeBytes: 240_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-splash-bottom-deck.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260515-splash-bottom-deck-imagegen.png',
     width: 430,

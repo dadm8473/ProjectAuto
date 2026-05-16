@@ -759,6 +759,21 @@ Runtime files:
 - src/client/assets/generated/reboot-online-partner-link.png
 ```
 
+## Runtime Prompt: Lobby Operation Poster Atlas
+
+```text
+Use case: stylized-concept
+Asset type: wide landscape sprite atlas for ProjectAuto lobby operation cards.
+Primary request: Create one single horizontal sprite atlas composed of four equal wide landscape cards in a row. Each card is a 2.34:1 mission poster with a metallic mobile game frame, cinematic diorama, and a quiet dark lower-left text-safe zone for DOM Korean title overlays.
+Cells left to right: first rescue operation with teal signal core and partner rescue beacon; boss final-hit operation with red-black corruption boss and gold/teal strike energy; comeback rescue operation with damaged partner beacon restored by cyan rescue beam; boss response operation with looming boss portal and prepared player towers.
+Style/medium: high-end 2D Korean mobile game UI art, ProjectAuto reboot toy-board sci-fi tower defense, polished graphite metal, teal signal glow, amber charge, coral danger accents, gold sparks.
+Constraints: no text, letters, numbers, logos, watermark, dice, casino UI, website cards, or copied commercial UI.
+Postprocess: crop the generated atlas to the strongest 1720x184 landscape strip, convert to RGBA PNG, and use four 430x184 runtime cells.
+Runtime files:
+- docs/design/generation/source/reboot/style-lock/20260516-lobby-operation-posters-imagegen.png
+- src/client/assets/generated/reboot-lobby-operation-posters.png
+```
+
 ## Runtime Prompt: Dual Crisis Cutin
 
 ```text

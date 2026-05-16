@@ -44,7 +44,7 @@
   --meta-footer-shroud: url("/src/client/assets/generated/reboot-meta-footer-shroud.png?v=meta-footer-shroud");
   --meta-list-shutter: url("/src/client/assets/generated/reboot-meta-list-shutter.png?v=meta-list-shutter2");
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
-  --lobby-operation-poster: url("/src/client/assets/generated/reboot-lobby-operation-poster.png?v=operation-poster");
+  --lobby-operation-posters: url("/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1");
   --lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1");
   --lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next");
   --lobby-battle-ready-cue: url("/src/client/assets/generated/reboot-lobby-battle-ready-cue.png?v=battle-ready-cue");
@@ -1878,20 +1878,38 @@ body[data-app-screen="season"] .app-screen::after {
   overflow: hidden;
   isolation: isolate;
   padding: 0;
-  background-image: var(--lobby-operation-poster);
+  background-image: var(--lobby-operation-posters);
   background-repeat: no-repeat;
-  background-size: 100% 100%;
-  background-position: center;
+  background-size: 400% 100%;
+  background-position: 0 0;
+  --operation-poster-x: 0%;
 }
 
 .operation-poster-frame {
   position: absolute;
   inset: 0;
   z-index: 0;
-  width: 100%;
+  width: 400%;
   height: 100%;
+  max-width: none;
   object-fit: fill;
+  transform: translate3d(var(--operation-poster-x), 0, 0);
   pointer-events: none;
+}
+
+.operation-card[data-operation-poster="boss"] {
+  --operation-poster-x: -25%;
+  background-position: 33.333% 0;
+}
+
+.operation-card[data-operation-poster="recovery"] {
+  --operation-poster-x: -50%;
+  background-position: 66.666% 0;
+}
+
+.operation-card[data-operation-poster="response"] {
+  --operation-poster-x: -75%;
+  background-position: 100% 0;
 }
 
 .operation-copy {
