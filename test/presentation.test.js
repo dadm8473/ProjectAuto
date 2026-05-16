@@ -3861,7 +3861,16 @@ test('install metadata uses dedicated generated app icons', async () => {
   const manifest = JSON.parse(await readFile('manifest.webmanifest', 'utf8'));
 
   assert.equal(html.includes('<link rel="icon" href="/src/client/assets/generated/reboot-app-icon-192.png">'), true);
+  assert.equal(html.includes('<link rel="apple-touch-icon" href="/src/client/assets/generated/reboot-app-icon-192.png">'), true);
+  assert.equal(html.includes('<meta name="mobile-web-app-capable" content="yes">'), true);
+  assert.equal(html.includes('<meta name="apple-mobile-web-app-capable" content="yes">'), true);
+  assert.equal(html.includes('<meta name="apple-mobile-web-app-title" content="신호릴레이">'), true);
+  assert.equal(html.includes('<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">'), true);
   assert.equal(html.includes('ui-icon-atlas.png'), false);
+  assert.equal(manifest.id, '/');
+  assert.equal(manifest.scope, '/');
+  assert.equal(manifest.description, '세로형 협동 타워디펜스 신호릴레이');
+  assert.deepEqual(manifest.categories, ['games']);
   assert.deepEqual(
     manifest.icons,
     [

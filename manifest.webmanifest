@@ -1,11 +1,17 @@
 {
   "name": "신호릴레이",
   "short_name": "신호릴레이",
+  "id": "/",
+  "scope": "/",
+  "description": "세로형 협동 타워디펜스 신호릴레이",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#101312",
   "theme_color": "#101312",
+  "categories": [
+    "games"
+  ],
   "icons": [
     {
       "src": "/src/client/assets/generated/reboot-app-icon-192.png",
