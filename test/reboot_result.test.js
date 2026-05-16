@@ -248,6 +248,9 @@ test('reboot collection renders unit training state from profile XP and levels',
   const collection = buildRebootCollection({ xp: 50, unitLevels: { spark_pin: 2 } });
 
   assert.equal(collection.includes('data-unit-card="spark_pin"'), true);
+  assert.equal(collection.includes('data-unit-card="mirror_port"'), true);
+  assert.equal(collection.includes('data-unit-card="bloom_amp"'), true);
+  assert.equal(collection.includes('data-unit-card="nova_mast"'), true);
   assert.equal(collection.includes('Lv.2'), true);
   assert.equal(collection.includes('60 경험치'), true);
   assert.equal(collection.includes('>훈련<'), true);
@@ -630,7 +633,16 @@ test('meta navigation alerts expose only actionable profile destinations', () =>
     gems: 20,
     xp: 80,
     processedRuns: ['run-1'],
-    unitLevels: { spark_pin: 4, toktok_amp: 4, slow_coil: 4, burst_pin: 4, rescue_coil: 4 },
+    unitLevels: {
+      spark_pin: 4,
+      toktok_amp: 4,
+      slow_coil: 4,
+      burst_pin: 4,
+      rescue_coil: 4,
+      mirror_port: 4,
+      bloom_amp: 4,
+      nova_mast: 4
+    },
     unlocks: ['founder-board', 'mythic-aura'],
     claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic'],
     claimedPassTiers: [0]

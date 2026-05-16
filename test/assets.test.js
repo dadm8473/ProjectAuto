@@ -23,7 +23,7 @@ const GRID_ASSETS = [
 ];
 
 const REBOOT_GRID_ASSETS = [
-  { path: 'src/client/assets/generated/reboot-unit-atlas.png', width: 1280, height: 256, columns: 5, rows: 1 },
+  { path: 'src/client/assets/generated/reboot-unit-atlas.png', width: 2048, height: 256, columns: 8, rows: 1 },
   { path: 'src/client/assets/generated/reboot-enemy-atlas.png', width: 1024, height: 256, columns: 4, rows: 1 },
   { path: 'src/client/assets/generated/reboot-ui-icons.png', width: 1536, height: 256, columns: 6, rows: 1 },
   { path: 'src/client/assets/generated/reboot-reward-icons.png', width: 1024, height: 256, columns: 4, rows: 1 },
@@ -846,10 +846,10 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
 const IMAGEGEN_REBOOT_ATLASES = [
   {
     path: 'src/client/assets/generated/reboot-unit-atlas.png',
-    source: 'docs/design/generation/source/reboot/style-lock/20260513-unit-atlas-imagegen.png',
-    width: 1280,
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-unit-atlas-expanded-imagegen.png',
+    width: 2048,
     height: 256,
-    minRuntimeBytes: 80_000
+    minRuntimeBytes: 120_000
   },
   {
     path: 'src/client/assets/generated/reboot-enemy-atlas.png',

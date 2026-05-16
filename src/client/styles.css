@@ -2473,7 +2473,7 @@ body[data-app-screen="season"] .app-screen::after {
   height: 76px;
   margin-bottom: 0;
   background-image: url("/src/client/assets/generated/reboot-unit-atlas.png");
-  background-size: 380px 76px;
+  background-size: 608px 76px;
 }
 
 .unit-sprite[data-sprite="spark_pin"] { background-position: 0 0; }
@@ -2481,6 +2481,9 @@ body[data-app-screen="season"] .app-screen::after {
 .unit-sprite[data-sprite="slow_coil"] { background-position: -152px 0; }
 .unit-sprite[data-sprite="burst_pin"] { background-position: -228px 0; }
 .unit-sprite[data-sprite="rescue_coil"] { background-position: -304px 0; }
+.unit-sprite[data-sprite="mirror_port"] { background-position: -380px 0; }
+.unit-sprite[data-sprite="bloom_amp"] { background-position: -456px 0; }
+.unit-sprite[data-sprite="nova_mast"] { background-position: -532px 0; }
 
 .shop-cosmetic {
   width: 58px;
@@ -2941,15 +2944,18 @@ body[data-app-screen="season"] .app-screen::after {
   width: clamp(76px, 23vw, 90px);
   height: clamp(76px, 23vw, 90px);
   align-self: end;
-  background-size: 500% 100%;
+  background-size: 800% 100%;
   filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.66));
 }
 
 .meta-shelf-grid .unit-sprite[data-sprite="spark_pin"] { background-position: 0 0; }
-.meta-shelf-grid .unit-sprite[data-sprite="toktok_amp"] { background-position: 25% 0; }
-.meta-shelf-grid .unit-sprite[data-sprite="slow_coil"] { background-position: 50% 0; }
-.meta-shelf-grid .unit-sprite[data-sprite="burst_pin"] { background-position: 75% 0; }
-.meta-shelf-grid .unit-sprite[data-sprite="rescue_coil"] { background-position: 100% 0; }
+.meta-shelf-grid .unit-sprite[data-sprite="toktok_amp"] { background-position: 14.2857% 0; }
+.meta-shelf-grid .unit-sprite[data-sprite="slow_coil"] { background-position: 28.5714% 0; }
+.meta-shelf-grid .unit-sprite[data-sprite="burst_pin"] { background-position: 42.8571% 0; }
+.meta-shelf-grid .unit-sprite[data-sprite="rescue_coil"] { background-position: 57.1429% 0; }
+.meta-shelf-grid .unit-sprite[data-sprite="mirror_port"] { background-position: 71.4286% 0; }
+.meta-shelf-grid .unit-sprite[data-sprite="bloom_amp"] { background-position: 85.7143% 0; }
+.meta-shelf-grid .unit-sprite[data-sprite="nova_mast"] { background-position: 100% 0; }
 
 .meta-shelf-grid .shop-cosmetic {
   width: clamp(62px, 18vw, 74px);

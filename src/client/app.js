@@ -1,10 +1,10 @@
 import { castLinkPulse, createGame, mergeRelays, serializeState, supplyRelay, tickGame } from '../shared/game.js';
 import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
-import { REBOOT_UNITS } from '../shared/reboot_content.js';
+import { REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=merge-reason1';
 import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=summon-cooldown-label1';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=match-banner-cutin1';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=unit-roster1';
 import {
   buildMetaNavAlerts,
   buildMissionScreen,

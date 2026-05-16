@@ -4,7 +4,7 @@ import { deflateSync } from 'node:zlib';
 const OUT = 'src/client/assets/generated';
 
 const ASSETS = [
-  { path: `${OUT}/reboot-unit-atlas.png`, width: 1280, height: 256, cells: 5, kind: 'unit' },
+  { path: `${OUT}/reboot-unit-atlas.png`, width: 2048, height: 256, cells: 8, kind: 'unit' },
   { path: `${OUT}/reboot-enemy-atlas.png`, width: 1024, height: 256, cells: 4, kind: 'enemy' },
   { path: `${OUT}/reboot-ui-icons.png`, width: 1536, height: 256, cells: 6, kind: 'ui' },
   { path: `${OUT}/reboot-reward-icons.png`, width: 1024, height: 256, cells: 4, kind: 'reward' },
@@ -12,7 +12,7 @@ const ASSETS = [
 ];
 
 const PALETTES = {
-  unit: ['#58d7ff', '#f4c95d', '#8ee6d2', '#ffd166', '#dff9ff'],
+  unit: ['#58d7ff', '#f4c95d', '#8ee6d2', '#ffd166', '#dff9ff', '#90f3ff', '#ffdc73', '#ff8f5a'],
   enemy: ['#ff6f59', '#ff866f', '#b4423a', '#ff3f36'],
   ui: ['#f4c95d', '#58d7ff', '#dff9ff', '#ff6f59', '#ff866f', '#ffd166'],
   reward: ['#ffd166', '#f4c95d', '#58d7ff', '#dff9ff'],

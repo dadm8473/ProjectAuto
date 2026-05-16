@@ -199,7 +199,7 @@ async function verifyShell(page, viewport) {
   await page.getByRole('button', { name: '유닛' }).click();
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
   await assertMetaListReachesDock(page, '#collectionList', 'collection');
-  assert.equal(await page.locator('#collectionList .unit-card .sprite-token.unit-sprite').count(), 5);
+  assert.equal(await page.locator('#collectionList .unit-card .sprite-token.unit-sprite').count(), 8);
   assert.equal(await page.locator('#collectionList .meta-showcase .sprite-token.unit-sprite').count(), 1);
   await page.getByRole('button', { name: '홈' }).click();
   await page.getByRole('button', { name: '상점' }).click();

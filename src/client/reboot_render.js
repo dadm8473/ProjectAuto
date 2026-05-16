@@ -7,10 +7,10 @@ const FIRST_SUMMON_BEACON_END = 16;
 export const REBOOT_ATLAS_MANIFEST = {
   units: {
     src: '/src/client/assets/generated/reboot-unit-atlas.png',
-    columns: 5,
+    columns: 8,
     rows: 1,
     cell: { width: 256, height: 256 },
-    order: ['spark_pin', 'toktok_amp', 'slow_coil', 'burst_pin', 'rescue_coil']
+    order: ['spark_pin', 'toktok_amp', 'slow_coil', 'burst_pin', 'rescue_coil', 'mirror_port', 'bloom_amp', 'nova_mast']
   },
   enemies: {
     src: '/src/client/assets/generated/reboot-enemy-atlas.png',
@@ -213,7 +213,10 @@ const UNIT_COLORS = {
   toktok_amp: '#f4c95d',
   slow_coil: '#8ee6d2',
   burst_pin: '#ffd166',
-  rescue_coil: '#dff9ff'
+  rescue_coil: '#dff9ff',
+  mirror_port: '#90f3ff',
+  bloom_amp: '#ffdc73',
+  nova_mast: '#ff8f5a'
 };
 
 const MOMENT_CALLOUTS = {

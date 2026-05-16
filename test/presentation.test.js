@@ -100,9 +100,10 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
 
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
+    "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=summon-cooldown-label1'",
-    "from './reboot_render.js?v=match-banner-cutin1'",
+    "from './reboot_render.js?v=unit-roster1'",
     "from './reboot_screens.js?v=meta-item-status1'",
     "from './reboot_online.js'"
   ]) {
@@ -185,6 +186,7 @@ test('reboot render uses only reboot atlases and manifest keys', async () => {
     'reboot-reward-icons.png',
     'reboot-board-accents.png',
     'order.indexOf(spriteKey)',
+    "order: ['spark_pin', 'toktok_amp', 'slow_coil', 'burst_pin', 'rescue_coil', 'mirror_port', 'bloom_amp', 'nova_mast']",
     'createRebootAssetImages',
     'drawAtlasSprite',
     'drawBattleBackdrop'
@@ -538,7 +540,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-idle1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=unit-roster1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-idle1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=match-banner-cutin1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive-chip1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-tap-cue1">'), false);
@@ -612,7 +615,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=match-banner-cutin1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=unit-roster1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=match-banner-cutin1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-wait-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-cooldown-label1"></script>'), false);
@@ -649,7 +653,10 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=match-banner-cutin1'"), true);
+  assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
+  assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
+  assert.equal(app.includes("from './reboot_render.js?v=unit-roster1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=match-banner-cutin1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=action-surges1'"), false);
   assert.equal(app.includes("from './reboot_action_ui.js?v=action-focus2'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=unit-activation-ring1'"), false);
@@ -705,7 +712,13 @@ test('meta screens use reboot sprite tokens instead of placeholder swatches', as
     'ROLE_LABELS[unit.role]',
     'reboot-unit-atlas.png',
     'reboot-shop-cosmetics.png',
-    'grid-template-columns: 78px 1fr 96px'
+    'grid-template-columns: 78px 1fr 96px',
+    '.unit-sprite[data-sprite="mirror_port"]',
+    '.unit-sprite[data-sprite="bloom_amp"]',
+    '.unit-sprite[data-sprite="nova_mast"]',
+    '.meta-shelf-grid .unit-sprite[data-sprite="mirror_port"]',
+    '.meta-shelf-grid .unit-sprite[data-sprite="bloom_amp"]',
+    '.meta-shelf-grid .unit-sprite[data-sprite="nova_mast"]'
   ]) {
     assert.equal(`${screens}\n${css}`.includes(marker), true, marker);
   }
@@ -1070,7 +1083,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=lobby-idle1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=unit-roster1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);

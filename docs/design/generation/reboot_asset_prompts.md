@@ -116,7 +116,7 @@ Premium animated co-op toy-board.
 
 | Asset | Count | Format | Notes |
 | --- | --- | --- | --- |
-| Unit atlas | 5 units | PNG/WebP transparent | 5 cells, equal size |
+| Unit atlas | 8 units | PNG/WebP transparent | 8 cells, equal size |
 | Enemy atlas | 4 enemies | PNG/WebP transparent | 4 cells, equal size |
 | UI/action icons | 6+ icons | PNG/WebP transparent | summon, merge, rescue, danger, reward |
 | Reward icons | 3+ icons | PNG/WebP transparent | soft currency, shard, season progress |
@@ -137,10 +137,10 @@ Premium animated co-op toy-board.
 | Field | Value |
 | --- | --- |
 | File | `src/client/assets/generated/reboot-unit-atlas.png` |
-| Final size | 1280x256 |
-| Grid | 5 columns x 1 row |
+| Final size | 2048x256 |
+| Grid | 8 columns x 1 row |
 | Cell size | 256x256 |
-| Cell order | `spark_pin`, `toktok_amp`, `slow_coil`, `burst_pin`, `rescue_coil` |
+| Cell order | `spark_pin`, `toktok_amp`, `slow_coil`, `burst_pin`, `rescue_coil`, `mirror_port`, `bloom_amp`, `nova_mast` |
 | Runtime pivot | x 128, y 176 |
 | Subject bbox | 160-210px on longest side |
 | Center tolerance | cell center x deviation <= 8px |
@@ -312,11 +312,11 @@ Premium animated co-op toy-board.
 export const REBOOT_ATLAS_MANIFEST = {
   units: {
     src: '/src/client/assets/generated/reboot-unit-atlas.png',
-    columns: 5,
+    columns: 8,
     rows: 1,
     cell: { width: 256, height: 256 },
     pivot: { x: 128, y: 176 },
-    order: ['spark_pin', 'toktok_amp', 'slow_coil', 'burst_pin', 'rescue_coil']
+    order: ['spark_pin', 'toktok_amp', 'slow_coil', 'burst_pin', 'rescue_coil', 'mirror_port', 'bloom_amp', 'nova_mast']
   },
   enemies: {
     src: '/src/client/assets/generated/reboot-enemy-atlas.png',
@@ -371,12 +371,12 @@ export const REBOOT_ATLAS_MANIFEST = {
 {
   "asset_id": "reboot-unit-atlas-v1",
   "image": "src/client/assets/generated/reboot-unit-atlas.png",
-  "dimensions": { "width": 1280, "height": 256 },
-  "grid": { "columns": 5, "rows": 1 },
+  "dimensions": { "width": 2048, "height": 256 },
+  "grid": { "columns": 8, "rows": 1 },
   "cell": { "width": 256, "height": 256 },
   "alpha": "straight",
   "pivot": { "x": 128, "y": 176 },
-  "order": ["spark_pin", "toktok_amp", "slow_coil", "burst_pin", "rescue_coil"],
+  "order": ["spark_pin", "toktok_amp", "slow_coil", "burst_pin", "rescue_coil", "mirror_port", "bloom_amp", "nova_mast"],
   "qa": {
     "bbox_margin_min_px": 18,
     "center_deviation_max_px": 8,
@@ -421,11 +421,11 @@ docs/design/generation/processed/reboot/<asset-type>/<short-name>.json
   "created_at": "2026-04-30",
   "source_prompt": "prompt text",
   "postprocess": ["background_removed", "rim_normalized", "atlas_sliced"],
-  "final_dimensions": "1280x256",
-  "grid": { "columns": 5, "rows": 1 },
+  "final_dimensions": "2048x256",
+  "grid": { "columns": 8, "rows": 1 },
   "cell": { "width": 256, "height": 256 },
   "pivot": { "x": 128, "y": 176 },
-  "order": ["spark_pin", "toktok_amp", "slow_coil", "burst_pin", "rescue_coil"],
+  "order": ["spark_pin", "toktok_amp", "slow_coil", "burst_pin", "rescue_coil", "mirror_port", "bloom_amp", "nova_mast"],
   "qa": {
     "bbox_margin_min_px": 18,
     "center_deviation_max_px": 8,
@@ -506,15 +506,18 @@ Quality: shipped mobile game reward icon set.
 
 ```text
 Use case: sprite-atlas
-Asset type: 5-cell transparent unit atlas for ProjectAuto reboot.
-Primary request: Create 5 collectible signal toy-machine unit sprites in a single horizontal sprite atlas. Transparent background. Equal cell sizes. No text.
-Output contract: final atlas 1280x256, 5 columns x 1 row, each cell exactly 256x256, straight alpha, no premultiplied alpha bleed.
+Asset type: 8-cell transparent unit atlas for ProjectAuto reboot.
+Primary request: Create 8 collectible signal toy-machine unit sprites in a single horizontal sprite atlas. Transparent background. Equal cell sizes. No text.
+Output contract: final atlas 2048x256, 8 columns x 1 row, each cell exactly 256x256, straight alpha, no premultiplied alpha bleed.
 Subjects left to right:
 1. Spark Pin: basic attacker, eager tiny striker personality, small pointed spark barrel, teal glass core like a bright eye-light, amber spark tip, iconic forward-leaning pose.
 2. Toktok Amp: support booster, cheerful round speaker-like amplifier body, amber ring, friendly chunky silhouette, little handle ears, readable as the team's booster.
 3. Slow Coil: control unit, calm sleepy coil personality, mint spiral coil and magnetic feet, cool glow, iconic slow-field posture.
 4. Burst Pin: upgraded attacker, bold premium version of Spark Pin, larger double spark barrel, stronger teal/amber glow, heroic compact pose, clearly grade 2.
 5. Rescue Coil: co-op rescue unit, caring rescue-beacon personality, cyan-white rescue core, small wing-like handles, beam emitter shape, reads as the unit players want to protect.
+6. Mirror Port: grade-2 support portal unit, circular teal mirror ring, symmetric cream metal rim, small cyan conduits, calm partner-link feel.
+7. Bloom Amp: grade-1 support amplifier, flower-like teal petal fins around an amber core, squat cute mechanical silhouette, reads as a signal-growth booster.
+8. Nova Mast: grade-2 attacker, taller orange/teal cannon-mast silhouette, one prominent energy barrel, stronger heroic damage presence without becoming too wide.
 Style lock tokens: three-quarter top-down 25-30 degree camera, top-left warm key light, lower-right soft fill, soft ellipse shadow, dark graphite 3-5px outline, 1-2px colored inner rim, painted toy metal shell, soft glass core, one primary glow per unit.
 Style: premium mobile game toy-board unit sprites, three-quarter top-down 25-30 degree camera, chunky silhouettes, polished painted metal, soft glass cores, dark graphite 3-5px outline, 1-2px inner colored rim, readable at 64px.
 Lighting: top-left warm key light, lower-right soft fill, soft ellipse shadow at 12-18% opacity, consistent scale.

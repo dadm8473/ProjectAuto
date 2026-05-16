@@ -100,6 +100,32 @@ export const REBOOT_UNITS = {
     damage: 10,
     rescueChargeOnPartnerDanger: 10,
     spriteKey: 'rescue_coil'
+  },
+  mirror_port: {
+    id: 'mirror_port',
+    name: '미러 포트',
+    grade: 2,
+    role: 'support',
+    amp: 1.35,
+    spriteKey: 'mirror_port'
+  },
+  bloom_amp: {
+    id: 'bloom_amp',
+    name: '블룸 앰프',
+    grade: 1,
+    role: 'support',
+    amp: 1.15,
+    spriteKey: 'bloom_amp'
+  },
+  nova_mast: {
+    id: 'nova_mast',
+    name: '노바 마스트',
+    grade: 2,
+    role: 'attack',
+    damage: 24,
+    cycle: 0.85,
+    range: 180,
+    spriteKey: 'nova_mast'
   }
 };
 

@@ -37,7 +37,10 @@ test('reboot units expose readable Korean names, roles, stats, and sprite keys',
     'toktok_amp',
     'slow_coil',
     'burst_pin',
-    'rescue_coil'
+    'rescue_coil',
+    'mirror_port',
+    'bloom_amp',
+    'nova_mast'
   ]);
 
   assert.deepEqual(REBOOT_UNITS.spark_pin, {
@@ -59,6 +62,19 @@ test('reboot units expose readable Korean names, roles, stats, and sprite keys',
   assert.equal(REBOOT_UNITS.burst_pin.damage, 18);
   assert.equal(REBOOT_UNITS.rescue_coil.role, 'rescue');
   assert.equal(REBOOT_UNITS.rescue_coil.rescueChargeOnPartnerDanger, 10);
+  assert.equal(REBOOT_UNITS.mirror_port.name, '미러 포트');
+  assert.equal(REBOOT_UNITS.mirror_port.grade, 2);
+  assert.equal(REBOOT_UNITS.mirror_port.role, 'support');
+  assert.equal(REBOOT_UNITS.mirror_port.amp, 1.35);
+  assert.equal(REBOOT_UNITS.bloom_amp.name, '블룸 앰프');
+  assert.equal(REBOOT_UNITS.bloom_amp.grade, 1);
+  assert.equal(REBOOT_UNITS.bloom_amp.role, 'support');
+  assert.equal(REBOOT_UNITS.bloom_amp.amp, 1.15);
+  assert.equal(REBOOT_UNITS.nova_mast.name, '노바 마스트');
+  assert.equal(REBOOT_UNITS.nova_mast.grade, 2);
+  assert.equal(REBOOT_UNITS.nova_mast.role, 'attack');
+  assert.equal(REBOOT_UNITS.nova_mast.damage, 24);
+  assert.equal(REBOOT_UNITS.nova_mast.range, 180);
 
   for (const [id, unit] of Object.entries(REBOOT_UNITS)) {
     assert.equal(unit.id, id);
