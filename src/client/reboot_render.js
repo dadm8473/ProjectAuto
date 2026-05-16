@@ -1,4 +1,4 @@
-import { REBOOT_RULES } from '../shared/reboot_content.js';
+import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js';
 
 const OPERATION_START_CUTIN_END = 0.56;
 const OPERATION_START_CUTIN_FADE = 0.18;
@@ -255,6 +255,13 @@ const UNIT_COLORS = {
   mirror_port: '#90f3ff',
   bloom_amp: '#ffdc73',
   nova_mast: '#ff8f5a'
+};
+
+const UNIT_ROLE_LABELS = {
+  attack: '공격',
+  support: '지원',
+  control: '제어',
+  rescue: '구원'
 };
 
 const MOMENT_CALLOUTS = {
@@ -1435,7 +1442,23 @@ function drawCombatMomentCallout(ctx, state, assets = {}) {
   ctx.shadowBlur = 13;
   ctx.font = '900 16px system-ui';
   ctx.fillText(meta.title, x + 82, y + 43);
+  const detail = momentCalloutDetail(event, meta);
+  if (detail) {
+    ctx.shadowColor = '#071314';
+    ctx.shadowBlur = 5;
+    ctx.fillStyle = 'rgba(255, 248, 218, 0.94)';
+    ctx.font = '850 12px system-ui';
+    ctx.fillText(detail, x + 82, y + 58);
+  }
   ctx.restore();
+}
+
+function momentCalloutDetail(event, meta) {
+  if (event?.type !== 'summon') return meta.body;
+  const unit = REBOOT_UNITS[event.unitIdResult ?? event.unitId];
+  if (!unit) return meta.body;
+  const role = UNIT_ROLE_LABELS[unit.role] ?? '유닛';
+  return `${unit.name} · ${role}`;
 }
 
 function drawPartnerAssistPing(ctx, state, assets = {}, localBoardId = 'p1') {

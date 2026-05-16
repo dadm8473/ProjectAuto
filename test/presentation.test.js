@@ -1367,7 +1367,7 @@ test('combat board renderer uses generated merge and danger accent frames', asyn
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
   for (const marker of [
-    "import { REBOOT_RULES } from '../shared/reboot_content.js';",
+    "import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js';",
     'mergeReadyGrades',
     'Number(grade) < 2',
     'unitCount >= REBOOT_RULES.merge.requiredSameGrade',
@@ -2295,6 +2295,10 @@ test('combat renderer uses compact generated action stamps for successful action
     'const w = 252;',
     'const y = 326 - rise;',
     'MOMENT_CALLOUTS',
+    'UNIT_ROLE_LABELS',
+    'momentCalloutDetail(event, meta)',
+    'ctx.fillText(detail, x + 82, y + 58);',
+    'REBOOT_UNITS[event.unitIdResult ?? event.unitId]',
     "'소환 성공'",
     "'합성 성공'",
     "'구원 발동'"
@@ -2306,7 +2310,6 @@ test('combat renderer uses compact generated action stamps for successful action
   assert.equal(render.includes('momentCallouts'), false);
   assert.equal(calloutBlock.includes('assets.momentCallouts'), false);
   assert.equal(calloutBlock.includes('drawMomentCalloutPanel'), false);
-  assert.equal(calloutBlock.includes('meta.body'), false);
 });
 
 test('combat renderer uses generated partner assist pings for bot co-op actions', async () => {

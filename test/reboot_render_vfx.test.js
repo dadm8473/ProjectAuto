@@ -1711,6 +1711,42 @@ test('compact combat action stamp stays readable long enough after the first sum
   assert.equal(stampAlpha >= 0.82, true, `action stamp should remain legible while the unit lands: ${stampAlpha}`);
 });
 
+test('summon action stamp names the revealed unit and role', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 11.0,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard' }],
+      events: [{ type: 'summon', at: 10.1, playerId: 'p1', unitId: 'spark_pin' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      actionStamps: image(768, 128),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  assert.equal(
+    ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '스파크 핀 · 공격'),
+    true,
+    'summon reward stamp should reveal the unit identity without opening a separate web panel'
+  );
+  const detailIndex = ctx.commands.findIndex((command) => command.type === 'fillText' && command.args[0] === '스파크 핀 · 공격');
+  const detailFont = ctx.commands.slice(0, detailIndex).findLast((command) => command.type === 'font')?.value ?? '';
+  assert.match(detailFont, /12px/, 'unit identity should stay readable on a phone-scale action stamp');
+});
+
 test('rescue action stamp stays below boss warning copy during crisis timing', () => {
   const ctx = mockContext();
   drawRebootBattle(
