@@ -113,6 +113,7 @@ const LOBBY_OPERATION_SEQUENCE = [
   {
     seedName: 'tutorial_success',
     title: '첫 구원 작전',
+    hudTitle: '첫 구원',
     detail: '파트너 구원 · 보스 저지',
     cta: '첫 구원 작전 시작',
     poster: 'first'
@@ -120,6 +121,7 @@ const LOBBY_OPERATION_SEQUENCE = [
   {
     seedName: 'lucky_clutch',
     title: '보스 막타 작전',
+    hudTitle: '보스 막타',
     detail: '막판 소환 · 결정타',
     cta: '보스 막타 작전 시작',
     poster: 'boss'
@@ -127,6 +129,7 @@ const LOBBY_OPERATION_SEQUENCE = [
   {
     seedName: 'bad_recoverable',
     title: '역전 구원 작전',
+    hudTitle: '역전 구원',
     detail: '나쁜 운 회복 · 구원',
     cta: '역전 구원 작전 시작',
     poster: 'recovery'
@@ -134,11 +137,17 @@ const LOBBY_OPERATION_SEQUENCE = [
   {
     seedName: 'boss_clutch',
     title: '보스 대응 작전',
+    hudTitle: '보스 대응',
     detail: '소환/합성 선택',
     cta: '보스 대응 작전 시작',
     poster: 'response'
   }
 ];
+
+export function operationForSeedName(seedName) {
+  return LOBBY_OPERATION_SEQUENCE.find((operation) => operation.seedName === seedName)
+    ?? { seedName: 'unknown', title: '신호릴레이', hudTitle: '신호릴레이', detail: '협동 타워디펜스', cta: '작전 시작', poster: 'first' };
+}
 
 export function missionProgress(profile, mission) {
   return Math.min(mission.target, mission.progress(profile));

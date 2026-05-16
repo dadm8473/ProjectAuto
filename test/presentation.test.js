@@ -183,6 +183,19 @@ test('player-facing app branding is Korean and no longer exposes the repository 
   assert.equal(server.includes('ProjectAuto 시그널 릴레이'), false);
 });
 
+test('battle HUD title follows the current authored operation instead of a static web header', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  assert.equal(html.includes('<strong id="gameTitle">신호릴레이</strong>'), true);
+  assert.equal(app.includes('gameTitle: qs(\'#gameTitle\')'), true);
+  assert.equal(app.includes('operationForSeedName'), true);
+  assert.equal(app.includes('dom.gameTitle.textContent = operationForSeedName(current.seedName).hudTitle;'), true);
+  assert.equal(screens.includes('export function operationForSeedName'), true);
+  assert.equal(screens.includes("hudTitle: '첫 구원'"), true);
+});
+
 test('reboot render uses only reboot atlases and manifest keys', async () => {
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 

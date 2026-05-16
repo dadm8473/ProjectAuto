@@ -7,6 +7,7 @@ import {
   buildMissionScreen,
   nextLobbyAction,
   nextLobbyOperation,
+  operationForSeedName,
   buildRebootCollection,
   buildRebootLobby,
   buildRebootResultModel,
@@ -203,6 +204,17 @@ test('result model preserves multiple run highlights for generated result strips
     ]
   );
   assert.deepEqual(model.highlight, model.highlights[0]);
+});
+
+test('operation title lookup exposes the active combat beat for the battle HUD', () => {
+  assert.equal(operationForSeedName('tutorial_success').title, '첫 구원 작전');
+  assert.equal(operationForSeedName('tutorial_success').hudTitle, '첫 구원');
+  assert.equal(operationForSeedName('lucky_clutch').title, '보스 막타 작전');
+  assert.equal(operationForSeedName('lucky_clutch').hudTitle, '보스 막타');
+  assert.equal(operationForSeedName('boss_clutch').title, '보스 대응 작전');
+  assert.equal(operationForSeedName('boss_clutch').hudTitle, '보스 대응');
+  assert.equal(operationForSeedName('unknown_seed').title, '신호릴레이');
+  assert.equal(operationForSeedName('unknown_seed').hudTitle, '신호릴레이');
 });
 
 test('result primary action names the next authored operation after a win', () => {

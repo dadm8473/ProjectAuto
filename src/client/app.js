@@ -17,6 +17,7 @@ import {
   buildSeasonScreen,
   missionProgress,
   nextLobbyOperation,
+  operationForSeedName,
   postRewardRoute,
   REBOOT_MISSIONS,
   startRebootRetry,
@@ -53,6 +54,7 @@ const dom = {
   statusLine: qs('.status-line'),
   timeMeter: qs('#timeMeter'),
   bossMeter: qs('#bossMeter'),
+  gameTitle: qs('#gameTitle'),
   netStatus: qs('#netStatus'),
   summonButton: qs('#summonButton'),
   mergeButton: qs('#mergeButton'),
@@ -621,6 +623,7 @@ function setMeterValue(meter, value, label, state = 'idle') {
 }
 
 function updateMeters(current) {
+  dom.gameTitle.textContent = operationForSeedName(current.seedName).hudTitle;
   const resources = current.resources?.[localBoardId] ?? current.resources.p1;
   const partner = localBoardId === 'p1' ? 'p2' : 'p1';
   const partnerDanger = Math.round(current.boards[partner]?.danger ?? 0);
