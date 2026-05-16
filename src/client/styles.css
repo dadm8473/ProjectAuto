@@ -79,6 +79,7 @@
   --combat-directive-banner: url("/src/client/assets/generated/reboot-combat-directive-banner.png?v=combat-directive1");
   --combat-first-command-spotlight: url("/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=first-command");
   --combat-first-summon-console: url("/src/client/assets/generated/reboot-combat-first-summon-console.png?v=first-summon-console1");
+  --combat-first-tap-cue: url("/src/client/assets/generated/reboot-combat-first-tap-cue.png?v=first-tap-cue1");
   --combat-critical-action-rings: url("/src/client/assets/generated/reboot-critical-action-rings.png?v=critical-action-rings");
   --combat-coach-cues: url("/src/client/assets/generated/reboot-combat-coach-cues.png?v=combat-coach");
   --online-matchmaking-panels: url("/src/client/assets/generated/reboot-online-matchmaking-panels.png?v=online-matchmaking");
@@ -904,7 +905,19 @@ body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions::after 
 }
 
 body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::after {
-  left: 50%;
+  content: "";
+  left: calc(50% + clamp(42px, 12.56vw, 54px));
+  top: clamp(-24px, -5.58vw, -18px);
+  width: clamp(76px, 23.26vw, 100px);
+  aspect-ratio: 1 / 1;
+  pointer-events: none;
+  background-image: var(--combat-first-tap-cue);
+  background-size: 400% 100%;
+  background-position: 0 0;
+  opacity: 0.96;
+  transform: translate(-50%, -8%) scale(0.98);
+  filter: saturate(1.16) drop-shadow(0 9px 16px rgba(0, 0, 0, 0.54)) drop-shadow(0 0 18px rgba(244, 201, 93, 0.28));
+  animation: firstTapCueFloat 1.05s ease-in-out infinite;
 }
 
 body[data-app-screen="battle"][data-coach-cue="merge"] .primary-actions::after {
@@ -1090,6 +1103,11 @@ body[data-app-screen="battle"][data-coach-cue] .action-panel {
 @keyframes coachCueFloat {
   0%, 100% { transform: translateX(-50%) translateY(2px) scale(0.94); }
   50% { transform: translateX(-50%) translateY(-3px) scale(1); }
+}
+
+@keyframes firstTapCueFloat {
+  0%, 100% { transform: translate(-50%, -8%) scale(0.98); }
+  48% { transform: translate(-50%, -18%) scale(1.04); }
 }
 
 @keyframes firstCommandSpotlight {
@@ -1679,6 +1697,7 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::after,
   .bottom-dock button[data-nav-alert] .nav-alert-badge {
     animation: none;
   }

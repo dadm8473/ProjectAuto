@@ -695,6 +695,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 48_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-first-tap-cue.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-combat-first-tap-cue-chromakey-imagegen.png',
+    width: 1024,
+    height: 256,
+    minRuntimeBytes: 60_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-player-board-tray.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-player-board-tray-imagegen.png',
     width: 780,
@@ -1938,6 +1945,37 @@ test('combat coach cue cells keep each teaching prompt visible and padded', asyn
     assert.equal(bounds.maxX <= cellWidth - 9, true, `combat coach cue cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 4, true, `combat coach cue cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 5, true, `combat coach cue cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('combat first tap cue atlas keeps four transparent readable tutorial prompts', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-combat-first-tap-cue.png'));
+  const cellWidth = 256;
+  const corners = [
+    alphaAt(image, 2, 2),
+    alphaAt(image, image.width - 3, 2),
+    alphaAt(image, 2, image.height - 3),
+    alphaAt(image, image.width - 3, image.height - 3)
+  ];
+
+  assert.equal(image.width, 1024);
+  assert.equal(image.height, 256);
+  assert.equal(corners.every((alpha) => alpha < 10), true, `tap cue atlas has opaque corners: ${corners.join(',')}`);
+
+  for (let cell = 0; cell < 4; cell += 1) {
+    const rect = { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height };
+    const bounds = alphaBounds(image, rect, 28);
+    const coverage = alphaCoverage(image, rect, 28);
+    const greenScreenRatio = colorRatio(image, rect, (r, g, b) => g > 180 && r < 80 && b < 80);
+
+    assert.equal(bounds.count > 12_000, true, `tap cue cell ${cell} has no readable generated subject`);
+    assert.equal(coverage > 0.18, true, `tap cue cell ${cell} is too sparse: ${coverage}`);
+    assert.equal(coverage < 0.42, true, `tap cue cell ${cell} is too dense for an overlay: ${coverage}`);
+    assert.equal(bounds.minX >= 12, true, `tap cue cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 13, true, `tap cue cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 12, true, `tap cue cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 13, true, `tap cue cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+    assert.equal(greenScreenRatio < 0.0001, true, `tap cue cell ${cell} keeps chroma-key green: ${greenScreenRatio}`);
   }
 });
 

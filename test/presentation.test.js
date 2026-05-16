@@ -501,7 +501,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-touch1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-tap-cue1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-touch1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-item-status1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-capsules1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-command-dock1">'), false);
@@ -1023,11 +1024,34 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=meta-touch1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=first-tap-cue1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
   assert.equal(coachConsole.includes('opacity: 1;'), true);
+});
+
+test('first battle summon command uses a generated tap cue instead of a tiny web hint', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--combat-first-tap-cue: url("/src/client/assets/generated/reboot-combat-first-tap-cue.png?v=first-tap-cue1")',
+    'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::after',
+    'background-image: var(--combat-first-tap-cue);',
+    'background-size: 400% 100%;',
+    'background-position: 0 0;',
+    'width: clamp(76px, 23.26vw, 100px);',
+    'aspect-ratio: 1 / 1;',
+    'animation: firstTapCueFloat 1.05s ease-in-out infinite;',
+    '@keyframes firstTapCueFloat'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const tapCueBlock = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::after');
+  assert.equal(tapCueBlock.includes('content: "";'), true);
+  assert.equal(tapCueBlock.includes('pointer-events: none;'), true);
+  assert.equal(tapCueBlock.includes('background-image: none;'), false);
 });
 
 test('combat command focus uses game feedback instead of a browser outline rectangle', async () => {
