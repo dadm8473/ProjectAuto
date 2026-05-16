@@ -83,7 +83,7 @@
   --combat-critical-action-rings: url("/src/client/assets/generated/reboot-critical-action-rings.png?v=critical-action-rings");
   --combat-coach-cues: url("/src/client/assets/generated/reboot-combat-coach-cues.png?v=combat-coach");
   --online-matchmaking-panels: url("/src/client/assets/generated/reboot-online-matchmaking-panels.png?v=online-matchmaking");
-  --online-partner-link: url("/src/client/assets/generated/reboot-online-partner-link.png?v=partner-link1");
+  --online-partner-link: url("/src/client/assets/generated/reboot-online-partner-link.png?v=partner-link2");
   --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets");
   --combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates-alpha1");
   --combat-hud-row: clamp(72px, 22.33vw, 96px);

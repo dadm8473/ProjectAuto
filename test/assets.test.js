@@ -196,7 +196,7 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
   },
   {
     path: 'src/client/assets/generated/reboot-online-partner-link.png',
-    source: 'docs/design/generation/source/reboot/style-lock/20260515-online-partner-link-chromakey-imagegen.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-online-partner-link-readable-imagegen.png',
     width: 1170,
     height: 144,
     minRuntimeBytes: 150_000
@@ -567,8 +567,8 @@ const TRANSPARENT_UI_FRAME_ASSETS = [
   },
   {
     path: 'src/client/assets/generated/reboot-online-partner-link.png',
-    minSoftCoverage: 0.42,
-    maxSoftCoverage: 0.58,
+    minSoftCoverage: 0.7,
+    maxSoftCoverage: 0.82,
     maxCornerAlpha: 8
   }
 ];
@@ -1174,6 +1174,19 @@ test('generated UI frames use alpha instead of baked black rectangles', async ()
     const softCoverage = alphaCoverage(image, { x: 0, y: 0, width: image.width, height: image.height }, 24);
     assert.equal(softCoverage > asset.minSoftCoverage, true, `${asset.path} lost too much generated frame art: ${softCoverage}`);
     assert.equal(softCoverage < asset.maxSoftCoverage, true, `${asset.path} still reads as a baked rectangular card: ${softCoverage}`);
+  }
+});
+
+test('online partner event banner has a dark generated text plate in every state', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-online-partner-link.png'));
+  const cellWidth = 390;
+  for (let cell = 0; cell < 3; cell += 1) {
+    const textPlateRect = { x: cell * cellWidth + 116, y: 34, width: 158, height: 69 };
+    const plateCoverage = alphaCoverage(image, textPlateRect, 220);
+    const plateLuma = luminanceStats(image, textPlateRect, 64);
+    assert.equal(plateCoverage > 0.98, true, `partner event banner cell ${cell} lacks an opaque text plate: ${plateCoverage}`);
+    assert.equal(plateLuma.mean < 38, true, `partner event banner cell ${cell} plate is too bright for overlay copy: ${plateLuma.mean}`);
+    assert.equal(plateLuma.brightRatio < 0.14, true, `partner event banner cell ${cell} plate is too noisy behind copy: ${plateLuma.brightRatio}`);
   }
 });
 

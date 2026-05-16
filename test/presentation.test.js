@@ -102,7 +102,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=summon-cooldown-label1'",
-    "from './reboot_render.js?v=action-surges1'",
+    "from './reboot_render.js?v=match-banner-cutin1'",
     "from './reboot_screens.js?v=meta-item-status1'",
     "from './reboot_online.js'"
   ]) {
@@ -401,7 +401,7 @@ test('online matchmaking states use generated app-game panels instead of plain t
 
   for (const marker of [
     '--online-matchmaking-panels: url("/src/client/assets/generated/reboot-online-matchmaking-panels.png?v=online-matchmaking")',
-    '--online-partner-link: url("/src/client/assets/generated/reboot-online-partner-link.png?v=partner-link1")',
+    '--online-partner-link: url("/src/client/assets/generated/reboot-online-partner-link.png?v=partner-link2")',
     '.matchmaking-banner',
     'background-image: var(--online-partner-link);',
     'background-image: var(--online-matchmaking-panels);',
@@ -538,7 +538,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive-chip1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=match-banner-cutin1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive-chip1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-tap-cue1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-touch1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-item-status1">'), false);
@@ -610,7 +611,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-wait-focus1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=match-banner-cutin1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-wait-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-cooldown-label1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-surges1"></script>'), false);
@@ -646,7 +648,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
-  assert.equal(app.includes("from './reboot_render.js?v=action-surges1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=match-banner-cutin1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=action-surges1'"), false);
   assert.equal(app.includes("from './reboot_action_ui.js?v=action-focus2'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=unit-activation-ring1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=first-summon-beacon1'"), false);
@@ -1066,7 +1069,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=meta-passive-chip1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=match-banner-cutin1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -2017,12 +2020,13 @@ test('equipped cosmetics appear in battle as generated expression sigils only', 
     'function drawBattleCosmeticSignature',
     'options.equippedCosmetic',
     'drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);',
-    'if (!options.onlineWaiting) drawCombatStartCutin(ctx, state, assets);',
+    'if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawCombatStartCutin(ctx, state, assets);',
     'drawRebootBattle(ctx, current, { width: dom.canvas.width, height: dom.canvas.height }, rebootAssets, {',
     'equippedCosmetic: profile.equippedCosmetic',
     'reducedMotion: reduceMotion.matches',
     'localBoardId',
-    'onlineWaiting: waitingForOnlinePartner(current)'
+    'onlineWaiting: waitingForOnlinePartner(current),',
+    "matchmakingBannerVisible: appScreen === 'battle' && !dom.matchmakingBanner.hidden"
   ]) {
     assert.equal(`${app}\n${render}`.includes(marker), true, marker);
   }

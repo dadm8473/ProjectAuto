@@ -4,7 +4,7 @@ import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=merge-reason1';
 import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=summon-cooldown-label1';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=action-surges1';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=match-banner-cutin1';
 import {
   buildMetaNavAlerts,
   buildMissionScreen,
@@ -683,7 +683,8 @@ function loop(now) {
     equippedCosmetic: profile.equippedCosmetic,
     reducedMotion: reduceMotion.matches,
     localBoardId,
-    onlineWaiting: waitingForOnlinePartner(current)
+    onlineWaiting: waitingForOnlinePartner(current),
+    matchmakingBannerVisible: appScreen === 'battle' && !dom.matchmakingBanner.hidden
   });
   updateMeters(current);
   updateButtons(current);

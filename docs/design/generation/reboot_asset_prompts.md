@@ -740,19 +740,19 @@ Postprocess: remove #ff00ff chroma key with soft matte/despill, crop and pad run
 ```text
 Use case: stylized-concept
 Asset type: mobile game UI sprite atlas for ProjectAuto / 신호릴레이
-Primary request: Create one polished sci-fi mobile game UI sprite atlas containing THREE equal-width horizontal co-op partner-link console panels in a single row. Each cell is a compact two-slot matchmaking console: left slot is the local player core, center has a glowing energy link rail, right slot changes by state.
-State 1: partner searching, right slot is a scanning hologram socket with small radar glow.
-State 2: partner connected, right slot is fully lit and linked to the left slot.
-State 3: partner reset/disconnected, right slot has a warning pulse and fractured signal ring.
-Scene/backdrop: perfectly flat solid #ff00ff chroma-key background for background removal.
+Primary request: Create one polished sci-fi mobile game UI sprite atlas containing THREE equal-width horizontal co-op event banner panels in a single row. Each cell is a wide metallic console banner with a strong dark central glass label plate where DOM text will be overlaid later.
+State 1: partner searching, blue scanning link with a dark readable text plate.
+State 2: partner connected, teal-gold dual linked cores with a dark readable text plate.
+State 3: partner reset/disconnected, red-orange broken link alert with a dark readable text plate.
+Scene/backdrop: transparent-safe atlas preview background.
 Style/medium: high-end 2D game UI art, Korean mobile sci-fi tower-defense, glossy metal frame, teal energy, warm amber accents, consistent with premium generated game assets, not a web component.
-Composition/framing: one atlas row, three equal cells, generous padding, centered panels, no cropping, no shadows cast onto the background.
+Composition/framing: one atlas row, three equal cells, generous padding, centered panels, no cropping. The central dark text plate should occupy roughly the middle half of each cell and stay much quieter than the edge machinery.
 Text: no text, no letters, no numbers, no logos.
-Constraints: background must be one uniform #ff00ff color with no gradient, texture, shadow, reflection, or lighting variation; do not use #ff00ff anywhere in the subject; crisp edges suitable for chroma-key alpha removal; each cell must be visually distinct and readable at phone scale.
+Constraints: transparent outer background or a removable preview background; crisp edges suitable for alpha cleanup; each cell must be visually distinct and readable at phone scale.
 Avoid: CSS-like flat rectangles, website cards, text, watermark, black rectangular baked background, cropped corners.
-Postprocess: remove #ff00ff chroma key with soft matte/despill, slice the generated row into three equal cells, trim transparent padding per cell, and pad each state into a 390x144 runtime cell for final atlas 1170x144.
+Postprocess: remove the preview background, slice the generated row into three equal cells, trim transparent padding per cell, and pad each state into a 390x144 runtime cell for final atlas 1170x144.
 Runtime files:
-- docs/design/generation/source/reboot/style-lock/20260515-online-partner-link-chromakey-imagegen.png
+- docs/design/generation/source/reboot/style-lock/20260516-online-partner-link-readable-imagegen.png
 - src/client/assets/generated/reboot-online-partner-link.png
 ```
 

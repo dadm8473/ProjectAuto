@@ -1219,7 +1219,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawBoard(ctx, state.boards[partnerId], 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
   drawTrack(ctx, state, assets, imageBackdrop);
   drawCombatActionSurges(ctx, state, assets, layout, localBoardId);
-  if (!options.onlineWaiting) drawCombatStartCutin(ctx, state, assets);
+  if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawCombatStartCutin(ctx, state, assets);
   drawCombatCrisisOverlays(ctx, state, assets, localBoardId);
   const drewDualCrisis = drawDualCrisisCutin(ctx, state, assets, localBoardId);
   if (!drewDualCrisis) {
