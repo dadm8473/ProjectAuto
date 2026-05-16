@@ -853,7 +853,7 @@ const IMAGEGEN_REBOOT_ATLASES = [
   },
   {
     path: 'src/client/assets/generated/reboot-enemy-atlas.png',
-    source: 'docs/design/generation/source/reboot/style-lock/20260513-enemy-atlas-imagegen.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-enemy-atlas-v2-chromakey-imagegen.png',
     width: 1024,
     height: 256,
     minRuntimeBytes: 70_000

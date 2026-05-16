@@ -13,7 +13,7 @@ export const REBOOT_ATLAS_MANIFEST = {
     order: ['spark_pin', 'toktok_amp', 'slow_coil', 'burst_pin', 'rescue_coil', 'mirror_port', 'bloom_amp', 'nova_mast']
   },
   enemies: {
-    src: '/src/client/assets/generated/reboot-enemy-atlas.png',
+    src: '/src/client/assets/generated/reboot-enemy-atlas.png?v=enemy-atlas-v2',
     columns: 4,
     rows: 1,
     cell: { width: 256, height: 256 },
@@ -830,7 +830,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
   const enemies = state.enemies.slice(0, 8);
   enemies.forEach((enemy, index) => {
     const { x, y } = enemyScreenPoint(state, index);
-    const size = enemy.enemyId === 'mini_boss' ? 54 : 36;
+    const size = enemy.enemyId === 'mini_boss' ? 66 : 44;
     if (enemy.enemyId === 'mini_boss') {
       drawBossAura(ctx, assets, x, y, state.now);
     }

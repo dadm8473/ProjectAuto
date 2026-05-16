@@ -181,7 +181,7 @@ test('reboot render uses only reboot atlases and manifest keys', async () => {
     'REBOOT_BACKDROP_MANIFEST',
     'reboot-battle-backdrop.png',
     'reboot-unit-atlas.png',
-    'reboot-enemy-atlas.png',
+    'reboot-enemy-atlas.png?v=enemy-atlas-v2',
     'reboot-ui-icons.png',
     'reboot-reward-icons.png',
     'reboot-board-accents.png',
@@ -918,7 +918,7 @@ test('combat renderer keeps imagegen enemy sprites readable on phone canvas', as
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
   for (const marker of [
-    "const size = enemy.enemyId === 'mini_boss' ? 54 : 36",
+    "const size = enemy.enemyId === 'mini_boss' ? 66 : 44",
     "drawAtlasSprite(ctx, assets, 'enemies'"
   ]) {
     assert.equal(render.includes(marker), true, marker);
