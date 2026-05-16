@@ -1440,6 +1440,7 @@ function drawCombatMomentCallout(ctx, state, assets = {}) {
 
 function drawPartnerAssistPing(ctx, state, assets = {}, localBoardId = 'p1') {
   if (hasRecentLocalPlayerActionSurge(state, localBoardId)) return;
+  if (recentWaveDirective(state)) return;
   const event = recentEvents(state, 'partner_auto', PARTNER_ASSIST_PING_DURATION).at(-1);
   if (!event) return;
   const meta = PARTNER_ASSIST_PINGS[event?.action] ?? PARTNER_ASSIST_PINGS.summon;

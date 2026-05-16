@@ -462,6 +462,48 @@ test('wave starts use a generated directive banner instead of bare event text', 
   assert.equal(bannerDraw.args[8] <= 72, true, 'directive banner should stay compact on portrait combat');
 });
 
+test('wave directive suppresses partner assist ping so central battlefield banners do not overlap', () => {
+  const ctx = mockContext();
+  const directiveBanner = image(900, 186);
+  const partnerAssistPings = image(864, 90);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 32.18,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 35, units: [{ spriteKey: 'toktok_amp' }] }
+      },
+      enemies: [
+        { enemyId: 'noise_shard', spriteKey: 'noise_shard', boardId: 'p1', progress: 0.16 }
+      ],
+      events: [
+        { type: 'wave', at: 32.0, waveAt: 32 },
+        { type: 'partner_auto', at: 32.04, action: 'summon', playerId: 'p2' }
+      ],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      ui: image(1536, 256),
+      directiveBanner,
+      partnerAssistPings
+    }
+  );
+
+  assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '적 접근'), true);
+  assert.equal(
+    ctx.commands.some((command) => command.type === 'drawImage' && command.args[0] === partnerAssistPings),
+    false,
+    'partner assist generated banner should wait while the wave directive owns the center lane'
+  );
+  assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '파트너 지원'), false);
+});
+
 test('enemy sprites follow serialized track progress instead of a timer-only path', () => {
   const ctx = mockContext();
   const enemies = image(1024, 256);

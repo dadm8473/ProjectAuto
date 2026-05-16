@@ -79,13 +79,17 @@ function recordingCanvasContext() {
 function stateWithPartnerAutoPing() {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
   advanceRebootGameTo(game, 18.1);
-  return serializeRebootState(game);
+  const state = serializeRebootState(game);
+  state.events = state.events.filter((event) => event.type !== 'wave');
+  return state;
 }
 
 function stateWithPartnerRescuePing() {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
   advanceRebootGameTo(game, 88.1);
-  return serializeRebootState(game);
+  const state = serializeRebootState(game);
+  state.events = state.events.filter((event) => event.type !== 'wave');
+  return state;
 }
 
 function advanceRebootGameTo(game, time, step = 0.25) {
