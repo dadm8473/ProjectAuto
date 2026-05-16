@@ -361,6 +361,11 @@ function buildLobbyNextActionControl(nextAction) {
   return `<button type="button" data-lobby-open="${nextAction.screen}" aria-label="${nextAction.label} ${nextAction.cta}">${nextAction.cta}</button>`;
 }
 
+function trainingAvailabilityCopy(profile = {}) {
+  const trainable = countTrainableUnits(profile);
+  return trainable > 0 ? `${trainable}기 훈련 가능` : '훈련 대기';
+}
+
 function operationProgressMarkup(operation) {
   return `
       <span class="operation-progress" aria-label="작전 진행 ${operation.step}/${operation.total}">
@@ -412,7 +417,7 @@ export function buildRebootCollection(profile = {}) {
     kind: 'collection',
     label: '대표 유닛',
     title: featuredUnit.name,
-    detail: `${ROLE_LABELS[featuredUnit.role] ?? featuredUnit.role} · ${countTrainableUnits(profile)}명 훈련 가능`,
+    detail: `${ROLE_LABELS[featuredUnit.role] ?? featuredUnit.role} · ${trainingAvailabilityCopy(profile)}`,
     stats: [`Lv.${featuredLevel}`, `${Math.min(xp, featuredCost)}/${featuredCost} 경험치`],
     spriteClass: 'unit-sprite',
     spriteAttr: 'data-sprite',

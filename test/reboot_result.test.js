@@ -424,6 +424,16 @@ test('collection and shop showcases split numeric state into compact game badges
   assert.equal(shop.includes('0 젬 보유 · 90 젬'), false);
 });
 
+test('collection showcase names training availability as game-state copy instead of awkward person count', () => {
+  const idleCollection = buildRebootCollection({ xp: 0, unitLevels: {} });
+  const readyCollection = buildRebootCollection({ xp: 40, unitLevels: {} });
+
+  assert.equal(idleCollection.includes('공격 · 훈련 대기'), true);
+  assert.equal(idleCollection.includes('0명 훈련 가능'), false);
+  assert.equal(readyCollection.includes('8기 훈련 가능'), true);
+  assert.equal(readyCollection.includes('명 훈련 가능'), false);
+});
+
 test('collection and shop shelf price chips show numbers while preserving accessible meaning', () => {
   const collection = buildRebootCollection({ xp: 0, unitLevels: {} });
   const shop = buildRebootShop({ gems: 0, unlocks: [] });
