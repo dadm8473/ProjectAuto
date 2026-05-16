@@ -104,6 +104,9 @@ async function assertOnlineWaiting(page) {
       onlineWaiting: document.body.dataset.onlineWaiting,
       statusDisplay: getComputedStyle(document.querySelector('.status-line')).display,
       summonDisplay: getComputedStyle(document.querySelector('#summonButton')).display,
+      summonText: document.querySelector('#summonButton span')?.textContent,
+      summonAria: document.querySelector('#summonButton')?.getAttribute('aria-label'),
+      summonCancel: document.querySelector('#summonButton')?.dataset.matchCancel,
       dockLabel: getComputedStyle(primaryActions, '::after').content,
       dockImage: getComputedStyle(primaryActions, '::before').backgroundImage,
       waitingBannerHidden: document.querySelector('#matchmakingBanner')?.hidden ?? false
@@ -111,7 +114,10 @@ async function assertOnlineWaiting(page) {
   });
   assert.equal(dockState.onlineWaiting, 'true', 'online waiting body state');
   assert.equal(dockState.statusDisplay, 'none', 'waiting command dock hides combat prompt row');
-  assert.equal(dockState.summonDisplay, 'none', 'waiting command dock removes combat buttons from layout');
+  assert.notEqual(dockState.summonDisplay, 'none', 'waiting command dock exposes a cancel action');
+  assert.equal(dockState.summonText, '취소', 'waiting command dock labels the cancel action');
+  assert.equal(dockState.summonAria, '매칭 취소', 'waiting cancel action is accessible');
+  assert.equal(dockState.summonCancel, 'true', 'waiting cancel action is marked for generated styling');
   assert.equal(dockState.dockLabel, '"파트너 매칭 중"', 'waiting command dock label');
   assert.match(dockState.dockImage, /reboot-online-matchmaking-panels/, 'waiting command dock uses generated matchmaking art');
   assert.equal(
@@ -119,7 +125,7 @@ async function assertOnlineWaiting(page) {
     true,
     'waiting battlefield banner stays hidden while the command dock owns matchmaking'
   );
-  assert.equal(await page.locator('#summonButton').isEnabled(), false, 'summon disabled before partner joins');
+  assert.equal(await page.locator('#summonButton').isEnabled(), true, 'cancel enabled before partner joins');
   assert.equal(await page.locator('#mergeButton').isEnabled(), false, 'merge disabled before partner joins');
   assert.equal(await page.locator('#rescueButton').isEnabled(), false, 'rescue disabled before partner joins');
 }
@@ -151,6 +157,11 @@ async function main() {
       const first = await context.newPage();
       const second = await context.newPage();
 
+      await enterOnline(first, baseUrl);
+      await assertOnlineWaiting(first);
+      await first.locator('#summonButton').click();
+      await first.getByRole('button', { name: '온라인 협동' }).waitFor({ state: 'visible' });
+      assert.equal(await first.locator('body').getAttribute('data-app-screen'), 'lobby', 'cancel returns to lobby');
       await enterOnline(first, baseUrl);
       await assertOnlineWaiting(first);
       await enterOnline(second, baseUrl);

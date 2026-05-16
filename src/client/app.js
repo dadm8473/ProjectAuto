@@ -215,6 +215,22 @@ function fallbackToBotPartner(reason) {
   showToast('온라인 응답이 없어 봇 파트너로 전환합니다', 'warning');
 }
 
+function cancelOnlineMatch() {
+  if (appScreen !== 'battle' || !waitingForOnlinePartner(game)) return;
+  clearOnlineFallback();
+  const previousOnline = online;
+  online = null;
+  previousOnline?.close();
+  game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
+  localBoardId = 'p1';
+  resultShownFor = '';
+  dom.netStatus.textContent = '봇 협동';
+  hideMatchmakingBanner();
+  renderHomeScreens();
+  setScreen('lobby');
+  showToast('매칭 취소', 'info');
+}
+
 function waitingForOnlinePartner(current) {
   return current.mode === 'online' && current.players?.some((player) => player.bot);
 }
@@ -596,7 +612,7 @@ function command(actionName) {
   if (appScreen !== 'battle') return;
   const action = commandForRebootAction(actionName);
   if (game.mode === 'online' && waitingForOnlinePartner(game)) {
-    showToast('파트너 입장 대기 중', 'warning');
+    cancelOnlineMatch();
     return;
   }
   if (game.mode === 'online') {
@@ -672,6 +688,28 @@ function updateButtons(current) {
   else delete document.body.dataset.coachCue;
   dom.primaryActions.dataset.focus = exposure.focus;
   dom.primaryActions.dataset.openCount = String(exposure.openCount);
+  if (onlineWaiting) {
+    dom.primaryActions.dataset.focus = 'summon';
+    dom.primaryActions.dataset.openCount = '1';
+    for (const [key, button] of [
+      ['summon', dom.summonButton],
+      ['merge', dom.mergeButton],
+      ['rescue', dom.rescueButton]
+    ]) {
+      const cancel = key === 'summon';
+      button.disabled = !cancel;
+      button.querySelector('span').textContent = cancel ? '취소' : ACTION_LABELS[key];
+      button.setAttribute('aria-label', cancel ? '매칭 취소' : ACTION_LABELS[key]);
+      button.dataset.ready = String(cancel);
+      button.dataset.unlocked = String(cancel);
+      button.dataset.focus = String(cancel);
+      button.dataset.critical = 'false';
+      if (cancel) button.dataset.matchCancel = 'true';
+      else delete button.dataset.matchCancel;
+      button.title = cancel ? '매칭을 취소하고 로비로 돌아가기' : '파트너 입장 대기 중';
+    }
+    return;
+  }
   for (const [key, button] of [
     ['summon', dom.summonButton],
     ['merge', dom.mergeButton],
@@ -686,6 +724,7 @@ function updateButtons(current) {
     button.dataset.unlocked = String(exposure[key]);
     button.dataset.focus = String(exposure.focus === key);
     button.dataset.critical = String(isCriticalRebootAction({ actionKey: key, current, localBoardId, enabled }));
+    delete button.dataset.matchCancel;
     button.title = onlineWaiting ? '파트너 입장 대기 중' : actions[key].reason;
   }
 }

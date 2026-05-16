@@ -1369,7 +1369,7 @@ body[data-app-screen="battle"][data-coach-cue] .action-panel {
 body[data-app-screen="battle"][data-online-waiting="true"] .primary-actions {
   grid-template-columns: 1fr;
   align-items: center;
-  min-height: clamp(60px, 16.75vw, 72px);
+  min-height: clamp(92px, 25.12vw, 108px);
 }
 
 body[data-app-screen="battle"][data-online-waiting="true"] .status-line {
@@ -1382,9 +1382,9 @@ body[data-app-screen="battle"][data-online-waiting="true"] .action-panel {
 
 body[data-app-screen="battle"][data-online-waiting="true"] .primary-actions::before {
   left: 50%;
-  top: 50%;
+  top: 42%;
   width: min(calc(100% - 18px), 390px);
-  height: clamp(50px, 13.95vw, 60px);
+  height: clamp(72px, 19.53vw, 84px);
   background-image: var(--online-matchmaking-panels);
   background-size: 300% 100%;
   background-position: 0 0;
@@ -1398,7 +1398,7 @@ body[data-app-screen="battle"][data-online-waiting="true"] .primary-actions::bef
 body[data-app-screen="battle"][data-online-waiting="true"] .primary-actions::after {
   content: "파트너 매칭 중";
   left: 50%;
-  top: 50%;
+  top: 34%;
   width: auto;
   height: auto;
   aspect-ratio: auto;
@@ -1420,6 +1420,33 @@ body[data-app-screen="battle"][data-online-waiting="true"] .primary-actions butt
   opacity: 0;
   pointer-events: none;
   transform: scale(0.82);
+}
+
+body[data-app-screen="battle"][data-online-waiting="true"] #summonButton[data-match-cancel="true"] {
+  display: inline-flex;
+  justify-self: center;
+  align-self: end;
+  z-index: 4;
+  width: clamp(108px, 32.56vw, 140px);
+  min-height: clamp(34px, 9.77vw, 42px);
+  margin-top: clamp(34px, 10.23vw, 42px);
+  background-image: var(--combat-action-buttons);
+  background-position: 100% 0;
+  font-size: clamp(14px, 3.72vw, 16px);
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+  filter: brightness(1.04) saturate(0.96) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.42));
+}
+
+body[data-app-screen="battle"][data-online-waiting="true"] #summonButton[data-match-cancel="true"]::before,
+body[data-app-screen="battle"][data-online-waiting="true"] #summonButton[data-match-cancel="true"]::after {
+  display: none;
+}
+
+body[data-app-screen="battle"][data-online-waiting="true"] #summonButton[data-match-cancel="true"] > span {
+  max-width: 100%;
+  opacity: 1;
 }
 
 @keyframes matchmakingDockPulse {

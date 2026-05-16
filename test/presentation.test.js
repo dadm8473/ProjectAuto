@@ -343,9 +343,11 @@ test('online waiting state blocks combat until the second player arrives', async
     "return current.mode === 'online' && current.players?.some((player) => player.bot);",
     'const onlineWaiting = waitingForOnlinePartner(current);',
     'buildCombatStatusPrompt({ current, localBoardId, onlineWaiting })',
-    "button.title = onlineWaiting ? '파트너 입장 대기 중' : actions[key].reason;",
+    'function cancelOnlineMatch()',
+    "showToast('매칭 취소', 'info');",
+    "button.title = cancel ? '매칭을 취소하고 로비로 돌아가기' : '파트너 입장 대기 중';",
     "if (game.mode === 'online' && waitingForOnlinePartner(game)) {",
-    "showToast('파트너 입장 대기 중', 'warning');"
+    'cancelOnlineMatch();'
   ]) {
     assert.equal(app.includes(marker), true, marker);
   }
@@ -372,6 +374,9 @@ test('online waiting state turns the command dock into a generated matchmaking l
     'background-image: var(--online-matchmaking-panels);',
     'body[data-app-screen="battle"][data-online-waiting="true"] .status-line',
     'body[data-app-screen="battle"][data-online-waiting="true"] .primary-actions button {\n  display: none;',
+    'body[data-app-screen="battle"][data-online-waiting="true"] #summonButton[data-match-cancel="true"]',
+    "button.setAttribute('aria-label', cancel ? '매칭 취소' : ACTION_LABELS[key]);",
+    "if (cancel) button.dataset.matchCancel = 'true';",
     'body[data-app-screen="battle"][data-online-waiting="true"] .primary-actions button',
     'opacity: 0;',
     '파트너 매칭 중'
