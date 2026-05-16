@@ -3,6 +3,8 @@ import { REBOOT_RULES } from '../shared/reboot_content.js';
 const OPERATION_START_CUTIN_END = 0.56;
 const OPERATION_START_CUTIN_FADE = 0.18;
 const FIRST_SUMMON_BEACON_END = 16;
+const WAVE_DIRECTIVE_DURATION = 2.1;
+const WAVE_DIRECTIVE_FADE_SECONDS = 0.48;
 
 export const REBOOT_ATLAS_MANIFEST = {
   units: {
@@ -108,6 +110,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     src: '/src/client/assets/generated/reboot-combat-action-stamps.png?v=action-stamps1',
     width: 768,
     height: 128,
+    source: 'imagegen'
+  },
+  directiveBanner: {
+    src: '/src/client/assets/generated/reboot-combat-directive-banner.png?v=directive-banner1',
+    width: 768,
+    height: 160,
     source: 'imagegen'
   },
   partnerAssistPings: {
@@ -288,6 +296,8 @@ export function createRebootAssetImages() {
   hitBolts.src = REBOOT_EFFECT_MANIFEST.hitBolts.src;
   const actionStamps = new Image();
   actionStamps.src = REBOOT_EFFECT_MANIFEST.actionStamps.src;
+  const directiveBanner = new Image();
+  directiveBanner.src = REBOOT_EFFECT_MANIFEST.directiveBanner.src;
   const partnerAssistPings = new Image();
   partnerAssistPings.src = REBOOT_EFFECT_MANIFEST.partnerAssistPings.src;
   const partnerStandbySigils = new Image();
@@ -326,7 +336,7 @@ export function createRebootAssetImages() {
   enemySpawnGates.src = REBOOT_EFFECT_MANIFEST.enemySpawnGates.src;
   const signalCoreGates = new Image();
   signalCoreGates.src = REBOOT_EFFECT_MANIFEST.signalCoreGates.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, partnerAssistPings, partnerStandbySigils, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts, enemySpawnGates, signalCoreGates };
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, directiveBanner, partnerAssistPings, partnerStandbySigils, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts, enemySpawnGates, signalCoreGates };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -1002,6 +1012,54 @@ function momentCalloutAlpha(state, event) {
   return Math.min(0.98, entrance * exit * 0.98);
 }
 
+function waveDirectiveAlpha(state, event) {
+  const elapsed = Math.max(0, state.now - event.at);
+  const entrance = Math.min(1, elapsed / 0.16);
+  const fadeStart = Math.max(0, WAVE_DIRECTIVE_DURATION - WAVE_DIRECTIVE_FADE_SECONDS);
+  const exit = elapsed <= fadeStart
+    ? 1
+    : Math.max(0, 1 - (elapsed - fadeStart) / WAVE_DIRECTIVE_FADE_SECONDS);
+  return Math.min(0.9, entrance * exit * 0.9);
+}
+
+function recentWaveDirective(state) {
+  return (state.events ?? [])
+    .filter((event) => (
+      event.type === 'wave'
+      && Number(event.waveAt) > 0
+      && state.now >= event.at
+      && state.now - event.at <= WAVE_DIRECTIVE_DURATION
+    ))
+    .sort((a, b) => a.at - b.at)
+    .at(-1);
+}
+
+function drawWaveDirectiveBanner(ctx, state, assets = {}) {
+  const event = recentWaveDirective(state);
+  const image = assets.directiveBanner;
+  if (!event || !image?.complete || image.naturalWidth <= 0) return false;
+
+  const boss = Number(event.waveAt) >= REBOOT_RULES.boss.spawnAt
+    || (state.enemies ?? []).some((enemy) => enemy.enemyId === 'mini_boss' || enemy.spriteKey === 'mini_boss');
+  const alpha = waveDirectiveAlpha(state, event);
+  const x = 46;
+  const y = 188 - (1 - alpha) * 5;
+  const w = 298;
+  const h = 62;
+
+  ctx.save();
+  drawImageCover(ctx, image, x, y, w, h, alpha);
+  drawAtlasSprite(ctx, assets, 'enemies', boss ? 'mini_boss' : 'noise_shard', x + 50, y + 31, boss ? 43 : 36, alpha);
+  ctx.globalAlpha *= alpha;
+  ctx.fillStyle = '#fff7dc';
+  ctx.shadowColor = boss ? '#ff6f59' : '#58d7ff';
+  ctx.shadowBlur = 13;
+  ctx.font = '900 17px system-ui';
+  ctx.fillText(boss ? '보스 접근' : '적 접근', x + 92, y + 38);
+  ctx.restore();
+  return true;
+}
+
 function boardSlotPoint(playerId, slotIndex = 0, localBoardId = 'p1') {
   const selfId = normalizeBoardId(localBoardId);
   const compact = normalizeBoardId(playerId) !== selfId;
@@ -1338,6 +1396,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawBoard(ctx, state.boards[partnerId], 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
   drawPartnerStandbySigil(ctx, state, assets, partnerId, options);
   drawTrack(ctx, state, assets, imageBackdrop);
+  drawWaveDirectiveBanner(ctx, state, assets);
   drawCombatActionSurges(ctx, state, assets, layout, localBoardId);
   if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawCombatStartCutin(ctx, state, assets);
   drawCombatCrisisOverlays(ctx, state, assets, localBoardId);

@@ -914,6 +914,23 @@ test('combat board labels use generated status plates on the canvas', async () =
   }
 });
 
+test('combat wave directives use the generated directive banner asset', async () => {
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
+
+  for (const marker of [
+    'directiveBanner: {',
+    "src: '/src/client/assets/generated/reboot-combat-directive-banner.png?v=directive-banner1'",
+    'const directiveBanner = new Image();',
+    'directiveBanner.src = REBOOT_EFFECT_MANIFEST.directiveBanner.src;',
+    'drawWaveDirectiveBanner',
+    'assets.directiveBanner',
+    "'적 접근'",
+    "'보스 접근'"
+  ]) {
+    assert.equal(render.includes(marker), true, marker);
+  }
+});
+
 test('combat renderer keeps imagegen enemy sprites readable on phone canvas', async () => {
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 

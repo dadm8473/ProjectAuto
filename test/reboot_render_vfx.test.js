@@ -260,6 +260,45 @@ test('signal core gate reinforces endpoint pressure over enemies with a critical
   );
 });
 
+test('wave starts use a generated directive banner instead of bare event text', () => {
+  const ctx = mockContext();
+  const directiveBanner = image(768, 160);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 18.28,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [
+        { enemyId: 'noise_shard', spriteKey: 'noise_shard', boardId: 'p1', progress: 0.08 }
+      ],
+      events: [{ type: 'wave', at: 18, waveAt: 18 }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      ui: image(1536, 256),
+      directiveBanner
+    }
+  );
+
+  const bannerIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === directiveBanner);
+  const textIndex = ctx.commands.findIndex((command) => command.type === 'fillText' && command.args[0] === '적 접근');
+  const bannerDraw = ctx.commands[bannerIndex];
+
+  assert.notEqual(bannerIndex, -1, 'expected a generated wave directive banner to render');
+  assert.notEqual(textIndex, -1, 'expected compact wave directive copy to render on the banner');
+  assert.equal(textIndex > bannerIndex, true, 'wave directive copy should sit on the generated banner');
+  assert.equal(bannerDraw.args[7] >= 280, true, 'directive banner should read as a battlefield UI plate');
+  assert.equal(bannerDraw.args[8] <= 72, true, 'directive banner should stay compact on portrait combat');
+});
+
 test('enemy sprites follow serialized track progress instead of a timer-only path', () => {
   const ctx = mockContext();
   const enemies = image(1024, 256);
