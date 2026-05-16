@@ -635,6 +635,43 @@ test('first summon landing beacon clears after the first player action', () => {
   assert.equal(beaconDraws.length, 0, 'landing beacon must clear once the player has summoned');
 });
 
+test('bot partner standby sigil marks the empty partner board before bot acts', () => {
+  const ctx = mockContext();
+  const partnerStandbySigils = image(512, 160);
+
+  drawRebootBattle(
+    ctx,
+    {
+      mode: 'bot',
+      now: 4,
+      players: [
+        { id: 'p1', bot: false },
+        { id: 'p2', bot: true }
+      ],
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      playerBoardTray: image(780, 320),
+      partnerStandbySigils
+    }
+  );
+
+  const standbyDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === partnerStandbySigils);
+
+  assert.ok(standbyDraw, 'expected generated bot partner standby sigil on the partner board');
+  assert.equal(standbyDraw.args[1], 0, 'bot standby should use the first atlas cell');
+  assert.equal(standbyDraw.args[5] >= 110 && standbyDraw.args[5] <= 140, true, 'standby sigil should sit inside the partner board');
+});
+
 test('first summon landing beacon stays hidden while waiting for an online partner', () => {
   const ctx = mockContext();
   const firstSummonBeacon = image(256, 256);

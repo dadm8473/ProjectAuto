@@ -116,6 +116,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     height: 100,
     source: 'imagegen'
   },
+  partnerStandbySigils: {
+    src: '/src/client/assets/generated/reboot-partner-standby-sigils.png?v=partner-standby1',
+    width: 512,
+    height: 160,
+    source: 'imagegen'
+  },
   crisisOverlays: {
     src: '/src/client/assets/generated/reboot-combat-crisis-overlays.png?v=combat-crisis-overlays',
     width: 780,
@@ -278,6 +284,8 @@ export function createRebootAssetImages() {
   actionStamps.src = REBOOT_EFFECT_MANIFEST.actionStamps.src;
   const partnerAssistPings = new Image();
   partnerAssistPings.src = REBOOT_EFFECT_MANIFEST.partnerAssistPings.src;
+  const partnerStandbySigils = new Image();
+  partnerStandbySigils.src = REBOOT_EFFECT_MANIFEST.partnerStandbySigils.src;
   const crisisOverlays = new Image();
   crisisOverlays.src = REBOOT_EFFECT_MANIFEST.crisisOverlays.src;
   const rewardPickups = new Image();
@@ -310,7 +318,7 @@ export function createRebootAssetImages() {
   enemyImpactBursts.src = REBOOT_EFFECT_MANIFEST.enemyImpactBursts.src;
   const enemySpawnGates = new Image();
   enemySpawnGates.src = REBOOT_EFFECT_MANIFEST.enemySpawnGates.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts, enemySpawnGates };
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, partnerAssistPings, partnerStandbySigils, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts, enemySpawnGates };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -387,6 +395,16 @@ function drawActionStampPanel(ctx, image, index, x, y, w, h, alpha = 1) {
 }
 
 function drawPartnerAssistSprite(ctx, image, index, x, y, w, h, alpha = 1) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const cellWidth = image.naturalWidth / 2;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, x, y, w, h);
+  ctx.restore();
+  return true;
+}
+
+function drawPartnerStandbySprite(ctx, image, index, x, y, w, h, alpha = 1) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const cellWidth = image.naturalWidth / 2;
   ctx.save();
@@ -674,6 +692,21 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
     ctx.stroke();
     ctx.restore();
   }
+}
+
+function drawPartnerStandbySigil(ctx, state, assets = {}, partnerId = 'p2', options = {}) {
+  if (options.onlineWaiting || options.matchmakingBannerVisible) return false;
+  const partnerBoard = state.boards?.[partnerId];
+  if (!partnerBoard || (partnerBoard.units?.length ?? 0) > 0) return false;
+
+  const players = state.players ?? [];
+  const partnerPlayer = players.find((player) => normalizeBoardId(player.id) === normalizeBoardId(partnerId));
+  const isBotPartner = state.mode === 'bot' || partnerPlayer?.bot === true;
+  if (!isBotPartner) return false;
+
+  const pulse = Math.max(0, Math.sin((Number(state.now) || 0) * 3.8)) * 0.12;
+  const alpha = Math.min(0.86, 0.62 + pulse);
+  return drawPartnerStandbySprite(ctx, assets.partnerStandbySigils, 0, 112, 64, 166, 66, alpha);
 }
 
 function drawCosmeticSigilSprite(ctx, image, index, x, y, w, h, alpha = 1) {
@@ -1246,6 +1279,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   const localBoardId = normalizeBoardId(options.localBoardId);
   const partnerId = partnerBoardId(localBoardId);
   drawBoard(ctx, state.boards[partnerId], 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
+  drawPartnerStandbySigil(ctx, state, assets, partnerId, options);
   drawTrack(ctx, state, assets, imageBackdrop);
   drawCombatActionSurges(ctx, state, assets, layout, localBoardId);
   if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawCombatStartCutin(ctx, state, assets);
