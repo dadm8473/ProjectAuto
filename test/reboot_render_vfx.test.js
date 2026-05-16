@@ -1363,6 +1363,65 @@ test('merge and rescue moments get the latest full-canvas generated action surge
   assert.equal(rescueSurgeIndex < rescueFlareIndex, true, 'rescue surge should sell the co-op save before the compact flare');
 });
 
+test('merge reward surge lingers long enough to read after the tap flash', () => {
+  const ctx = mockContext();
+  const actionSurges = image(780, 620);
+  const cosmeticSigils = image(960, 128);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 79.46,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'burst_pin' }] },
+        p2: { danger: 25, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [{ enemyId: 'heavy_noise', spriteKey: 'heavy_noise' }],
+      events: [{ type: 'merge', at: 78.0, playerId: 'p1', highlight: true }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      playerBoardTray: image(780, 320),
+      actionSurges,
+      cosmeticSigils
+    }
+  );
+
+  const surgeIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === actionSurges
+      && command.args[1] === 0
+      && command.args[5] === 0
+      && command.args[7] === 390
+      && command.args[8] === 620
+  ));
+  const sigilIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === cosmeticSigils
+      && command.args[1] === 384
+      && command.args[7] >= 300
+      && command.args[8] >= 86
+  ));
+  const surgeAlpha = ctx.commands
+    .slice(0, surgeIndex)
+    .reverse()
+    .find((command) => command.type === 'globalAlpha')?.value ?? 0;
+  const sigilAlpha = ctx.commands
+    .slice(0, sigilIndex)
+    .reverse()
+    .find((command) => command.type === 'globalAlpha')?.value ?? 0;
+
+  assert.notEqual(surgeIndex, -1, 'expected generated merge surge to remain visible after the first flash');
+  assert.notEqual(sigilIndex, -1, 'expected generated merge sigil to remain under the evolved unit');
+  assert.equal(surgeAlpha >= 0.32, true, `late merge surge should stay readable: ${surgeAlpha}`);
+  assert.equal(sigilAlpha >= 0.34, true, `late merge sigil should stay readable: ${sigilAlpha}`);
+});
+
 test('image backdrop board labels sit on generated combat plates', () => {
   const ctx = mockContext();
   drawRebootBattle(

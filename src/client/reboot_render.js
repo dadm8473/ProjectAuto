@@ -6,6 +6,10 @@ const OPENING_THREAT_PREVIEW_END = 3.6;
 const FIRST_SUMMON_BEACON_END = 16;
 const WAVE_DIRECTIVE_DURATION = 2.1;
 const WAVE_DIRECTIVE_FADE_SECONDS = 0.48;
+const ACTION_SURGE_DURATION = 2.0;
+const ACTION_SURGE_HOLD_SECONDS = 0.85;
+const MERGE_REWARD_SIGIL_DURATION = 1.9;
+const MERGE_REWARD_SIGIL_HOLD_SECONDS = 0.85;
 
 export const REBOOT_ATLAS_MANIFEST = {
   units: {
@@ -1052,6 +1056,16 @@ function eventAlpha(state, event, windowSeconds = 0.9) {
   return Math.max(0, 1 - (state.now - event.at) / windowSeconds);
 }
 
+function sustainedEventAlpha(state, event, durationSeconds, holdSeconds) {
+  const elapsed = Math.max(0, state.now - event.at);
+  const entrance = Math.min(1, elapsed / 0.14);
+  const fadeSeconds = Math.max(0.01, durationSeconds - holdSeconds);
+  const exit = elapsed <= holdSeconds
+    ? 1
+    : Math.max(0, 1 - (elapsed - holdSeconds) / fadeSeconds);
+  return entrance * exit;
+}
+
 function momentCalloutAlpha(state, event) {
   const elapsed = Math.max(0, state.now - event.at);
   const entrance = Math.min(1, elapsed / 0.12);
@@ -1331,12 +1345,17 @@ function drawFirstSummonIgnition(ctx, state, assets = {}, localBoardId = 'p1') {
 }
 
 function drawFirstMergeRewardSigil(ctx, state, assets = {}, reducedMotion = false, localBoardId = 'p1') {
-  const event = firstPlayerRecentEvent(state, 'merge', 1.35, localBoardId);
+  const event = firstPlayerRecentEvent(state, 'merge', MERGE_REWARD_SIGIL_DURATION, localBoardId);
   const image = assets?.cosmeticSigils;
   const index = COSMETIC_SIGIL_INDEX['merge-effect'];
   if (!event || !image?.complete || image.naturalWidth <= 0) return false;
   const elapsed = Math.max(0, state.now - event.at);
-  const alpha = Math.min(0.84, eventAlpha(state, event, 1.35) * 1.1);
+  const alpha = Math.min(0.88, sustainedEventAlpha(
+    state,
+    event,
+    MERGE_REWARD_SIGIL_DURATION,
+    MERGE_REWARD_SIGIL_HOLD_SECONDS
+  ) * 1.1);
   const swell = reducedMotion ? 1 : 1 + Math.max(0, Math.sin(elapsed * Math.PI * 3.6)) * 0.06;
   const w = 318 * swell;
   const h = 92 * swell;
@@ -1359,22 +1378,25 @@ function drawFirstRescueRewardSigil(ctx, state, assets = {}, reducedMotion = fal
 function drawCombatActionSurges(ctx, state, assets = {}, layout = { width: 390, height: 620 }, localBoardId = 'p1') {
   const selfId = normalizeBoardId(localBoardId);
   const moment = [
-    ...recentEvents(state, 'merge', 1.2).map((event) => ({ event, index: 0 })),
-    ...recentEvents(state, 'rescue', 1.2).map((event) => ({ event, index: 1 }))
+    ...recentEvents(state, 'merge', ACTION_SURGE_DURATION).map((event) => ({ event, index: 0 })),
+    ...recentEvents(state, 'rescue', ACTION_SURGE_DURATION).map((event) => ({ event, index: 1 }))
   ]
     .filter(({ event }) => normalizeBoardId(event.playerId ?? selfId) === selfId)
     .sort((a, b) => a.event.at - b.event.at)
     .at(-1);
   if (!moment) return false;
   const { event, index } = moment;
-  const alpha = Math.min(index === 1 ? 0.72 : 0.68, eventAlpha(state, event, 1.2) * (index === 1 ? 1.08 : 1));
+  const alpha = Math.min(
+    index === 1 ? 0.78 : 0.76,
+    sustainedEventAlpha(state, event, ACTION_SURGE_DURATION, ACTION_SURGE_HOLD_SECONDS) * (index === 1 ? 1.08 : 1)
+  );
   return drawCombatActionSurgeSprite(ctx, assets.actionSurges, index, layout, alpha);
 }
 
 function hasRecentLocalPlayerActionSurge(state, localBoardId = 'p1') {
   const selfId = normalizeBoardId(localBoardId);
   return ['merge', 'rescue'].some((type) => (
-    recentEvents(state, type, 1.2).some((event) => normalizeBoardId(event.playerId ?? selfId) === selfId)
+    recentEvents(state, type, ACTION_SURGE_DURATION).some((event) => normalizeBoardId(event.playerId ?? selfId) === selfId)
   ));
 }
 
