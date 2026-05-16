@@ -499,6 +499,7 @@ export function buildRebootResultModel({ result, rewards = [], profile } = {}) {
   })();
   return {
     status: won ? 'won' : 'lost',
+    code: won ? '작전 성공' : '작전 실패',
     title: won ? '승리' : '패배',
     highlight: { label: REASON_LABELS[reason] ?? '전투 완료', kind: won ? 'success' : 'danger', medal: resultMedalForReason(reason) },
     reason: { label: REASON_LABELS[reason] ?? '전투 완료', reason },

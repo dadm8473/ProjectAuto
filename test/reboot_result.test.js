@@ -39,6 +39,7 @@ test('result model prioritizes reason, next goal, rewards, retry, and home', () 
   const model = buildRebootResultModel({ result: game.result, rewards: [{ type: 'soft', amount: 20 }] });
 
   assert.equal(model.status, 'won');
+  assert.equal(model.code, '작전 성공');
   assert.equal(model.title, '승리');
   assert.equal(model.reason.reason, 'partner_rescued');
   assert.equal(model.nextGoal.goal, 'time_next_rescue');
@@ -136,6 +137,7 @@ test('result model exposes loss status for generated result badges', () => {
   const model = buildRebootResultModel({ result: { status: 'lost', reason: 'boss_leaked' } });
 
   assert.equal(model.status, 'lost');
+  assert.equal(model.code, '작전 실패');
   assert.equal(model.title, '패배');
   assert.equal(model.highlight.kind, 'danger');
 });

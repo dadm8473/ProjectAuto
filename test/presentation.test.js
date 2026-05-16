@@ -3089,6 +3089,8 @@ test('result secondary action can claim ready rewards without an extra tap', asy
 
   for (const marker of [
     'buildRebootResultModel({ result: current.result, rewards, profile })',
+    "resultCode: qs('#resultCode')",
+    'dom.resultCode.textContent = model.code',
     'dom.resultLobbyLabel.textContent = model.secondaryAction.label',
     'dom.resultLobbyButton.dataset.resultOpen = model.secondaryAction.action',
     "action: 'claim-missions'",

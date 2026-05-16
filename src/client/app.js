@@ -50,6 +50,7 @@ const dom = {
   summonButton: qs('#summonButton'),
   mergeButton: qs('#mergeButton'),
   rescueButton: qs('#rescueButton'),
+  resultCode: qs('#resultCode'),
   resultTitle: qs('#resultTitle'),
   resultReason: qs('#resultReason'),
   resultNextGoal: qs('#resultNextGoal'),
@@ -665,6 +666,7 @@ function showResult(current) {
   const model = buildRebootResultModel({ result: current.result, rewards, profile });
   dom.resultOverlay.dataset.resultStatus = model.status;
   dom.resultOverlay.dataset.resultCta = rewardClaimActions.has(model.secondaryAction.action) ? 'claim' : 'default';
+  dom.resultCode.textContent = model.code;
   dom.resultTitle.textContent = model.title;
   dom.resultReason.textContent = model.reason.label;
   dom.resultNextGoal.textContent = model.nextGoal.label;
