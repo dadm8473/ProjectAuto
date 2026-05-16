@@ -152,6 +152,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     height: 320,
     source: 'imagegen'
   },
+  unitActivationRing: {
+    src: '/src/client/assets/generated/reboot-unit-activation-ring.png?v=unit-activation-ring1',
+    width: 512,
+    height: 512,
+    source: 'imagegen'
+  },
   boardLabelPlates: {
     src: '/src/client/assets/generated/reboot-combat-status-plates.png?v=board-labels-alpha1',
     width: 780,
@@ -269,6 +275,8 @@ export function createRebootAssetImages() {
   cosmeticSigils.src = REBOOT_EFFECT_MANIFEST.cosmeticSigils.src;
   const playerBoardTray = new Image();
   playerBoardTray.src = REBOOT_EFFECT_MANIFEST.playerBoardTray.src;
+  const unitActivationRing = new Image();
+  unitActivationRing.src = REBOOT_EFFECT_MANIFEST.unitActivationRing.src;
   const boardLabelPlates = new Image();
   boardLabelPlates.src = REBOOT_EFFECT_MANIFEST.boardLabelPlates.src;
   const firstCommandSpotlight = new Image();
@@ -283,7 +291,7 @@ export function createRebootAssetImages() {
   enemyTrackTrails.src = REBOOT_EFFECT_MANIFEST.enemyTrackTrails.src;
   const enemyImpactBursts = new Image();
   enemyImpactBursts.src = REBOOT_EFFECT_MANIFEST.enemyImpactBursts.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts };
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, unitActivationRing, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -470,6 +478,18 @@ function drawPlayerBoardTray(ctx, assets, x, y, w, h) {
   return true;
 }
 
+function drawUnitActivationRing(ctx, assets, cx, cy, unitSize, alpha = 1) {
+  const image = assets?.unitActivationRing;
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const w = unitSize * 1.34;
+  const h = unitSize * 0.82;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, cx - w / 2, cy + unitSize * 0.16 - h / 2, w, h);
+  ctx.restore();
+  return true;
+}
+
 function drawBoardLabelPlate(ctx, assets, variant, x, y, w, h, alpha = 0.76) {
   const image = assets?.boardLabelPlates;
   if (!image?.complete || image.naturalWidth <= 0) return false;
@@ -586,6 +606,9 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
     const unitSize = size * (imageBackdrop && !compact ? 1.22 : 0.95);
     const unitX = sx + size / 2;
     const unitY = sy + size / 2 + unitLift;
+    if (imageBackdrop && !compact) {
+      drawUnitActivationRing(ctx, assets, unitX, unitY, unitSize, 0.72);
+    }
     if (mergeReadyGrades.has(unit.grade)) {
       drawAtlasSprite(ctx, assets, 'board', 'merge_ready_frame', unitX, unitY, size * 1.16, 0.72);
     }

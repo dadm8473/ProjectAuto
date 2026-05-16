@@ -674,6 +674,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 250_000
   },
   {
+    path: 'src/client/assets/generated/reboot-unit-activation-ring.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-unit-activation-ring-chromakey-imagegen.png',
+    width: 512,
+    height: 512,
+    minRuntimeBytes: 180_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-combat-first-summon-console.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260516-combat-first-summon-console-chromakey-imagegen.png',
     width: 780,
@@ -1945,6 +1952,29 @@ test('first summon landing beacon is a transparent generated battlefield object'
   assert.equal(bounds.maxX <= image.width - 25, true, `landing beacon touches right edge: ${JSON.stringify(bounds)}`);
   assert.equal(bounds.minY >= 32, true, `landing beacon touches top edge: ${JSON.stringify(bounds)}`);
   assert.equal(bounds.maxY <= image.height - 33, true, `landing beacon touches bottom edge: ${JSON.stringify(bounds)}`);
+});
+
+test('unit activation ring is a transparent generated battlefield pedestal, not a button', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-unit-activation-ring.png'));
+  assert.equal(image.width, 512);
+  assert.equal(image.height, 512);
+
+  const corners = [
+    alphaAt(image, 2, 2),
+    alphaAt(image, image.width - 3, 2),
+    alphaAt(image, 2, image.height - 3),
+    alphaAt(image, image.width - 3, image.height - 3)
+  ];
+  const bounds = alphaBounds(image, { x: 0, y: 0, width: image.width, height: image.height }, 32);
+  const ringCoverage = alphaCoverage(image, { x: 54, y: 122, width: 404, height: 248 }, 48);
+  const centerHole = alphaCoverage(image, { x: 194, y: 206, width: 124, height: 92 }, 48);
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, `unit activation ring has opaque corners: ${corners.join(',')}`);
+  assert.equal(bounds.count > 75_000, true, `unit activation ring has no readable generated subject: ${bounds.count}`);
+  assert.equal(ringCoverage > 0.52, true, `unit activation ring does not read as a powered pedestal: ${ringCoverage}`);
+  assert.equal(centerHole < 0.28, true, `unit activation ring center is too filled and will hide the unit: ${centerHole}`);
+  assert.equal(bounds.minX >= 20, true, `unit activation ring touches left edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxX <= image.width - 21, true, `unit activation ring touches right edge: ${JSON.stringify(bounds)}`);
 });
 
 test('combat action stamp cells stay compact so success feedback does not cover the battlefield', async () => {

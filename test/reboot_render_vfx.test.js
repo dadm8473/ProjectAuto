@@ -283,6 +283,53 @@ test('player board uses a generated landing tray beneath summoned units', () => 
   assert.equal(unitIndex < summonVfxIndex, true, 'summon flash should sit above the new unit');
 });
 
+test('player board anchors summoned units with a generated activation ring', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 12,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      playerBoardTray: image(780, 320),
+      unitActivationRing: image(512, 512)
+    }
+  );
+
+  const ringIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 512
+      && command.args[0].naturalHeight === 512
+      && command.args[3] >= 78
+      && command.args[4] >= 54
+  ));
+  const unitIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[7] >= 68
+      && command.args[7] <= 78
+      && command.args[8] >= 68
+      && command.args[8] <= 78
+      && command.args[6] < 456
+  ));
+
+  assert.notEqual(ringIndex, -1, 'expected a generated unit activation ring under the summoned unit');
+  assert.notEqual(unitIndex, -1, 'expected summoned unit to draw');
+  assert.equal(ringIndex < unitIndex, true, 'activation ring should sit beneath the unit sprite');
+});
+
 test('player board marks two grade-one reboot units as merge ready', () => {
   const ctx = mockContext();
   drawRebootBattle(
