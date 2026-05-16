@@ -467,6 +467,35 @@ test('season screen starts with a reward track instead of a web list summary', (
   assert.equal(season.includes('class="meta-summary screen-card"'), false);
 });
 
+test('mission and season top boards keep large copy numeric while preserving full accessible meaning', () => {
+  const missions = buildMissionScreen({
+    processedRuns: ['run-1'],
+    unitLevels: { spark_pin: 2 },
+    claimedMissions: ['first-run']
+  });
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
+
+  assert.equal(
+    missions.includes('class="mission-stamp-board" data-board-kind="missions" aria-label="미션 보드 · 수령 가능 1개 · 완료 목표 보상 전환"'),
+    true
+  );
+  assert.equal(missions.includes('<span>보상 대기</span>'), true);
+  assert.equal(missions.includes('<strong>1</strong>'), true);
+  assert.equal(missions.includes('<p>수령 가능</p>'), true);
+  assert.equal(missions.includes('<strong>1개</strong>'), false);
+  assert.equal(missions.includes('완료 목표 보상 전환</p>'), false);
+
+  assert.equal(
+    season.includes('class="season-track-board" data-board-kind="season" aria-label="시즌 보드 · 시즌 경험치 80 · 보상 가능 0개"'),
+    true
+  );
+  assert.equal(season.includes('<span>시즌 점수</span>'), true);
+  assert.equal(season.includes('<strong>80</strong>'), true);
+  assert.equal(season.includes('<p>보상 0개</p>'), true);
+  assert.equal(season.includes('<strong>80 경험치</strong>'), false);
+  assert.equal(season.includes('<p>0개 보상 가능</p>'), false);
+});
+
 test('shop card descriptions stay compact enough for portrait game cards', () => {
   const shop = buildRebootShop({ gems: 300, unlocks: [] });
   const descriptions = [...shop.matchAll(/<article class="screen-card shop-card"[\s\S]*?<p>(.*?)<\/p>/g)]

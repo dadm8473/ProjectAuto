@@ -197,6 +197,7 @@ function missionCardState(state) {
 }
 
 function buildMissionStampBoard(profile = {}, claimed = new Set()) {
+  const claimable = countClaimableMissions(profile);
   const stamps = REBOOT_MISSIONS.map((mission) => {
     const progress = missionProgress(profile, mission);
     const state = missionState(progress, mission.target, claimed.has(mission.id));
@@ -208,11 +209,11 @@ function buildMissionStampBoard(profile = {}, claimed = new Set()) {
   }).join('');
 
   return `
-    <section class="mission-stamp-board" data-board-kind="missions">
+    <section class="mission-stamp-board" data-board-kind="missions" aria-label="미션 보드 · 수령 가능 ${claimable}개 · 완료 목표 보상 전환">
       <div class="mission-board-copy">
-        <span>수령 가능</span>
-        <strong>${countClaimableMissions(profile)}개</strong>
-        <p>완료 목표 보상 전환</p>
+        <span>보상 대기</span>
+        <strong>${claimable}</strong>
+        <p>수령 가능</p>
       </div>
       <div class="mission-stamp-grid">${stamps}</div>
     </section>
@@ -233,6 +234,7 @@ function seasonCardState(state) {
 
 function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
   const xp = profile.xp ?? 0;
+  const claimable = countClaimablePassTiers(profile);
   const nodes = SHOP.pass.tiers.map((tier, index) => {
     const state = seasonState(xp, tier, index, claimed);
     return `
@@ -243,11 +245,11 @@ function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
   }).join('');
 
   return `
-    <section class="season-track-board" data-board-kind="season">
+    <section class="season-track-board" data-board-kind="season" aria-label="시즌 보드 · 시즌 경험치 ${xp} · 보상 가능 ${claimable}개">
       <div class="season-board-copy">
-        <span>시즌 경험치</span>
-        <strong>${xp} 경험치</strong>
-        <p>${countClaimablePassTiers(profile)}개 보상 가능</p>
+        <span>시즌 점수</span>
+        <strong>${xp}</strong>
+        <p>보상 ${claimable}개</p>
       </div>
       <div class="season-track-rail">${nodes}</div>
     </section>
