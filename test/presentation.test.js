@@ -101,7 +101,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from './reboot_actions.js?v=merge-reason1'",
-    "from './reboot_action_ui.js?v=action-focus2'",
+    "from './reboot_action_ui.js?v=summon-cooldown-label1'",
     "from './reboot_render.js?v=action-surges1'",
     "from './reboot_screens.js?v=meta-item-status1'",
     "from './reboot_online.js'"
@@ -572,7 +572,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-surges1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-cooldown-label1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-surges1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=unit-activation-ring1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-launch-bay1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-item-status1"></script>'), false);
@@ -606,6 +607,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-reward1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from './reboot_render.js?v=action-surges1'"), true);
+  assert.equal(app.includes("from './reboot_action_ui.js?v=action-focus2'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=unit-activation-ring1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=first-summon-beacon1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=pre-summon-cue1'"), false);
@@ -907,7 +909,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
   assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::before'), false);
 
   for (const marker of [
-    "from './reboot_action_ui.js?v=action-focus2'",
+    "from './reboot_action_ui.js?v=summon-cooldown-label1'",
     'buildCombatCoachCue',
     'buildCombatCommandLabels',
     'buildCombatStatusPrompt',
@@ -920,7 +922,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
     'document.body.dataset.coachCue = coachCue;',
     'delete document.body.dataset.coachCue;',
     "button.querySelector('span').textContent = label;",
-    "button.setAttribute('aria-label', label === ACTION_LABELS[key] ? ACTION_LABELS[key] : `${ACTION_LABELS[key]} ${label} 후 가능`);",
+    "button.setAttribute('aria-label', label === ACTION_LABELS[key] ? ACTION_LABELS[key] : `${label} 후 가능`);",
     'button.dataset.critical = String(isCriticalRebootAction({ actionKey: key, current, localBoardId, enabled }));'
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -1108,7 +1110,7 @@ test('combat summon cooldown moves from the directive banner onto the command bu
     'const commandLabels = buildCombatCommandLabels({ current, localBoardId, actions, onlineWaiting });',
     'const label = commandLabels[key];',
     "button.querySelector('span').textContent = label;",
-    "button.setAttribute('aria-label', label === ACTION_LABELS[key] ? ACTION_LABELS[key] : `${ACTION_LABELS[key]} ${label} 후 가능`);"
+    "button.setAttribute('aria-label', label === ACTION_LABELS[key] ? ACTION_LABELS[key] : `${label} 후 가능`);"
   ]) {
     const source = marker.startsWith('body[') || marker === 'display: none;' ? css : app;
     assert.equal(source.includes(marker), true, marker);

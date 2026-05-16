@@ -153,7 +153,7 @@ test('combat command labels keep summon cooldown on the button instead of the di
     localBoardId: 'p1',
     actions: { summon: { enabled: false }, merge: { enabled: false }, rescue: { enabled: false } }
   }), {
-    summon: '9초',
+    summon: '소환 9초',
     merge: '합성',
     rescue: '구원'
   });
