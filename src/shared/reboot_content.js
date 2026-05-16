@@ -12,8 +12,9 @@ export const REBOOT_RULES = {
     startCurrency: 10,
     cost: 10,
     grants: [
-      { at: 18, amount: 10 },
-      { at: 32, amount: 10 },
+      { at: 8, amount: 10 },
+      { at: 20, amount: 10 },
+      { at: 36, amount: 10 },
       { at: 58, amount: 10 },
       { at: 92, amount: 10 }
     ]

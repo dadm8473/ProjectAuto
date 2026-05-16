@@ -113,6 +113,24 @@ test('tutorial_success teaches summon, merge, and rescue within 120 seconds', ()
   assert.equal(game.boards.p2.danger < 100, true);
 });
 
+test('first combat beat keeps enemies visible and the next summon close for mobile pacing', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 109 });
+
+  summonToy(game, { playerId: 'p1' });
+  advance(game, 4.1, 0.1);
+
+  assert.equal(
+    game.enemies.some((enemy) => enemy.boardId === 'p1' && enemy.progress > 0.06),
+    true,
+    'the first wave should still read as an active track threat after the first summon impact'
+  );
+
+  advanceTo(game, 9);
+
+  assert.equal(game.resources.p1.summon >= 10, true, 'the next summon should return before the first mobile lull feels empty');
+  assert.equal(game.actionState.p1.summon, true);
+});
+
 test('merge consumes eligible grade-one units without deleting higher grade units', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 102 });
   game.resources.p1.summon = 40;
@@ -359,7 +377,7 @@ test('serializeRebootState omits rng internals and keeps player-readable action 
 test('reboot combat emits serialized death bursts with reward payloads', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 808 });
   summonToy(game, { playerId: 'p1' });
-  advanceTo(game, 1);
+  advanceTo(game, 2.5);
 
   const state = serializeRebootState(game);
   const burst = state.effects.find((effect) => effect.type === 'death_burst');

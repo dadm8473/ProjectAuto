@@ -16,8 +16,9 @@ test('reboot rules lock the portrait first-120-second combat contract', () => {
   assert.equal(REBOOT_RULES.summon.startCurrency, 10);
   assert.equal(REBOOT_RULES.summon.cost, 10);
   assert.deepEqual(REBOOT_RULES.summon.grants, [
-    { at: 18, amount: 10 },
-    { at: 32, amount: 10 },
+    { at: 8, amount: 10 },
+    { at: 20, amount: 10 },
+    { at: 36, amount: 10 },
     { at: 58, amount: 10 },
     { at: 92, amount: 10 }
   ]);

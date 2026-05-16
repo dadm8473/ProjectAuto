@@ -236,9 +236,9 @@ function enemyProgress(game, enemy) {
 
 function defeatDelay(enemyId) {
   if (enemyId === 'mini_boss') return 7.5;
-  if (enemyId === 'heavy_noise') return 1.45;
-  if (enemyId === 'quick_noise') return 0.72;
-  return 0.86;
+  if (enemyId === 'heavy_noise') return 3.6;
+  if (enemyId === 'quick_noise') return 1.65;
+  return 2.35;
 }
 
 function pushDeathBurst(game, enemy, progress) {

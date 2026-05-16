@@ -3,6 +3,7 @@ import { REBOOT_RULES } from '../shared/reboot_content.js';
 const OPERATION_START_CUTIN_END = 0.56;
 const OPERATION_START_CUTIN_FADE = 0.18;
 const OPENING_THREAT_PREVIEW_END = 3.6;
+const EARLY_LULL_THREAT_PREVIEW_END = 17.4;
 const FIRST_SUMMON_BEACON_END = 16;
 const WAVE_DIRECTIVE_DURATION = 2.1;
 const WAVE_DIRECTIVE_FADE_SECONDS = 0.48;
@@ -574,10 +575,17 @@ function openingThreatPreviewAlpha(state = {}, options = {}) {
   const now = Number(state.now) || 0;
   if (options.onlineWaiting || options.matchmakingBannerVisible) return 0;
   if ((state.enemies?.length ?? 0) > 0) return 0;
-  if (now < OPERATION_START_CUTIN_END || now > OPENING_THREAT_PREVIEW_END) return 0;
-  const intro = Math.min(1, Math.max(0, now - OPERATION_START_CUTIN_END) / 0.22);
-  const exit = Math.min(1, Math.max(0, OPENING_THREAT_PREVIEW_END - now) / 0.7);
-  return Math.min(0.78, intro * exit * 0.78);
+  if (now >= OPERATION_START_CUTIN_END && now <= OPENING_THREAT_PREVIEW_END) {
+    const intro = Math.min(1, Math.max(0, now - OPERATION_START_CUTIN_END) / 0.22);
+    const exit = Math.min(1, Math.max(0, OPENING_THREAT_PREVIEW_END - now) / 0.7);
+    return Math.min(0.78, intro * exit * 0.78);
+  }
+  if (hasFirstPlayerAction(state) && now > OPENING_THREAT_PREVIEW_END && now <= EARLY_LULL_THREAT_PREVIEW_END) {
+    const exit = Math.min(1, Math.max(0, EARLY_LULL_THREAT_PREVIEW_END - now) / 1.4);
+    const pulse = 0.62 + Math.max(0, Math.sin(now * 3.4)) * 0.08;
+    return pulse * exit;
+  }
+  return 0;
 }
 
 function drawOpeningThreatPreview(ctx, state, assets = {}, options = {}) {
@@ -588,11 +596,11 @@ function drawOpeningThreatPreview(ctx, state, assets = {}, options = {}) {
   const point = trackPointFromProgress(0.075 + Math.max(0, Math.sin(state.now * 2.3)) * 0.012, 0.25);
   const preview = assets?.openingThreatPreview;
   if (preview?.complete && preview.naturalWidth > 0) {
-    const width = 116;
-    const height = 58;
+    const width = state.now > OPENING_THREAT_PREVIEW_END ? 148 : 116;
+    const height = state.now > OPENING_THREAT_PREVIEW_END ? 72 : 58;
     ctx.save();
     ctx.globalAlpha *= alpha;
-    ctx.drawImage(preview, 0, 0, preview.naturalWidth, preview.naturalHeight, point.x - width * 0.42, point.y - height * 0.82, width, height);
+    ctx.drawImage(preview, 0, 0, preview.naturalWidth, preview.naturalHeight, point.x - width * 0.38, point.y - height * 0.82, width, height);
     ctx.restore();
     return true;
   }

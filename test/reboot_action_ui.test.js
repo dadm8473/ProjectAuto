@@ -88,7 +88,7 @@ test('combat status prompt names the next useful action instead of only elapsed 
       actionState: { p1: { summon: false, merge: false, rescue: false } }
     },
     localBoardId: 'p1'
-  }), '충전 9초');
+  }), '충전 11초');
 
   assert.equal(buildCombatStatusPrompt({
     current: {
@@ -208,7 +208,7 @@ test('combat command labels keep summon cooldown compact on the button', () => {
     localBoardId: 'p1',
     actions: { summon: { enabled: false }, merge: { enabled: false }, rescue: { enabled: false } }
   }), {
-    summon: '9초',
+    summon: '11초',
     merge: '합성',
     rescue: '구원'
   });
