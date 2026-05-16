@@ -538,7 +538,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=match-banner-cutin1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-idle1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=match-banner-cutin1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive-chip1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-tap-cue1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-touch1">'), false);
@@ -1069,7 +1070,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=match-banner-cutin1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-idle1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -2600,7 +2601,9 @@ test('lobby launch actions use dedicated generated button frames', async () => {
     '.screen-overlay .play-button,\n.screen-overlay .match-button {\n  background: transparent;',
     '.screen-overlay .play-button::before,\n.screen-overlay .match-button::before {\n  background-image: none;',
     '.screen-overlay .launch-command-console > .play-button,\n.screen-overlay .launch-command-console > .match-button',
-    '.play-button > span,\n.match-button > span'
+    '.play-button > span,\n.match-button > span',
+    'color: #fff7dc;',
+    'text-shadow: 0 3px 12px rgba(0, 0, 0, 0.72), 0 0 14px rgba(88, 215, 255, 0.22);'
   ]) {
     assert.equal(`${html}\n${css}`.includes(marker), true, marker);
   }
@@ -2644,7 +2647,10 @@ test('splash and lobby use generated hero squad art instead of empty landing spa
     '.splash-screen::before',
     '.lobby-screen::before',
     'background-image: var(--hero-squad)',
-    'pointer-events: none'
+    'pointer-events: none',
+    '@media (prefers-reduced-motion: no-preference) {\n  .splash-screen::before,\n  .lobby-screen::before {',
+    'animation: heroSquadIdle 4.8s ease-in-out infinite;',
+    '@keyframes heroSquadIdle'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
