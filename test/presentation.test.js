@@ -540,7 +540,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=nav-label2">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=title-icon1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=nav-label2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=nav-label1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-price1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=unit-roster1">'), false);
@@ -618,7 +619,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=nav-label2"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=title-icon1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=nav-label2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=nav-label1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shelf-price1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=unit-roster1"></script>'), false);
@@ -1090,7 +1092,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=nav-label2'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=title-icon1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -1483,13 +1485,19 @@ test('meta screen titles use generated header plates instead of browser default 
 
   for (const marker of [
     '--meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title")',
-    '<h1>유닛 강화</h1>',
-    '<h1>상점</h1>',
-    '<h1>미션</h1>',
-    '<h1>시즌</h1>',
+    '<h1 data-title-icon="collection">유닛 강화</h1>',
+    '<h1 data-title-icon="shop">상점</h1>',
+    '<h1 data-title-icon="missions">미션</h1>',
+    '<h1 data-title-icon="season">시즌</h1>',
     '.hub-screen h1',
     'background-image: var(--meta-title-plate);',
     'background-size: 100% 100%;',
+    '.hub-screen h1::after',
+    'background-image: var(--nav-icons);',
+    '.hub-screen h1[data-title-icon="collection"]::after',
+    '.hub-screen h1[data-title-icon="shop"]::after',
+    '.hub-screen h1[data-title-icon="missions"]::after',
+    '.hub-screen h1[data-title-icon="season"]::after',
     'margin: 0 0 8px;',
     '.hub-screen .screen-back',
     'position: absolute;',
