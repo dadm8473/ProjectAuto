@@ -184,6 +184,20 @@ test('result model maps the key run moment to a generated medal type', () => {
   assert.equal(tactics.highlight.medal, 'tactics');
 });
 
+test('result primary action names the next authored operation after a win', () => {
+  const next = buildRebootResultModel({
+    result: { status: 'won', reason: 'partner_rescued' },
+    seedName: 'tutorial_success'
+  }).primaryAction;
+  const loss = buildRebootResultModel({
+    result: { status: 'lost', reason: 'boss_leaked' },
+    seedName: 'tutorial_success'
+  }).primaryAction;
+
+  assert.deepEqual(next, { label: '보스 막타 작전', action: 'retry' });
+  assert.deepEqual(loss, { label: '다시 도전', action: 'retry' });
+});
+
 test('result next-goal copy stays compact for generated result plates', () => {
   const goalKeys = [
     'time_next_rescue',

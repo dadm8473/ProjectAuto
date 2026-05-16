@@ -59,6 +59,7 @@ const dom = {
   resultHighlights: qs('#resultHighlights'),
   resultReward: qs('#resultReward'),
   resultRetryButton: qs('#resultRetryButton'),
+  resultRetryLabel: qs('#resultRetryButton span'),
   resultLobbyButton: qs('#resultLobbyButton'),
   resultLobbyLabel: qs('#resultLobbyButton span'),
   primaryActions: qs('.primary-actions'),
@@ -667,7 +668,7 @@ function showResult(current) {
   if (!current.result || resultShownFor === current.runId) return;
   resultShownFor = current.runId;
   const rewards = settleResultRewards(current);
-  const model = buildRebootResultModel({ result: current.result, rewards, profile });
+  const model = buildRebootResultModel({ result: current.result, rewards, profile, seedName: current.seedName });
   dom.resultOverlay.dataset.resultStatus = model.status;
   dom.resultOverlay.dataset.resultCta = rewardClaimActions.has(model.secondaryAction.action) ? 'claim' : 'default';
   dom.resultCode.textContent = model.code;
@@ -676,6 +677,7 @@ function showResult(current) {
   dom.resultNextGoal.textContent = model.nextGoal.label;
   dom.resultHighlights.innerHTML = resultHighlightMarkup(model);
   dom.resultReward.innerHTML = resultRewardMarkup(model.rewards);
+  dom.resultRetryLabel.textContent = model.primaryAction.label;
   dom.resultLobbyLabel.textContent = model.secondaryAction.label;
   dom.resultLobbyButton.dataset.resultOpen = model.secondaryAction.action;
   dom.resultOverlay.hidden = false;

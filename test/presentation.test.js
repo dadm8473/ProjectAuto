@@ -1819,6 +1819,8 @@ test('result actions use dedicated generated button frames', async () => {
     '--result-action-buttons: url("/src/client/assets/generated/reboot-result-action-buttons.png?v=result-actions-alpha1")',
     '<button id="resultRetryButton" class="result-action-button result-action-primary"><span>다시 도전</span></button>',
     '<button id="resultLobbyButton" class="result-action-button result-action-secondary"><span>홈</span></button>',
+    'resultRetryLabel: qs(\'#resultRetryButton span\')',
+    'dom.resultRetryLabel.textContent = model.primaryAction.label',
     'resultLobbyLabel: qs(\'#resultLobbyButton span\')',
     'dom.resultLobbyLabel.textContent = model.secondaryAction.label',
     '.result-overlay .result-action-button',
@@ -3079,6 +3081,7 @@ test('client settles result rewards into profile and wires shop purchases', asyn
     'profile.processedRuns.includes(current.runId)',
     'nextLobbyOperation',
     'dom.launchBotLabel.textContent = nextLobbyOperation(profile).cta',
+    'seedName: current.seedName',
     'const operation = nextLobbyOperation(profile);',
     'seedName: operation.seedName',
     'buildRebootShop(profile)',
@@ -3108,7 +3111,7 @@ test('result secondary action can claim ready rewards without an extra tap', asy
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
   for (const marker of [
-    'buildRebootResultModel({ result: current.result, rewards, profile })',
+    'buildRebootResultModel({ result: current.result, rewards, profile, seedName: current.seedName })',
     "resultCode: qs('#resultCode')",
     'dom.resultCode.textContent = model.code',
     'dom.resultLobbyLabel.textContent = model.secondaryAction.label',

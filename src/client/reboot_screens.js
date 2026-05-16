@@ -309,6 +309,12 @@ export function nextLobbyOperation(profile = {}) {
   return LOBBY_OPERATION_SEQUENCE[Math.min(completedRuns, LOBBY_OPERATION_SEQUENCE.length - 1)];
 }
 
+function operationAfterSeed(seedName) {
+  const index = LOBBY_OPERATION_SEQUENCE.findIndex((operation) => operation.seedName === seedName);
+  if (index < 0) return null;
+  return LOBBY_OPERATION_SEQUENCE[(index + 1) % LOBBY_OPERATION_SEQUENCE.length];
+}
+
 export function postRewardRoute(profile = {}, fallbackScreen = 'lobby') {
   const nextAction = nextLobbyAction(profile);
   if (!nextAction?.screen || nextAction.screen === 'battle') return fallbackScreen;
@@ -525,10 +531,11 @@ export function buildSeasonScreen(profile = {}) {
   return `${board}<section class="meta-progress-board" data-progress-board="season">${tiers}</section>`;
 }
 
-export function buildRebootResultModel({ result, rewards = [], profile } = {}) {
+export function buildRebootResultModel({ result, rewards = [], profile, seedName } = {}) {
   const won = result?.status === 'won';
   const reason = result?.reason ?? 'partner_rescued';
   const nextAction = profile ? nextLobbyAction(profile) : null;
+  const nextOperation = won ? operationAfterSeed(seedName) : null;
   const secondaryAction = (() => {
     if (!nextAction || nextAction.screen === 'battle') return { label: '홈', action: 'home' };
     if (nextAction.screen === 'missions') return { label: '수령하기', action: 'claim-missions', screen: 'missions', title: nextAction.title };
@@ -543,7 +550,7 @@ export function buildRebootResultModel({ result, rewards = [], profile } = {}) {
     reason: { label: REASON_LABELS[reason] ?? '전투 완료', reason },
     nextGoal: { label: GOAL_LABELS[result?.nextGoal] ?? '핵심 타이밍 재도전', goal: result?.nextGoal ?? 'retry' },
     rewards,
-    primaryAction: { label: '다시 도전', action: 'retry' },
+    primaryAction: { label: nextOperation?.title ?? '다시 도전', action: 'retry' },
     secondaryAction,
     forbiddenActions: []
   };
