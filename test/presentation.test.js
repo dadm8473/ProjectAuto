@@ -922,8 +922,8 @@ test('meta screen lists fill the lower app area instead of stopping like a spars
     'grid-auto-rows: minmax(clamp(98px, 27vw, 112px), auto);',
     '-webkit-mask-image: linear-gradient(',
     'mask-image: linear-gradient(',
-    'calc(100% - 28px)',
-    'padding-bottom: calc(var(--lobby-bottom-dock-rendered-height) + 16px);',
+    'calc(100% - 52px)',
+    'padding-bottom: calc(var(--lobby-bottom-dock-rendered-height) + 28px);',
     'transparent 100%'
   ]) {
     assert.equal(listBlock.includes(marker), true, marker);
@@ -934,6 +934,20 @@ test('meta screen lists fill the lower app area instead of stopping like a spars
     'box-shadow: 0 10px 20px rgba(0, 0, 0, 0.42);'
   ]) {
     assert.equal(cardBlock.includes(marker), true, marker);
+  }
+});
+
+test('meta screen list mask fades short-phone card clipping into the generated footer shutter', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const listBlock = css.slice(css.indexOf('.screen-list {'), css.indexOf('.screen-list::-webkit-scrollbar'));
+
+  for (const marker of [
+    'padding-bottom: calc(var(--lobby-bottom-dock-rendered-height) + 28px);',
+    '#000 calc(100% - 52px)',
+    'rgba(0, 0, 0, 0.72) calc(100% - 22px)',
+    'transparent 100%'
+  ]) {
+    assert.equal(listBlock.includes(marker), true, marker);
   }
 });
 

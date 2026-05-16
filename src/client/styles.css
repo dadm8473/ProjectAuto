@@ -2537,11 +2537,11 @@ body[data-app-screen="season"] .app-screen::after {
   max-height: none;
   overflow-x: hidden;
   overflow-y: auto;
-  padding-bottom: calc(var(--lobby-bottom-dock-rendered-height) + 16px);
+  padding-bottom: calc(var(--lobby-bottom-dock-rendered-height) + 28px);
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 28px), transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 28px), transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 52px), rgba(0, 0, 0, 0.72) calc(100% - 22px), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 52px), rgba(0, 0, 0, 0.72) calc(100% - 22px), transparent 100%);
 }
 
 .screen-list::-webkit-scrollbar {
