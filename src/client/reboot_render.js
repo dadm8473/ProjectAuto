@@ -217,6 +217,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     width: 768,
     height: 192,
     source: 'imagegen'
+  },
+  signalCoreGates: {
+    src: '/src/client/assets/generated/reboot-signal-core-gates.png?v=signal-core-gates1',
+    width: 512,
+    height: 192,
+    source: 'imagegen'
   }
 };
 
@@ -318,7 +324,9 @@ export function createRebootAssetImages() {
   enemyImpactBursts.src = REBOOT_EFFECT_MANIFEST.enemyImpactBursts.src;
   const enemySpawnGates = new Image();
   enemySpawnGates.src = REBOOT_EFFECT_MANIFEST.enemySpawnGates.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, partnerAssistPings, partnerStandbySigils, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts, enemySpawnGates };
+  const signalCoreGates = new Image();
+  signalCoreGates.src = REBOOT_EFFECT_MANIFEST.signalCoreGates.src;
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, partnerAssistPings, partnerStandbySigils, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts, enemySpawnGates, signalCoreGates };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -528,6 +536,24 @@ function drawEnemySpawnGate(ctx, image, enemies = [], now = 0) {
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, gateX - width / 2, 286 - height / 2, width, height);
+  ctx.restore();
+  return true;
+}
+
+function drawSignalCoreGate(ctx, image, state = {}) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const danger = Math.max(...Object.values(state.boards ?? {}).map((board) => board?.danger ?? 0), 0);
+  const bossThreat = (state.enemies ?? []).some((enemy) => enemy.enemyId === 'mini_boss' || enemy.spriteKey === 'mini_boss');
+  const critical = danger >= 80 || bossThreat || (state.now >= 92 && state.now < 102);
+  const index = critical ? 1 : 0;
+  const cellWidth = image.naturalWidth / 2;
+  const pulse = Math.max(0, Math.sin((Number(state.now) || 0) * (critical ? 7.2 : 3.2))) * 0.08;
+  const width = critical ? 126 : 116;
+  const height = critical ? 92 : 84;
+  const alpha = Math.min(0.9, (critical ? 0.76 : 0.62) + pulse);
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, 320 - width / 2, 286 - height / 2, width, height);
   ctx.restore();
   return true;
 }
@@ -887,6 +913,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
 
   const enemies = state.enemies.slice(0, 8);
   drawEnemySpawnGate(ctx, assets.enemySpawnGates, enemies, state.now);
+  drawSignalCoreGate(ctx, assets.signalCoreGates, state);
   enemies.forEach((enemy, index) => {
     const { x, y } = enemyScreenPoint(state, index);
     const size = enemy.enemyId === 'mini_boss' ? 66 : 44;

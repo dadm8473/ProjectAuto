@@ -147,6 +147,45 @@ test('enemy spawn gate draws as a generated battlefield object before enemy spri
   assert.equal(spawnGateIndex < enemyIndex, true, 'spawn gate should sit behind enemies on the track');
 });
 
+test('signal core gate anchors the protected end of the track before enemies arrive', () => {
+  const ctx = mockContext();
+  const signalCoreGates = image(512, 192);
+  const enemies = image(1024, 256);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 19,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [
+        { enemyId: 'noise_shard', spriteKey: 'noise_shard' }
+      ],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies,
+      board: image(1280, 256),
+      signalCoreGates
+    }
+  );
+
+  const coreIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === signalCoreGates);
+  const enemyIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === enemies);
+  const coreDraw = ctx.commands[coreIndex];
+
+  assert.notEqual(coreIndex, -1, 'expected generated signal core gate at the protected track end');
+  assert.notEqual(enemyIndex, -1, 'expected enemy sprites to render');
+  assert.equal(coreDraw.args[5] >= 260, true, 'signal core gate should sit near the right-side track endpoint');
+  assert.equal(coreIndex < enemyIndex, true, 'signal core gate should sit behind enemies so the threat reads clearly');
+});
+
 test('random combat actions draw generated reveal VFX before the small legacy flash', () => {
   const ctx = mockContext();
   drawRebootBattle(
