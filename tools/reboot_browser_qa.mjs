@@ -175,6 +175,14 @@ async function assertInjectedSafeAreaKeepsCombatTouchable(page) {
   );
 }
 
+async function assertFirstSummonTapFeedback(page) {
+  await page.getByRole('button', { name: '소환' }).click();
+  await page.waitForFunction(() => document.querySelector('#summonMeter .meter-value')?.textContent === '0');
+  assert.equal(await page.locator('#summonMeter .meter-value').textContent(), '0');
+  assert.equal(await page.locator('.status-line').isVisible(), false);
+  assert.match(await page.locator('#summonButton span').textContent(), /초/);
+}
+
 async function verifyShell(page, viewport) {
   await page.goto(baseUrl, { waitUntil: 'load' });
   await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
@@ -230,6 +238,7 @@ async function verifyShell(page, viewport) {
   await assertCombatDockSafeArea(page);
   await assertCombatToastClearsDock(page);
   await assertInjectedSafeAreaKeepsCombatTouchable(page);
+  await assertFirstSummonTapFeedback(page);
 }
 
 async function verifyFastPlaythrough(page) {

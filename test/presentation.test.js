@@ -1225,6 +1225,22 @@ test('combat summon cooldown stays compact on the command button', async () => {
   assert.equal(actionUi.includes('return `소환 ${Math.max(1, Math.ceil(nextGrant.at - current.now))}초`;'), false);
 });
 
+test('browser QA verifies first combat tap removes routine status copy', async () => {
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    'async function assertFirstSummonTapFeedback(page)',
+    "await page.getByRole('button', { name: '소환' }).click();",
+    "document.querySelector('#summonMeter .meter-value')?.textContent === '0'",
+    "assert.equal(await page.locator('#summonMeter .meter-value').textContent(), '0');",
+    "assert.equal(await page.locator('.status-line').isVisible(), false);",
+    "assert.match(await page.locator('#summonButton span').textContent(), /초/);",
+    'await assertFirstSummonTapFeedback(page);'
+  ]) {
+    assert.equal(qa.includes(marker), true, marker);
+  }
+});
+
 test('result screen uses imagegen reward backdrop instead of a plain overlay', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
