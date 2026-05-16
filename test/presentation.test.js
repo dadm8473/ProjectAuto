@@ -2296,12 +2296,14 @@ test('combat renderer uses generated partner assist pings for bot co-op actions'
     'const partnerAssistPings = new Image();',
     'partnerAssistPings.src = REBOOT_EFFECT_MANIFEST.partnerAssistPings.src;',
 	    'PARTNER_ASSIST_PINGS',
+	    'const PARTNER_ASSIST_PING_DURATION = 2.4;',
 	    'function drawPartnerAssistSprite',
 	    'function drawPartnerAssistPing',
 	    'function hasRecentLocalPlayerActionSurge',
-	    "recentEvents(state, 'partner_auto', 1.35)",
+	    "recentEvents(state, 'partner_auto', PARTNER_ASSIST_PING_DURATION)",
 	    "recentEvents(state, type, 1.2)",
 	    'const meta = PARTNER_ASSIST_PINGS[event?.action] ?? PARTNER_ASSIST_PINGS.summon;',
+	    'eventAlpha(state, event, PARTNER_ASSIST_PING_DURATION)',
 	    'drawPartnerAssistSprite(ctx, assets.partnerAssistPings, meta.index, x, y, w, h, alpha);',
 	    "ctx.fillText('파트너 지원'",
 	    "ctx.fillText(meta.body",
@@ -2388,6 +2390,22 @@ test('combat renderer draws the rescue variant of partner assist pings', () => {
   assert.equal(dw / dh, sw / sh);
   assert.equal(dx, 52);
   assert.equal(dy > 130 && dy < 139, true);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '구원 지원'), true);
+});
+
+test('bot rescue support ping lingers long enough to read as co-op help', () => {
+  const partnerAssistPings = fakeImage(640, 100);
+  const state = stateWithPartnerRescuePing();
+  state.now = 89.65;
+  const ctx = recordingCanvasContext();
+
+  drawRebootBattle(ctx, state, { width: 390, height: 620 }, fakeRebootAssets({ partnerAssistPings }));
+
+  assert.equal(
+    ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === partnerAssistPings),
+    true,
+    'partner rescue support should not vanish before the player can read it'
+  );
   assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '구원 지원'), true);
 });
 

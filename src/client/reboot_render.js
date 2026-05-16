@@ -265,6 +265,7 @@ const PARTNER_ASSIST_PINGS = {
 
 const MOMENT_CALLOUT_DURATION = 1.85;
 const MOMENT_CALLOUT_FADE_SECONDS = 0.5;
+const PARTNER_ASSIST_PING_DURATION = 2.4;
 
 const COSMETIC_SIGIL_INDEX = {
   'mythic-aura': 0,
@@ -929,7 +930,7 @@ function drawPartnerDangerCutin(ctx, state, assets = {}, localBoardId = 'p1') {
   const partnerDanger = partnerDangerActive(state, localBoardId);
   if (!partnerDanger) return false;
   if (state.now >= 92 && state.now < 102) return false;
-  const rescueAssist = recentEvents(state, 'partner_auto', 1.35).some((event) => event.action === 'rescue');
+  const rescueAssist = recentEvents(state, 'partner_auto', PARTNER_ASSIST_PING_DURATION).some((event) => event.action === 'rescue');
   if (rescueAssist) return false;
   const image = assets?.rescueCutin;
   if (!image?.complete || image.naturalWidth <= 0) return false;
@@ -1409,10 +1410,10 @@ function drawCombatMomentCallout(ctx, state, assets = {}) {
 
 function drawPartnerAssistPing(ctx, state, assets = {}, localBoardId = 'p1') {
   if (hasRecentLocalPlayerActionSurge(state, localBoardId)) return;
-  const event = recentEvents(state, 'partner_auto', 1.35).at(-1);
+  const event = recentEvents(state, 'partner_auto', PARTNER_ASSIST_PING_DURATION).at(-1);
   if (!event) return;
   const meta = PARTNER_ASSIST_PINGS[event?.action] ?? PARTNER_ASSIST_PINGS.summon;
-  const alpha = Math.min(0.95, eventAlpha(state, event, 1.35) * 1.16);
+  const alpha = Math.min(0.95, eventAlpha(state, event, PARTNER_ASSIST_PING_DURATION) * 1.16);
   const rise = (1 - alpha) * 7;
   const x = 52;
   const y = 138 - rise;
