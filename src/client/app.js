@@ -156,6 +156,10 @@ function showMatchmakingBanner(kind, title, detail, options = {}) {
   dom.matchmakingBanner.dataset.matchState = kind;
   dom.matchmakingBannerTitle.textContent = title;
   dom.matchmakingBannerDetail.textContent = detail;
+  if (kind === 'waiting') {
+    dom.matchmakingBanner.hidden = true;
+    return;
+  }
   dom.matchmakingBanner.hidden = false;
   if (options.persistent) return;
   showMatchmakingBanner.timer = setTimeout(() => {

@@ -348,6 +348,43 @@ test('online waiting state turns the command dock into a generated matchmaking l
   }
 });
 
+test('online waiting uses the command dock without a duplicate battlefield banner', async () => {
+  const app = await readFile('src/client/app.js', 'utf8');
+  const qa = await readFile('tools/reboot_online_browser_qa.mjs', 'utf8');
+  const waitingBranchStart = app.indexOf("if (kind === 'waiting') {");
+  const persistentBranchStart = app.indexOf('if (options.persistent) return;', waitingBranchStart);
+  const functionStart = app.indexOf('function showMatchmakingBanner(kind, title, detail, options = {})');
+
+  assert.notEqual(waitingBranchStart, -1);
+  assert.notEqual(persistentBranchStart, -1);
+  assert.notEqual(functionStart, -1);
+
+  const matchmakingFunction = app.slice(functionStart, persistentBranchStart);
+  const waitingBranch = app.slice(waitingBranchStart, persistentBranchStart);
+  for (const marker of [
+    'dom.matchmakingBanner.dataset.matchState = kind;',
+    'dom.matchmakingBannerTitle.textContent = title;',
+    'dom.matchmakingBannerDetail.textContent = detail;'
+  ]) {
+    assert.equal(matchmakingFunction.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    'dom.matchmakingBanner.hidden = true;',
+    'return;'
+  ]) {
+    assert.equal(waitingBranch.includes(marker), true, marker);
+  }
+
+  for (const marker of [
+    'waitingBannerHidden',
+    "document.querySelector('#matchmakingBanner')?.hidden === true",
+    'waiting battlefield banner stays hidden while the command dock owns matchmaking'
+  ]) {
+    assert.equal(qa.includes(marker), true, marker);
+  }
+});
+
 test('online matchmaking states use generated app-game panels instead of plain text status', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
@@ -573,7 +610,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim-focus1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-wait-focus1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-claim-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=summon-cooldown-label1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-surges1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=unit-activation-ring1"></script>'), false);

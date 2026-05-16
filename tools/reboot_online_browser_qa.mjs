@@ -93,7 +93,8 @@ async function assertMatchBanner(page, title, state) {
 }
 
 async function assertOnlineWaiting(page) {
-  await page.waitForFunction(() => document.querySelector('#netStatus')?.textContent === '온라인 대기');
+  await page.waitForFunction(() => document.querySelector('#netStatus')?.textContent === '온라인 대기'
+    && document.querySelector('#matchmakingBanner')?.hidden === true);
   assert.equal(await page.locator('#netStatus').textContent(), '온라인 대기', 'single client waits for partner');
   assert.equal(await page.locator('#timeMeter').textContent(), '파트너 대기', 'waiting prompt replaces action prompt');
   const dockState = await page.evaluate(() => {
@@ -103,7 +104,8 @@ async function assertOnlineWaiting(page) {
       statusDisplay: getComputedStyle(document.querySelector('.status-line')).display,
       summonDisplay: getComputedStyle(document.querySelector('#summonButton')).display,
       dockLabel: getComputedStyle(primaryActions, '::after').content,
-      dockImage: getComputedStyle(primaryActions, '::before').backgroundImage
+      dockImage: getComputedStyle(primaryActions, '::before').backgroundImage,
+      waitingBannerHidden: document.querySelector('#matchmakingBanner')?.hidden ?? false
     };
   });
   assert.equal(dockState.onlineWaiting, 'true', 'online waiting body state');
@@ -111,7 +113,11 @@ async function assertOnlineWaiting(page) {
   assert.equal(dockState.summonDisplay, 'none', 'waiting command dock removes combat buttons from layout');
   assert.equal(dockState.dockLabel, '"파트너 매칭 중"', 'waiting command dock label');
   assert.match(dockState.dockImage, /reboot-online-matchmaking-panels/, 'waiting command dock uses generated matchmaking art');
-  await assertMatchBanner(page, '파트너 대기', 'waiting');
+  assert.equal(
+    dockState.waitingBannerHidden,
+    true,
+    'waiting battlefield banner stays hidden while the command dock owns matchmaking'
+  );
   assert.equal(await page.locator('#summonButton').isEnabled(), false, 'summon disabled before partner joins');
   assert.equal(await page.locator('#mergeButton').isEnabled(), false, 'merge disabled before partner joins');
   assert.equal(await page.locator('#rescueButton').isEnabled(), false, 'rescue disabled before partner joins');
