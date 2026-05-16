@@ -1954,6 +1954,8 @@ test('result actions use dedicated generated button frames', async () => {
     '<button id="resultLobbyButton" class="result-action-button result-action-secondary"><span>홈</span></button>',
     'resultRetryLabel: qs(\'#resultRetryButton span\')',
     'dom.resultRetryLabel.textContent = model.primaryAction.label',
+    'dom.resultRetryButton.title = model.primaryAction.title ?? model.primaryAction.label',
+    "dom.resultRetryButton.setAttribute('aria-label', model.primaryAction.ariaLabel ?? model.primaryAction.label);",
     'resultLobbyLabel: qs(\'#resultLobbyButton span\')',
     'dom.resultLobbyLabel.textContent = model.secondaryAction.label',
     '.result-overlay .result-action-button',

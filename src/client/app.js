@@ -749,6 +749,8 @@ function showResult(current) {
   dom.resultHighlights.innerHTML = resultHighlightMarkup(model);
   dom.resultReward.innerHTML = resultRewardMarkup(model.rewards);
   dom.resultRetryLabel.textContent = model.primaryAction.label;
+  dom.resultRetryButton.title = model.primaryAction.title ?? model.primaryAction.label;
+  dom.resultRetryButton.setAttribute('aria-label', model.primaryAction.ariaLabel ?? model.primaryAction.label);
   dom.resultLobbyLabel.textContent = model.secondaryAction.label;
   dom.resultLobbyButton.dataset.resultOpen = model.secondaryAction.action;
   dom.resultOverlay.hidden = false;

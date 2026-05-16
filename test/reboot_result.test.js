@@ -217,7 +217,7 @@ test('operation title lookup exposes the active combat beat for the battle HUD',
   assert.equal(operationForSeedName('unknown_seed').hudTitle, '신호릴레이');
 });
 
-test('result primary action names the next authored operation after a win', () => {
+test('result primary action keeps the next authored operation as button context after a win', () => {
   const next = buildRebootResultModel({
     result: { status: 'won', reason: 'partner_rescued' },
     seedName: 'tutorial_success'
@@ -227,7 +227,12 @@ test('result primary action names the next authored operation after a win', () =
     seedName: 'tutorial_success'
   }).primaryAction;
 
-  assert.deepEqual(next, { label: '보스 막타 작전', action: 'retry' });
+  assert.deepEqual(next, {
+    label: '다음 작전',
+    action: 'retry',
+    title: '보스 막타 작전',
+    ariaLabel: '보스 막타 작전 시작'
+  });
   assert.deepEqual(loss, { label: '다시 도전', action: 'retry' });
 });
 

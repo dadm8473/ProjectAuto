@@ -595,6 +595,14 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
   const highlights = resultHighlights(result, won);
   const nextAction = profile ? nextLobbyAction(profile) : null;
   const nextOperation = won ? operationAfterSeed(seedName) : null;
+  const primaryAction = nextOperation
+    ? {
+        label: '다음 작전',
+        action: 'retry',
+        title: nextOperation.title,
+        ariaLabel: `${nextOperation.title} 시작`
+      }
+    : { label: '다시 도전', action: 'retry' };
   const secondaryAction = (() => {
     if (!nextAction || nextAction.screen === 'battle') return { label: '홈', action: 'home' };
     if (nextAction.screen === 'missions') return { label: '수령하기', action: 'claim-missions', screen: 'missions', title: nextAction.title };
@@ -610,7 +618,7 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
     reason: { label: REASON_LABELS[reason] ?? '전투 완료', reason },
     nextGoal: { label: GOAL_LABELS[result?.nextGoal] ?? '핵심 타이밍 재도전', goal: result?.nextGoal ?? 'retry' },
     rewards,
-    primaryAction: { label: nextOperation?.title ?? '다시 도전', action: 'retry' },
+    primaryAction,
     secondaryAction,
     forbiddenActions: []
   };
