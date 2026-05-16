@@ -23,6 +23,19 @@ test('critical reboot preload list starts with generated game identity and first
   assert.equal(CRITICAL_REBOOT_ASSETS.every((asset) => asset.startsWith('/src/client/assets/generated/')), true);
 });
 
+test('critical reboot preload includes generated lobby navigation dock assets', () => {
+  const required = [
+    '/src/client/assets/generated/reboot-screen-chrome.png',
+    '/src/client/assets/generated/reboot-nav-icons.png',
+    '/src/client/assets/generated/reboot-nav-button-glow.png?v=nav-selector1',
+    '/src/client/assets/generated/reboot-nav-alert-badges.png?v=nav-alerts'
+  ];
+
+  for (const asset of required) {
+    assert.equal(CRITICAL_REBOOT_ASSETS.includes(asset), true, asset);
+  }
+});
+
 test('preloadCriticalRebootAssets resolves after loading every requested image', async () => {
   const requested = [];
 

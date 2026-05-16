@@ -765,7 +765,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets } from './reboot_preload.js?v=loading-gate1';",
+    "import { preloadCriticalRebootAssets } from './reboot_preload.js?v=loading-gate2';",
     'preloadCriticalRebootAssets().then(hideLoadingGate, hideLoadingGate);',
     'function hideLoadingGate()',
     "dom.loadingGate.dataset.loadingState = 'ready';",
@@ -788,6 +788,8 @@ test('startup uses a generated game loading gate while critical assets warm up',
   ]) {
     assert.equal(cssRuleBlock(css, selector).includes('grid-column: 1;'), true, selector);
   }
+
+  assert.equal(app.includes("from './reboot_preload.js?v=loading-gate1'"), false);
 });
 
 test('playtest mode records first-run understanding without adding visible UI', async () => {
