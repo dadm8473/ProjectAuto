@@ -540,20 +540,43 @@ function drawEnemySpawnGate(ctx, image, enemies = [], now = 0) {
   return true;
 }
 
-function drawSignalCoreGate(ctx, image, state = {}) {
-  if (!image?.complete || image.naturalWidth <= 0) return false;
+function isSignalCoreCritical(state = {}) {
   const danger = Math.max(...Object.values(state.boards ?? {}).map((board) => board?.danger ?? 0), 0);
   const bossThreat = (state.enemies ?? []).some((enemy) => enemy.enemyId === 'mini_boss' || enemy.spriteKey === 'mini_boss');
-  const critical = danger >= 80 || bossThreat || (state.now >= 92 && state.now < 102);
+  const endpointThreat = (state.enemies ?? []).some((enemy) => Number.isFinite(Number(enemy.progress)) && Number(enemy.progress) >= 0.86);
+  return danger >= 80 || bossThreat || endpointThreat || (state.now >= 92 && state.now < 102);
+}
+
+function drawSignalCoreGate(ctx, image, state = {}) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const critical = isSignalCoreCritical(state);
   const index = critical ? 1 : 0;
   const cellWidth = image.naturalWidth / 2;
   const pulse = Math.max(0, Math.sin((Number(state.now) || 0) * (critical ? 7.2 : 3.2))) * 0.08;
-  const width = critical ? 126 : 116;
-  const height = critical ? 92 : 84;
-  const alpha = Math.min(0.9, (critical ? 0.76 : 0.62) + pulse);
+  const width = critical ? 146 : 116;
+  const height = critical ? 106 : 84;
+  const alpha = Math.min(0.94, (critical ? 0.84 : 0.62) + pulse);
+  const coreX = critical ? 312 : 320;
   ctx.save();
   ctx.globalAlpha *= alpha;
-  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, 320 - width / 2, 286 - height / 2, width, height);
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, coreX - width / 2, 286 - height / 2, width, height);
+  ctx.restore();
+  return true;
+}
+
+function drawSignalCoreCriticalFlare(ctx, image, state = {}) {
+  if (!image?.complete || image.naturalWidth <= 0 || !isSignalCoreCritical(state)) return false;
+  const cellWidth = image.naturalWidth / 2;
+  const pulse = Math.max(0, Math.sin((Number(state.now) || 0) * 8.6)) * 0.1;
+  const width = 176;
+  const height = 128;
+  const coreX = 312;
+  ctx.save();
+  ctx.globalCompositeOperation = 'screen';
+  ctx.globalAlpha *= Math.min(0.58, 0.38 + pulse);
+  ctx.shadowColor = 'rgba(255, 101, 54, 0.72)';
+  ctx.shadowBlur = 24;
+  ctx.drawImage(image, cellWidth, 0, cellWidth, image.naturalHeight, coreX - width / 2, 286 - height / 2, width, height);
   ctx.restore();
   return true;
 }
@@ -931,6 +954,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
     ctx.roundRect(x - 10, y - 9, enemy.enemyId === 'mini_boss' ? 30 : 20, enemy.enemyId === 'mini_boss' ? 24 : 18, 6);
     ctx.fill();
   });
+  drawSignalCoreCriticalFlare(ctx, assets.signalCoreGates, state);
 
   ctx.restore();
 }

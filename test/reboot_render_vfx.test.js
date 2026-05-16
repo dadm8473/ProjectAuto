@@ -186,6 +186,80 @@ test('signal core gate anchors the protected end of the track before enemies arr
   assert.equal(coreIndex < enemyIndex, true, 'signal core gate should sit behind enemies so the threat reads clearly');
 });
 
+test('signal core gate switches to critical art when an enemy reaches the endpoint', () => {
+  const ctx = mockContext();
+  const signalCoreGates = image(512, 192);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 38,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [
+        { enemyId: 'noise_shard', spriteKey: 'noise_shard', boardId: 'p1', progress: 0.9 }
+      ],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      signalCoreGates
+    }
+  );
+
+  const coreDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === signalCoreGates);
+  assert.ok(coreDraw, 'expected signal core gate draw');
+  assert.equal(coreDraw.args[1], 256, 'endpoint pressure should use the critical signal core cell');
+});
+
+test('signal core gate reinforces endpoint pressure over enemies with a critical flare', () => {
+  const ctx = mockContext();
+  const signalCoreGates = image(512, 192);
+  const enemies = image(1024, 256);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 44,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [
+        { enemyId: 'noise_shard', spriteKey: 'noise_shard', boardId: 'p1', progress: 0.9 }
+      ],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies,
+      signalCoreGates
+    }
+  );
+
+  const enemyIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === enemies);
+  const criticalCoreDraws = ctx.commands
+    .map((command, index) => ({ command, index }))
+    .filter(({ command }) => command.type === 'drawImage' && command.args[0] === signalCoreGates && command.args[1] === 256);
+
+  assert.notEqual(enemyIndex, -1, 'expected enemy sprites to render');
+  assert.equal(criticalCoreDraws.length >= 2, true, 'endpoint pressure should get a foreground critical flare');
+  assert.equal(
+    criticalCoreDraws.some(({ index }) => index > enemyIndex),
+    true,
+    'critical signal flare should stay visible over endpoint enemies'
+  );
+});
+
 test('enemy sprites follow serialized track progress instead of a timer-only path', () => {
   const ctx = mockContext();
   const enemies = image(1024, 256);
