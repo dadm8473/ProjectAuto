@@ -174,6 +174,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 55_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-command-console-v2.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260517-combat-command-console-v2-chromakey-imagegen.png',
+    width: 1024,
+    height: 384,
+    minRuntimeBytes: 480_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-combat-meter-sockets.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-meter-sockets-imagegen.png',
     width: 768,
@@ -576,6 +583,12 @@ const TRANSPARENT_UI_FRAME_ASSETS = [
     path: 'src/client/assets/generated/reboot-online-partner-link.png',
     minSoftCoverage: 0.7,
     maxSoftCoverage: 0.82,
+    maxCornerAlpha: 8
+  },
+  {
+    path: 'src/client/assets/generated/reboot-combat-command-console-v2.png',
+    minSoftCoverage: 0.68,
+    maxSoftCoverage: 0.8,
     maxCornerAlpha: 8
   }
 ];

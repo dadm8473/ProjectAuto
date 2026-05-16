@@ -1199,10 +1199,12 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   const html = await readFile('index.html', 'utf8');
 
   for (const marker of [
+    '--combat-command-console-v2: url("/src/client/assets/generated/reboot-combat-command-console-v2.png?v=command-console-v2")',
     '--combat-first-summon-console: url("/src/client/assets/generated/reboot-combat-first-summon-console.png?v=first-summon-console1")',
     '.primary-actions[data-open-count="1"]::before',
     'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before',
     'background-image: var(--combat-first-summon-console);',
+    'background-image: var(--combat-command-console-v2);',
     'mix-blend-mode: normal;',
     '.primary-actions[data-open-count="1"] button[data-unlocked="false"]',
     'display: none;',
@@ -1214,6 +1216,11 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=loading-gate1'), true);
+
+  const firstDockBlock = cssRuleBlock(css, 'body[data-app-screen="battle"] .action-panel:has(.primary-actions[data-open-count="1"])::after');
+  assert.equal(firstDockBlock.includes('background-image: var(--combat-command-console-v2);'), true);
+  assert.equal(firstDockBlock.includes('background-size: 100% 100%;'), true);
+  assert.equal(firstDockBlock.includes('opacity: 1;'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -3941,9 +3948,9 @@ test('first combat command state covers empty dock sockets with a generated one-
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '--combat-first-command-dock: url("/src/client/assets/generated/reboot-combat-first-command-dock.png?v=first-command-dock1")',
+    '--combat-command-console-v2: url("/src/client/assets/generated/reboot-combat-command-console-v2.png?v=command-console-v2")',
     'body[data-app-screen="battle"] .action-panel:has(.primary-actions[data-open-count="1"])::after',
-    'background-image: var(--combat-first-command-dock);',
+    'background-image: var(--combat-command-console-v2);',
     'inset: 0 0 var(--combat-action-safe-lift);',
     'background-size: 100% 100%;',
     'z-index: 0;',

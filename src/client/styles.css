@@ -74,6 +74,7 @@
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1");
   --combat-first-command-dock: url("/src/client/assets/generated/reboot-combat-first-command-dock.png?v=first-command-dock1");
+  --combat-command-console-v2: url("/src/client/assets/generated/reboot-combat-command-console-v2.png?v=command-console-v2");
   --combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons-alpha1");
   --combat-locked-sockets: url("/src/client/assets/generated/reboot-combat-locked-sockets.png?v=locked-sockets1");
   --combat-cooldown-shutters: url("/src/client/assets/generated/reboot-combat-cooldown-shutters.png?v=cooldown-shutters1");
@@ -430,12 +431,12 @@ body[data-app-screen="battle"] .action-panel:has(.primary-actions[data-open-coun
   inset: 0 0 var(--combat-action-safe-lift);
   z-index: 0;
   pointer-events: none;
-  background-image: var(--combat-first-command-dock);
+  background-image: var(--combat-command-console-v2);
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: 100% 100%;
-  opacity: 0.96;
-  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.48));
+  opacity: 1;
+  filter: saturate(1.08) drop-shadow(0 12px 22px rgba(0, 0, 0, 0.5));
 }
 
 .hud > *,
