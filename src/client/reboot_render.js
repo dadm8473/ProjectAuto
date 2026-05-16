@@ -1135,6 +1135,13 @@ function drawCombatActionSurges(ctx, state, assets = {}, layout = { width: 390, 
   return drawCombatActionSurgeSprite(ctx, assets.actionSurges, index, layout, alpha);
 }
 
+function hasRecentLocalPlayerActionSurge(state, localBoardId = 'p1') {
+  const selfId = normalizeBoardId(localBoardId);
+  return ['merge', 'rescue'].some((type) => (
+    recentEvents(state, type, 1.2).some((event) => normalizeBoardId(event.playerId ?? selfId) === selfId)
+  ));
+}
+
 function drawCombatMomentCallout(ctx, state, assets = {}) {
   const moments = [
     ...recentEvents(state, 'summon', MOMENT_CALLOUT_DURATION),
@@ -1165,7 +1172,8 @@ function drawCombatMomentCallout(ctx, state, assets = {}) {
   ctx.restore();
 }
 
-function drawPartnerAssistPing(ctx, state, assets = {}) {
+function drawPartnerAssistPing(ctx, state, assets = {}, localBoardId = 'p1') {
+  if (hasRecentLocalPlayerActionSurge(state, localBoardId)) return;
   const event = recentEvents(state, 'partner_auto', 1.35).at(-1);
   if (!event) return;
   const meta = PARTNER_ASSIST_PINGS[event?.action] ?? PARTNER_ASSIST_PINGS.summon;
@@ -1228,6 +1236,6 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawFirstRescueRewardSigil(ctx, state, assets, options.reducedMotion, localBoardId);
   drawRescueBeam(ctx, state, assets);
   drawCombatVfx(ctx, state, assets, localBoardId);
-  drawPartnerAssistPing(ctx, state, assets);
+  drawPartnerAssistPing(ctx, state, assets, localBoardId);
   drawCombatMomentCallout(ctx, state, assets);
 }

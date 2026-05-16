@@ -1988,16 +1988,18 @@ test('combat renderer uses generated partner assist pings for bot co-op actions'
     'height: 100',
     'const partnerAssistPings = new Image();',
     'partnerAssistPings.src = REBOOT_EFFECT_MANIFEST.partnerAssistPings.src;',
-    'PARTNER_ASSIST_PINGS',
-    'function drawPartnerAssistSprite',
-    'function drawPartnerAssistPing',
-    "recentEvents(state, 'partner_auto', 1.35)",
-    'const meta = PARTNER_ASSIST_PINGS[event?.action] ?? PARTNER_ASSIST_PINGS.summon;',
-    'drawPartnerAssistSprite(ctx, assets.partnerAssistPings, meta.index, x, y, w, h, alpha);',
-    "ctx.fillText('파트너 지원'",
-    "ctx.fillText(meta.body",
-    'drawPartnerAssistPing(ctx, state, assets)'
-  ]) {
+	    'PARTNER_ASSIST_PINGS',
+	    'function drawPartnerAssistSprite',
+	    'function drawPartnerAssistPing',
+	    'function hasRecentLocalPlayerActionSurge',
+	    "recentEvents(state, 'partner_auto', 1.35)",
+	    "recentEvents(state, type, 1.2)",
+	    'const meta = PARTNER_ASSIST_PINGS[event?.action] ?? PARTNER_ASSIST_PINGS.summon;',
+	    'drawPartnerAssistSprite(ctx, assets.partnerAssistPings, meta.index, x, y, w, h, alpha);',
+	    "ctx.fillText('파트너 지원'",
+	    "ctx.fillText(meta.body",
+	    'drawPartnerAssistPing(ctx, state, assets, localBoardId)'
+	  ]) {
     assert.equal(render.includes(marker), true, marker);
   }
 });
@@ -2018,6 +2020,42 @@ test('combat renderer draws partner assist ping without flattening the imagegen 
   assert.equal(dx, 52);
   assert.equal(dy > 130 && dy < 139, true);
   assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '파트너 지원'), true);
+});
+
+test('local player merge and rescue moments suppress the large partner assist ping', () => {
+  const partnerAssistPings = fakeImage(640, 100);
+  const actionSurges = fakeImage(780, 620);
+  const state = stateWithPartnerAutoPing();
+  state.events = [
+    ...state.events,
+    { type: 'merge', at: state.now - 0.2, playerId: 'p1' }
+  ];
+  const ctx = recordingCanvasContext();
+
+  drawRebootBattle(ctx, state, { width: 390, height: 620 }, fakeRebootAssets({ partnerAssistPings, actionSurges }));
+
+  assert.equal(ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === actionSurges), true);
+  assert.equal(ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === partnerAssistPings), false);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '파트너 지원'), false);
+
+  const p2State = stateWithPartnerAutoPing();
+  p2State.events = [
+    ...p2State.events,
+    { type: 'rescue', at: p2State.now - 0.2, playerId: 'p2' }
+  ];
+  const p2Ctx = recordingCanvasContext();
+
+  drawRebootBattle(
+    p2Ctx,
+    p2State,
+    { width: 390, height: 620 },
+    fakeRebootAssets({ partnerAssistPings, actionSurges }),
+    { localBoardId: 'p2' }
+  );
+
+  assert.equal(p2Ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === actionSurges), true);
+  assert.equal(p2Ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === partnerAssistPings), false);
+  assert.equal(p2Ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '파트너 지원'), false);
 });
 
 test('combat renderer skips partner assist copy when the generated banner has not loaded', () => {
