@@ -3223,6 +3223,17 @@ body[data-app-screen="season"] .app-screen::after {
   pointer-events: none;
 }
 
+.meta-shelf-grid .shop-card .shop-price {
+  position: static;
+  justify-self: center;
+  min-width: 50px;
+  min-height: 20px;
+  margin-top: -2px;
+  padding: 2px 8px 2px 21px;
+  z-index: 1;
+  pointer-events: none;
+}
+
 .meta-shelf-grid .unit-card button,
 .meta-shelf-grid .shop-card button {
   z-index: 4;

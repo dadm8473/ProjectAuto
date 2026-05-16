@@ -381,6 +381,28 @@ test('unit shelf cards expose compact roles and full accessible state', () => {
   assert.equal(collection.includes('data-unit-upgrade="spark_pin" aria-label="스파크 핀 훈련"'), true);
 });
 
+test('shop shelf cards expose compact prices and full accessible state', () => {
+  const shop = buildRebootShop({
+    gems: 90,
+    unlocks: ['merge-effect'],
+    equippedCosmetic: 'merge-effect'
+  });
+
+  assert.equal(
+    shop.includes('aria-label="신화 오라 · 코어 릴레이 오라 · 해금 비용 90 젬 · 해금 가능"'),
+    true
+  );
+  assert.equal(shop.includes('data-shop-buy="mythic-aura" aria-label="신화 오라 해금">해금<'), true);
+  assert.equal(
+    shop.includes('aria-label="파운더 보드 · 협동 보드 스킨 · 해금 비용 140 젬 · 젬 부족"'),
+    true
+  );
+  assert.equal(
+    shop.includes('aria-label="합성 플레어 · 합성 이펙트 · 해금 비용 55 젬 · 장착중"'),
+    true
+  );
+});
+
 test('collection and shop items sit inside a generated shelf grid', () => {
   const collection = buildRebootCollection({ xp: 0, unitLevels: {} });
   const shop = buildRebootShop({ gems: 0, unlocks: [] });
@@ -534,8 +556,8 @@ test('shop turns owned cosmetics into equipped expression instead of dead BM car
   assert.equal(shop.includes('class="cosmetic-equip-aura"'), true);
   assert.equal(shop.includes('data-cosmetic-effect="mythic-aura"'), true);
   assert.equal(shop.includes('class="card-passive-state" data-passive-state="owned" aria-label="장착중">장착중<'), true);
-  assert.equal(shop.includes('data-shop-buy="merge-effect">착용<'), true);
-  assert.equal(shop.includes('data-shop-buy="founder-board">해금<'), true);
+  assert.equal(shop.includes('data-shop-buy="merge-effect" aria-label="합성 플레어 착용">착용<'), true);
+  assert.equal(shop.includes('data-shop-buy="founder-board" aria-label="파운더 보드 해금">해금<'), true);
   assert.equal(shop.includes('>보유<'), false);
 });
 

@@ -379,15 +379,16 @@ export function buildRebootShop(profile = {}) {
     const locked = !owned && gems < price;
     const cardState = owned || equipped ? 'owned' : locked ? 'locked' : 'ready';
     const tileState = equipped ? 'equipped' : owned ? 'owned' : locked ? 'locked' : 'ready';
+    const shopStateLabel = equipped ? '장착중' : owned ? '착용 가능' : locked ? '젬 부족' : '해금 가능';
     const action = equipped
       ? passiveCardState('장착중', 'owned')
       : owned
-        ? `<button type="button" data-shop-buy="${item.id}">착용</button>`
+        ? `<button type="button" data-shop-buy="${item.id}" aria-label="${item.name} 착용">착용</button>`
         : locked
           ? passiveCardState('젬 부족', 'locked', '부족')
-          : `<button type="button" data-shop-buy="${item.id}">해금</button>`;
+          : `<button type="button" data-shop-buy="${item.id}" aria-label="${item.name} 해금">해금</button>`;
     return `
-    <article class="screen-card shop-card" data-item="${item.id}" data-owned="${owned}" data-equipped="${equipped}" data-tile-state="${tileState}">
+    <article class="screen-card shop-card" data-item="${item.id}" data-owned="${owned}" data-equipped="${equipped}" data-tile-state="${tileState}" aria-label="${item.name} · ${item.description} · 해금 비용 ${price} 젬 · ${shopStateLabel}">
       ${cardStateBadge(cardState)}
       <span class="cosmetic-equip-aura" data-cosmetic-effect="${item.id}" aria-hidden="true"></span>
       <span class="sprite-token shop-cosmetic" data-shop-cosmetic="${item.id}"></span>
