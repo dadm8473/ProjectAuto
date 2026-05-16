@@ -3041,14 +3041,14 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .meta-shelf-grid .card-passive-state {
-  min-width: 42px;
-  width: 42px;
+  min-width: 58px;
+  width: auto;
   min-height: 36px;
-  grid-template-columns: 1fr;
-  gap: 0;
-  padding: 0;
-  overflow: hidden;
-  font-size: 0;
+  grid-template-columns: 18px auto;
+  gap: 3px;
+  padding: 0 9px 1px;
+  color: rgba(245, 240, 220, 0.82);
+  font-size: 10px;
   background-image: var(--meta-command-ribbons);
   background-repeat: no-repeat;
   background-size: 400% 100%;

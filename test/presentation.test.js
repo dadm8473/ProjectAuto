@@ -501,7 +501,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-tap-cue1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive-chip1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-tap-cue1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-touch1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-item-status1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-capsules1">'), false);
@@ -1026,7 +1027,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=first-tap-cue1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=meta-passive-chip1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -1387,6 +1388,30 @@ test('inactive meta state chips use generated icons and compact copy', async () 
 
   assert.equal(screens.includes('>경험치 부족<'), false);
   assert.equal(screens.includes('>젬 부족<'), false);
+});
+
+test('meta shelf passive chips show short labels instead of empty slots', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    "passiveCardState('경험치 부족', 'locked', '부족')",
+    "passiveCardState('젬 부족', 'locked', '부족')",
+    "passiveCardState('장착중', 'owned')",
+    '.meta-shelf-grid .card-passive-state',
+    'grid-template-columns: 18px auto;',
+    'width: auto;',
+    'min-width: 58px;',
+    'font-size: 10px;',
+    'background-image: var(--meta-command-ribbons);'
+  ]) {
+    assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+
+  const shelfPassiveBlock = cssRuleBlock(css, '.meta-shelf-grid .card-passive-state');
+  assert.equal(shelfPassiveBlock.includes('font-size: 0;'), false);
+  assert.equal(shelfPassiveBlock.includes('grid-template-columns: 1fr;'), false);
+  assert.equal(shelfPassiveBlock.includes('overflow: hidden;'), false);
 });
 
 test('meta screen titles use generated header plates instead of browser default h1', async () => {
