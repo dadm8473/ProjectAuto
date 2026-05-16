@@ -501,7 +501,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-launch-bay1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-touch1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-item-status1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-capsules1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-command-dock1">'), false);
@@ -1023,7 +1023,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=lobby-launch-bay1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=meta-touch1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -3170,7 +3170,7 @@ test('collection and shop use a generated display shelf instead of list-only row
     'grid-template-columns: repeat(2, minmax(0, 1fr));',
     'background-image: var(--meta-shelf-grid);',
     'background-size: 100% 100%;',
-    'min-height: clamp(520px, 132vw, 640px);'
+    'min-height: clamp(680px, 176vw, 760px);'
   ]) {
     assert.equal(shelfBlock.includes(marker), true, marker);
   }
@@ -3179,7 +3179,7 @@ test('collection and shop use a generated display shelf instead of list-only row
   for (const marker of [
     'background: transparent;',
     'box-shadow: none;',
-    'grid-template-rows: minmax(84px, 1fr) auto auto;'
+    'grid-template-rows: minmax(68px, 1fr) auto 44px;'
   ]) {
     assert.equal(shelfCardBlock.includes(marker), true, marker);
   }
@@ -3562,4 +3562,27 @@ test('install metadata uses dedicated generated app icons', async () => {
       }
     ]
   );
+});
+
+test('meta shelf decorative sprites never block adjacent upgrade or shop taps', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const shelfBlock = cssRuleBlock(css, '.meta-shelf-grid');
+  const shelfCardBlock = css.slice(css.indexOf('.meta-shelf-grid .unit-card,'), css.indexOf('.meta-shelf-grid .unit-card::before,'));
+
+  assert.equal(shelfBlock.includes('min-height: clamp(680px, 176vw, 760px);'), true);
+  assert.equal(shelfCardBlock.includes('grid-template-rows: minmax(68px, 1fr) auto 44px;'), true);
+
+  for (const selector of [
+    '.meta-shelf-grid .sprite-token',
+    '.meta-shelf-grid .cosmetic-equip-aura',
+    '.meta-shelf-grid .card-state-badge',
+    '.meta-shelf-grid .screen-card::before'
+  ]) {
+    const block = cssRuleBlock(css, selector);
+    assert.equal(block.includes('pointer-events: none;'), true, selector);
+  }
+
+  const shelfActionBlock = css.slice(css.indexOf('.meta-shelf-grid .unit-card button,'), css.indexOf('.meta-shelf-grid .card-passive-state'));
+  assert.equal(shelfActionBlock.includes('pointer-events: auto;'), true);
+  assert.match(shelfActionBlock, /z-index:\s*4;/);
 });
