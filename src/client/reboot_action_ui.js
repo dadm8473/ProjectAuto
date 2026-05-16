@@ -73,7 +73,7 @@ export function buildCombatStatusPrompt({ current, localBoardId, onlineWaiting =
   if (!actions.rescue && partnerDanger >= RESCUE_DANGER_CUE) return '구원 충전 중';
   if (actions.rescue) return '구원 가능';
   if (actions.merge) return '합성 가능';
-  if (actions.summon) return (board.units?.length ?? 0) === 0 && current.now < SUMMON_COACH_END ? '첫 유닛 배치' : '소환 가능';
+  if (actions.summon) return (board.units?.length ?? 0) === 0 ? '첫 유닛 배치' : '';
 
   if ((resources.summon ?? 0) < REBOOT_RULES.summon.cost) {
     const nextGrant = REBOOT_RULES.summon.grants.find((grant) => grant.at > current.now);

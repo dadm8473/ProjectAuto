@@ -120,6 +120,17 @@ test('combat status prioritizes rescue preparation over extra summoning during p
   }), '구원 충전 중');
 });
 
+test('combat status stays quiet for routine summon availability after onboarding', () => {
+  assert.equal(buildCombatStatusPrompt({
+    current: {
+      ...state({ now: 34, p1Units: [{ id: 'a' }, { id: 'b' }] }),
+      resources: { p1: { summon: 10, rescue: 0 } },
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    localBoardId: 'p1'
+  }), '');
+});
+
 test('combat status aligns with rescue focus when rescue becomes ready below danger warning', () => {
   assert.equal(buildCombatStatusPrompt({
     current: {

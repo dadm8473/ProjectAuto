@@ -45,6 +45,7 @@ const dom = {
   summonMeter: qs('#summonMeter'),
   rescueMeter: qs('#rescueMeter'),
   dangerMeter: qs('#dangerMeter'),
+  statusLine: qs('.status-line'),
   timeMeter: qs('#timeMeter'),
   bossMeter: qs('#bossMeter'),
   netStatus: qs('#netStatus'),
@@ -624,10 +625,12 @@ function updateMeters(current) {
   );
   const onlineWaiting = waitingForOnlinePartner(current);
   const statusPrompt = buildCombatStatusPrompt({ current, localBoardId, onlineWaiting });
+  dom.timeMeter.hidden = !statusPrompt;
   dom.timeMeter.textContent = statusPrompt;
   if (appScreen === 'battle') document.body.dataset.statusKind = statusPrompt.startsWith('충전 ') ? 'cooldown' : 'active';
   else delete document.body.dataset.statusKind;
   const bossWarning = current.now >= 92 && current.now < 120;
+  dom.statusLine.hidden = !statusPrompt && !bossWarning;
   dom.bossMeter.hidden = !bossWarning;
   dom.bossMeter.textContent = bossWarning ? '보스 경고' : '';
 }

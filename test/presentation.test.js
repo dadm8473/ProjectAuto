@@ -3747,7 +3747,10 @@ test('combat status hides the idle boss chip until the boss warning matters', as
   const app = await readFile('src/client/app.js', 'utf8');
 
   assert.equal(html.includes('<span id="bossMeter" hidden>보스 경고</span>'), true);
+  assert.equal(app.includes("statusLine: qs('.status-line')"), true);
   assert.equal(app.includes('const bossWarning = current.now >= 92 && current.now < 120;'), true);
+  assert.equal(app.includes('dom.timeMeter.hidden = !statusPrompt;'), true);
+  assert.equal(app.includes('dom.statusLine.hidden = !statusPrompt && !bossWarning;'), true);
   assert.equal(app.includes('dom.bossMeter.hidden = !bossWarning;'), true);
   assert.equal(app.includes("dom.bossMeter.textContent = bossWarning ? '보스 경고' : '';"), true);
   assert.equal(app.includes("'보스 대기'"), false);
