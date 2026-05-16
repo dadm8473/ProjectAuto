@@ -365,6 +365,22 @@ test('collection and shop shelf price chips show numbers while preserving access
   assert.equal(shop.includes('class="shop-price">90 젬</span>'), false);
 });
 
+test('unit shelf cards expose compact roles and full accessible state', () => {
+  const collection = buildRebootCollection({
+    xp: 60,
+    unitLevels: { spark_pin: 1 }
+  });
+
+  assert.equal(
+    collection.includes('aria-label="스파크 핀 · 공격 · Lv.1 · 훈련 비용 40 경험치 · 훈련 가능"'),
+    true
+  );
+  assert.equal(collection.includes('<span class="role-pill">공격</span>'), true);
+  assert.equal(collection.includes('data-role="support"'), true);
+  assert.equal(collection.includes('<span class="role-pill">지원</span>'), true);
+  assert.equal(collection.includes('data-unit-upgrade="spark_pin" aria-label="스파크 핀 훈련"'), true);
+});
+
 test('collection and shop items sit inside a generated shelf grid', () => {
   const collection = buildRebootCollection({ xp: 0, unitLevels: {} });
   const shop = buildRebootShop({ gems: 0, unlocks: [] });

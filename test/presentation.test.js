@@ -104,7 +104,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=action-chip1'",
     "from './reboot_render.js?v=unit-roster1'",
-    "from './reboot_screens.js?v=lobby-next-state1'",
+    "from './reboot_screens.js?v=unit-role-chip1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -540,7 +540,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-next-state1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=unit-role-chip1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-chip1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-icons1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=title-icon1">'), false);
@@ -622,7 +622,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-next-state1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=unit-role-chip1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-chip1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-icons1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=title-icon1"></script>'), false);
@@ -692,7 +692,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=lobby-next-state1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=unit-role-chip1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=shelf-price1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-item-status1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), false);
@@ -1099,7 +1099,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=lobby-next-state1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=unit-role-chip1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -1564,6 +1564,8 @@ test('meta shelf cards use generated command ribbons for labels prices and state
     '.meta-shelf-grid .unit-cost,',
     '.meta-shelf-grid .shop-price',
     '.meta-shelf-grid .unit-card .card-copy p',
+    '.meta-shelf-grid .unit-card .role-pill',
+    '.meta-shelf-grid .shop-card .role-pill',
     '.meta-shelf-grid .card-passive-state',
     '.meta-shelf-grid .unit-card button,',
     '.meta-shelf-grid .shop-card button',
@@ -1591,6 +1593,20 @@ test('meta shelf cards use generated command ribbons for labels prices and state
   ]) {
     assert.equal(shelfPriceBlock.includes(marker), true, marker);
   }
+
+  const unitRoleBlock = cssRuleBlock(css, '.meta-shelf-grid .unit-card .role-pill');
+  for (const marker of [
+    'display: inline-flex;',
+    'position: absolute;',
+    'background-image: var(--meta-command-ribbons);',
+    'pointer-events: none;'
+  ]) {
+    assert.equal(unitRoleBlock.includes(marker), true, marker);
+  }
+
+  assert.equal(css.includes('.meta-shelf-grid .unit-card .unit-cost {\n  position: static;'), false);
+
+  assert.equal(cssRuleBlock(css, '.meta-shelf-grid .shop-card .role-pill').includes('display: none;'), true);
 });
 
 test('meta shelf tiles use generated status overlays instead of catalog cells', async () => {

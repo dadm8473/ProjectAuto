@@ -3152,6 +3152,46 @@ body[data-app-screen="season"] .app-screen::after {
   display: none;
 }
 
+.meta-shelf-grid .unit-card .role-pill {
+  position: absolute;
+  top: 14px;
+  left: 22px;
+  z-index: 5;
+  min-width: 44px;
+  min-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px 2px 21px;
+  color: var(--mint);
+  font-size: 10px;
+  background-image: var(--meta-command-ribbons);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 0 0;
+  filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.46));
+  pointer-events: none;
+}
+
+.meta-shelf-grid .unit-card[data-role="attack"] .role-pill {
+  color: #fff0a8;
+}
+
+.meta-shelf-grid .unit-card[data-role="support"] .role-pill {
+  color: #98ffe7;
+}
+
+.meta-shelf-grid .unit-card[data-role="control"] .role-pill {
+  color: #aeeaff;
+}
+
+.meta-shelf-grid .unit-card[data-role="rescue"] .role-pill {
+  color: #ffd67d;
+}
+
+.meta-shelf-grid .shop-card .role-pill {
+  display: none;
+}
+
 .meta-shelf-grid .shop-card .card-copy p {
   display: none;
 }
