@@ -3819,6 +3819,11 @@ body[data-app-screen="season"] .app-screen::after {
   z-index: 1;
 }
 
+.result-highlights {
+  display: grid;
+  gap: 6px;
+}
+
 .result-highlights span,
 .result-reward {
   display: block;

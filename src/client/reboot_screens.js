@@ -24,6 +24,18 @@ const GOAL_LABELS = {
   turn_bad_rolls_into_utility: '약한 유닛 활용'
 };
 
+const HIGHLIGHT_LABELS = {
+  bad_roll_recovered: { label: '약한 운 회복', medal: 'tactics' },
+  partner_rescued: { label: '파트너 구원 성공', medal: 'rescue' },
+  boss_final_hit: { label: '보스 막타 성공', medal: 'boss' },
+  boss_slowed: { label: '보스 둔화 성공', medal: 'boss' },
+  rescue_missed: { label: '구원 타이밍 실패', medal: 'rescue' },
+  boss_leaked: { label: '보스 돌파', medal: 'boss' },
+  merge_gap: { label: '합성 지연', medal: 'tactics' },
+  greed: { label: '합성 욕심 실패', medal: 'tactics' },
+  bad_luck: { label: '약한 조합 방치', medal: 'tactics' }
+};
+
 export const REBOOT_RETRY_SEED_SEQUENCE = [
   'tutorial_success',
   'lucky_clutch',
@@ -42,6 +54,22 @@ function resultMedalForReason(reason) {
   if (['partner_rescued', 'rescue_missed', 'save_rescue_for_partner_danger'].includes(reason)) return 'rescue';
   if (['boss_final_hit', 'boss_slowed', 'boss_leaked'].includes(reason)) return 'boss';
   return 'tactics';
+}
+
+function resultHighlightForKey(key, won) {
+  const highlight = HIGHLIGHT_LABELS[key];
+  return {
+    label: highlight?.label ?? REASON_LABELS[key] ?? '전투 완료',
+    kind: won ? 'success' : 'danger',
+    medal: highlight?.medal ?? resultMedalForReason(key)
+  };
+}
+
+function resultHighlights(result = {}, won = false) {
+  const reason = result.reason ?? 'partner_rescued';
+  const rawHighlights = Array.isArray(result.highlights) && result.highlights.length ? result.highlights : [reason];
+  const keys = [...new Set([...rawHighlights, reason].filter(Boolean))].slice(0, 2);
+  return keys.map((key) => resultHighlightForKey(key, won));
 }
 
 export function unitUpgradeCost(level = 1) {
@@ -550,6 +578,7 @@ export function buildSeasonScreen(profile = {}) {
 export function buildRebootResultModel({ result, rewards = [], profile, seedName } = {}) {
   const won = result?.status === 'won';
   const reason = result?.reason ?? 'partner_rescued';
+  const highlights = resultHighlights(result, won);
   const nextAction = profile ? nextLobbyAction(profile) : null;
   const nextOperation = won ? operationAfterSeed(seedName) : null;
   const secondaryAction = (() => {
@@ -562,7 +591,8 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
     status: won ? 'won' : 'lost',
     code: won ? '작전 성공' : '작전 실패',
     title: won ? '승리' : '패배',
-    highlight: { label: REASON_LABELS[reason] ?? '전투 완료', kind: won ? 'success' : 'danger', medal: resultMedalForReason(reason) },
+    highlight: highlights[0],
+    highlights,
     reason: { label: REASON_LABELS[reason] ?? '전투 완료', reason },
     nextGoal: { label: GOAL_LABELS[result?.nextGoal] ?? '핵심 타이밍 재도전', goal: result?.nextGoal ?? 'retry' },
     rewards,

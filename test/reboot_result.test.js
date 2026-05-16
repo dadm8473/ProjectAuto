@@ -186,6 +186,25 @@ test('result model maps the key run moment to a generated medal type', () => {
   assert.equal(tactics.highlight.medal, 'tactics');
 });
 
+test('result model preserves multiple run highlights for generated result strips', () => {
+  const model = buildRebootResultModel({
+    result: {
+      status: 'won',
+      reason: 'partner_rescued',
+      highlights: ['bad_roll_recovered', 'partner_rescued']
+    }
+  });
+
+  assert.deepEqual(
+    model.highlights.map((highlight) => ({ label: highlight.label, medal: highlight.medal })),
+    [
+      { label: '약한 운 회복', medal: 'tactics' },
+      { label: '파트너 구원 성공', medal: 'rescue' }
+    ]
+  );
+  assert.deepEqual(model.highlight, model.highlights[0]);
+});
+
 test('result primary action names the next authored operation after a win', () => {
   const next = buildRebootResultModel({
     result: { status: 'won', reason: 'partner_rescued' },

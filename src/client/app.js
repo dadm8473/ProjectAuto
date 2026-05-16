@@ -304,7 +304,7 @@ function resultRewardMarkup(rewards) {
 }
 
 function resultHighlightMarkup(model) {
-  return `<span><i class="result-medal" data-result-medal="${model.highlight.medal}" aria-hidden="true"></i><b>${model.highlight.label}</b></span>`;
+  return model.highlights.map((highlight) => `<span><i class="result-medal" data-result-medal="${highlight.medal}" aria-hidden="true"></i><b>${highlight.label}</b></span>`).join('');
 }
 
 function selectorValue(value) {
