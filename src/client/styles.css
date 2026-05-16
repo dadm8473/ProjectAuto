@@ -1935,6 +1935,40 @@ body[data-app-screen="season"] .app-screen::after {
   object-position: center;
 }
 
+.reward-hook {
+  grid-template-columns: clamp(40px, 11.16vw, 48px) auto minmax(20px, 1fr);
+  align-items: center;
+  align-content: center;
+  column-gap: 7px;
+  padding: 11px 104px 11px 70px;
+}
+
+.reward-hook .lobby-currency-icon {
+  display: block;
+  width: clamp(34px, 9.77vw, 42px);
+  height: clamp(34px, 9.77vw, 42px);
+  background-image: url("/src/client/assets/generated/reboot-reward-icons.png");
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 0 0;
+  filter: drop-shadow(0 7px 12px rgba(0, 0, 0, 0.58));
+}
+
+.reward-hook .lobby-currency-value {
+  color: #fff7dc;
+  font-size: clamp(26px, 7.44vw, 32px);
+  font-weight: 1000;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+.reward-hook .lobby-currency-label {
+  align-self: center;
+  color: rgba(244, 201, 93, 0.92);
+  font-size: clamp(12px, 3.26vw, 14px);
+  font-weight: 1000;
+}
+
 .next-hook .lobby-intel-frame {
   object-position: center;
 }

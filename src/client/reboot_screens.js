@@ -295,11 +295,11 @@ export function buildRebootLobby(model = {}) {
         <p>파트너 구원 · 보스 저지</p>
       </div>
     </section>
-    <section class="lobby-intel-strip reward-hook">
+    <section class="lobby-intel-strip reward-hook" aria-label="보유 젬 ${gems}, 외형 해금 전용 재화">
       <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-gems.png?v=intel-strips-alpha1" alt="" aria-hidden="true">
-      <span>보유 젬</span>
-      <strong>${gems}</strong>
-      <p>외형만 해금</p>
+      <span class="lobby-currency-icon" data-reward-icon="soft_currency" aria-hidden="true"></span>
+      <strong class="lobby-currency-value">${gems}</strong>
+      <span class="lobby-currency-label">젬</span>
     </section>
     <section class="lobby-intel-strip next-hook" data-next-action="${nextAction.label}" data-next-beacon="${nextAction.beacon}">
       <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-next.png?v=intel-strips-alpha1" alt="" aria-hidden="true">

@@ -590,6 +590,17 @@ test('lobby recommends the next profile action after rewards settle', () => {
   assert.equal(shopLobby.includes('외형 해금'), true);
 });
 
+test('lobby currency strip uses an icon numeric chip with accessible economy meaning', () => {
+  const lobby = buildRebootLobby({ gems: 240 });
+
+  assert.equal(lobby.includes('class="lobby-intel-strip reward-hook" aria-label="보유 젬 240, 외형 해금 전용 재화"'), true);
+  assert.equal(lobby.includes('class="lobby-currency-icon" data-reward-icon="soft_currency"'), true);
+  assert.equal(lobby.includes('<strong class="lobby-currency-value">240</strong>'), true);
+  assert.equal(lobby.includes('<span class="lobby-currency-label">젬</span>'), true);
+  assert.equal(lobby.includes('<span>보유 젬</span>'), false);
+  assert.equal(lobby.includes('<p>외형만 해금</p>'), false);
+});
+
 test('battle-ready lobby does not duplicate the primary launch button inside the next-action strip', () => {
   const lobby = buildRebootLobby({
     gems: 0,
