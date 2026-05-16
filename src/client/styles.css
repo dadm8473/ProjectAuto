@@ -373,6 +373,7 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 
 .meters > span {
   display: inline-flex;
+  position: relative;
   align-items: center;
   justify-content: center;
   min-height: clamp(24px, 7.44vw, 32px);
@@ -386,10 +387,14 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   background-repeat: no-repeat;
   background-size: 300% 100%;
   white-space: nowrap;
+  overflow: visible;
+  isolation: isolate;
   text-shadow: 0 2px 7px rgba(0, 0, 0, 0.68);
 }
 
 .meter-value {
+  position: relative;
+  z-index: 2;
   min-width: 18px;
   color: #fff7dc;
   font-size: clamp(11px, 3.12vw, 13px);
@@ -406,6 +411,8 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 
 .meters > span::before {
   content: "";
+  position: relative;
+  z-index: 2;
   width: 18px;
   height: 18px;
   flex: 0 0 18px;
@@ -418,6 +425,36 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 #summonMeter::before { background-position: 0 0; }
 #rescueMeter::before { background-position: -36px 0; }
 #dangerMeter::before { background-position: -54px 0; }
+
+.meters > span::after {
+  content: "";
+  position: absolute;
+  inset: -7px -5px;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--combat-action-ready-pulses);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  opacity: 0;
+  transform: scale(0.9);
+  mix-blend-mode: screen;
+  filter: saturate(1.14) drop-shadow(0 0 10px rgba(244, 201, 93, 0.18));
+}
+
+#summonMeter::after { background-position: 0 0; }
+#rescueMeter::after { background-position: 100% 0; }
+#dangerMeter::after { background-position: 100% 0; }
+
+.meters > span[data-meter-state="ready"]::after,
+.meters > span[data-meter-state="danger"]::after {
+  opacity: 0.52;
+  animation: actionReadyPulse 1.18s ease-in-out infinite;
+}
+
+.meters > span[data-meter-state="warning"]::after {
+  opacity: 0.34;
+  transform: scale(0.96);
+}
 
 @media (max-width: 360px) {
   .brand {

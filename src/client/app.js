@@ -1,7 +1,7 @@
 import { castLinkPulse, createGame, mergeRelays, serializeState, supplyRelay, tickGame } from '../shared/game.js';
 import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
-import { REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
+import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=merge-reason1';
 import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-chip1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=unit-roster1';
@@ -586,19 +586,36 @@ function command(actionName) {
   softFeedback(actionName);
 }
 
-function setMeterValue(meter, value, label) {
+function setMeterValue(meter, value, label, state = 'idle') {
   const valueNode = meter?.querySelector('.meter-value');
   if (valueNode) valueNode.textContent = value;
   else if (meter) meter.textContent = value;
   meter?.setAttribute('aria-label', label);
+  if (meter) meter.dataset.meterState = state;
 }
 
 function updateMeters(current) {
   const resources = current.resources?.[localBoardId] ?? current.resources.p1;
   const partner = localBoardId === 'p1' ? 'p2' : 'p1';
-  setMeterValue(dom.summonMeter, `${resources.summon}`, `소환 에너지 ${resources.summon}`);
-  setMeterValue(dom.rescueMeter, `${Math.round(resources.rescue)}%`, `구원 충전 ${Math.round(resources.rescue)}%`);
-  setMeterValue(dom.dangerMeter, `${Math.round(current.boards[partner]?.danger ?? 0)}`, `파트너 위험도 ${Math.round(current.boards[partner]?.danger ?? 0)}`);
+  const partnerDanger = Math.round(current.boards[partner]?.danger ?? 0);
+  setMeterValue(
+    dom.summonMeter,
+    `${resources.summon}`,
+    `소환 에너지 ${resources.summon}`,
+    (resources.summon ?? 0) >= REBOOT_RULES.summon.cost ? 'ready' : 'charging'
+  );
+  setMeterValue(
+    dom.rescueMeter,
+    `${Math.round(resources.rescue)}%`,
+    `구원 충전 ${Math.round(resources.rescue)}%`,
+    (resources.rescue ?? 0) >= 100 ? 'ready' : partnerDanger >= 70 ? 'warning' : 'charging'
+  );
+  setMeterValue(
+    dom.dangerMeter,
+    `${partnerDanger}`,
+    `파트너 위험도 ${partnerDanger}`,
+    partnerDanger >= 70 ? 'danger' : partnerDanger >= 40 ? 'warning' : 'safe'
+  );
   const onlineWaiting = waitingForOnlinePartner(current);
   const statusPrompt = buildCombatStatusPrompt({ current, localBoardId, onlineWaiting });
   dom.timeMeter.textContent = statusPrompt;

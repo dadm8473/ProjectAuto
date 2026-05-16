@@ -540,7 +540,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-counter-plate1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter-state1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-chip1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-icons1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=title-icon1">'), false);
@@ -622,7 +622,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-counter-plate1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-meter-state1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-chip1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-icons1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=title-icon1"></script>'), false);
@@ -1099,7 +1099,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=objective-counter-plate1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=hud-meter-state1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -3809,10 +3809,10 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     '<span class="meter-value">10</span>',
     '<span class="meter-value">0%</span>',
     '<span class="meter-value">0</span>',
-    'function setMeterValue(meter, value, label)',
-    'setMeterValue(dom.summonMeter, `${resources.summon}`, `소환 에너지 ${resources.summon}`)',
-    'setMeterValue(dom.rescueMeter, `${Math.round(resources.rescue)}%`, `구원 충전 ${Math.round(resources.rescue)}%`)',
-    'setMeterValue(dom.dangerMeter, `${Math.round(current.boards[partner]?.danger ?? 0)}`, `파트너 위험도 ${Math.round(current.boards[partner]?.danger ?? 0)}`)',
+    "function setMeterValue(meter, value, label, state = 'idle')",
+    'setMeterValue(\n    dom.summonMeter,',
+    'setMeterValue(\n    dom.rescueMeter,',
+    'setMeterValue(\n    dom.dangerMeter,',
     '.meter-value',
     'margin-left: clamp(34px, 10vw, 46px);',
     'padding: clamp(4px, 1.4vw, 6px) clamp(3px, 1.2vw, 5px);'
@@ -3829,6 +3829,30 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     'dom.dangerMeter.textContent = `위험 ${Math.round(current.boards[partner]?.danger ?? 0)}`'
   ]) {
     assert.equal(`${html}\n${app}`.includes(forbidden), false, forbidden);
+  }
+});
+
+test('combat HUD meters use generated state pulses for ready and danger values', async () => {
+  const app = await readFile('src/client/app.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    "import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';",
+    "function setMeterValue(meter, value, label, state = 'idle')",
+    'meter.dataset.meterState = state;',
+    "(resources.summon ?? 0) >= REBOOT_RULES.summon.cost ? 'ready' : 'charging'",
+    "(resources.rescue ?? 0) >= 100 ? 'ready' : partnerDanger >= 70 ? 'warning' : 'charging'",
+    "partnerDanger >= 70 ? 'danger' : partnerDanger >= 40 ? 'warning' : 'safe'",
+    '.meters > span::after',
+    'background-image: var(--combat-action-ready-pulses);',
+    '#summonMeter::after { background-position: 0 0; }',
+    '#rescueMeter::after { background-position: 100% 0; }',
+    '#dangerMeter::after { background-position: 100% 0; }',
+    '.meters > span[data-meter-state="ready"]::after',
+    '.meters > span[data-meter-state="danger"]::after',
+    'animation: actionReadyPulse 1.18s ease-in-out infinite;'
+  ]) {
+    assert.equal(`${app}\n${css}`.includes(marker), true, marker);
   }
 });
 
