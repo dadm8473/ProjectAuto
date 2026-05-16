@@ -569,7 +569,6 @@ function openingThreatPreviewAlpha(state = {}, options = {}) {
   const now = Number(state.now) || 0;
   if (options.onlineWaiting || options.matchmakingBannerVisible) return 0;
   if ((state.enemies?.length ?? 0) > 0) return 0;
-  if (hasFirstPlayerAction(state)) return 0;
   if (now < OPERATION_START_CUTIN_END || now > OPENING_THREAT_PREVIEW_END) return 0;
   const intro = Math.min(1, Math.max(0, now - OPERATION_START_CUTIN_END) / 0.22);
   const exit = Math.min(1, Math.max(0, OPENING_THREAT_PREVIEW_END - now) / 0.7);

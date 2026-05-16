@@ -191,6 +191,43 @@ test('opening combat previews an incoming threat before the first serialized ene
   assert.equal(previewDraw.args[7] <= 118, true, 'preview should stay compact enough for the mobile playfield');
 });
 
+test('opening threat preview remains after first summon until enemies serialize', () => {
+  const ctx = mockContext();
+  const enemies = image(1024, 256);
+  const openingThreatPreview = image(512, 256);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 0.74,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [{ type: 'summon', at: 0.62, playerId: 'p1' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies,
+      board: image(1280, 256),
+      openingThreatPreview
+    }
+  );
+
+  const previewDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === openingThreatPreview
+  ));
+  const looseEnemyDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === enemies
+  ));
+
+  assert.equal(previewDraws.length >= 1, true, 'first summon should not leave an empty map before enemies serialize');
+  assert.deepEqual(looseEnemyDraws, [], 'opening preview should still avoid loose enemy atlas icons');
+});
+
 test('signal core gate anchors the protected end of the track before enemies arrive', () => {
   const ctx = mockContext();
   const signalCoreGates = image(512, 192);
