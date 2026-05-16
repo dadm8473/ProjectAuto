@@ -4005,6 +4005,9 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     'id="summonMeter" data-meter-kind="summon" aria-label="소환 에너지 10"',
     'id="rescueMeter" data-meter-kind="rescue" aria-label="구원 충전 0%"',
     'id="dangerMeter" data-meter-kind="danger" aria-label="파트너 위험도 0"',
+    '<span class="meter-label">소환</span>',
+    '<span class="meter-label">구원</span>',
+    '<span class="meter-label">위험</span>',
     '<span class="meter-value">10</span>',
     '<span class="meter-value">0%</span>',
     '<span class="meter-value">0</span>',
@@ -4012,6 +4015,7 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     'setMeterValue(\n    dom.summonMeter,',
     'setMeterValue(\n    dom.rescueMeter,',
     'setMeterValue(\n    dom.dangerMeter,',
+    '.meter-label',
     '.meter-value',
     'margin-left: clamp(34px, 10vw, 46px);',
     'padding: clamp(4px, 1.4vw, 6px) clamp(3px, 1.2vw, 5px);'
