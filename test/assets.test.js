@@ -681,6 +681,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 180_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-action-surges.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-combat-action-surges-chromakey-imagegen.png',
+    width: 780,
+    height: 620,
+    minRuntimeBytes: 90_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-combat-first-summon-console.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260516-combat-first-summon-console-chromakey-imagegen.png',
     width: 780,

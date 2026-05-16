@@ -158,6 +158,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     height: 512,
     source: 'imagegen'
   },
+  actionSurges: {
+    src: '/src/client/assets/generated/reboot-combat-action-surges.png?v=action-surges1',
+    width: 780,
+    height: 620,
+    source: 'imagegen'
+  },
   boardLabelPlates: {
     src: '/src/client/assets/generated/reboot-combat-status-plates.png?v=board-labels-alpha1',
     width: 780,
@@ -277,6 +283,8 @@ export function createRebootAssetImages() {
   playerBoardTray.src = REBOOT_EFFECT_MANIFEST.playerBoardTray.src;
   const unitActivationRing = new Image();
   unitActivationRing.src = REBOOT_EFFECT_MANIFEST.unitActivationRing.src;
+  const actionSurges = new Image();
+  actionSurges.src = REBOOT_EFFECT_MANIFEST.actionSurges.src;
   const boardLabelPlates = new Image();
   boardLabelPlates.src = REBOOT_EFFECT_MANIFEST.boardLabelPlates.src;
   const firstCommandSpotlight = new Image();
@@ -291,7 +299,7 @@ export function createRebootAssetImages() {
   enemyTrackTrails.src = REBOOT_EFFECT_MANIFEST.enemyTrackTrails.src;
   const enemyImpactBursts = new Image();
   enemyImpactBursts.src = REBOOT_EFFECT_MANIFEST.enemyImpactBursts.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, unitActivationRing, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts };
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, partnerAssistPings, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -413,6 +421,16 @@ function drawCombatRevealVfxSprite(ctx, image, index, cx, cy, w, h, alpha = 1) {
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, cx - w / 2, cy - h / 2, w, h);
+  ctx.restore();
+  return true;
+}
+
+function drawCombatActionSurgeSprite(ctx, image, index, layout, alpha = 1) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const cellWidth = image.naturalWidth / 2;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, 0, 0, layout.width, layout.height);
   ctx.restore();
   return true;
 }
@@ -1102,6 +1120,21 @@ function drawFirstRescueRewardSigil(ctx, state, assets = {}, reducedMotion = fal
   return drawCosmeticSigilSprite(ctx, image, index, 40 - (w - 310) / 2, 274 - (h - 104) / 2, w, h, alpha);
 }
 
+function drawCombatActionSurges(ctx, state, assets = {}, layout = { width: 390, height: 620 }, localBoardId = 'p1') {
+  const selfId = normalizeBoardId(localBoardId);
+  const moment = [
+    ...recentEvents(state, 'merge', 1.2).map((event) => ({ event, index: 0 })),
+    ...recentEvents(state, 'rescue', 1.2).map((event) => ({ event, index: 1 }))
+  ]
+    .filter(({ event }) => normalizeBoardId(event.playerId ?? selfId) === selfId)
+    .sort((a, b) => a.event.at - b.event.at)
+    .at(-1);
+  if (!moment) return false;
+  const { event, index } = moment;
+  const alpha = Math.min(index === 1 ? 0.72 : 0.68, eventAlpha(state, event, 1.2) * (index === 1 ? 1.08 : 1));
+  return drawCombatActionSurgeSprite(ctx, assets.actionSurges, index, layout, alpha);
+}
+
 function drawCombatMomentCallout(ctx, state, assets = {}) {
   const moments = [
     ...recentEvents(state, 'summon', MOMENT_CALLOUT_DURATION),
@@ -1177,6 +1210,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   const partnerId = partnerBoardId(localBoardId);
   drawBoard(ctx, state.boards[partnerId], 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
   drawTrack(ctx, state, assets, imageBackdrop);
+  drawCombatActionSurges(ctx, state, assets, layout, localBoardId);
   if (!options.onlineWaiting) drawCombatStartCutin(ctx, state, assets);
   drawCombatCrisisOverlays(ctx, state, assets, localBoardId);
   const drewDualCrisis = drawDualCrisisCutin(ctx, state, assets, localBoardId);

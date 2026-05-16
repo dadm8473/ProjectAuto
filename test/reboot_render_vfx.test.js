@@ -866,6 +866,120 @@ test('first player rescue gets a generated link sigil before the flare', () => {
   assert.equal(rescueSigilIndex < rescueFlareIndex, true, 'rescue sigil should ground the co-op save before the flare');
 });
 
+test('merge and rescue moments get the latest full-canvas generated action surge before compact flashes', () => {
+  const mergeCtx = mockContext();
+  const actionSurges = image(780, 620);
+  drawRebootBattle(
+    mergeCtx,
+    {
+      now: 78.26,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'burst_pin' }] },
+        p2: { danger: 44, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [{ enemyId: 'heavy_noise', spriteKey: 'heavy_noise' }],
+      events: [{ type: 'merge', at: 78.0, playerId: 'p1' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      playerBoardTray: image(780, 320),
+      actionSurges
+    }
+  );
+  const mergeCtxSurgeIndex = mergeCtx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === actionSurges
+      && command.args[1] === 0
+      && command.args[2] === 0
+      && command.args[3] === 390
+      && command.args[4] === 620
+      && command.args[5] === 0
+      && command.args[6] === 0
+      && command.args[7] === 390
+      && command.args[8] === 620
+  ));
+  const mergeCtxBurstIndex = mergeCtx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[1] === 256
+      && command.args[7] === 112
+  ));
+
+  assert.notEqual(mergeCtxSurgeIndex, -1, 'expected generated merge action surge to cover the battlefield');
+  assert.equal(mergeCtxSurgeIndex < mergeCtxBurstIndex, true, 'merge surge should sell the action before the compact flash');
+
+  const rescueCtx = mockContext();
+  drawRebootBattle(
+    rescueCtx,
+    {
+      now: 78.26,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'burst_pin' }, { spriteKey: 'rescue_coil' }] },
+        p2: { danger: 44, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [{ enemyId: 'heavy_noise', spriteKey: 'heavy_noise' }],
+      events: [
+        { type: 'merge', at: 78.0, playerId: 'p1' },
+        { type: 'rescue', at: 78.04, playerId: 'p1' }
+      ],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      playerBoardTray: image(780, 320),
+      actionSurges
+    }
+  );
+
+  const mergeSurgeIndex = rescueCtx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === actionSurges
+      && command.args[1] === 0
+      && command.args[2] === 0
+      && command.args[3] === 390
+      && command.args[4] === 620
+      && command.args[5] === 0
+      && command.args[6] === 0
+      && command.args[7] === 390
+      && command.args[8] === 620
+  ));
+  const rescueSurgeIndex = rescueCtx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === actionSurges
+      && command.args[1] === 390
+      && command.args[2] === 0
+      && command.args[3] === 390
+      && command.args[4] === 620
+      && command.args[5] === 0
+      && command.args[6] === 0
+      && command.args[7] === 390
+      && command.args[8] === 620
+  ));
+  const rescueFlareIndex = rescueCtx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[1] === 512
+      && command.args[7] === 132
+  ));
+
+  assert.equal(mergeSurgeIndex, -1, 'overlapping actions should not stack full-canvas merge and rescue surges');
+  assert.notEqual(rescueSurgeIndex, -1, 'expected generated rescue action surge to cover the battlefield');
+  assert.equal(rescueSurgeIndex < rescueFlareIndex, true, 'rescue surge should sell the co-op save before the compact flare');
+});
+
 test('image backdrop board labels sit on generated combat plates', () => {
   const ctx = mockContext();
   drawRebootBattle(
@@ -1037,7 +1151,7 @@ test('rescue action stamp stays below boss warning copy during crisis timing', (
         p2: { danger: 70, units: [{ spriteKey: 'bloom_amp' }] }
       },
       enemies: [{ enemyId: 'mini_boss', spriteKey: 'mini_boss' }],
-      events: [{ type: 'rescue', at: 92.1, playerId: 'p1' }],
+      events: [{ type: 'rescue', at: 92.6, playerId: 'p1' }],
       effects: []
     },
     { width: 390, height: 620 },
@@ -1047,25 +1161,33 @@ test('rescue action stamp stays below boss warning copy during crisis timing', (
       enemies: image(1024, 256),
       board: image(1280, 256),
       vfx: image(1280, 256),
-      bossCutin: image(390, 128),
-      actionStamps: image(768, 128),
+	      bossCutin: image(390, 128),
+	      actionSurges: image(780, 620),
+	      actionStamps: image(768, 128),
       playerBoardTray: image(780, 320),
       bossAuras: image(768, 192),
       crisisOverlays: image(780, 320)
     }
   );
 
-  const bossTitleIndex = ctx.commands.findIndex((command) => (
-    command.type === 'fillText' && command.args[0] === '보스 접근'
-  ));
-  const rescueStampDraw = ctx.commands.find((command) => (
+	  const bossTitleIndex = ctx.commands.findIndex((command) => (
+	    command.type === 'fillText' && command.args[0] === '보스 접근'
+	  ));
+	  const actionSurgeIndex = ctx.commands.findIndex((command) => (
+	    command.type === 'drawImage'
+	      && command.args[0].naturalWidth === 780
+	      && command.args[0].naturalHeight === 620
+	  ));
+	  const rescueStampDraw = ctx.commands.find((command) => (
     command.type === 'drawImage'
       && command.args[0].naturalWidth === 768
       && command.args[0].naturalHeight === 128
       && command.args[1] === 512
   ));
-  assert.notEqual(bossTitleIndex, -1, 'expected boss warning title to render during crisis timing');
-  assert.ok(rescueStampDraw, 'expected compact rescue action stamp to render during crisis timing');
+	  assert.notEqual(bossTitleIndex, -1, 'expected boss warning title to render during crisis timing');
+	  assert.notEqual(actionSurgeIndex, -1, 'expected rescue action surge to render during crisis timing');
+	  assert.equal(actionSurgeIndex < bossTitleIndex, true, 'full-canvas action surge should stay below boss warning copy');
+	  assert.ok(rescueStampDraw, 'expected compact rescue action stamp to render during crisis timing');
   const stampIndex = ctx.commands.indexOf(rescueStampDraw);
   assert.equal(stampIndex > bossTitleIndex, true, 'action stamp should be layered after the boss warning art');
   assert.equal(rescueStampDraw.args[6] >= 320, true, `rescue stamp should stay below boss warning copy: ${rescueStampDraw.args[6]}`);
