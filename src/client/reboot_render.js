@@ -915,7 +915,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
   drawEnemySpawnGate(ctx, assets.enemySpawnGates, enemies, state.now);
   drawSignalCoreGate(ctx, assets.signalCoreGates, state);
   enemies.forEach((enemy, index) => {
-    const { x, y } = enemyScreenPoint(state, index);
+    const { x, y } = enemyScreenPoint(state, index, enemy);
     const size = enemy.enemyId === 'mini_boss' ? 66 : 44;
     if (enemy.enemyId === 'mini_boss') {
       drawBossAura(ctx, assets, x, y, state.now);
@@ -935,7 +935,13 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
   ctx.restore();
 }
 
-function enemyScreenPoint(state, index) {
+function laneForEnemy(enemy = {}) {
+  if (Number.isFinite(Number(enemy.lane))) return Number(enemy.lane);
+  return enemy.boardId === 'p2' ? -0.45 : 0.25;
+}
+
+function enemyScreenPoint(state, index, enemy = null) {
+  if (Number.isFinite(Number(enemy?.progress))) return trackPointFromProgress(Number(enemy.progress), laneForEnemy(enemy));
   const p = ((state.now * 0.045 + index * 0.12) % 1);
   return {
     x: 70 + p * 250,
@@ -1088,7 +1094,7 @@ function drawCombatVfx(ctx, state, assets = {}, localBoardId = 'p1') {
   drawHitBeams(ctx, state, assets, localBoardId);
   drawDeathBursts(ctx, state, assets);
   if (state.enemies.length > 0) {
-    const point = enemyScreenPoint(state, 0);
+    const point = enemyScreenPoint(state, 0, state.enemies[0]);
     const alpha = 0.34 + Math.max(0, Math.sin(state.now * 12)) * 0.22;
     drawAtlasSprite(ctx, assets, 'vfx', 'enemy_hit_spark', point.x + 7, point.y - 7, 46, alpha);
   }

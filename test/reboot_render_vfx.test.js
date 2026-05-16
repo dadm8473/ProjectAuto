@@ -186,6 +186,38 @@ test('signal core gate anchors the protected end of the track before enemies arr
   assert.equal(coreIndex < enemyIndex, true, 'signal core gate should sit behind enemies so the threat reads clearly');
 });
 
+test('enemy sprites follow serialized track progress instead of a timer-only path', () => {
+  const ctx = mockContext();
+  const enemies = image(1024, 256);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 1,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [
+        { enemyId: 'noise_shard', spriteKey: 'noise_shard', boardId: 'p1', progress: 0.82 }
+      ],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies,
+      board: image(1280, 256)
+    }
+  );
+
+  const enemyDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === enemies);
+  assert.ok(enemyDraw, 'expected enemy atlas draw');
+  assert.equal(enemyDraw.args[5] + enemyDraw.args[7] / 2 > 260, true, 'enemy with high progress should render near the protected track end');
+});
+
 test('random combat actions draw generated reveal VFX before the small legacy flash', () => {
   const ctx = mockContext();
   drawRebootBattle(
