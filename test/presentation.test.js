@@ -106,7 +106,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=merge-reason1'",
-    "from './reboot_action_ui.js?v=action-chip1'",
+    "from './reboot_action_ui.js?v=action-chip2'",
     "from './reboot_render.js?v=unit-roster1'",
     "from './reboot_screens.js?v=objective-counter-plate1'",
     "from './reboot_online.js'"
@@ -653,7 +653,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-copy1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=loading-gate1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-meter-state1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-chip1"></script>'), false);
@@ -1113,7 +1113,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
   assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::before'), false);
 
   for (const marker of [
-    "from './reboot_action_ui.js?v=action-chip1'",
+    "from './reboot_action_ui.js?v=action-chip2'",
     'buildCombatCoachCue',
     'buildCombatCommandLabels',
     'buildCombatStatusPrompt',
@@ -1328,7 +1328,7 @@ test('combat summon cooldown stays compact on the command button', async () => {
     assert.equal(source.includes(marker), true, marker);
   }
 
-  assert.equal(actionUi.includes('return `${Math.max(1, Math.ceil(nextGrant.at - current.now))}초`;'), true);
+  assert.equal(actionUi.includes('return `충전 ${Math.max(1, Math.ceil(nextGrant.at - current.now))}초`;'), true);
   assert.equal(actionUi.includes('return `소환 ${Math.max(1, Math.ceil(nextGrant.at - current.now))}초`;'), false);
 });
 
@@ -1341,7 +1341,7 @@ test('browser QA verifies first combat tap removes routine status copy', async (
     "document.querySelector('#summonMeter .meter-value')?.textContent === '0'",
     "assert.equal(await page.locator('#summonMeter .meter-value').textContent(), '0');",
     "assert.equal(await page.locator('.status-line').isVisible(), false);",
-    "assert.match(await page.locator('#summonButton span').textContent(), /초/);",
+    "assert.match(await page.locator('#summonButton span').textContent(), /충전\\s+\\d+초/);",
     'await assertFirstSummonTapFeedback(page);'
   ]) {
     assert.equal(qa.includes(marker), true, marker);

@@ -180,7 +180,7 @@ async function assertFirstSummonTapFeedback(page) {
   await page.waitForFunction(() => document.querySelector('#summonMeter .meter-value')?.textContent === '0');
   assert.equal(await page.locator('#summonMeter .meter-value').textContent(), '0');
   assert.equal(await page.locator('.status-line').isVisible(), false);
-  assert.match(await page.locator('#summonButton span').textContent(), /초/);
+  assert.match(await page.locator('#summonButton span').textContent(), /충전\s+\d+초/);
 }
 
 async function verifyShell(page, viewport) {

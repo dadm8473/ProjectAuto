@@ -198,7 +198,7 @@ test('combat status prompt shows online partner wait before normal action prompt
   }), '파트너 대기');
 });
 
-test('combat command labels keep summon cooldown compact on the button', () => {
+test('combat command labels show summon cooldown as charging time on the button', () => {
   assert.deepEqual(buildCombatCommandLabels({
     current: {
       ...state({ now: 9 }),
@@ -208,7 +208,7 @@ test('combat command labels keep summon cooldown compact on the button', () => {
     localBoardId: 'p1',
     actions: { summon: { enabled: false }, merge: { enabled: false }, rescue: { enabled: false } }
   }), {
-    summon: '11초',
+    summon: '충전 11초',
     merge: '합성',
     rescue: '구원'
   });
