@@ -2,6 +2,7 @@ import { REBOOT_RULES } from '../shared/reboot_content.js';
 
 const OPERATION_START_CUTIN_END = 0.56;
 const OPERATION_START_CUTIN_FADE = 0.18;
+const OPENING_THREAT_PREVIEW_END = 3.6;
 const FIRST_SUMMON_BEACON_END = 16;
 const WAVE_DIRECTIVE_DURATION = 2.1;
 const WAVE_DIRECTIVE_FADE_SECONDS = 0.48;
@@ -550,6 +551,38 @@ function drawEnemySpawnGate(ctx, image, enemies = [], now = 0) {
   return true;
 }
 
+function hasFirstPlayerAction(state = {}) {
+  return (state.events ?? []).some((event) => (
+    ['summon', 'merge', 'rescue'].includes(event.type) && state.now >= event.at
+  ));
+}
+
+function openingThreatPreviewAlpha(state = {}, options = {}) {
+  const now = Number(state.now) || 0;
+  if (options.onlineWaiting || options.matchmakingBannerVisible) return 0;
+  if ((state.enemies?.length ?? 0) > 0) return 0;
+  if (hasFirstPlayerAction(state)) return 0;
+  if (now < OPERATION_START_CUTIN_END || now > OPENING_THREAT_PREVIEW_END) return 0;
+  const intro = Math.min(1, Math.max(0, now - OPERATION_START_CUTIN_END) / 0.22);
+  const exit = Math.min(1, Math.max(0, OPENING_THREAT_PREVIEW_END - now) / 0.7);
+  return Math.min(0.78, intro * exit * 0.78);
+}
+
+function drawOpeningThreatPreview(ctx, state, assets = {}, options = {}) {
+  const alpha = openingThreatPreviewAlpha(state, options);
+  if (alpha <= 0) return false;
+
+  const previewEnemy = { enemyId: 'noise_shard', spriteKey: 'noise_shard', progress: 0.08, lane: 0.25 };
+  const point = trackPointFromProgress(0.075 + Math.max(0, Math.sin(state.now * 2.3)) * 0.012, 0.25);
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  drawEnemySpawnGate(ctx, assets.enemySpawnGates, [previewEnemy], state.now);
+  drawEnemyTrackTrail(ctx, assets, previewEnemy, point.x, point.y, state.now);
+  drawAtlasSprite(ctx, assets, 'enemies', previewEnemy.spriteKey, point.x, point.y, 46, 0.86);
+  ctx.restore();
+  return true;
+}
+
 function isSignalCoreCritical(state = {}) {
   const danger = Math.max(...Object.values(state.boards ?? {}).map((board) => board?.danger ?? 0), 0);
   const bossThreat = (state.enemies ?? []).some((enemy) => enemy.enemyId === 'mini_boss' || enemy.spriteKey === 'mini_boss');
@@ -901,10 +934,7 @@ function drawPartnerDangerCutin(ctx, state, assets = {}, localBoardId = 'p1') {
 
 function drawCombatStartCutin(ctx, state, assets = {}) {
   if (state.now >= OPERATION_START_CUTIN_END) return false;
-  const firstActionTaken = state.events.some((event) => (
-    ['summon', 'merge', 'rescue'].includes(event.type) && state.now >= event.at
-  ));
-  if (firstActionTaken) return false;
+  if (hasFirstPlayerAction(state)) return false;
   const image = assets?.startCutin;
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const introIn = Math.min(1, state.now / OPERATION_START_CUTIN_FADE);
@@ -923,7 +953,7 @@ function drawCombatStartCutin(ctx, state, assets = {}) {
   return true;
 }
 
-function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
+function drawTrack(ctx, state, assets = {}, imageBackdrop = false, options = {}) {
   ctx.save();
   ctx.translate(0, 0);
   if (!imageBackdrop) {
@@ -946,6 +976,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false) {
 
   const enemies = state.enemies.slice(0, 8);
   drawEnemySpawnGate(ctx, assets.enemySpawnGates, enemies, state.now);
+  drawOpeningThreatPreview(ctx, state, assets, options);
   drawSignalCoreGate(ctx, assets.signalCoreGates, state);
   enemies.forEach((enemy, index) => {
     const { x, y } = enemyScreenPoint(state, index, enemy);
@@ -1395,7 +1426,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   const partnerId = partnerBoardId(localBoardId);
   drawBoard(ctx, state.boards[partnerId], 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
   drawPartnerStandbySigil(ctx, state, assets, partnerId, options);
-  drawTrack(ctx, state, assets, imageBackdrop);
+  drawTrack(ctx, state, assets, imageBackdrop, options);
   drawWaveDirectiveBanner(ctx, state, assets);
   drawCombatActionSurges(ctx, state, assets, layout, localBoardId);
   if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawCombatStartCutin(ctx, state, assets);

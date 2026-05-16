@@ -147,6 +147,45 @@ test('enemy spawn gate draws as a generated battlefield object before enemy spri
   assert.equal(spawnGateIndex < enemyIndex, true, 'spawn gate should sit behind enemies on the track');
 });
 
+test('opening combat previews an incoming threat before the first serialized enemy arrives', () => {
+  const ctx = mockContext();
+  const enemySpawnGates = image(768, 192);
+  const enemyTrackTrails = image(1024, 128);
+  const enemies = image(1024, 256);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 0.82,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies,
+      board: image(1280, 256),
+      enemySpawnGates,
+      enemyTrackTrails
+    }
+  );
+
+  const spawnGateIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === enemySpawnGates);
+  const enemyIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === enemies);
+  const trailIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === enemyTrackTrails);
+
+  assert.notEqual(spawnGateIndex, -1, 'expected opening threat gate even before enemies serialize');
+  assert.notEqual(enemyIndex, -1, 'expected an imagegen enemy preview so the first second is not an empty board');
+  assert.notEqual(trailIndex, -1, 'expected the preview enemy to stay grounded on the track');
+  assert.equal(spawnGateIndex < trailIndex, true, 'spawn gate should sit under the incoming preview');
+  assert.equal(trailIndex < enemyIndex, true, 'track trail should sit under the enemy preview');
+});
+
 test('signal core gate anchors the protected end of the track before enemies arrive', () => {
   const ctx = mockContext();
   const signalCoreGates = image(512, 192);
@@ -1618,12 +1657,13 @@ test('operation start cutin clears before the first second even without player a
   assert.equal(enemyDraws.length >= 1, true, 'expected early enemies to remain readable after the intro beat');
 });
 
-test('online waiting hides the operation start cutin so matchmaking stays quiet', () => {
+test('online waiting hides opening combat cutins and threat previews so matchmaking stays quiet', () => {
   const ctx = mockContext();
+  const enemies = image(1024, 256);
   drawRebootBattle(
     ctx,
     {
-      now: 0.35,
+      now: 0.82,
       boards: {
         p1: { danger: 0, units: [] },
         p2: { danger: 0, units: [] }
@@ -1636,7 +1676,10 @@ test('online waiting hides the operation start cutin so matchmaking stays quiet'
     {
       backdrop: image(390, 620),
       board: image(1280, 256),
-      startCutin: image(390, 112)
+      startCutin: image(390, 112),
+      enemies,
+      enemySpawnGates: image(768, 192),
+      enemyTrackTrails: image(1024, 128)
     },
     { onlineWaiting: true }
   );
@@ -1646,8 +1689,10 @@ test('online waiting hides the operation start cutin so matchmaking stays quiet'
       && command.args[0].naturalWidth === 390
       && command.args[0].naturalHeight === 112
   ));
+  const enemyDraws = ctx.commands.filter((command) => command.type === 'drawImage' && command.args[0] === enemies);
 
   assert.deepEqual(startCutinDraws, []);
+  assert.deepEqual(enemyDraws, []);
 });
 
 test('matchmaking event banner hides the operation start cutin so ready copy stays readable', () => {
