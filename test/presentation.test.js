@@ -3589,6 +3589,20 @@ test('shop screen uses the active generated showcase stage', async () => {
   assert.equal(css.includes('.meta-summary[data-summary-kind="shop"]'), false);
 });
 
+test('shop showcase promotes the generated cosmetic icon above the dark banner art', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '.meta-showcase[data-showcase-kind="shop"]::after',
+    'background: rgba(2, 7, 8, 0.26);',
+    '.meta-showcase[data-showcase-kind="shop"] .shop-cosmetic',
+    'transform: scale(1.62);',
+    'filter: saturate(1.42) brightness(1.16) drop-shadow(0 16px 22px rgba(0, 0, 0, 0.62)) drop-shadow(0 0 18px rgba(105, 243, 255, 0.28));'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+});
+
 test('collection and shop use a generated display shelf instead of list-only rows', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const collection = buildRebootCollection({ xp: 0, unitLevels: {} });
