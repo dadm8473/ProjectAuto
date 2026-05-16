@@ -2817,6 +2817,11 @@ test('lobby operation card uses a dedicated generated mission poster', async () 
     '--lobby-operation-poster-height: 154px',
     'min-height: var(--lobby-operation-poster-height);',
     'class="operation-copy"',
+    'class="operation-progress" aria-label="작전 진행 ${operation.step}/${operation.total}"',
+    'class="operation-progress-node"',
+    'data-operation-node="${step === operation.step ? \'active\' : \'idle\'}"',
+    '.operation-progress',
+    'background-image: var(--meta-mini-badges);',
     'const operation = nextLobbyOperation(model);',
     '<strong>${operation.title}</strong>',
     '<p>${operation.detail}</p>'

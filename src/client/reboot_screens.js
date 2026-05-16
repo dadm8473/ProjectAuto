@@ -306,7 +306,12 @@ export function nextLobbyAction(profile = {}) {
 
 export function nextLobbyOperation(profile = {}) {
   const completedRuns = Array.isArray(profile.processedRuns) ? profile.processedRuns.length : 0;
-  return LOBBY_OPERATION_SEQUENCE[Math.min(completedRuns, LOBBY_OPERATION_SEQUENCE.length - 1)];
+  const index = Math.min(completedRuns, LOBBY_OPERATION_SEQUENCE.length - 1);
+  return {
+    ...LOBBY_OPERATION_SEQUENCE[index],
+    step: index + 1,
+    total: LOBBY_OPERATION_SEQUENCE.length
+  };
 }
 
 function operationAfterSeed(seedName) {
@@ -328,6 +333,16 @@ function buildLobbyNextActionControl(nextAction) {
   return `<button type="button" data-lobby-open="${nextAction.screen}" aria-label="${nextAction.label} ${nextAction.cta}">${nextAction.cta}</button>`;
 }
 
+function operationProgressMarkup(operation) {
+  return `
+      <span class="operation-progress" aria-label="작전 진행 ${operation.step}/${operation.total}">
+        ${Array.from({ length: operation.total }, (_, index) => {
+          const step = index + 1;
+          return `<span class="operation-progress-node" data-operation-node="${step === operation.step ? 'active' : 'idle'}" aria-hidden="true"></span>`;
+        }).join('')}
+      </span>`;
+}
+
 export function buildRebootLobby(model = {}) {
   const gems = model.gems ?? 0;
   const nextAction = nextLobbyAction(model);
@@ -335,6 +350,7 @@ export function buildRebootLobby(model = {}) {
   return `
     <section class="operation-card" data-operation-poster="${operation.poster}">
       <img class="operation-poster-frame" src="/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1" alt="" aria-hidden="true">
+      ${operationProgressMarkup(operation)}
       <div class="operation-copy">
         <span>협동 작전</span>
         <strong>${operation.title}</strong>
