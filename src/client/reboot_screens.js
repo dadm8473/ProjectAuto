@@ -81,6 +81,33 @@ export const REBOOT_MISSIONS = [
   }
 ];
 
+const LOBBY_OPERATION_SEQUENCE = [
+  {
+    seedName: 'tutorial_success',
+    title: '첫 구원 작전',
+    detail: '파트너 구원 · 보스 저지',
+    cta: '첫 구원 작전 시작'
+  },
+  {
+    seedName: 'lucky_clutch',
+    title: '보스 막타 작전',
+    detail: '막판 소환 · 결정타',
+    cta: '보스 막타 작전 시작'
+  },
+  {
+    seedName: 'bad_recoverable',
+    title: '역전 구원 작전',
+    detail: '나쁜 운 회복 · 구원',
+    cta: '역전 구원 작전 시작'
+  },
+  {
+    seedName: 'boss_clutch',
+    title: '보스 대응 작전',
+    detail: '소환/합성 선택',
+    cta: '보스 대응 작전 시작'
+  }
+];
+
 export function missionProgress(profile, mission) {
   return Math.min(mission.target, mission.progress(profile));
 }
@@ -269,7 +296,13 @@ export function nextLobbyAction(profile = {}) {
   if (countAffordableCosmetics(profile) > 0) {
     return { label: '외형 해금', status: '해금', title: '외형 해금 가능', detail: '젬으로 외형 해금', screen: 'shop', cta: '해금', beacon: 'shop' };
   }
-  return { label: '다음 작전', status: '준비', title: '첫 구원 작전', detail: '유닛/외형 성장', screen: 'battle', cta: '출전', beacon: 'battle' };
+  const operation = nextLobbyOperation(profile);
+  return { label: '다음 작전', status: '준비', title: operation.title, detail: operation.detail, screen: 'battle', cta: '출전', beacon: 'battle' };
+}
+
+export function nextLobbyOperation(profile = {}) {
+  const completedRuns = Array.isArray(profile.processedRuns) ? profile.processedRuns.length : 0;
+  return LOBBY_OPERATION_SEQUENCE[Math.min(completedRuns, LOBBY_OPERATION_SEQUENCE.length - 1)];
 }
 
 export function postRewardRoute(profile = {}, fallbackScreen = 'lobby') {
@@ -288,13 +321,14 @@ function buildLobbyNextActionControl(nextAction) {
 export function buildRebootLobby(model = {}) {
   const gems = model.gems ?? 0;
   const nextAction = nextLobbyAction(model);
+  const operation = nextLobbyOperation(model);
   return `
     <section class="operation-card">
       <img class="operation-poster-frame" src="/src/client/assets/generated/reboot-lobby-operation-poster.png?v=operation-poster" alt="" aria-hidden="true">
       <div class="operation-copy">
         <span>협동 작전</span>
-        <strong>첫 구원 작전</strong>
-        <p>파트너 구원 · 보스 저지</p>
+        <strong>${operation.title}</strong>
+        <p>${operation.detail}</p>
       </div>
     </section>
     <section class="lobby-intel-strip reward-hook" aria-label="보유 젬 ${gems}, 외형 해금 전용 재화">

@@ -6,6 +6,7 @@ import {
   buildMetaNavAlerts,
   buildMissionScreen,
   nextLobbyAction,
+  nextLobbyOperation,
   buildRebootCollection,
   buildRebootLobby,
   buildRebootResultModel,
@@ -106,6 +107,34 @@ test('lobby next action maps each priority to a generated beacon key', () => {
   assert.equal(nextLobbyAction({ ...allClaimed, xp: 40 }).beacon, 'training');
   assert.equal(nextLobbyAction({ ...allClaimed, gems: 1_000, unlocks: [] }).beacon, 'shop');
   assert.equal(nextLobbyAction(allClaimed).beacon, 'battle');
+});
+
+test('lobby operation advances through authored combat beats after runs', () => {
+  const first = nextLobbyOperation({ processedRuns: [] });
+  const boss = nextLobbyOperation({ processedRuns: ['run-1'] });
+  const recovery = nextLobbyOperation({ processedRuns: ['run-1', 'run-2'] });
+  const final = nextLobbyOperation({ processedRuns: ['run-1', 'run-2', 'run-3', 'run-4', 'run-5'] });
+
+  assert.deepEqual(
+    {
+      seedName: first.seedName,
+      title: first.title,
+      detail: first.detail,
+      cta: first.cta
+    },
+    {
+      seedName: 'tutorial_success',
+      title: '첫 구원 작전',
+      detail: '파트너 구원 · 보스 저지',
+      cta: '첫 구원 작전 시작'
+    }
+  );
+  assert.equal(boss.seedName, 'lucky_clutch');
+  assert.equal(boss.title, '보스 막타 작전');
+  assert.equal(recovery.seedName, 'bad_recoverable');
+  assert.equal(recovery.title, '역전 구원 작전');
+  assert.equal(final.seedName, 'boss_clutch');
+  assert.equal(final.title, '보스 대응 작전');
 });
 
 test('post reward route keeps the reward loop moving to the next useful screen', () => {
@@ -659,6 +688,20 @@ test('lobby recommends the next profile action after rewards settle', () => {
   assert.equal(shopLobby.includes('외형 해금'), true);
 });
 
+test('lobby operation card shows the next authored combat beat', () => {
+  const lobby = buildRebootLobby({
+    processedRuns: ['run-1'],
+    claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic'],
+    claimedPassTiers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    unlocks: ['mythic-aura', 'founder-board', 'merge-effect', 'rescue-effect', 'profile-frame'],
+    unitLevels: { spark_pin: 20 },
+    gems: 0
+  });
+
+  assert.equal(lobby.includes('<strong>보스 막타 작전</strong>'), true);
+  assert.equal(lobby.includes('<p>막판 소환 · 결정타</p>'), true);
+});
+
 test('lobby currency strip uses an icon numeric chip with accessible economy meaning', () => {
   const lobby = buildRebootLobby({ gems: 240 });
 
@@ -698,7 +741,7 @@ test('lobby next action uses compact game-state chips while preserving meaning f
   });
 
   assert.equal(
-    battleLobby.includes('class="lobby-intel-strip next-hook" aria-label="다음 작전: 첫 구원 작전. 유닛/외형 성장"'),
+    battleLobby.includes('class="lobby-intel-strip next-hook" aria-label="다음 작전: 첫 구원 작전. 파트너 구원 · 보스 저지"'),
     true
   );
   assert.equal(battleLobby.includes('class="lobby-next-state" aria-label="다음 작전">준비</span>'), true);

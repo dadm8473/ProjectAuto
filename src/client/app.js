@@ -14,6 +14,7 @@ import {
   buildRebootShop,
   buildSeasonScreen,
   missionProgress,
+  nextLobbyOperation,
   postRewardRoute,
   REBOOT_MISSIONS,
   startRebootRetry,
@@ -50,6 +51,7 @@ const dom = {
   summonButton: qs('#summonButton'),
   mergeButton: qs('#mergeButton'),
   rescueButton: qs('#rescueButton'),
+  launchBotLabel: qs('#launchBotButton span'),
   resultCode: qs('#resultCode'),
   resultTitle: qs('#resultTitle'),
   resultReason: qs('#resultReason'),
@@ -258,6 +260,7 @@ function updateNavState() {
 
 function renderHomeScreens() {
   dom.lobbyContent.innerHTML = buildRebootLobby(profile);
+  dom.launchBotLabel.textContent = nextLobbyOperation(profile).cta;
   dom.collectionList.innerHTML = buildRebootCollection(profile);
   dom.shopList.innerHTML = buildRebootShop(profile);
   dom.missionsList.innerHTML = buildMissionScreen(profile);
@@ -491,7 +494,8 @@ function startBotRun() {
   clearOnlineFallback();
   const previousOnline = online;
   online = null;
-  game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
+  const operation = nextLobbyOperation(profile);
+  game = createGame({ mode: 'bot', seedName: operation.seedName, seed: 1 });
   localBoardId = 'p1';
   resultShownFor = '';
   dom.netStatus.textContent = '봇 협동';

@@ -2812,7 +2812,9 @@ test('lobby operation card uses a dedicated generated mission poster', async () 
     '--lobby-operation-poster-height: 154px',
     'min-height: var(--lobby-operation-poster-height);',
     'class="operation-copy"',
-    '<p>파트너 구원 · 보스 저지</p>'
+    'const operation = nextLobbyOperation(model);',
+    '<strong>${operation.title}</strong>',
+    '<p>${operation.detail}</p>'
   ]) {
     assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
   }
@@ -3072,6 +3074,10 @@ test('client settles result rewards into profile and wires shop purchases', asyn
     'settleResultRewards',
     'handleShopPurchase',
     'profile.processedRuns.includes(current.runId)',
+    'nextLobbyOperation',
+    'dom.launchBotLabel.textContent = nextLobbyOperation(profile).cta',
+    'const operation = nextLobbyOperation(profile);',
+    'seedName: operation.seedName',
     'buildRebootShop(profile)',
     'data-shop-buy="${item.id}"',
     'dom.shopList.addEventListener'
