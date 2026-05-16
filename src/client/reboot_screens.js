@@ -345,7 +345,7 @@ export function buildRebootCollection(profile = {}) {
         <strong>${unit.name}</strong>
         <p>등급 ${unit.grade} · <span class="unit-level">Lv.${level}</span></p>
         ${buildMetaProgress('training', Math.min(xp, cost), cost, `훈련 경험치 ${Math.min(xp, cost)}/${cost}`)}
-        <span class="unit-cost">${cost} 경험치</span>
+        <span class="unit-cost" aria-label="훈련 비용 ${cost} 경험치">${cost}</span>
       </div>
       ${action}
     </article>
@@ -393,7 +393,7 @@ export function buildRebootShop(profile = {}) {
         <span class="role-pill">외형</span>
         <strong>${item.name}</strong>
         <p>${item.description}</p>
-        <span class="shop-price">${price} 젬</span>
+        <span class="shop-price" aria-label="해금 비용 ${price} 젬">${price}</span>
       </div>
       ${action}
     </article>

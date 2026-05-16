@@ -355,6 +355,16 @@ test('collection and shop showcases split numeric state into compact game badges
   assert.equal(shop.includes('0 젬 보유 · 90 젬'), false);
 });
 
+test('collection and shop shelf price chips show numbers while preserving accessible meaning', () => {
+  const collection = buildRebootCollection({ xp: 0, unitLevels: {} });
+  const shop = buildRebootShop({ gems: 0, unlocks: [] });
+
+  assert.equal(collection.includes('class="unit-cost" aria-label="훈련 비용 40 경험치">40</span>'), true);
+  assert.equal(collection.includes('class="unit-cost">40 경험치</span>'), false);
+  assert.equal(shop.includes('class="shop-price" aria-label="해금 비용 90 젬">90</span>'), true);
+  assert.equal(shop.includes('class="shop-price">90 젬</span>'), false);
+});
+
 test('collection and shop items sit inside a generated shelf grid', () => {
   const collection = buildRebootCollection({ xp: 0, unitLevels: {} });
   const shop = buildRebootShop({ gems: 0, unlocks: [] });
