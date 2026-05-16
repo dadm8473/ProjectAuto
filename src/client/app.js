@@ -3,7 +3,7 @@ import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=merge-reason1';
-import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=summon-cooldown-label1';
+import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-chip1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=unit-roster1';
 import {
   buildMetaNavAlerts,
@@ -632,7 +632,7 @@ function updateButtons(current) {
     const label = commandLabels[key];
     button.disabled = !enabled;
     button.querySelector('span').textContent = label;
-    button.setAttribute('aria-label', label === ACTION_LABELS[key] ? ACTION_LABELS[key] : `${label} 후 가능`);
+    button.setAttribute('aria-label', label === ACTION_LABELS[key] ? ACTION_LABELS[key] : `${ACTION_LABELS[key]} ${label} 후 가능`);
     button.dataset.ready = String(enabled);
     button.dataset.unlocked = String(exposure[key]);
     button.dataset.focus = String(exposure.focus === key);

@@ -143,7 +143,7 @@ test('combat status prompt shows online partner wait before normal action prompt
   }), '파트너 대기');
 });
 
-test('combat command labels keep summon cooldown on the button instead of the directive banner', () => {
+test('combat command labels keep summon cooldown compact on the button', () => {
   assert.deepEqual(buildCombatCommandLabels({
     current: {
       ...state({ now: 9 }),
@@ -153,7 +153,7 @@ test('combat command labels keep summon cooldown on the button instead of the di
     localBoardId: 'p1',
     actions: { summon: { enabled: false }, merge: { enabled: false }, rescue: { enabled: false } }
   }), {
-    summon: '소환 9초',
+    summon: '9초',
     merge: '합성',
     rescue: '구원'
   });
