@@ -3,7 +3,7 @@ import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=merge-reason1';
-import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-chip1';
+import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-chip1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest1';
 import { preloadCriticalRebootAssets } from './reboot_preload.js?v=loading-gate1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=unit-roster1';
@@ -644,14 +644,15 @@ function updateMeters(current) {
   );
   const onlineWaiting = waitingForOnlinePartner(current);
   const statusPrompt = buildCombatStatusPrompt({ current, localBoardId, onlineWaiting });
-  dom.timeMeter.hidden = !statusPrompt;
+  const bossWarning = current.now >= 92 && current.now < 120;
+  const statusDisplay = buildCombatStatusDisplay({ statusPrompt, bossWarning });
+  dom.timeMeter.hidden = !statusDisplay.showPrompt;
   dom.timeMeter.textContent = statusPrompt;
   if (appScreen === 'battle') document.body.dataset.statusKind = statusPrompt.startsWith('충전 ') ? 'cooldown' : 'active';
   else delete document.body.dataset.statusKind;
-  const bossWarning = current.now >= 92 && current.now < 120;
-  dom.statusLine.hidden = !statusPrompt && !bossWarning;
-  dom.bossMeter.hidden = !bossWarning;
-  dom.bossMeter.textContent = bossWarning ? '보스 경고' : '';
+  dom.statusLine.hidden = !statusDisplay.visible;
+  dom.bossMeter.hidden = !statusDisplay.showBossWarning;
+  dom.bossMeter.textContent = statusDisplay.showBossWarning ? '보스 경고' : '';
 }
 
 function updateButtons(current) {

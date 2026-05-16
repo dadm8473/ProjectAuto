@@ -930,6 +930,10 @@ body[data-app-screen="season"] .toast {
   grid-template-columns: minmax(0, 1fr);
 }
 
+.status-line:has(#timeMeter[hidden]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .status-line span {
   display: inline-flex;
   align-items: center;

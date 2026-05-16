@@ -3850,6 +3850,7 @@ test('combat status line uses generated game plates instead of plain web chips',
     '#timeMeter { background-position: 0 0; }',
     '#bossMeter { background-position: 100% 0; }',
     '.status-line:has(#bossMeter[hidden])',
+    '.status-line:has(#timeMeter[hidden])',
     '.status-line span[hidden] {\n  display: none;'
   ]) {
     assert.equal(css.includes(marker), true, marker);
@@ -3866,11 +3867,13 @@ test('combat status hides the idle boss chip until the boss warning matters', as
 
   assert.equal(html.includes('<span id="bossMeter" hidden>보스 경고</span>'), true);
   assert.equal(app.includes("statusLine: qs('.status-line')"), true);
+  assert.equal(app.includes('buildCombatStatusDisplay'), true);
   assert.equal(app.includes('const bossWarning = current.now >= 92 && current.now < 120;'), true);
-  assert.equal(app.includes('dom.timeMeter.hidden = !statusPrompt;'), true);
-  assert.equal(app.includes('dom.statusLine.hidden = !statusPrompt && !bossWarning;'), true);
-  assert.equal(app.includes('dom.bossMeter.hidden = !bossWarning;'), true);
-  assert.equal(app.includes("dom.bossMeter.textContent = bossWarning ? '보스 경고' : '';"), true);
+  assert.equal(app.includes('dom.timeMeter.hidden = !statusDisplay.showPrompt;'), true);
+  assert.equal(app.includes('dom.statusLine.hidden = !statusDisplay.visible;'), true);
+  assert.equal(app.includes('dom.bossMeter.hidden = !statusDisplay.showBossWarning;'), true);
+  assert.equal(app.includes("dom.bossMeter.textContent = statusDisplay.showBossWarning ? '보스 경고' : '';"), true);
+  assert.equal(app.includes('dom.bossMeter.hidden = !bossWarning;'), false);
   assert.equal(app.includes("'보스 대기'"), false);
 });
 

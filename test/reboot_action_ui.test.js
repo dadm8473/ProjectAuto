@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { buildRebootActionState } from '../src/client/reboot_actions.js';
-import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusPrompt, isCriticalRebootAction } from '../src/client/reboot_action_ui.js';
+import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, isCriticalRebootAction } from '../src/client/reboot_action_ui.js';
 
 function state(overrides = {}) {
   return {
@@ -151,6 +151,28 @@ test('combat status names the boss clutch decision instead of generic action ava
     },
     localBoardId: 'p1'
   }), '보스 대응');
+});
+
+test('combat status display does not stack a boss warning chip beside an active decision prompt', () => {
+  assert.deepEqual(buildCombatStatusDisplay({
+    statusPrompt: '보스 대응',
+    bossWarning: true
+  }), {
+    visible: true,
+    showPrompt: true,
+    showBossWarning: false
+  });
+});
+
+test('combat status display can show a boss warning alone when no prompt owns the dock', () => {
+  assert.deepEqual(buildCombatStatusDisplay({
+    statusPrompt: '',
+    bossWarning: true
+  }), {
+    visible: true,
+    showPrompt: false,
+    showBossWarning: true
+  });
 });
 
 test('combat status prioritizes rescue during dual boss and partner danger', () => {

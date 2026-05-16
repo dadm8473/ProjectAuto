@@ -83,6 +83,16 @@ export function buildCombatStatusPrompt({ current, localBoardId, onlineWaiting =
   return '전투 중';
 }
 
+export function buildCombatStatusDisplay({ statusPrompt = '', bossWarning = false } = {}) {
+  const showPrompt = Boolean(statusPrompt);
+  const showBossWarning = Boolean(bossWarning) && !showPrompt;
+  return {
+    visible: showPrompt || showBossWarning,
+    showPrompt,
+    showBossWarning
+  };
+}
+
 export function buildCombatCommandLabels({ current, localBoardId, actions, onlineWaiting = false }) {
   const labels = { ...BASE_COMMAND_LABELS };
   if (current.result || onlineWaiting || actions.summon?.enabled) return labels;
