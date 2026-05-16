@@ -540,7 +540,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=title-icon1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-icons1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=title-icon1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=nav-label2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=nav-label1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-price1">'), false);
@@ -619,7 +620,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=title-icon1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-icons1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=title-icon1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=nav-label2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=nav-label1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shelf-price1"></script>'), false);
@@ -1092,7 +1094,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=title-icon1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=hud-icons1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -3564,7 +3566,7 @@ test('combat resource HUD uses generated icons instead of text-only chips', asyn
     '#rescueMeter::before',
     '#dangerMeter::before',
     'background-image: url("/src/client/assets/generated/reboot-ui-icons.png")',
-    '.meters span {\n  display: inline-flex;',
+    '.meters > span {\n  display: inline-flex;',
     'background-image: var(--combat-meter-sockets);',
     'background-size: 300% 100%;',
     '#summonMeter::before { background-position: 0 0; }',
@@ -3577,9 +3579,14 @@ test('combat resource HUD uses generated icons instead of text-only chips', asyn
     assert.equal(css.includes(marker), true, marker);
   }
 
-  const meterBlock = css.slice(css.indexOf('.meters span {\n  display: inline-flex;'), css.indexOf('.meters span::before'));
+  const meterBlock = css.slice(css.indexOf('.meters > span {\n  display: inline-flex;'), css.indexOf('.meters > span::before'));
   assert.equal(meterBlock.includes('background: rgba(3, 9, 10, 0.34);'), false);
   assert.equal(meterBlock.includes('border: 1px solid rgba(245, 240, 220, 0.1);'), false);
+  assert.equal(css.includes('.meters span,\n.status-line span'), false);
+  assert.equal(css.includes('.meters span {\n  display: inline-flex;'), false);
+  assert.equal(css.includes('.meters span::before'), false);
+  assert.equal(css.includes('.meters > span,\n.status-line span'), true);
+  assert.equal(css.includes('.meters > span::before'), true);
 });
 
 test('combat status line uses generated game plates instead of plain web chips', async () => {
@@ -3704,7 +3711,7 @@ test('combat HUD keeps three resource meters bounded on compact phones', async (
     'white-space: nowrap;',
     '@media (max-width: 360px)',
     '.brand span {\n    display: none;',
-    '.meters span::before {\n    width: 14px;',
+    '.meters > span::before {\n    width: 14px;',
     '#rescueMeter::before { background-position: -28px 0; }',
     '#dangerMeter::before { background-position: -42px 0; }'
   ]) {
@@ -3712,26 +3719,38 @@ test('combat HUD keeps three resource meters bounded on compact phones', async (
   }
 });
 
-test('combat HUD meter labels explain their values without adding extra controls', async () => {
+test('combat HUD meter labels explain values through icon sockets and accessibility labels', async () => {
   const html = await readFile('index.html', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '>소환 10<',
-    '>구원 0%<',
-    '>위험 0<',
-    'dom.summonMeter.textContent = `소환 ${resources.summon}`',
-    'dom.rescueMeter.textContent = `구원 ${Math.round(resources.rescue)}%`',
-    'dom.dangerMeter.textContent = `위험 ${Math.round(current.boards[partner]?.danger ?? 0)}`',
+    'id="summonMeter" data-meter-kind="summon" aria-label="소환 에너지 10"',
+    'id="rescueMeter" data-meter-kind="rescue" aria-label="구원 충전 0%"',
+    'id="dangerMeter" data-meter-kind="danger" aria-label="파트너 위험도 0"',
+    '<span class="meter-value">10</span>',
+    '<span class="meter-value">0%</span>',
+    '<span class="meter-value">0</span>',
+    'function setMeterValue(meter, value, label)',
+    'setMeterValue(dom.summonMeter, `${resources.summon}`, `소환 에너지 ${resources.summon}`)',
+    'setMeterValue(dom.rescueMeter, `${Math.round(resources.rescue)}%`, `구원 충전 ${Math.round(resources.rescue)}%`)',
+    'setMeterValue(dom.dangerMeter, `${Math.round(current.boards[partner]?.danger ?? 0)}`, `파트너 위험도 ${Math.round(current.boards[partner]?.danger ?? 0)}`)',
+    '.meter-value',
     'margin-left: clamp(34px, 10vw, 46px);',
     'padding: clamp(4px, 1.4vw, 6px) clamp(3px, 1.2vw, 5px);'
   ]) {
     assert.equal(`${html}\n${app}\n${css}`.includes(marker), true, marker);
   }
 
-  for (const forbidden of ['>소10<', '>구0%<', '>위0<']) {
-    assert.equal(html.includes(forbidden), false, forbidden);
+  for (const forbidden of [
+    '>소환 10<',
+    '>구원 0%<',
+    '>위험 0<',
+    'dom.summonMeter.textContent = `소환 ${resources.summon}`',
+    'dom.rescueMeter.textContent = `구원 ${Math.round(resources.rescue)}%`',
+    'dom.dangerMeter.textContent = `위험 ${Math.round(current.boards[partner]?.danger ?? 0)}`'
+  ]) {
+    assert.equal(`${html}\n${app}`.includes(forbidden), false, forbidden);
   }
 });
 

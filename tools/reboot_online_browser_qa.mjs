@@ -159,12 +159,19 @@ async function main() {
       await assertMatchBanner(second, '협동 시작', 'ready');
 
       await first.locator('#summonButton').click();
-      await first.waitForFunction(() => document.querySelector('#summonMeter')?.textContent === '소환 0');
+      await first.waitForFunction(() => {
+        const meter = document.querySelector('#summonMeter');
+        return meter?.textContent === '0' && meter.getAttribute('aria-label') === '소환 에너지 0';
+      });
       assert.equal(await first.locator('#summonButton').isEnabled(), false, 'p1 summon spent');
-      assert.equal(await second.locator('#summonMeter').textContent(), '소환 10');
+      assert.equal(await second.locator('#summonMeter').textContent(), '10');
+      assert.equal(await second.locator('#summonMeter').getAttribute('aria-label'), '소환 에너지 10');
 
       await second.locator('#summonButton').click();
-      await second.waitForFunction(() => document.querySelector('#summonMeter')?.textContent === '소환 0');
+      await second.waitForFunction(() => {
+        const meter = document.querySelector('#summonMeter');
+        return meter?.textContent === '0' && meter.getAttribute('aria-label') === '소환 에너지 0';
+      });
       assert.equal(await second.locator('#summonButton').isEnabled(), false, 'p2 summon spent');
       assert.equal(await first.locator('#netStatus').textContent(), '온라인 협동');
 
@@ -173,7 +180,8 @@ async function main() {
       await second.waitForTimeout(800);
       await assertMatchBanner(second, '파트너 이탈', 'reset');
       await assertOnlineWaiting(second);
-      assert.equal(await second.locator('#summonMeter').textContent(), '소환 10', 'remaining player gets fresh run after disconnect');
+      assert.equal(await second.locator('#summonMeter').textContent(), '10', 'remaining player gets fresh run after disconnect');
+      assert.equal(await second.locator('#summonMeter').getAttribute('aria-label'), '소환 에너지 10');
 
       const third = await context.newPage();
       await enterOnline(third, baseUrl);

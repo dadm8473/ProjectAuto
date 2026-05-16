@@ -349,7 +349,7 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 }
 
 .brand span,
-.meters span,
+.meters > span,
 .status-line span {
   color: var(--muted);
   font-size: clamp(9px, 2.7vw, 11px);
@@ -363,7 +363,7 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   gap: 4px;
 }
 
-.meters span,
+.meters > span,
 .status-line span {
   padding: clamp(4px, 1.4vw, 6px) clamp(3px, 1.2vw, 5px);
   border: 1px solid rgba(245, 240, 220, 0.1);
@@ -371,13 +371,14 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   background: rgba(3, 9, 10, 0.34);
 }
 
-.meters span {
+.meters > span {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: clamp(24px, 7.44vw, 32px);
   min-width: 0;
   gap: 4px;
+  color: #fff7dc;
   border-color: transparent;
   border-radius: 0;
   background: transparent;
@@ -388,11 +389,22 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   text-shadow: 0 2px 7px rgba(0, 0, 0, 0.68);
 }
 
+.meter-value {
+  min-width: 18px;
+  color: #fff7dc;
+  font-size: clamp(11px, 3.12vw, 13px);
+  font-weight: 950;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  line-height: 1;
+  text-align: right;
+}
+
 #summonMeter { background-position: 0 0; }
 #rescueMeter { background-position: 50% 0; }
 #dangerMeter { background-position: 100% 0; }
 
-.meters span::before {
+.meters > span::before {
   content: "";
   width: 18px;
   height: 18px;
@@ -422,13 +434,18 @@ body:not([data-app-screen="battle"]) .stage-wrap {
     gap: 3px;
   }
 
-  .meters span {
+  .meters > span {
     gap: 3px;
     padding: 4px 3px;
     font-size: 8px;
   }
 
-  .meters span::before {
+  .meter-value {
+    min-width: 14px;
+    font-size: 10px;
+  }
+
+  .meters > span::before {
     width: 14px;
     height: 14px;
     flex-basis: 14px;

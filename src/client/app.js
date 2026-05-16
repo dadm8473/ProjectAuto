@@ -586,12 +586,19 @@ function command(actionName) {
   softFeedback(actionName);
 }
 
+function setMeterValue(meter, value, label) {
+  const valueNode = meter?.querySelector('.meter-value');
+  if (valueNode) valueNode.textContent = value;
+  else if (meter) meter.textContent = value;
+  meter?.setAttribute('aria-label', label);
+}
+
 function updateMeters(current) {
   const resources = current.resources?.[localBoardId] ?? current.resources.p1;
   const partner = localBoardId === 'p1' ? 'p2' : 'p1';
-  dom.summonMeter.textContent = `소환 ${resources.summon}`;
-  dom.rescueMeter.textContent = `구원 ${Math.round(resources.rescue)}%`;
-  dom.dangerMeter.textContent = `위험 ${Math.round(current.boards[partner]?.danger ?? 0)}`;
+  setMeterValue(dom.summonMeter, `${resources.summon}`, `소환 에너지 ${resources.summon}`);
+  setMeterValue(dom.rescueMeter, `${Math.round(resources.rescue)}%`, `구원 충전 ${Math.round(resources.rescue)}%`);
+  setMeterValue(dom.dangerMeter, `${Math.round(current.boards[partner]?.danger ?? 0)}`, `파트너 위험도 ${Math.round(current.boards[partner]?.danger ?? 0)}`);
   const onlineWaiting = waitingForOnlinePartner(current);
   const statusPrompt = buildCombatStatusPrompt({ current, localBoardId, onlineWaiting });
   dom.timeMeter.textContent = statusPrompt;

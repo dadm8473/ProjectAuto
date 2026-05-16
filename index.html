@@ -7,7 +7,7 @@
     <title>신호릴레이</title>
     <link rel="icon" href="/src/client/assets/generated/reboot-app-icon-192.png">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/src/client/styles.css?v=title-icon1">
+    <link rel="stylesheet" href="/src/client/styles.css?v=hud-icons1">
   </head>
   <body data-app-screen="splash">
     <main class="shell">
@@ -17,9 +17,9 @@
           <span id="netStatus">봇 협동</span>
         </div>
         <div class="meters">
-          <span id="summonMeter">소환 10</span>
-          <span id="rescueMeter">구원 0%</span>
-          <span id="dangerMeter">위험 0</span>
+          <span id="summonMeter" data-meter-kind="summon" aria-label="소환 에너지 10"><span class="meter-value">10</span></span>
+          <span id="rescueMeter" data-meter-kind="rescue" aria-label="구원 충전 0%"><span class="meter-value">0%</span></span>
+          <span id="dangerMeter" data-meter-kind="danger" aria-label="파트너 위험도 0"><span class="meter-value">0</span></span>
         </div>
       </section>
 
@@ -132,6 +132,6 @@
         </div>
       </section>
     </main>
-    <script type="module" src="/src/client/app.js?v=title-icon1"></script>
+    <script type="module" src="/src/client/app.js?v=hud-icons1"></script>
   </body>
 </html>
