@@ -4,6 +4,7 @@ import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=merge-reason1';
 import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-chip1';
+import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest1';
 import { preloadCriticalRebootAssets } from './reboot_preload.js?v=loading-gate1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=unit-roster1';
 import {
@@ -24,7 +25,9 @@ import {
 import { createRebootOnlineClient } from './reboot_online.js';
 
 const qs = (selector) => document.querySelector(selector);
-const muted = new URLSearchParams(location.search).get('mute') === '1';
+const query = new URLSearchParams(location.search);
+const muted = query.get('mute') === '1';
+const playtestEnabled = query.get('playtest') === '1';
 const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)') ?? { matches: false };
 
 const dom = {
@@ -98,6 +101,12 @@ let lastTime = performance.now();
 let resultShownFor = '';
 let profile = loadProfile();
 let pointerNavButton = null;
+const playtestRecorder = createPlaytestRecorder({
+  enabled: playtestEnabled,
+  storage: globalThis.localStorage,
+  now: () => performance.now()
+});
+if (playtestEnabled) globalThis.__rebootPlaytestSummary = () => playtestRecorder.summary();
 
 function loadProfile() {
   const base = createMetaProfile();
@@ -232,6 +241,7 @@ function softFeedback(kind) {
 function setScreen(screen, options = {}) {
   const changed = appScreen !== screen;
   appScreen = screen;
+  playtestRecorder.recordScreen(screen);
   document.body.dataset.appScreen = screen;
   if (screen !== 'battle') delete document.body.dataset.coachCue;
   if (screen !== 'battle') delete document.body.dataset.statusKind;
@@ -594,6 +604,7 @@ function command(actionName) {
     return;
   }
   const result = executeLocal(action);
+  playtestRecorder.recordAction(actionName, { ok: result.ok, reason: result.reason, atSeconds: state().now });
   if (!result.ok) {
     showToast(result.reason);
     return;
@@ -680,6 +691,12 @@ function showResult(current) {
   resultShownFor = current.runId;
   const rewards = settleResultRewards(current);
   const model = buildRebootResultModel({ result: current.result, rewards, profile, seedName: current.seedName });
+  playtestRecorder.recordResult({
+    status: current.result.status,
+    reason: model.reason.label,
+    nextGoal: model.nextGoal.label,
+    atSeconds: current.now
+  });
   dom.resultOverlay.dataset.resultStatus = model.status;
   dom.resultOverlay.dataset.resultCta = rewardClaimActions.has(model.secondaryAction.action) ? 'claim' : 'default';
   dom.resultCode.textContent = model.code;

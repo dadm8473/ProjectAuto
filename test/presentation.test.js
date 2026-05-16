@@ -636,7 +636,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=loading-gate1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=loading-gate1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-meter-state1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-chip1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-icons1"></script>'), false);
@@ -764,6 +765,48 @@ test('startup uses a generated game loading gate while critical assets warm up',
     '.loading-gate-bar'
   ]) {
     assert.equal(cssRuleBlock(css, selector).includes('grid-column: 1;'), true, selector);
+  }
+});
+
+test('playtest mode records first-run understanding without adding visible UI', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+
+  for (const marker of [
+    "import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest1';",
+    "const playtestEnabled = query.get('playtest') === '1';",
+    'const playtestRecorder = createPlaytestRecorder({',
+    'enabled: playtestEnabled,',
+    "globalThis.__rebootPlaytestSummary = () => playtestRecorder.summary();",
+    'playtestRecorder.recordScreen(screen);',
+    'playtestRecorder.recordAction(actionName, { ok: result.ok, reason: result.reason, atSeconds: state().now });',
+    'playtestRecorder.recordResult({',
+    "status: current.result.status,",
+    'reason: model.reason.label,',
+    'nextGoal: model.nextGoal.label,',
+    'atSeconds: current.now'
+  ]) {
+    assert.equal(app.includes(marker), true, marker);
+  }
+
+  const visibleMarkup = html.slice(html.indexOf('<body'), html.indexOf('<script'));
+  assert.equal(visibleMarkup.includes('playtest'), false, 'playtest mode must not add visible markup');
+});
+
+test('playtest browser QA verifies first-run understanding summary', async () => {
+  const qa = await readFile('tools/reboot_playtest_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    "'/?mute=1&playtest=1&qaFast=1'",
+    'window.__rebootPlaytestSummary?.()',
+    "localStorage.getItem('projectauto.reboot.playtest.v1')",
+    'assert.equal(summary.completedCoreLoopWithin120s, true);',
+    'assert.equal(summary.actionCounts.summon > 0, true);',
+    'assert.equal(summary.actionCounts.merge > 0, true);',
+    'assert.equal(summary.actionCounts.rescue > 0, true);',
+    "assert.equal(summary.result.status, 'won');"
+  ]) {
+    assert.equal(qa.includes(marker), true, marker);
   }
 });
 
