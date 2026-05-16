@@ -104,7 +104,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=action-chip1'",
     "from './reboot_render.js?v=unit-roster1'",
-    "from './reboot_screens.js?v=objective-board-copy1'",
+    "from './reboot_screens.js?v=objective-counter-plate1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -540,7 +540,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-board-copy1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-counter-plate1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-chip1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-icons1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=title-icon1">'), false);
@@ -622,7 +622,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-board-copy1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-counter-plate1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-chip1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-icons1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=title-icon1"></script>'), false);
@@ -692,7 +692,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=objective-board-copy1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=objective-counter-plate1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=shelf-price1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-item-status1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), false);
@@ -1099,7 +1099,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=objective-board-copy1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=objective-counter-plate1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -1341,7 +1341,7 @@ test('meta list rows use dedicated generated game row frames', async () => {
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(css.includes('min-height: 34px;'), false);
+  assert.equal(rowSurfaceBlock.includes('min-height: 34px;'), false);
   assert.equal(css.includes('background: transparent;\n  box-shadow: 0 10px 20px'), false);
 });
 
@@ -3550,6 +3550,28 @@ test('mission and season screens use generated stamp and reward-track boards', a
 
   assert.equal(css.includes('.meta-summary[data-summary-kind="missions"]'), false);
   assert.equal(css.includes('.meta-summary[data-summary-kind="season"]'), false);
+});
+
+test('mission and season top counters sit on generated reward plates', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  const counterBlock = cssRuleBlock(css, '.mission-board-copy strong,\n.season-board-copy strong');
+  for (const marker of [
+    'display: inline-grid;',
+    'place-items: center;',
+    'width: clamp(62px, 17vw, 76px);',
+    'min-height: 34px;',
+    'background-image: var(--meta-command-ribbons);',
+    'background-size: 400% 100%;',
+    'background-position: 0 0;'
+  ]) {
+    assert.equal(counterBlock.includes(marker), true, marker);
+  }
+
+  const captionBlock = cssRuleBlock(css, '.mission-board-copy p,\n.season-board-copy p');
+  assert.equal(captionBlock.includes('width: max-content;'), true);
+  assert.equal(captionBlock.includes('padding: 2px 8px;'), true);
+  assert.equal(captionBlock.includes('background: rgba(2, 10, 12, 0.62);'), false);
 });
 
 test('mission and season rows show generated reward tokens', async () => {

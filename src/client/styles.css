@@ -2352,13 +2352,25 @@ body[data-app-screen="season"] .app-screen::after {
 
 .mission-board-copy strong,
 .season-board-copy strong {
+  display: inline-grid;
+  place-items: center;
+  width: clamp(62px, 17vw, 76px);
+  min-height: 34px;
+  padding: 2px 10px;
   color: var(--ink);
   font-size: clamp(25px, 7vw, 30px);
   line-height: 1;
+  background-image: var(--meta-command-ribbons);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 0 0;
+  filter: drop-shadow(0 7px 10px rgba(0, 0, 0, 0.48));
 }
 
 .mission-board-copy p,
 .season-board-copy p {
+  width: max-content;
+  padding: 2px 8px;
   overflow: hidden;
   color: rgba(245, 240, 220, 0.84);
   font-size: 12px;
