@@ -1486,24 +1486,24 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawPartnerStandbySigil(ctx, state, assets, partnerId, options);
   drawTrack(ctx, state, assets, imageBackdrop, options);
   drawWaveDirectiveBanner(ctx, state, assets);
-  drawCombatActionSurges(ctx, state, assets, layout, localBoardId);
   if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawCombatStartCutin(ctx, state, assets);
   drawCombatCrisisOverlays(ctx, state, assets, localBoardId);
-  const drewDualCrisis = drawDualCrisisCutin(ctx, state, assets, localBoardId);
-  if (!drewDualCrisis) {
-    drawBossWarningCutin(ctx, state, assets);
-    drawPartnerDangerCutin(ctx, state, assets, localBoardId);
-  }
   drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
   drawBoard(ctx, state.boards[localBoardId], 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
   if (!options.onlineWaiting) drawPreSummonSocketCue(ctx, state, assets, localBoardId);
   if (!options.onlineWaiting) drawFirstSummonLandingBeacon(ctx, state, assets, localBoardId);
   drawFirstSummonIgnition(ctx, state, assets, localBoardId);
   drawFirstSummonRewardSpotlight(ctx, state, assets, localBoardId);
+  drawCombatActionSurges(ctx, state, assets, layout, localBoardId);
   drawFirstMergeRewardSigil(ctx, state, assets, options.reducedMotion, localBoardId);
   drawFirstRescueRewardSigil(ctx, state, assets, options.reducedMotion, localBoardId);
   drawRescueBeam(ctx, state, assets);
   drawCombatVfx(ctx, state, assets, localBoardId);
+  const drewDualCrisis = drawDualCrisisCutin(ctx, state, assets, localBoardId);
+  if (!drewDualCrisis) {
+    drawBossWarningCutin(ctx, state, assets);
+    drawPartnerDangerCutin(ctx, state, assets, localBoardId);
+  }
   drawPartnerAssistPing(ctx, state, assets, localBoardId);
   drawCombatMomentCallout(ctx, state, assets);
 }

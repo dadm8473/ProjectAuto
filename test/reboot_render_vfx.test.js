@@ -1403,6 +1403,53 @@ test('merge and rescue moments get the latest full-canvas generated action surge
   assert.equal(rescueSurgeIndex < rescueFlareIndex, true, 'rescue surge should sell the co-op save before the compact flare');
 });
 
+test('rescue action surge sits above generated board trays so the save impact is not buried', () => {
+  const ctx = mockContext();
+  const actionSurges = image(780, 620);
+  const playerBoardTray = image(780, 320);
+  const vfx = image(1280, 256);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 78.24,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'burst_pin' }, { spriteKey: 'rescue_coil' }] },
+        p2: { danger: 35, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [{ enemyId: 'heavy_noise', spriteKey: 'heavy_noise' }],
+      events: [{ type: 'rescue', at: 78.04, playerId: 'p1' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      playerBoardTray,
+      actionSurges,
+      vfx
+    }
+  );
+
+  const trayIndexes = ctx.commands
+    .map((command, index) => ({ command, index }))
+    .filter(({ command }) => command.type === 'drawImage' && command.args[0] === playerBoardTray)
+    .map(({ index }) => index);
+  const rescueSurgeIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage' && command.args[0] === actionSurges && command.args[1] === 390
+  ));
+  const rescueFlareIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage' && command.args[0] === vfx && command.args[1] === 512
+  ));
+
+  assert.equal(trayIndexes.length >= 1, true, 'expected the local generated board tray to render');
+  assert.notEqual(rescueSurgeIndex, -1, 'expected rescue action surge to render');
+  assert.notEqual(rescueFlareIndex, -1, 'expected compact rescue flare to render');
+  assert.equal(rescueSurgeIndex > Math.max(...trayIndexes), true, 'rescue surge should sit above board trays');
+  assert.equal(rescueSurgeIndex < rescueFlareIndex, true, 'compact rescue flare should still land on top of the surge');
+});
+
 test('merge reward surge lingers long enough to read after the tap flash', () => {
   const ctx = mockContext();
   const actionSurges = image(780, 620);
