@@ -19,7 +19,7 @@ const GOAL_LABELS = {
   protect_control_unit: '느림 코일 생존',
   rescue_before_merge_greed: '위험 높으면 구원',
   save_rescue_for_partner_danger: '구원 게이지 보존',
-  answer_boss_warning: '보스 실루엣 대응',
+  answer_boss_warning: '보스 경고 때 합성',
   merge_before_boss: '보스 전 합성',
   turn_bad_rolls_into_utility: '약한 유닛 활용'
 };
