@@ -314,6 +314,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 45_000
   },
   {
+    path: 'src/client/assets/generated/reboot-lobby-launch-bay.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260516-lobby-launch-bay-chromakey-imagegen.png',
+    width: 860,
+    height: 320,
+    minRuntimeBytes: 300_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-lobby-intel-strips.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-lobby-intel-strips-imagegen.png',
     width: 860,
@@ -1365,6 +1372,29 @@ test('lobby launch console is a transparent generated cradle for both launch act
   assert.equal(centerCoverage < 0.94, true, 'launch console became a fully opaque web panel');
   assert.equal(bounds.minX >= 4, true, `launch console touches left edge: ${JSON.stringify(bounds)}`);
   assert.equal(bounds.maxX <= image.width - 5, true, `launch console touches right edge: ${JSON.stringify(bounds)}`);
+});
+
+test('lobby launch bay reads as one operation console with an integrated online socket', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-lobby-launch-bay.png'));
+  assert.equal(image.width, 860);
+  assert.equal(image.height, 320);
+
+  const corners = [
+    alphaAt(image, 2, 2),
+    alphaAt(image, image.width - 3, 2),
+    alphaAt(image, 2, image.height - 3),
+    alphaAt(image, image.width - 3, image.height - 3)
+  ];
+  const bounds = alphaBounds(image, { x: 0, y: 0, width: image.width, height: image.height }, 32);
+  const goldRailCoverage = alphaCoverage(image, { x: 210, y: 112, width: 430, height: 94 }, 40);
+  const onlineSocketCoverage = alphaCoverage(image, { x: 642, y: 52, width: 150, height: 180 }, 40);
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, `launch bay has opaque corners: ${corners.join(',')}`);
+  assert.equal(bounds.count > 145_000, true, `launch bay has no readable command object: ${JSON.stringify(bounds)}`);
+  assert.equal(goldRailCoverage > 0.9, true, `launch bay lacks a dominant primary launch rail: ${goldRailCoverage}`);
+  assert.equal(onlineSocketCoverage > 0.75, true, `launch bay lacks an integrated online socket: ${onlineSocketCoverage}`);
+  assert.equal(bounds.minY >= 32, true, `launch bay touches top edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxY <= image.height - 32, true, `launch bay touches bottom edge: ${JSON.stringify(bounds)}`);
 });
 
 test('reboot app icons are promoted from a dedicated imagegen source', async () => {

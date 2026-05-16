@@ -49,6 +49,7 @@
   --lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next");
   --lobby-battle-ready-cue: url("/src/client/assets/generated/reboot-lobby-battle-ready-cue.png?v=battle-ready-cue");
   --lobby-launch-console: url("/src/client/assets/generated/reboot-lobby-launch-console.png?v=launch-console1");
+  --lobby-launch-bay: url("/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1");
   --launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta-alpha1");
   --training-banner: url("/src/client/assets/generated/reboot-training-banner.png");
   --shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png");
@@ -1449,11 +1450,13 @@ body[data-app-screen="season"] .app-screen::after {
 .launch-command-console {
   position: relative;
   align-self: stretch;
-  min-height: clamp(122px, 32vw, 134px);
+  min-height: clamp(96px, 25vw, 112px);
   display: grid;
-  gap: 8px;
-  padding: 8px clamp(10px, 3.2vw, 14px) 10px;
-  background-image: var(--lobby-launch-console);
+  grid-template-columns: minmax(0, 1fr) clamp(82px, 24vw, 104px);
+  align-items: center;
+  gap: clamp(6px, 1.8vw, 8px);
+  padding: clamp(10px, 2.8vw, 12px) clamp(18px, 5vw, 22px);
+  background-image: var(--lobby-launch-bay);
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% 100%;
@@ -1463,11 +1466,25 @@ body[data-app-screen="season"] .app-screen::after {
 .launch-command-console > .play-button,
 .launch-command-console > .match-button {
   width: 100%;
+  min-width: 0;
+  background-image: none;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .launch-command-console > .match-button {
-  width: min(86%, 320px);
+  width: auto;
+  min-height: var(--lobby-online-button-height);
+  grid-column: 2;
   justify-self: center;
+  border-radius: 999px;
+  opacity: 1;
+}
+
+.launch-command-console > .play-button {
+  min-height: clamp(68px, 18vw, 78px);
+  grid-column: 1;
+  justify-self: stretch;
 }
 
 .play-button {
@@ -1498,14 +1515,23 @@ body[data-app-screen="season"] .app-screen::after {
   pointer-events: none;
 }
 
+.launch-command-console .launch-button-frame {
+  opacity: 0;
+}
+
 .play-button > span,
 .match-button > span {
   position: relative;
   z-index: 1;
+  text-align: center;
+  word-break: keep-all;
 }
 
 .match-button > span {
-  font-size: clamp(18px, 5.12vw, 22px);
+  max-width: 4.4em;
+  font-size: clamp(14px, 3.9vw, 16px);
+  line-height: 1.04;
+  white-space: normal;
 }
 
 .bottom-dock {
@@ -1996,6 +2022,14 @@ body[data-app-screen="season"] .app-screen::after {
 .screen-overlay .play-button::before,
 .screen-overlay .match-button::before {
   background-image: none;
+}
+
+.screen-overlay .launch-command-console > .play-button,
+.screen-overlay .launch-command-console > .match-button {
+  background-image: none;
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .hub-screen {

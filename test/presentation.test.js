@@ -12,6 +12,10 @@ function cssPxVar(css, name) {
   return Number(match[1]);
 }
 
+function clampPx(min, preferred, max) {
+  return Math.min(max, Math.max(min, preferred));
+}
+
 function cssRuleBlock(css, selector) {
   const start = css.indexOf(`${selector} {`);
   assert.notEqual(start, -1, `${selector} block is missing`);
@@ -497,7 +501,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-item-status1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-launch-bay1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-item-status1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-capsules1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-command-dock1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=launch-console1">'), false);
@@ -566,7 +571,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-item-status1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-launch-bay1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-item-status1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=first-summon-beacon1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-capsules1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=pre-summon-cue1"></script>'), false);
@@ -1013,7 +1019,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=meta-item-status1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-launch-bay1'), true);
 
   const coachConsole = cssRuleBlock(css, 'body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::before');
   assert.equal(coachConsole.includes('animation: none;'), true);
@@ -2433,25 +2439,26 @@ test('lobby launch actions use dedicated generated button frames', async () => {
   for (const marker of [
     '<span>첫 구원 작전 시작</span>',
     '<span>온라인 협동</span>',
-    '<div class="launch-command-console">',
-    '--lobby-launch-console: url("/src/client/assets/generated/reboot-lobby-launch-console.png?v=launch-console1")',
+    '<div class="launch-command-console" data-launch-console="operation">',
+    'data-launch-action="bot"',
+    'data-launch-action="online"',
+    '--lobby-launch-bay: url("/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1")',
     '--lobby-online-button-height: 46px;',
-    '--launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta-alpha1")',
     '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',
     '/src/client/assets/generated/reboot-launch-secondary.png?v=gold-cta-alpha1',
     'class="launch-button-frame"',
     '.launch-button-frame',
-    'background-image: var(--launch-buttons)',
-    'background-size: 200% 100%',
-    '.play-button {\n  background-color: transparent;\n  background-image: var(--launch-buttons);',
-    '.match-button {',
-    'background-color: transparent;',
-    'background-image: var(--launch-buttons);',
+    '.launch-command-console .launch-button-frame',
+    'opacity: 0;',
+    '.launch-command-console > .play-button,\n.launch-command-console > .match-button',
+    'background-image: none;',
+    '.launch-command-console > .match-button {',
     'min-height: var(--lobby-online-button-height);',
-    'width: min(82%, 320px);',
-    'opacity: 0.74;',
+    'grid-column: 2;',
+    'border-radius: 999px;',
     '.screen-overlay .play-button,\n.screen-overlay .match-button {\n  background: transparent;',
     '.screen-overlay .play-button::before,\n.screen-overlay .match-button::before {\n  background-image: none;',
+    '.screen-overlay .launch-command-console > .play-button,\n.screen-overlay .launch-command-console > .match-button',
     '.play-button > span,\n.match-button > span'
   ]) {
     assert.equal(`${html}\n${css}`.includes(marker), true, marker);
@@ -2465,19 +2472,21 @@ test('lobby launch actions sit inside one generated command console', async () =
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '<div class="launch-command-console">',
-    '<button id="launchBotButton" class="play-button">',
-    '<button id="launchOnlineButton" class="match-button">',
+    '<div class="launch-command-console" data-launch-console="operation">',
+    '<button id="launchBotButton" class="play-button" data-launch-action="bot">',
+    '<button id="launchOnlineButton" class="match-button" data-launch-action="online">',
     '.launch-command-console {',
-    'background-image: var(--lobby-launch-console);',
+    'grid-template-columns: minmax(0, 1fr) clamp(82px, 24vw, 104px);',
+    'background-image: var(--lobby-launch-bay);',
     'background-size: 100% 100%;',
-    'min-height: clamp(122px, 32vw, 134px);',
-    'padding: 8px clamp(10px, 3.2vw, 14px) 10px;'
+    'min-height: clamp(96px, 25vw, 112px);',
+    'padding: clamp(10px, 2.8vw, 12px) clamp(18px, 5vw, 22px);'
   ]) {
     assert.equal(`${html}\n${css}`.includes(marker), true, marker);
   }
 
-  const consoleStart = html.indexOf('<div class="launch-command-console">');
+  const consoleStart = html.indexOf('<div class="launch-command-console" data-launch-console="operation">');
+  assert.notEqual(consoleStart, -1, 'launch command console markup is missing');
   assert.equal(consoleStart < html.indexOf('<button id="launchBotButton"'), true);
   assert.equal(consoleStart < html.indexOf('<button id="launchOnlineButton"'), true);
 
@@ -2544,13 +2553,15 @@ test('lobby portrait layout budget keeps poster actions and dock from overlappin
     dockRendered: cssPxVar(css, '--lobby-bottom-dock-rendered-height'),
     dockBottom: cssPxVar(css, '--lobby-bottom-dock-bottom')
   };
-  const stackHeight = layout.poster + layout.intel * 2 + layout.launch + layout.onlineLaunch + layout.gap * 2;
+  const fixedStackHeight = layout.poster + layout.intel * 2 + layout.gap * 2;
   const dockHeight = layout.dockRendered;
 
   for (const viewport of [
     { width: 320, height: 720 },
     { width: 390, height: 844 }
   ]) {
+    const launchConsoleHeight = clampPx(96, viewport.width * 0.25, 112);
+    const stackHeight = fixedStackHeight + launchConsoleHeight;
     const stackBottom = viewport.height - layout.bottomPad;
     const stackTop = stackBottom - stackHeight;
     const dockTop = viewport.height - layout.dockBottom - dockHeight;
@@ -2558,7 +2569,8 @@ test('lobby portrait layout budget keeps poster actions and dock from overlappin
 
     assert.ok(stackTop >= layout.topPad + 104, `${viewport.width} stack starts too high: ${stackTop}`);
     assert.ok(dockGap >= 32, `${viewport.width} dock overlaps lobby actions: ${dockGap}`);
-    assert.ok(layout.launch >= 54, `${viewport.width} launch CTA lost touch height`);
+    assert.ok(launchConsoleHeight >= 96, `${viewport.width} launch console lost touch height`);
+    assert.ok(layout.launch >= 54, `${viewport.width} launch action hit zone lost touch height`);
     assert.ok(layout.onlineLaunch >= 42, `${viewport.width} online option lost touch height`);
     assert.ok(layout.dockButton >= 64, `${viewport.width} dock buttons lost touch height`);
     assert.ok(layout.dockRendered >= layout.dockButton + layout.dockPaddingY * 2 + 4, `${viewport.width} dock render budget is too optimistic`);
