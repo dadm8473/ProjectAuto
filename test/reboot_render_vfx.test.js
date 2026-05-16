@@ -108,6 +108,48 @@ test('combat VFX uses compact hit bolts and rescue pulses instead of screen-cros
   );
 });
 
+test('recent rescue draws a strong generated link between partner and player boards', () => {
+  const ctx = mockContext();
+  const board = image(1280, 256);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 78.18,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'burst_pin' }, { spriteKey: 'rescue_coil' }] },
+        p2: { danger: 35, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [],
+      events: [{ type: 'rescue', at: 78.04, playerId: 'p1', highlight: true }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board,
+      vfx: image(1280, 256),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const rescueLinks = ctx.commands
+    .map((command, index) => ({ command, index }))
+    .filter(({ command }) => (
+      command.type === 'drawImage'
+        && command.args[0] === board
+        && command.args[1] === 768
+    ));
+  const strongLink = rescueLinks.find(({ command }) => command.args[7] >= 120);
+  const strongAlpha = strongLink
+    ? ctx.commands.slice(0, strongLink.index).findLast((command) => command.type === 'globalAlpha')?.value ?? 0
+    : 0;
+
+  assert.equal(rescueLinks.length >= 3, true, 'rescue should read as a multi-segment board-to-board link');
+  assert.ok(strongLink, 'expected at least one large generated rescue link segment');
+  assert.equal(strongAlpha >= 0.68, true, `recent rescue link should feel like a save moment: ${strongAlpha}`);
+});
+
 test('enemy spawn gate draws as a generated battlefield object before enemy sprites', () => {
   const ctx = mockContext();
   const enemySpawnGates = image(768, 192);

@@ -1134,7 +1134,16 @@ function boardVfxPoint(state, event, localBoardId = 'p1') {
 function drawRescueBeam(ctx, state, assets = {}) {
   const rescued = state.events.some((event) => event.type === 'rescue');
   if (!rescued) return;
+  const recentRescue = recentEvents(state, 'rescue', 1.45).at(-1);
   ctx.save();
+  if (recentRescue) {
+    const alpha = Math.min(0.78, eventAlpha(state, recentRescue, 1.45) * 1.12);
+    drawAtlasSprite(ctx, assets, 'board', 'rescue_beam_segment', 116, 222, 116, alpha * 0.9);
+    drawAtlasSprite(ctx, assets, 'board', 'rescue_beam_segment', 195, 322, 136, alpha);
+    drawAtlasSprite(ctx, assets, 'board', 'rescue_beam_segment', 274, 418, 122, alpha * 0.82);
+    ctx.restore();
+    return;
+  }
   drawAtlasSprite(ctx, assets, 'board', 'rescue_beam_segment', 118, 220, 90, 0.3);
   drawAtlasSprite(ctx, assets, 'board', 'rescue_beam_segment', 272, 420, 104, 0.24);
   ctx.restore();
