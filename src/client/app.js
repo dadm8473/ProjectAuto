@@ -752,6 +752,8 @@ function showResult(current) {
   dom.resultRetryButton.title = model.primaryAction.title ?? model.primaryAction.label;
   dom.resultRetryButton.setAttribute('aria-label', model.primaryAction.ariaLabel ?? model.primaryAction.label);
   dom.resultLobbyLabel.textContent = model.secondaryAction.label;
+  dom.resultLobbyButton.title = model.secondaryAction.title ?? model.secondaryAction.label;
+  dom.resultLobbyButton.setAttribute('aria-label', model.secondaryAction.ariaLabel ?? model.secondaryAction.label);
   dom.resultLobbyButton.dataset.resultOpen = model.secondaryAction.action;
   dom.resultOverlay.hidden = false;
   setScreen('result');

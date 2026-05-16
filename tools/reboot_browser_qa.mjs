@@ -270,7 +270,8 @@ async function verifyFastPlaythrough(page) {
   assert.equal(await page.locator('#resultTitle').isVisible(), true, `missing result: ${events.join(', ')}`);
   assert.equal(await page.locator('#resultTitle').textContent(), '승리');
   assert.equal(await page.locator('#resultOverlay').getAttribute('data-result-status'), 'won');
-  assert.equal(await page.locator('#resultLobbyButton span').textContent(), '수령하기');
+  assert.equal(await page.locator('#resultLobbyButton span').textContent(), '보상 수령');
+  assert.equal(await page.locator('#resultLobbyButton').getAttribute('aria-label'), '받을 미션 보상 수령');
   assert.equal(await page.locator('#resultLobbyButton').getAttribute('data-result-open'), 'claim-missions');
   assert.match(
     await page.locator('.result-panel').evaluate((node) => getComputedStyle(node, '::after').backgroundImage),

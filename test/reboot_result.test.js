@@ -64,8 +64,9 @@ test('result model routes secondary action to direct reward claims or clear prof
   });
 
   assert.equal(missionModel.secondaryAction.action, 'claim-missions');
-  assert.equal(missionModel.secondaryAction.label, '수령하기');
+  assert.equal(missionModel.secondaryAction.label, '보상 수령');
   assert.equal(missionModel.secondaryAction.title, '받을 미션 보상');
+  assert.equal(missionModel.secondaryAction.ariaLabel, '받을 미션 보상 수령');
 
   const seasonModel = buildRebootResultModel({
     result: { status: 'won', reason: 'partner_rescued' },
@@ -79,8 +80,9 @@ test('result model routes secondary action to direct reward claims or clear prof
   });
 
   assert.equal(seasonModel.secondaryAction.action, 'claim-season');
-  assert.equal(seasonModel.secondaryAction.label, '수령하기');
+  assert.equal(seasonModel.secondaryAction.label, '보상 수령');
   assert.equal(seasonModel.secondaryAction.title, '시즌 보상 도착');
+  assert.equal(seasonModel.secondaryAction.ariaLabel, '시즌 보상 도착 수령');
 
   const trainingModel = buildRebootResultModel({
     result: { status: 'won', reason: 'partner_rescued' },

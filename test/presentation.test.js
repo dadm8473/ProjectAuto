@@ -1958,6 +1958,8 @@ test('result actions use dedicated generated button frames', async () => {
     "dom.resultRetryButton.setAttribute('aria-label', model.primaryAction.ariaLabel ?? model.primaryAction.label);",
     'resultLobbyLabel: qs(\'#resultLobbyButton span\')',
     'dom.resultLobbyLabel.textContent = model.secondaryAction.label',
+    'dom.resultLobbyButton.title = model.secondaryAction.title ?? model.secondaryAction.label',
+    "dom.resultLobbyButton.setAttribute('aria-label', model.secondaryAction.ariaLabel ?? model.secondaryAction.label);",
     '.result-overlay .result-action-button',
     'background-image: var(--result-action-buttons);',
     'background: transparent;',

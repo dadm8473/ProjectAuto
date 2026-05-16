@@ -605,8 +605,24 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
     : { label: '다시 도전', action: 'retry' };
   const secondaryAction = (() => {
     if (!nextAction || nextAction.screen === 'battle') return { label: '홈', action: 'home' };
-    if (nextAction.screen === 'missions') return { label: '수령하기', action: 'claim-missions', screen: 'missions', title: nextAction.title };
-    if (nextAction.screen === 'season') return { label: '수령하기', action: 'claim-season', screen: 'season', title: nextAction.title };
+    if (nextAction.screen === 'missions') {
+      return {
+        label: '보상 수령',
+        action: 'claim-missions',
+        screen: 'missions',
+        title: nextAction.title,
+        ariaLabel: `${nextAction.title} 수령`
+      };
+    }
+    if (nextAction.screen === 'season') {
+      return {
+        label: '보상 수령',
+        action: 'claim-season',
+        screen: 'season',
+        title: nextAction.title,
+        ariaLabel: `${nextAction.title} 수령`
+      };
+    }
     return { label: nextAction.cta, action: nextAction.screen, screen: nextAction.screen, title: nextAction.title };
   })();
   return {
