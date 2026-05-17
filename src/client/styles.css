@@ -2254,9 +2254,10 @@ body[data-app-screen="season"] .app-screen::after {
 
 .reward-hook .lobby-currency-label {
   align-self: center;
-  color: rgba(244, 201, 93, 0.92);
-  font-size: clamp(12px, 3.26vw, 14px);
+  color: #ffe58f;
+  font-size: clamp(15px, 4.1vw, 18px);
   font-weight: 1000;
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.78);
 }
 
 .next-hook .lobby-intel-frame {
