@@ -59,6 +59,7 @@ const dom = {
   summonButton: qs('#summonButton'),
   mergeButton: qs('#mergeButton'),
   rescueButton: qs('#rescueButton'),
+  launchBotButton: qs('#launchBotButton'),
   launchBotLabel: qs('#launchBotButton span'),
   resultCode: qs('#resultCode'),
   resultTitle: qs('#resultTitle'),
@@ -298,7 +299,9 @@ function updateNavState() {
 
 function renderHomeScreens() {
   dom.lobbyContent.innerHTML = buildRebootLobby(profile);
-  dom.launchBotLabel.textContent = nextLobbyOperation(profile).cta;
+  const launchOperation = nextLobbyOperation(profile);
+  dom.launchBotLabel.textContent = launchOperation.cta;
+  dom.launchBotButton.setAttribute('aria-label', launchOperation.cta);
   dom.collectionList.innerHTML = buildRebootCollection(profile);
   dom.shopList.innerHTML = buildRebootShop(profile);
   dom.missionsList.innerHTML = buildMissionScreen(profile);

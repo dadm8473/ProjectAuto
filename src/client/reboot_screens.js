@@ -333,7 +333,7 @@ export function nextLobbyAction(profile = {}) {
     return { label: '미션 보상', status: '수령', title: '받을 미션 보상', detail: '완료 목표 수령', screen: 'missions', cta: '수령', beacon: 'mission' };
   }
   if (countClaimablePassTiers(profile) > 0) {
-    return { label: '시즌 보상', status: '보상', title: '시즌 보상 도착', detail: '시즌 보상 열기', screen: 'season', cta: '열기', beacon: 'season' };
+    return { label: '시즌 보상', status: '보상', title: '시즌 보상 도착', detail: '시즌 보상 수령', screen: 'season', cta: '수령', beacon: 'season' };
   }
   if (countTrainableUnits(profile) > 0) {
     return { label: '훈련 가능', status: '훈련', title: '유닛 강화 가능', detail: '전투 유닛 성장', screen: 'collection', cta: '훈련', beacon: 'training' };

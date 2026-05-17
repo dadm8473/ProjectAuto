@@ -2900,7 +2900,9 @@ test('lobby launch actions use dedicated generated button frames', async () => {
 
   for (const marker of [
     '<span>첫 구원 작전 시작</span>',
-    '<span>온라인 협동</span>',
+    '<button id="launchBotButton" class="play-button" data-launch-action="bot" aria-label="첫 구원 작전 시작">',
+    '<button id="launchOnlineButton" class="match-button" data-launch-action="online" aria-label="온라인 협동 매칭">',
+    '<span>매칭</span>',
     '<div class="launch-command-console" data-launch-console="operation">',
     'data-launch-action="bot"',
     'data-launch-action="online"',
@@ -2937,8 +2939,8 @@ test('lobby launch actions sit inside one generated command console', async () =
 
   for (const marker of [
     '<div class="launch-command-console" data-launch-console="operation">',
-    '<button id="launchBotButton" class="play-button" data-launch-action="bot">',
-    '<button id="launchOnlineButton" class="match-button" data-launch-action="online">',
+    '<button id="launchBotButton" class="play-button" data-launch-action="bot" aria-label="첫 구원 작전 시작">',
+    '<button id="launchOnlineButton" class="match-button" data-launch-action="online" aria-label="온라인 협동 매칭">',
     '.launch-command-console {',
     'grid-template-columns: minmax(0, 1fr) clamp(82px, 24vw, 104px);',
     'background-image: var(--lobby-launch-bay);',
@@ -3262,7 +3264,9 @@ test('client settles result rewards into profile and wires shop purchases', asyn
     'handleShopPurchase',
     'profile.processedRuns.includes(current.runId)',
     'nextLobbyOperation',
-    'dom.launchBotLabel.textContent = nextLobbyOperation(profile).cta',
+    'const launchOperation = nextLobbyOperation(profile);',
+    'dom.launchBotLabel.textContent = launchOperation.cta',
+    "dom.launchBotButton.setAttribute('aria-label', launchOperation.cta)",
     'seedName: current.seedName',
     'const operation = nextLobbyOperation(profile);',
     'seedName: operation.seedName',

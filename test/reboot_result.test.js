@@ -846,6 +846,19 @@ test('lobby next action uses compact game-state chips while preserving meaning f
   assert.equal(missionLobby.includes('>보상 보기<'), false);
   assert.equal(missionLobby.includes('<span>미션 보상</span>'), false);
 
+  const seasonLobby = buildRebootLobby({
+    gems: 44,
+    xp: 80,
+    processedRuns: ['run-1'],
+    claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic'],
+    claimedPassTiers: []
+  });
+
+  assert.equal(seasonLobby.includes('data-lobby-open="season" aria-label="시즌 보상 수령"'), true);
+  assert.equal(seasonLobby.includes('class="lobby-next-state" aria-label="시즌 보상">보상</span>'), true);
+  assert.equal(seasonLobby.includes('>수령<'), true);
+  assert.equal(seasonLobby.includes('>열기<'), false);
+
   const battleLobby = buildRebootLobby({
     gems: 0,
     xp: 0,
