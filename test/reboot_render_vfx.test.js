@@ -233,6 +233,88 @@ test('opening combat previews an incoming threat before the first serialized ene
   assert.equal(previewDraw.args[7] <= 118, true, 'preview should stay compact enough for the mobile playfield');
 });
 
+test('opening combat shows the generated threat during the operation intro', () => {
+  const ctx = mockContext();
+  const openingThreatPreview = image(512, 256);
+  const startCutin = image(390, 112);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 0.28,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      openingThreatPreview,
+      startCutin
+    }
+  );
+
+  const previewDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage' && command.args[0] === openingThreatPreview
+  ));
+  const startCutinDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage' && command.args[0] === startCutin
+  ));
+  const previewIndex = ctx.commands.findIndex((command) => command === previewDraw);
+  const startCutinIndex = ctx.commands.findIndex((command) => command === startCutinDraw);
+
+  assert.ok(previewDraw, 'first combat frame should not show an empty track before enemies serialize');
+  assert.ok(startCutinDraw, 'operation intro should still read over the early threat object');
+  assert.equal(previewIndex < startCutinIndex, true, 'start cutin should layer above the early threat preview');
+  assert.equal(previewDraw.args[7] >= 116, true, 'intro threat should be large enough to register behind the start cue');
+});
+
+test('opening threat preview stays continuous when the operation intro clears', () => {
+  const openingThreatPreview = image(512, 256);
+  const samples = [0.55, 0.56, 0.57].map((now) => {
+    const ctx = mockContext();
+    drawRebootBattle(
+      ctx,
+      {
+        now,
+        boards: {
+          p1: { danger: 0, units: [] },
+          p2: { danger: 0, units: [] }
+        },
+        enemies: [],
+        events: [],
+        effects: []
+      },
+      { width: 390, height: 620 },
+      {
+        backdrop: image(390, 620),
+        units: image(1280, 256),
+        board: image(1280, 256),
+        openingThreatPreview,
+        startCutin: image(390, 112)
+      }
+    );
+    const previewIndex = ctx.commands.findIndex((command) => (
+      command.type === 'drawImage' && command.args[0] === openingThreatPreview
+    ));
+    const alpha = previewIndex >= 0
+      ? ctx.commands.slice(0, previewIndex).findLast((command) => command.type === 'globalAlpha')?.value
+      : 0;
+    return { now, previewIndex, alpha: alpha ?? 0 };
+  });
+
+  for (const sample of samples) {
+    assert.notEqual(sample.previewIndex, -1, `preview disappeared at ${sample.now}`);
+    assert.equal(sample.alpha >= 0.38, true, `preview alpha popped too low at ${sample.now}: ${sample.alpha}`);
+  }
+});
+
 test('opening threat preview remains after first summon until enemies serialize', () => {
   const ctx = mockContext();
   const enemies = image(1024, 256);
@@ -2028,6 +2110,7 @@ test('matchmaking event banner hides the operation start cutin so ready copy sta
     {
       backdrop: image(390, 620),
       board: image(1280, 256),
+      openingThreatPreview: image(512, 256),
       startCutin: image(390, 112)
     },
     { matchmakingBannerVisible: true }
@@ -2038,8 +2121,14 @@ test('matchmaking event banner hides the operation start cutin so ready copy sta
       && command.args[0].naturalWidth === 390
       && command.args[0].naturalHeight === 112
   ));
+  const threatPreviewDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 512
+      && command.args[0].naturalHeight === 256
+  ));
 
   assert.deepEqual(startCutinDraws, []);
+  assert.deepEqual(threatPreviewDraws, []);
 });
 
 test('equipped cosmetics render as a visual-only player board signature', () => {

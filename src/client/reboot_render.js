@@ -582,10 +582,15 @@ function openingThreatPreviewAlpha(state = {}, options = {}) {
   const now = Number(state.now) || 0;
   if (options.onlineWaiting || options.matchmakingBannerVisible) return 0;
   if ((state.enemies?.length ?? 0) > 0) return 0;
+  if (now >= 0 && now < OPERATION_START_CUTIN_END && !hasFirstPlayerAction(state)) {
+    const intro = Math.min(1, now / OPERATION_START_CUTIN_FADE);
+    return Math.min(0.56, intro * 0.56);
+  }
   if (now >= OPERATION_START_CUTIN_END && now <= OPENING_THREAT_PREVIEW_END) {
     const intro = Math.min(1, Math.max(0, now - OPERATION_START_CUTIN_END) / 0.22);
     const exit = Math.min(1, Math.max(0, OPENING_THREAT_PREVIEW_END - now) / 0.7);
-    return Math.min(0.78, intro * exit * 0.78);
+    const continuityFloor = Math.max(0, 1 - Math.max(0, now - OPERATION_START_CUTIN_END) / 0.34) * 0.54;
+    return Math.min(0.78, Math.max(continuityFloor, intro) * exit * 0.78);
   }
   if (hasFirstPlayerAction(state) && now > OPENING_THREAT_PREVIEW_END && now <= EARLY_LULL_THREAT_PREVIEW_END) {
     const exit = Math.min(1, Math.max(0, EARLY_LULL_THREAT_PREVIEW_END - now) / 1.4);
