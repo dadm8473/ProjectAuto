@@ -634,6 +634,14 @@ const IMAGEGEN_REBOOT_LOADING_GATE_METER = {
   minRuntimeBytes: 72_000
 };
 
+const IMAGEGEN_REBOOT_LOBBY_OPERATION_PROGRESS_RAIL = {
+  path: 'src/client/assets/generated/reboot-lobby-operation-progress-rail.png',
+  source: 'docs/design/generation/source/reboot/style-lock/20260517-lobby-operation-progress-rail-chromakey-imagegen.png',
+  width: 512,
+  height: 128,
+  minRuntimeBytes: 36_000
+};
+
 const IMAGEGEN_REBOOT_RESULT_AURAS = {
   path: 'src/client/assets/generated/reboot-result-outcome-auras.png',
   source: 'docs/design/generation/source/reboot/style-lock/20260516-result-outcome-auras-chromakey-imagegen.png',
@@ -1588,6 +1596,28 @@ test('loading gate progress meter is promoted from imagegen source art', async (
   assert.equal(alphaAt(image, cellWidth - 2, 1) < 10, true, 'loading meter track has an opaque top-right corner');
   assert.equal(alphaAt(image, cellWidth + 1, 1) < 10, true, 'loading meter fill has an opaque top-left corner');
   assert.equal(alphaAt(image, image.width - 2, 1) < 10, true, 'loading meter fill has an opaque top-right corner');
+});
+
+test('lobby operation progress rail is promoted from imagegen source art', async () => {
+  const asset = IMAGEGEN_REBOOT_LOBBY_OPERATION_PROGRESS_RAIL;
+  const source = await readFile(asset.source);
+  const runtime = await readFile(asset.path);
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+  assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+  assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+  assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+  assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+  const image = parsePng(runtime);
+  const bounds = alphaBounds(image, { x: 0, y: 0, width: asset.width, height: asset.height }, 18);
+  assert.equal(bounds.count > 7_500, true, `operation progress rail is too sparse: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.minX >= 6, true, `operation progress rail touches left edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxX <= asset.width - 7, true, `operation progress rail touches right edge: ${JSON.stringify(bounds)}`);
+  assert.equal(alphaAt(image, 1, 1) < 10, true, 'operation progress rail has an opaque top-left corner');
+  assert.equal(alphaAt(image, image.width - 2, 1) < 10, true, 'operation progress rail has an opaque top-right corner');
+  assert.equal(alphaAt(image, 1, image.height - 2) < 10, true, 'operation progress rail has an opaque bottom-left corner');
+  assert.equal(alphaAt(image, image.width - 2, image.height - 2) < 10, true, 'operation progress rail has an opaque bottom-right corner');
 });
 
 test('meta item status overlays are transparent generated shelf objects', async () => {

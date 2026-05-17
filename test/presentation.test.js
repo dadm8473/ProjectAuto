@@ -3054,12 +3054,25 @@ test('lobby operation card uses a dedicated generated mission poster', async () 
     'class="operation-progress-node"',
     'data-operation-node="${step === operation.step ? \'active\' : \'idle\'}"',
     '.operation-progress',
+    '--lobby-operation-progress-rail: url("/src/client/assets/generated/reboot-lobby-operation-progress-rail.png?v=operation-progress1")',
+    'background-image: var(--lobby-operation-progress-rail);',
+    'background-size: 100% 100%;',
+    'aspect-ratio: 512 / 128;',
     'background-image: var(--meta-mini-badges);',
     'const operation = nextLobbyOperation(model);',
     '<strong>${operation.title}</strong>',
     '<p>${operation.detail}</p>'
   ]) {
     assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+
+  const progressBlock = cssRuleBlock(css, '.operation-progress');
+  for (const forbidden of [
+    'background: rgba(2, 10, 11, 0.62);',
+    'border-radius: 6px;',
+    'box-shadow: inset 0 0 0 1px'
+  ]) {
+    assert.equal(progressBlock.includes(forbidden), false, forbidden);
   }
 
   for (const forbidden of [
