@@ -340,7 +340,7 @@ function formatResultRewards(rewards) {
 
 function resultRewardMarkup(rewards) {
   const rewardLabel = formatResultRewards(rewards);
-  return `<span class="result-reward-label">획득</span><strong class="result-reward-value">${rewardLabel}</strong>`;
+  return `<span class="result-reward-label" aria-hidden="true">획득</span> <strong class="result-reward-value" aria-hidden="true">${rewardLabel}</strong>`;
 }
 
 function resultHighlightMarkup(model) {
@@ -750,6 +750,7 @@ function showResult(current) {
   dom.resultReason.textContent = model.reason.label;
   dom.resultNextGoal.textContent = model.nextGoal.label;
   dom.resultHighlights.innerHTML = resultHighlightMarkup(model);
+  dom.resultReward.setAttribute('aria-label', `획득 ${formatResultRewards(model.rewards)}`);
   dom.resultReward.innerHTML = resultRewardMarkup(model.rewards);
   dom.resultRetryLabel.textContent = model.primaryAction.label;
   dom.resultRetryButton.title = model.primaryAction.title ?? model.primaryAction.label;

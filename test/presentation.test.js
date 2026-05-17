@@ -2019,16 +2019,22 @@ test('result reward claim action is promoted to the generated primary button', a
 
 test('result reward copy names the earned currency instead of a generic reward number', async () => {
   const app = await readFile('src/client/app.js', 'utf8');
+  const index = await readFile('index.html', 'utf8');
 
   for (const marker of [
     'function formatResultRewards(rewards)',
     "if (reward.type === 'soft') return `보석 +${reward.amount}`;",
+    'id="resultReward" class="result-reward" role="group"',
+    "dom.resultReward.setAttribute('aria-label', `획득 ${formatResultRewards(model.rewards)}`);",
+    'class="result-reward-label" aria-hidden="true"',
+    'class="result-reward-value" aria-hidden="true"',
     'resultRewardMarkup(model.rewards)'
   ]) {
-    assert.equal(app.includes(marker), true, marker);
+    assert.equal(`${index}\n${app}`.includes(marker), true, marker);
   }
 
   assert.equal(app.includes('`보상 ${reward.amount}`'), false);
+  assert.equal(app.includes('<span class="result-reward-label">획득</span><strong'), false);
 });
 
 test('result reward uses a generated claim capsule instead of a text strip', async () => {
