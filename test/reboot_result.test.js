@@ -604,12 +604,12 @@ test('mission and season top boards keep large copy numeric while preserving ful
   assert.equal(missions.includes('완료 목표 보상 전환</p>'), false);
 
   assert.equal(
-    season.includes('class="season-track-board" data-board-kind="season" aria-label="시즌 보드 · 시즌 경험치 80 · 보상 가능 0개"'),
+    season.includes('class="season-track-board" data-board-kind="season" aria-label="시즌 보드 · 시즌 경험치 80 · 대기 보상 없음"'),
     true
   );
   assert.equal(season.includes('<span>시즌 점수</span>'), true);
   assert.equal(season.includes('<strong>80</strong>'), true);
-  assert.equal(season.includes('<p>보상 0개</p>'), true);
+  assert.equal(season.includes('<p>보상 없음</p>'), true);
   assert.equal(season.includes('<strong>80 경험치</strong>'), false);
   assert.equal(season.includes('<p>0개 보상 가능</p>'), false);
 });
@@ -624,6 +624,17 @@ test('mission top board does not promise a reward claim when none are ready', ()
   assert.equal(emptyMissions.includes('<p>진행중</p>'), true);
   assert.equal(emptyMissions.includes('<p>수령 가능</p>'), false);
   assert.equal(readyMissions.includes('<p>수령 가능</p>'), true);
+});
+
+test('season top board names empty reward state as no rewards instead of zero claimable rewards', () => {
+  const emptySeason = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
+  const readySeason = buildSeasonScreen({ xp: 80, claimedPassTiers: [] });
+
+  assert.equal(emptySeason.includes('aria-label="시즌 보드 · 시즌 경험치 80 · 대기 보상 없음"'), true);
+  assert.equal(emptySeason.includes('<p>보상 없음</p>'), true);
+  assert.equal(emptySeason.includes('<p>보상 0개</p>'), false);
+  assert.equal(readySeason.includes('aria-label="시즌 보드 · 시즌 경험치 80 · 보상 가능 1개"'), true);
+  assert.equal(readySeason.includes('<p>보상 1개</p>'), true);
 });
 
 test('shop card descriptions stay compact enough for portrait game cards', () => {

@@ -305,6 +305,8 @@ function seasonCardState(state) {
 function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
   const xp = profile.xp ?? 0;
   const claimable = countClaimablePassTiers(profile);
+  const rewardStatus = claimable > 0 ? `보상 ${claimable}개` : '보상 없음';
+  const rewardAriaState = claimable > 0 ? `보상 가능 ${claimable}개` : '대기 보상 없음';
   const nodes = SHOP.pass.tiers.map((tier, index) => {
     const state = seasonState(xp, tier, index, claimed);
     return `
@@ -315,11 +317,11 @@ function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
   }).join('');
 
   return `
-    <section class="season-track-board" data-board-kind="season" aria-label="시즌 보드 · 시즌 경험치 ${xp} · 보상 가능 ${claimable}개">
+    <section class="season-track-board" data-board-kind="season" aria-label="시즌 보드 · 시즌 경험치 ${xp} · ${rewardAriaState}">
       <div class="season-board-copy">
         <span>시즌 점수</span>
         <strong>${xp}</strong>
-        <p>보상 ${claimable}개</p>
+        <p>${rewardStatus}</p>
       </div>
       <div class="season-track-rail">${nodes}</div>
     </section>
