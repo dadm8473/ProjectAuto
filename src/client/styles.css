@@ -59,6 +59,7 @@
   --season-banner: url("/src/client/assets/generated/reboot-season-banner.png");
   --meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row-alpha1");
   --meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges-alpha1");
+  --meta-status-plaques: url("/src/client/assets/generated/reboot-meta-status-plaques.png?v=meta-status-plaques1");
   --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
   --meta-showcase-stage: url("/src/client/assets/generated/reboot-meta-showcase-stage.png?v=showcase-stage");
   --meta-shelf-grid: url("/src/client/assets/generated/reboot-meta-shelf-grid.png?v=meta-shelf-grid1");
@@ -2645,17 +2646,21 @@ body[data-app-screen="season"] .app-screen::after {
 .season-board-copy strong {
   display: inline-grid;
   place-items: center;
-  width: clamp(62px, 17vw, 76px);
-  min-height: 34px;
-  padding: 2px 10px;
-  color: var(--ink);
+  width: clamp(130px, 38vw, 164px);
+  min-height: 64px;
+  padding: 0 16px;
+  color: #fff6d7;
   font-size: clamp(25px, 7vw, 30px);
   line-height: 1;
-  background-image: var(--meta-command-ribbons);
+  background-image: var(--meta-status-plaques);
   background-repeat: no-repeat;
-  background-size: 400% 100%;
+  background-size: 200% 100%;
   background-position: 0 0;
-  filter: drop-shadow(0 7px 10px rgba(0, 0, 0, 0.48));
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.42));
+}
+
+.season-board-copy strong {
+  background-position: 100% 0;
 }
 
 .mission-board-copy p,

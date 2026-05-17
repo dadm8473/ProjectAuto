@@ -24,6 +24,14 @@ function cssRuleBlock(css, selector) {
   return css.slice(start, end + 2);
 }
 
+function cssRuleBlockAfter(css, selector, offset) {
+  const start = css.indexOf(`${selector} {`, offset);
+  assert.notEqual(start, -1, `${selector} block is missing after offset ${offset}`);
+  const end = css.indexOf('\n}', start);
+  assert.notEqual(end, -1, `${selector} block is not closed`);
+  return css.slice(start, end + 2);
+}
+
 function fakeImage(width = 256, height = 256, complete = true) {
   return { complete, naturalWidth: complete ? width : 0, naturalHeight: complete ? height : 0 };
 }
@@ -3813,19 +3821,38 @@ test('mission and season top counters sit on generated reward plates', async () 
   for (const marker of [
     'display: inline-grid;',
     'place-items: center;',
-    'width: clamp(62px, 17vw, 76px);',
-    'min-height: 34px;',
-    'background-image: var(--meta-command-ribbons);',
-    'background-size: 400% 100%;',
+    'width: clamp(130px, 38vw, 164px);',
+    'min-height: 64px;',
+    'background-image: var(--meta-status-plaques);',
+    'background-size: 200% 100%;',
     'background-position: 0 0;'
   ]) {
     assert.equal(counterBlock.includes(marker), true, marker);
   }
+  assert.equal(counterBlock.includes('background-image: var(--meta-command-ribbons);'), false);
 
   const captionBlock = cssRuleBlock(css, '.mission-board-copy p,\n.season-board-copy p');
   assert.equal(captionBlock.includes('width: max-content;'), true);
   assert.equal(captionBlock.includes('padding: 2px 8px;'), true);
   assert.equal(captionBlock.includes('background: rgba(2, 10, 12, 0.62);'), false);
+});
+
+test('mission and season top copy sits on dedicated imagegen status plaques', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--meta-status-plaques: url("/src/client/assets/generated/reboot-meta-status-plaques.png?v=meta-status-plaques1")',
+    '.mission-board-copy strong,\n.season-board-copy strong {',
+    'background-image: var(--meta-status-plaques);',
+    'background-size: 200% 100%;',
+    '.season-board-copy strong {'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const sharedCounterBlock = cssRuleBlock(css, '.mission-board-copy strong,\n.season-board-copy strong');
+  const seasonCounterBlock = cssRuleBlockAfter(css, '.season-board-copy strong', css.indexOf(sharedCounterBlock) + sharedCounterBlock.length);
+  assert.equal(seasonCounterBlock.includes('background-position: 100% 0;'), true);
 });
 
 test('mission and season rows show generated reward tokens', async () => {

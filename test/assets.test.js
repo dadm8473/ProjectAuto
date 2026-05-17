@@ -618,6 +618,14 @@ const IMAGEGEN_REBOOT_OBJECTIVE_STAMPS = {
   minRuntimeBytes: 24_000
 };
 
+const IMAGEGEN_REBOOT_META_STATUS_PLAQUES = {
+  path: 'src/client/assets/generated/reboot-meta-status-plaques.png',
+  source: 'docs/design/generation/source/reboot/style-lock/20260517-meta-status-plaques-chromakey-imagegen.png',
+  width: 768,
+  height: 180,
+  minRuntimeBytes: 42_000
+};
+
 const IMAGEGEN_REBOOT_RESULT_AURAS = {
   path: 'src/client/assets/generated/reboot-result-outcome-auras.png',
   source: 'docs/design/generation/source/reboot/style-lock/20260516-result-outcome-auras-chromakey-imagegen.png',
@@ -1526,6 +1534,29 @@ test('reboot objective status stamps are promoted from imagegen sources', async 
   assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
   assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
   assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+});
+
+test('mission and season status plaques are promoted from imagegen source art', async () => {
+  const asset = IMAGEGEN_REBOOT_META_STATUS_PLAQUES;
+  const source = await readFile(asset.source);
+  const runtime = await readFile(asset.path);
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+  assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+  assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+  assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+  assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+  const image = parsePng(runtime);
+  const cellWidth = asset.width / 2;
+  for (let cell = 0; cell < 2; cell += 1) {
+    const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: asset.height }, 24);
+    assert.equal(bounds.count > 18_000, true, `status plaque cell ${cell} has no readable frame`);
+    assert.equal(bounds.minX >= 10, true, `status plaque cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 11, true, `status plaque cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 8, true, `status plaque cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= asset.height - 9, true, `status plaque cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
 });
 
 test('meta item status overlays are transparent generated shelf objects', async () => {
