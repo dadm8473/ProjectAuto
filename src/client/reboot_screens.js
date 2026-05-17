@@ -266,7 +266,7 @@ function missionCardState(state) {
 
 function buildMissionStampBoard(profile = {}, claimed = new Set()) {
   const claimable = countClaimableMissions(profile);
-  const boardStatus = claimable > 0 ? '수령 가능' : '진행중';
+  const boardStatus = claimable > 0 ? '수령 가능' : '작전 진행';
   const boardAriaState = claimable > 0 ? `수령 가능 ${claimable}개` : '대기 보상 없음';
   const stamps = REBOOT_MISSIONS.map((mission) => {
     const progress = missionProgress(profile, mission);
@@ -281,7 +281,7 @@ function buildMissionStampBoard(profile = {}, claimed = new Set()) {
   return `
     <section class="mission-stamp-board" data-board-kind="missions" aria-label="미션 보드 · ${boardAriaState} · 완료 목표 보상 전환">
       <div class="mission-board-copy">
-        <span>보상 대기</span>
+        <span>받을 보상</span>
         <strong>${claimable}</strong>
         <p>${boardStatus}</p>
       </div>
@@ -319,7 +319,7 @@ function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
   return `
     <section class="season-track-board" data-board-kind="season" aria-label="시즌 보드 · 시즌 경험치 ${xp} · ${rewardAriaState}">
       <div class="season-board-copy">
-        <span>시즌 점수</span>
+        <span>시즌 XP</span>
         <strong>${xp}</strong>
         <p>${rewardStatus}</p>
       </div>
