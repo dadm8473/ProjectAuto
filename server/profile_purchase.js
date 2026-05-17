@@ -14,7 +14,7 @@ export function approveProfilePurchase(value, itemId) {
   if (!item) return { ok: false, reason: '보상 항목 없음.', profile };
   if (item.grant.cosmetic && profile.unlocks.includes(item.grant.cosmetic)) return { ok: false, reason: '이미 해금됨.', profile };
   const gemPrice = item.price.gems ?? 0;
-  if (profile.gems < gemPrice) return { ok: false, reason: '젬 부족.', profile };
+  if (profile.gems < gemPrice) return { ok: false, reason: '보석 부족.', profile };
   return {
     ok: true,
     item,

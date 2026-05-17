@@ -1629,7 +1629,7 @@ test('inactive meta state chips use generated icons and compact copy', async () 
     'aria-label="${label}"',
     '${displayLabel}',
     "passiveCardState('경험치 부족', 'locked', '부족')",
-    "passiveCardState('젬 부족', 'locked', '부족')",
+    "passiveCardState('보석 부족', 'locked', '부족')",
     '.card-passive-state::before',
     'background-image: var(--meta-card-state-badges);',
     '.card-passive-state[data-passive-state="locked"]::before',
@@ -1639,7 +1639,7 @@ test('inactive meta state chips use generated icons and compact copy', async () 
   }
 
   assert.equal(screens.includes('>경험치 부족<'), false);
-  assert.equal(screens.includes('>젬 부족<'), false);
+  assert.equal(screens.includes('>보석 부족<'), false);
 });
 
 test('meta shelf passive chips show short labels instead of empty slots', async () => {
@@ -1648,7 +1648,7 @@ test('meta shelf passive chips show short labels instead of empty slots', async 
 
   for (const marker of [
     "passiveCardState('경험치 부족', 'locked', '부족')",
-    "passiveCardState('젬 부족', 'locked', '부족')",
+    "passiveCardState('보석 부족', 'locked', '부족')",
     "passiveCardState('장착중', 'owned')",
     '.meta-shelf-grid .card-passive-state',
     'grid-template-columns: 18px auto;',
@@ -2022,7 +2022,7 @@ test('result reward copy names the earned currency instead of a generic reward n
 
   for (const marker of [
     'function formatResultRewards(rewards)',
-    "if (reward.type === 'soft') return `젬 +${reward.amount}`;",
+    "if (reward.type === 'soft') return `보석 +${reward.amount}`;",
     'resultRewardMarkup(model.rewards)'
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -3067,7 +3067,7 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     '--lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next")',
     '--lobby-battle-ready-cue: url("/src/client/assets/generated/reboot-lobby-battle-ready-cue.png?v=battle-ready-cue")',
     'class="lobby-intel-strip reward-hook"',
-    'aria-label="보유 젬 ${gems}, 외형 해금 전용 재화"',
+    'aria-label="보유 보석 ${gems}, 외형 해금 전용 재화"',
     'class="lobby-currency-icon" data-reward-icon="soft_currency"',
     'class="lobby-currency-value"',
     'class="lobby-currency-label"',
@@ -3125,7 +3125,7 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     'class="lobby-card reward-hook"',
     'class="lobby-card next-hook"',
     'data-lobby-open="battle"',
-    '<span>보유 젬</span>',
+    '<span>보유 보석</span>',
     '<p>외형만 해금</p>',
     '<span>${nextAction.label}</span>',
     '>보상 보기<',
@@ -3385,6 +3385,7 @@ test('profile rewards use a generated reveal panel instead of toast-only feedbac
     'id="rewardRevealIcon"',
     'id="rewardRevealTitle"',
     'id="rewardRevealDetail"',
+    '<strong id="rewardRevealDetail">보석 +0</strong>',
     '--reward-reveal-panel: url("/src/client/assets/generated/reboot-reward-reveal-panel.png?v=reward-reveal")',
     '.reward-reveal',
     '.reward-reveal[hidden]',
@@ -3397,8 +3398,8 @@ test('profile rewards use a generated reveal panel instead of toast-only feedbac
     'function hideRewardReveal()',
     "showRewardReveal('외형 해금', item.name, 'unlock_capsule');",
     "showRewardReveal('강화 완료', `${unit.name} Lv.${currentLevel + 1}`, 'season_progress');",
-    "showRewardReveal('미션 보상', `${mission.reward.gems} 젬`, 'soft_currency');",
-    "showRewardReveal('시즌 보상', tier.grant.cosmetic ? '외형 해금' : `${tier.grant.gems ?? 0} 젬`, tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress');"
+    "showRewardReveal('미션 보상', `${mission.reward.gems} 보석`, 'soft_currency');",
+    "showRewardReveal('시즌 보상', tier.grant.cosmetic ? '외형 해금' : `${tier.grant.gems ?? 0} 보석`, tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress');"
   ]) {
     assert.equal(`${html}\n${css}\n${app}`.includes(marker), true, marker);
   }
@@ -3633,7 +3634,7 @@ test('shop screen uses the active generated showcase stage', async () => {
     'function buildMetaShowcase',
     'data-showcase-kind="shop"',
     '추천 외형',
-    'stats: [`보유 ${gems} 젬`, `가격 ${featuredItem.price?.gems ?? 0} 젬`]',
+    'stats: [`보유 ${gems} 보석`, `가격 ${featuredItem.price?.gems ?? 0} 보석`]',
     'class="meta-showcase-preview"',
     'class="sprite-token shop-cosmetic"'
   ]) {

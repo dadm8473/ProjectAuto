@@ -331,9 +331,9 @@ function settleResultRewards(current) {
 }
 
 function formatResultRewards(rewards) {
-  if (!rewards.length) return '젬 +0';
+  if (!rewards.length) return '보석 +0';
   return rewards.map((reward) => {
-    if (reward.type === 'soft') return `젬 +${reward.amount}`;
+    if (reward.type === 'soft') return `보석 +${reward.amount}`;
     return `보상 +${reward.amount}`;
   }).join(' · ');
 }
@@ -385,7 +385,7 @@ function handleShopPurchase(event) {
   }
   const price = item.price?.gems ?? 0;
   if (profile.gems < price) {
-    showToast('젬이 부족합니다');
+    showToast('보석이 부족합니다');
     return;
   }
   profile = normalizeMetaProfile({
@@ -471,7 +471,7 @@ function claimReadyMissionsFromResult() {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.missionsList, `[data-mission="${selectorValue(ready[0].id)}"]`, 'mission');
-  showRewardReveal('미션 보상', ready.length > 1 ? `보상 ${ready.length}개` : `${bundle.gems} 젬`, 'soft_currency');
+  showRewardReveal('미션 보상', ready.length > 1 ? `보상 ${ready.length}개` : `${bundle.gems} 보석`, 'soft_currency');
   return true;
 }
 
@@ -492,7 +492,7 @@ function claimReadySeasonFromResult() {
   renderHomeScreens();
   flashMetaClaim(dom.seasonList, `.season-card[data-pass-tier="${ready[0].index}"]`, 'season');
   const hasCosmetic = ready.some(({ tier }) => tier.grant.cosmetic);
-  showRewardReveal('시즌 보상', hasCosmetic ? '외형 해금' : `${bundle.gems} 젬`, hasCosmetic ? 'cosmetic_shard' : 'season_progress');
+  showRewardReveal('시즌 보상', hasCosmetic ? '외형 해금' : `${bundle.gems} 보석`, hasCosmetic ? 'cosmetic_shard' : 'season_progress');
   return true;
 }
 
@@ -509,7 +509,7 @@ function handleMissionClaim(event) {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.missionsList, `[data-mission="${selectorValue(mission.id)}"]`, 'mission');
-  showRewardReveal('미션 보상', `${mission.reward.gems} 젬`, 'soft_currency');
+  showRewardReveal('미션 보상', `${mission.reward.gems} 보석`, 'soft_currency');
   showToast(`${mission.title} 보상`, 'reward');
 }
 
@@ -527,7 +527,7 @@ function handlePassClaim(event) {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.seasonList, `.season-card[data-pass-tier="${index}"]`, 'season');
-  showRewardReveal('시즌 보상', tier.grant.cosmetic ? '외형 해금' : `${tier.grant.gems ?? 0} 젬`, tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress');
+  showRewardReveal('시즌 보상', tier.grant.cosmetic ? '외형 해금' : `${tier.grant.gems ?? 0} 보석`, tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress');
   showToast(`${index + 1}단계 보상`, 'reward');
 }
 

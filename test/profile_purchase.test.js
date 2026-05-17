@@ -7,7 +7,7 @@ test('online purchases are approved from the buyer profile, not a shared gem poo
   const denied = approveProfilePurchase({ gems: 0, unlocks: [] }, 'mythic-aura');
 
   assert.equal(denied.ok, false);
-  assert.equal(denied.reason, '젬 부족.');
+  assert.equal(denied.reason, '보석 부족.');
 
   const approved = approveProfilePurchase({ gems: 98, unlocks: [] }, 'mythic-aura');
 

@@ -47,9 +47,9 @@ test('run progress summarizes rewards without long explanatory text', () => {
   };
 
   assert.deepEqual(buildRunProgress(summary, { gems: 240, xp: 310 }), [
-    { label: '전투', value: '+92 경험치', detail: '+128 젬' },
-    { label: '미션', value: '2개 완료', detail: '+35 젬' },
+    { label: '전투', value: '+92 경험치', detail: '+128 보석' },
+    { label: '미션', value: '2개 완료', detail: '+35 보석' },
     { label: '패스', value: '2개 해금', detail: '310 경험치' },
-    { label: '보관함', value: '240 젬', detail: '+183 젬' }
+    { label: '보관함', value: '240 보석', detail: '+183 보석' }
   ]);
 });

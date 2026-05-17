@@ -344,8 +344,8 @@ test('reboot shop renders earned-gem cosmetic purchases with owned and locked st
   assert.equal(shop.includes('data-shop-cosmetic="mythic-aura"'), true);
   assert.equal(shop.includes('data-shop-cosmetic="founder-board"'), true);
   assert.equal(shop.includes('data-owned="true"'), true);
-  assert.equal(shop.includes('90 젬'), true);
-  assert.equal(shop.includes('140 젬'), true);
+  assert.equal(shop.includes('90 보석'), true);
+  assert.equal(shop.includes('140 보석'), true);
   assert.equal(shop.includes('>해금<'), true);
   assert.equal(shop.includes('>착용<'), true);
   assert.equal(shop.includes('lucky-cache'), false);
@@ -391,11 +391,11 @@ test('locked unit and shop rows use short visual state tokens instead of repeate
   const shop = buildRebootShop({ gems: 0, unlocks: [] });
 
   assert.equal(collection.includes('aria-label="경험치 부족"'), true);
-  assert.equal(shop.includes('aria-label="젬 부족"'), true);
+  assert.equal(shop.includes('aria-label="보석 부족"'), true);
   assert.equal(collection.includes('>경험치 부족<'), false);
-  assert.equal(shop.includes('>젬 부족<'), false);
+  assert.equal(shop.includes('>보석 부족<'), false);
   assert.equal((collection.match(/class="card-passive-state" data-passive-state="locked" aria-label="경험치 부족">부족/g) ?? []).length >= 1, true);
-  assert.equal((shop.match(/class="card-passive-state" data-passive-state="locked" aria-label="젬 부족">부족/g) ?? []).length >= 1, true);
+  assert.equal((shop.match(/class="card-passive-state" data-passive-state="locked" aria-label="보석 부족">부족/g) ?? []).length >= 1, true);
 });
 
 test('meta screens start with compact actionable status headers', () => {
@@ -407,8 +407,8 @@ test('meta screens start with compact actionable status headers', () => {
   const shop = buildRebootShop({ gems: 100, unlocks: [] });
   assert.equal(shop.includes('meta-showcase'), true);
   assert.equal(shop.includes('추천 외형'), true);
-  assert.equal(shop.includes('보유 100 젬'), true);
-  assert.equal(shop.includes('가격 90 젬'), true);
+  assert.equal(shop.includes('보유 100 보석'), true);
+  assert.equal(shop.includes('가격 90 보석'), true);
 
   const missions = buildMissionScreen({
     processedRuns: ['run-1'],
@@ -458,9 +458,10 @@ test('collection and shop showcases split numeric state into compact game badges
   assert.equal(collection.includes('Lv.1 · 0/40 경험치'), false);
 
   assert.equal(shop.includes('class="meta-showcase-stats"'), true);
-  assert.equal(shop.includes('<span class="meta-showcase-chip">보유 0 젬</span>'), true);
-  assert.equal(shop.includes('<span class="meta-showcase-chip">가격 90 젬</span>'), true);
-  assert.equal(shop.includes('0 젬 보유 · 90 젬'), false);
+  assert.equal(shop.includes('<span class="meta-showcase-chip">보유 0 보석</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip">가격 90 보석</span>'), true);
+  assert.equal(shop.includes('0 보석 보유 · 90 보석'), false);
+  assert.equal(shop.includes('젬'), false);
 });
 
 test('collection showcase names upgrade availability as game-state copy instead of awkward person count', () => {
@@ -479,8 +480,8 @@ test('collection and shop shelf price chips show numbers while preserving access
 
   assert.equal(collection.includes('class="unit-cost" aria-label="강화 비용 40 경험치">40</span>'), true);
   assert.equal(collection.includes('class="unit-cost">40 경험치</span>'), false);
-  assert.equal(shop.includes('class="shop-price" aria-label="해금 비용 90 젬">90</span>'), true);
-  assert.equal(shop.includes('class="shop-price">90 젬</span>'), false);
+  assert.equal(shop.includes('class="shop-price" aria-label="해금 비용 90 보석">90</span>'), true);
+  assert.equal(shop.includes('class="shop-price">90 보석</span>'), false);
 });
 
 test('unit shelf cards expose compact roles and full accessible state', () => {
@@ -508,16 +509,16 @@ test('shop shelf cards expose compact prices and full accessible state', () => {
   });
 
   assert.equal(
-    shop.includes('aria-label="신화 오라 · 코어 릴레이 오라 · 해금 비용 90 젬 · 해금 가능"'),
+    shop.includes('aria-label="신화 오라 · 코어 릴레이 오라 · 해금 비용 90 보석 · 해금 가능"'),
     true
   );
   assert.equal(shop.includes('data-shop-buy="mythic-aura" aria-label="신화 오라 해금">해금<'), true);
   assert.equal(
-    shop.includes('aria-label="파운더 보드 · 협동 보드 스킨 · 해금 비용 140 젬 · 젬 부족"'),
+    shop.includes('aria-label="파운더 보드 · 협동 보드 스킨 · 해금 비용 140 보석 · 보석 부족"'),
     true
   );
   assert.equal(
-    shop.includes('aria-label="합성 플레어 · 합성 이펙트 · 해금 비용 55 젬 · 장착중"'),
+    shop.includes('aria-label="합성 플레어 · 합성 이펙트 · 해금 비용 55 보석 · 장착중"'),
     true
   );
 });
@@ -550,9 +551,9 @@ test('season progress board uses compact reward names for phone slots', () => {
   const season = buildSeasonScreen({ xp: 0, claimedPassTiers: [] });
 
   assert.equal(season.includes('2단계 · 외형'), true);
-  assert.equal(season.includes('<strong>1단계 · 20젬</strong>'), true);
-  assert.equal(season.includes('<strong>3단계 · 80젬</strong>'), true);
-  assert.equal(season.includes('<strong>3단계 · 80 젬</strong>'), false);
+  assert.equal(season.includes('<strong>1단계 · 20보석</strong>'), true);
+  assert.equal(season.includes('<strong>3단계 · 80보석</strong>'), true);
+  assert.equal(season.includes('<strong>3단계 · 80 보석</strong>'), false);
   assert.equal(season.includes('외형 보상'), false);
 });
 
@@ -679,11 +680,11 @@ test('mission and season objective rows keep readable labels while reducing visi
   const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
   const readySeason = buildSeasonScreen({ xp: 180, claimedPassTiers: [0] });
 
-  assert.equal(missions.includes('aria-label="첫 작전 완료 · 미션 진행 1/1 · 보상 20 젬 · 받음"'), true);
-  assert.equal(missions.includes('aria-label="유닛 강화 · 미션 진행 1/1 · 보상 20 젬 · 수령 가능"'), true);
-  assert.equal(missions.includes('aria-label="외형 해금 · 미션 진행 0/1 · 보상 25 젬 · 진행중"'), true);
-  assert.equal(missions.includes('data-mission-claim="train-unit" aria-label="유닛 강화 보상 20 젬 수령"'), true);
-  assert.equal(season.includes('aria-label="1단계 · 시즌 경험치 60/60 · 보상 20 젬 · 받음"'), true);
+  assert.equal(missions.includes('aria-label="첫 작전 완료 · 미션 진행 1/1 · 보상 20 보석 · 받음"'), true);
+  assert.equal(missions.includes('aria-label="유닛 강화 · 미션 진행 1/1 · 보상 20 보석 · 수령 가능"'), true);
+  assert.equal(missions.includes('aria-label="외형 해금 · 미션 진행 0/1 · 보상 25 보석 · 진행중"'), true);
+  assert.equal(missions.includes('data-mission-claim="train-unit" aria-label="유닛 강화 보상 20 보석 수령"'), true);
+  assert.equal(season.includes('aria-label="1단계 · 시즌 경험치 60/60 · 보상 20 보석 · 받음"'), true);
   assert.equal(season.includes('aria-label="2단계 · 시즌 경험치 80/160 · 보상 외형 · 진행중"'), true);
   assert.equal(readySeason.includes('data-pass-claim="1" aria-label="2단계 시즌 보상 외형 수령"'), true);
   assert.equal(missions.includes('class="objective-detail"'), true);
@@ -824,11 +825,12 @@ test('lobby operation card shows the next authored combat beat', () => {
 test('lobby currency strip uses an icon numeric chip with accessible economy meaning', () => {
   const lobby = buildRebootLobby({ gems: 240 });
 
-  assert.equal(lobby.includes('class="lobby-intel-strip reward-hook" aria-label="보유 젬 240, 외형 해금 전용 재화"'), true);
+  assert.equal(lobby.includes('class="lobby-intel-strip reward-hook" aria-label="보유 보석 240, 외형 해금 전용 재화"'), true);
   assert.equal(lobby.includes('class="lobby-currency-icon" data-reward-icon="soft_currency"'), true);
   assert.equal(lobby.includes('<strong class="lobby-currency-value">240</strong>'), true);
-  assert.equal(lobby.includes('<span class="lobby-currency-label">젬</span>'), true);
-  assert.equal(lobby.includes('<span>보유 젬</span>'), false);
+  assert.equal(lobby.includes('<span class="lobby-currency-label">보석</span>'), true);
+  assert.equal(lobby.includes('<span>보유 보석</span>'), false);
+  assert.equal(lobby.includes('젬'), false);
   assert.equal(lobby.includes('<p>외형만 해금</p>'), false);
 });
 

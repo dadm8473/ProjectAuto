@@ -201,13 +201,13 @@ function passiveCardState(label, state = 'locked', displayLabel = label) {
 }
 
 function rewardGrantLabel(grant = {}) {
-  if (grant.gems) return `${grant.gems} 젬`;
+  if (grant.gems) return `${grant.gems} 보석`;
   if (grant.cosmetic) return '외형';
   return '보상';
 }
 
 function rewardGrantCompactLabel(grant = {}) {
-  if (grant.gems) return `${grant.gems}젬`;
+  if (grant.gems) return `${grant.gems}보석`;
   return rewardGrantLabel(grant);
 }
 
@@ -339,7 +339,7 @@ export function nextLobbyAction(profile = {}) {
     return { label: '강화 가능', status: '강화', title: '유닛 강화 가능', detail: '전투 유닛 성장', screen: 'collection', cta: '강화', beacon: 'training' };
   }
   if (countAffordableCosmetics(profile) > 0) {
-    return { label: '외형 해금', status: '해금', title: '외형 해금 가능', detail: '젬으로 외형 해금', screen: 'shop', cta: '해금', beacon: 'shop' };
+    return { label: '외형 해금', status: '해금', title: '외형 해금 가능', detail: '보석으로 외형 해금', screen: 'shop', cta: '해금', beacon: 'shop' };
   }
   const operation = nextLobbyOperation(profile);
   return { label: '다음 작전', status: '준비', title: operation.title, detail: operation.detail, screen: 'battle', cta: '출전', beacon: 'battle' };
@@ -403,11 +403,11 @@ export function buildRebootLobby(model = {}) {
         <p>${operation.detail}</p>
       </div>
     </section>
-    <section class="lobby-intel-strip reward-hook" aria-label="보유 젬 ${gems}, 외형 해금 전용 재화">
+    <section class="lobby-intel-strip reward-hook" aria-label="보유 보석 ${gems}, 외형 해금 전용 재화">
       <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-gems.png?v=intel-strips-alpha1" alt="" aria-hidden="true">
       <span class="lobby-currency-icon" data-reward-icon="soft_currency" aria-hidden="true"></span>
       <strong class="lobby-currency-value">${gems}</strong>
-      <span class="lobby-currency-label">젬</span>
+      <span class="lobby-currency-label">보석</span>
     </section>
     <section class="lobby-intel-strip next-hook" aria-label="${nextAction.label}: ${nextAction.title}. ${nextAction.detail}" data-next-action="${nextAction.label}" data-next-beacon="${nextAction.beacon}">
       <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-next.png?v=intel-strips-alpha1" alt="" aria-hidden="true">
@@ -474,7 +474,7 @@ export function buildRebootShop(profile = {}) {
     label: '추천 외형',
     title: featuredItem.name,
     detail: featuredItem.description,
-    stats: [`보유 ${gems} 젬`, `가격 ${featuredItem.price?.gems ?? 0} 젬`],
+    stats: [`보유 ${gems} 보석`, `가격 ${featuredItem.price?.gems ?? 0} 보석`],
     spriteClass: 'shop-cosmetic',
     spriteAttr: 'data-shop-cosmetic',
     spriteValue: featuredItem.id
@@ -487,16 +487,16 @@ export function buildRebootShop(profile = {}) {
     const locked = !owned && gems < price;
     const cardState = owned || equipped ? 'owned' : locked ? 'locked' : 'ready';
     const tileState = equipped ? 'equipped' : owned ? 'owned' : locked ? 'locked' : 'ready';
-    const shopStateLabel = equipped ? '장착중' : owned ? '착용 가능' : locked ? '젬 부족' : '해금 가능';
+    const shopStateLabel = equipped ? '장착중' : owned ? '착용 가능' : locked ? '보석 부족' : '해금 가능';
     const action = equipped
       ? passiveCardState('장착중', 'owned')
       : owned
         ? `<button type="button" data-shop-buy="${item.id}" aria-label="${item.name} 착용">착용</button>`
         : locked
-          ? passiveCardState('젬 부족', 'locked', '부족')
+          ? passiveCardState('보석 부족', 'locked', '부족')
           : `<button type="button" data-shop-buy="${item.id}" aria-label="${item.name} 해금">해금</button>`;
     return `
-    <article class="screen-card shop-card" data-item="${item.id}" data-owned="${owned}" data-equipped="${equipped}" data-tile-state="${tileState}" aria-label="${item.name} · ${item.description} · 해금 비용 ${price} 젬 · ${shopStateLabel}">
+    <article class="screen-card shop-card" data-item="${item.id}" data-owned="${owned}" data-equipped="${equipped}" data-tile-state="${tileState}" aria-label="${item.name} · ${item.description} · 해금 비용 ${price} 보석 · ${shopStateLabel}">
       ${cardStateBadge(cardState)}
       <span class="cosmetic-equip-aura" data-cosmetic-effect="${item.id}" aria-hidden="true"></span>
       <span class="sprite-token shop-cosmetic" data-shop-cosmetic="${item.id}"></span>
@@ -504,7 +504,7 @@ export function buildRebootShop(profile = {}) {
         <span class="role-pill">외형</span>
         <strong>${item.name}</strong>
         <p>${item.description}</p>
-        <span class="shop-price" aria-label="해금 비용 ${price} 젬">${price}</span>
+        <span class="shop-price" aria-label="해금 비용 ${price} 보석">${price}</span>
       </div>
       ${action}
     </article>

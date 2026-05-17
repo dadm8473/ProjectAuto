@@ -46,9 +46,9 @@ export function buildRunProgress(summary, profile = {}) {
   const missionGems = safeNumber(summary?.missionGems);
   const totalGems = safeNumber(summary?.totalGems);
   return [
-    { label: '전투', value: `+${safeNumber(run.xp)} 경험치`, detail: `+${safeNumber(run.gems)} 젬` },
-    { label: '미션', value: `${missionCount}개 완료`, detail: `+${missionGems} 젬` },
+    { label: '전투', value: `+${safeNumber(run.xp)} 경험치`, detail: `+${safeNumber(run.gems)} 보석` },
+    { label: '미션', value: `${missionCount}개 완료`, detail: `+${missionGems} 보석` },
     { label: '패스', value: `${passCount}개 해금`, detail: `${safeNumber(profile.xp)} 경험치` },
-    { label: '보관함', value: `${safeNumber(profile.gems)} 젬`, detail: `${totalGems >= 0 ? '+' : ''}${totalGems} 젬` }
+    { label: '보관함', value: `${safeNumber(profile.gems)} 보석`, detail: `${totalGems >= 0 ? '+' : ''}${totalGems} 보석` }
   ];
 }

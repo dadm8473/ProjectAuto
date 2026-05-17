@@ -468,7 +468,7 @@ export const SHOP = {
   currencies: {
     charge: { name: '전력', earned: true, description: '릴레이 보급에 쓰는 전투 자원.' },
     linkEnergy: { name: '협력', earned: true, description: '파트너 구원에 쓰는 협동 자원.' },
-    gems: { name: '젬', earned: true, description: '미션과 웨이브에서만 얻는 해금 재화.' }
+    gems: { name: '보석', earned: true, description: '미션과 웨이브에서만 얻는 해금 재화.' }
   },
   items: [
     {
