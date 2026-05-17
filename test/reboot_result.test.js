@@ -614,6 +614,18 @@ test('mission and season top boards keep large copy numeric while preserving ful
   assert.equal(season.includes('<p>0개 보상 가능</p>'), false);
 });
 
+test('mission top board does not promise a reward claim when none are ready', () => {
+  const emptyMissions = buildMissionScreen({ processedRuns: [], claimedMissions: [] });
+  const readyMissions = buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] });
+
+  assert.equal(emptyMissions.includes('<span>보상 대기</span>'), true);
+  assert.equal(emptyMissions.includes('<strong>0</strong>'), true);
+  assert.equal(emptyMissions.includes('aria-label="미션 보드 · 대기 보상 없음 · 완료 목표 보상 전환"'), true);
+  assert.equal(emptyMissions.includes('<p>진행중</p>'), true);
+  assert.equal(emptyMissions.includes('<p>수령 가능</p>'), false);
+  assert.equal(readyMissions.includes('<p>수령 가능</p>'), true);
+});
+
 test('shop card descriptions stay compact enough for portrait game cards', () => {
   const shop = buildRebootShop({ gems: 300, unlocks: [] });
   const descriptions = [...shop.matchAll(/<article class="screen-card shop-card"[\s\S]*?<p>(.*?)<\/p>/g)]

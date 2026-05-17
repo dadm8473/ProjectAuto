@@ -266,6 +266,8 @@ function missionCardState(state) {
 
 function buildMissionStampBoard(profile = {}, claimed = new Set()) {
   const claimable = countClaimableMissions(profile);
+  const boardStatus = claimable > 0 ? '수령 가능' : '진행중';
+  const boardAriaState = claimable > 0 ? `수령 가능 ${claimable}개` : '대기 보상 없음';
   const stamps = REBOOT_MISSIONS.map((mission) => {
     const progress = missionProgress(profile, mission);
     const state = missionState(progress, mission.target, claimed.has(mission.id));
@@ -277,11 +279,11 @@ function buildMissionStampBoard(profile = {}, claimed = new Set()) {
   }).join('');
 
   return `
-    <section class="mission-stamp-board" data-board-kind="missions" aria-label="미션 보드 · 수령 가능 ${claimable}개 · 완료 목표 보상 전환">
+    <section class="mission-stamp-board" data-board-kind="missions" aria-label="미션 보드 · ${boardAriaState} · 완료 목표 보상 전환">
       <div class="mission-board-copy">
         <span>보상 대기</span>
         <strong>${claimable}</strong>
-        <p>수령 가능</p>
+        <p>${boardStatus}</p>
       </div>
       <div class="mission-stamp-grid">${stamps}</div>
     </section>
