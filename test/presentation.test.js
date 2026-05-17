@@ -782,6 +782,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
     '.loading-gate',
     '--loading-gate-plate: var(--splash-title-plate);',
     '--loading-gate-emblem: var(--title-emblem);',
+    '--loading-gate-meter: url("/src/client/assets/generated/reboot-loading-gate-meter.png?v=loading-meter1");',
     '.loading-gate[hidden]'
   ]) {
     assert.equal(`${html}\n${app}\n${css}\n${qa}`.includes(marker), true, marker);
@@ -796,6 +797,43 @@ test('startup uses a generated game loading gate while critical assets warm up',
   ]) {
     assert.equal(cssRuleBlock(css, selector).includes('grid-column: 1;'), true, selector);
   }
+
+  const meterBlock = cssRuleBlock(css, '.loading-gate-bar');
+  for (const marker of [
+    'aspect-ratio: 512 / 128;',
+    'height: auto;',
+    'background-image: var(--loading-gate-meter);',
+    'background-size: 200% 100%;',
+    'background-position: 0 0;',
+    '--loading-gate-fill: 68%;'
+  ]) {
+    assert.equal(meterBlock.includes(marker), true, marker);
+  }
+  for (const forbidden of [
+    'border: 1px solid',
+    'background: rgba',
+    'border-radius: 999px'
+  ]) {
+    assert.equal(meterBlock.includes(forbidden), false, forbidden);
+  }
+
+  const meterFillBlock = cssRuleBlock(css, '.loading-gate-bar i');
+  for (const marker of [
+    'clip-path: inset(0 calc(100% - var(--loading-gate-fill)) 0 0);',
+    'background-image: var(--loading-gate-meter);',
+    'background-size: 200% 100%;',
+    'background-position: 100% 0;',
+    'transform: none;'
+  ]) {
+    assert.equal(meterFillBlock.includes(marker), true, marker);
+  }
+  assert.equal(meterFillBlock.includes('linear-gradient'), false);
+  assert.equal(meterFillBlock.includes('translateX'), false);
+
+  const keyframesBlock = css.slice(css.indexOf('@keyframes loading-gate-sweep'), css.indexOf('@media (prefers-reduced-motion: reduce)', css.indexOf('@keyframes loading-gate-sweep')));
+  assert.equal(keyframesBlock.includes('--loading-gate-fill: 30%;'), true);
+  assert.equal(keyframesBlock.includes('--loading-gate-fill: 88%;'), true);
+  assert.equal(keyframesBlock.includes('translateX'), false);
 
   assert.equal(app.includes("from './reboot_preload.js?v=loading-gate1'"), false);
 });

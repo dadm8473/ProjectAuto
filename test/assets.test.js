@@ -626,6 +626,14 @@ const IMAGEGEN_REBOOT_META_STATUS_PLAQUES = {
   minRuntimeBytes: 42_000
 };
 
+const IMAGEGEN_REBOOT_LOADING_GATE_METER = {
+  path: 'src/client/assets/generated/reboot-loading-gate-meter.png',
+  source: 'docs/design/generation/source/reboot/style-lock/20260517-loading-gate-meter-chromakey-imagegen.png',
+  width: 1024,
+  height: 128,
+  minRuntimeBytes: 72_000
+};
+
 const IMAGEGEN_REBOOT_RESULT_AURAS = {
   path: 'src/client/assets/generated/reboot-result-outcome-auras.png',
   source: 'docs/design/generation/source/reboot/style-lock/20260516-result-outcome-auras-chromakey-imagegen.png',
@@ -1557,6 +1565,29 @@ test('mission and season status plaques are promoted from imagegen source art', 
     assert.equal(bounds.minY >= 8, true, `status plaque cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= asset.height - 9, true, `status plaque cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
+});
+
+test('loading gate progress meter is promoted from imagegen source art', async () => {
+  const asset = IMAGEGEN_REBOOT_LOADING_GATE_METER;
+  const source = await readFile(asset.source);
+  const runtime = await readFile(asset.path);
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+  assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+  assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+  assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+  assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+  const image = parsePng(runtime);
+  const cellWidth = asset.width / 2;
+  const trackBounds = alphaBounds(image, { x: 0, y: 0, width: cellWidth, height: asset.height }, 18);
+  const fillBounds = alphaBounds(image, { x: cellWidth, y: 0, width: cellWidth, height: asset.height }, 18);
+  assert.equal(trackBounds.count > 12_000, true, `loading meter track is too sparse: ${JSON.stringify(trackBounds)}`);
+  assert.equal(fillBounds.count > 10_000, true, `loading meter fill is too sparse: ${JSON.stringify(fillBounds)}`);
+  assert.equal(alphaAt(image, 1, 1) < 10, true, 'loading meter track has an opaque top-left corner');
+  assert.equal(alphaAt(image, cellWidth - 2, 1) < 10, true, 'loading meter track has an opaque top-right corner');
+  assert.equal(alphaAt(image, cellWidth + 1, 1) < 10, true, 'loading meter fill has an opaque top-left corner');
+  assert.equal(alphaAt(image, image.width - 2, 1) < 10, true, 'loading meter fill has an opaque top-right corner');
 });
 
 test('meta item status overlays are transparent generated shelf objects', async () => {
