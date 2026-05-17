@@ -89,8 +89,8 @@ export const REBOOT_MISSIONS = [
   },
   {
     id: 'train-unit',
-    title: '유닛 훈련',
-    goal: '유닛 1회 훈련',
+    title: '유닛 강화',
+    goal: '유닛 1회 강화',
     target: 1,
     reward: { gems: 20 },
     progress(profile = {}) {
@@ -336,7 +336,7 @@ export function nextLobbyAction(profile = {}) {
     return { label: '시즌 보상', status: '보상', title: '시즌 보상 도착', detail: '시즌 보상 수령', screen: 'season', cta: '수령', beacon: 'season' };
   }
   if (countTrainableUnits(profile) > 0) {
-    return { label: '훈련 가능', status: '훈련', title: '유닛 강화 가능', detail: '전투 유닛 성장', screen: 'collection', cta: '훈련', beacon: 'training' };
+    return { label: '강화 가능', status: '강화', title: '유닛 강화 가능', detail: '전투 유닛 성장', screen: 'collection', cta: '강화', beacon: 'training' };
   }
   if (countAffordableCosmetics(profile) > 0) {
     return { label: '외형 해금', status: '해금', title: '외형 해금 가능', detail: '젬으로 외형 해금', screen: 'shop', cta: '해금', beacon: 'shop' };
@@ -376,7 +376,7 @@ function buildLobbyNextActionControl(nextAction) {
 
 function trainingAvailabilityCopy(profile = {}) {
   const trainable = countTrainableUnits(profile);
-  return trainable > 0 ? `${trainable}기 훈련 가능` : '훈련 대기';
+  return trainable > 0 ? `${trainable}기 강화 가능` : '강화 대기';
 }
 
 function operationProgressMarkup(operation) {
@@ -441,21 +441,21 @@ export function buildRebootCollection(profile = {}) {
     const cost = unitUpgradeCost(level);
     const ready = xp >= cost;
     const roleLabel = ROLE_LABELS[unit.role] ?? unit.role;
-    const unitStateLabel = ready ? '훈련 가능' : '경험치 부족';
+    const unitStateLabel = ready ? '강화 가능' : '경험치 부족';
     const tileState = ready ? 'ready' : 'locked';
     const action = ready
-      ? `<button type="button" data-unit-upgrade="${unit.id}" aria-label="${unit.name} 훈련">훈련</button>`
+      ? `<button type="button" data-unit-upgrade="${unit.id}" aria-label="${unit.name} 강화"><span class="unit-upgrade-label">강화</span></button>`
       : passiveCardState('경험치 부족', 'locked', '부족');
     return `
-    <article class="screen-card unit-card" data-unit-card="${unit.id}" data-role="${unit.role}" data-tile-state="${tileState}" aria-label="${unit.name} · ${roleLabel} · Lv.${level} · 훈련 비용 ${cost} 경험치 · ${unitStateLabel}">
+    <article class="screen-card unit-card" data-unit-card="${unit.id}" data-role="${unit.role}" data-tile-state="${tileState}" aria-label="${unit.name} · ${roleLabel} · Lv.${level} · 강화 비용 ${cost} 경험치 · ${unitStateLabel}">
       ${cardStateBadge(ready ? 'ready' : 'locked')}
       <span class="sprite-token unit-sprite" data-sprite="${unit.spriteKey}"></span>
       <div class="card-copy">
         <span class="role-pill">${roleLabel}</span>
         <strong>${unit.name}</strong>
         <p>등급 ${unit.grade} · <span class="unit-level">Lv.${level}</span></p>
-        ${buildMetaProgress('training', Math.min(xp, cost), cost, `훈련 경험치 ${Math.min(xp, cost)}/${cost}`)}
-        <span class="unit-cost" aria-label="훈련 비용 ${cost} 경험치">${cost}</span>
+        ${buildMetaProgress('training', Math.min(xp, cost), cost, `강화 경험치 ${Math.min(xp, cost)}/${cost}`)}
+        <span class="unit-cost" aria-label="강화 비용 ${cost} 경험치">${cost}</span>
       </div>
       ${action}
     </article>

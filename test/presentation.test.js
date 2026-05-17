@@ -3396,7 +3396,7 @@ test('profile rewards use a generated reveal panel instead of toast-only feedbac
     'clearTimeout(showRewardReveal.timer);',
     'function hideRewardReveal()',
     "showRewardReveal('외형 해금', item.name, 'unlock_capsule');",
-    "showRewardReveal('훈련 완료', `${unit.name} Lv.${currentLevel + 1}`, 'season_progress');",
+    "showRewardReveal('강화 완료', `${unit.name} Lv.${currentLevel + 1}`, 'season_progress');",
     "showRewardReveal('미션 보상', `${mission.reward.gems} 젬`, 'soft_currency');",
     "showRewardReveal('시즌 보상', tier.grant.cosmetic ? '외형 해금' : `${tier.grant.gems ?? 0} 젬`, tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress');"
   ]) {
@@ -3545,7 +3545,7 @@ test('lobby next-action card can navigate to profile screens', async () => {
     'handleLobbyOpen',
     'dom.lobbyContent.addEventListener',
     '미션 보상',
-    '훈련 가능',
+    '강화 가능',
     '외형 해금'
   ]) {
     assert.equal(`${app}\n${screens}`.includes(marker), true, marker);
@@ -4167,5 +4167,10 @@ test('meta shelf decorative sprites never block adjacent upgrade or shop taps', 
 
   const shelfActionBlock = css.slice(css.indexOf('.meta-shelf-grid .unit-card button,'), css.indexOf('.meta-shelf-grid .card-passive-state'));
   assert.equal(shelfActionBlock.includes('pointer-events: auto;'), true);
-  assert.match(shelfActionBlock, /z-index:\s*4;/);
+  assert.equal(shelfActionBlock.includes('position: relative;'), true);
+  assert.match(shelfActionBlock, /z-index:\s*6;/);
+  assert.equal(css.includes('.unit-upgrade-label'), true);
+  assert.equal(css.includes('top: 6px;'), true);
+  assert.equal(css.includes('transform: translateX(-50%);'), true);
+  assert.equal(css.includes('z-index: 2;'), true);
 });

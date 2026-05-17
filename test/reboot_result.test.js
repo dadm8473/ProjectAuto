@@ -96,7 +96,7 @@ test('result model routes secondary action to direct reward claims or clear prof
   });
 
   assert.equal(trainingModel.secondaryAction.action, 'collection');
-  assert.equal(trainingModel.secondaryAction.label, '훈련');
+  assert.equal(trainingModel.secondaryAction.label, '강화');
 });
 
 test('lobby next action maps each priority to a generated beacon key', () => {
@@ -352,7 +352,7 @@ test('reboot shop renders earned-gem cosmetic purchases with owned and locked st
   assert.equal(shop.includes('run_boost'), false);
 });
 
-test('reboot collection renders unit training state from profile XP and levels', () => {
+test('reboot collection renders unit upgrade state from profile XP and levels', () => {
   const collection = buildRebootCollection({ xp: 50, unitLevels: { spark_pin: 2 } });
 
   assert.equal(collection.includes('data-unit-card="spark_pin"'), true);
@@ -361,7 +361,7 @@ test('reboot collection renders unit training state from profile XP and levels',
   assert.equal(collection.includes('data-unit-card="nova_mast"'), true);
   assert.equal(collection.includes('Lv.2'), true);
   assert.equal(collection.includes('60 경험치'), true);
-  assert.equal(collection.includes('>훈련<'), true);
+  assert.equal(collection.includes('>강화<'), true);
   assert.equal(collection.includes('data-unit-upgrade="burst_pin"'), true);
   assert.equal(collection.includes('40 경험치'), true);
   assert.equal(collection.includes('aria-label="경험치 부족"'), true);
@@ -463,21 +463,21 @@ test('collection and shop showcases split numeric state into compact game badges
   assert.equal(shop.includes('0 젬 보유 · 90 젬'), false);
 });
 
-test('collection showcase names training availability as game-state copy instead of awkward person count', () => {
+test('collection showcase names upgrade availability as game-state copy instead of awkward person count', () => {
   const idleCollection = buildRebootCollection({ xp: 0, unitLevels: {} });
   const readyCollection = buildRebootCollection({ xp: 40, unitLevels: {} });
 
-  assert.equal(idleCollection.includes('공격 · 훈련 대기'), true);
-  assert.equal(idleCollection.includes('0명 훈련 가능'), false);
-  assert.equal(readyCollection.includes('8기 훈련 가능'), true);
-  assert.equal(readyCollection.includes('명 훈련 가능'), false);
+  assert.equal(idleCollection.includes('공격 · 강화 대기'), true);
+  assert.equal(idleCollection.includes('0명 강화 가능'), false);
+  assert.equal(readyCollection.includes('8기 강화 가능'), true);
+  assert.equal(readyCollection.includes('명 강화 가능'), false);
 });
 
 test('collection and shop shelf price chips show numbers while preserving accessible meaning', () => {
   const collection = buildRebootCollection({ xp: 0, unitLevels: {} });
   const shop = buildRebootShop({ gems: 0, unlocks: [] });
 
-  assert.equal(collection.includes('class="unit-cost" aria-label="훈련 비용 40 경험치">40</span>'), true);
+  assert.equal(collection.includes('class="unit-cost" aria-label="강화 비용 40 경험치">40</span>'), true);
   assert.equal(collection.includes('class="unit-cost">40 경험치</span>'), false);
   assert.equal(shop.includes('class="shop-price" aria-label="해금 비용 90 젬">90</span>'), true);
   assert.equal(shop.includes('class="shop-price">90 젬</span>'), false);
@@ -490,13 +490,14 @@ test('unit shelf cards expose compact roles and full accessible state', () => {
   });
 
   assert.equal(
-    collection.includes('aria-label="스파크 핀 · 공격 · Lv.1 · 훈련 비용 40 경험치 · 훈련 가능"'),
+    collection.includes('aria-label="스파크 핀 · 공격 · Lv.1 · 강화 비용 40 경험치 · 강화 가능"'),
     true
   );
   assert.equal(collection.includes('<span class="role-pill">공격</span>'), true);
   assert.equal(collection.includes('data-role="support"'), true);
   assert.equal(collection.includes('<span class="role-pill">지원</span>'), true);
-  assert.equal(collection.includes('data-unit-upgrade="spark_pin" aria-label="스파크 핀 훈련"'), true);
+  assert.equal(collection.includes('data-unit-upgrade="spark_pin" aria-label="스파크 핀 강화"'), true);
+  assert.equal(collection.includes('<span class="unit-upgrade-label">강화</span>'), true);
 });
 
 test('shop shelf cards expose compact prices and full accessible state', () => {
@@ -663,7 +664,7 @@ test('mission screen renders profile progress and claim states', () => {
   assert.equal(missions.includes('class="reward-token mission-reward-token"'), true);
   assert.equal(missions.includes('data-reward-icon="soft_currency"'), true);
   assert.equal(missions.includes('첫 작전 완료'), true);
-  assert.equal(missions.includes('유닛 훈련'), true);
+  assert.equal(missions.includes('유닛 강화'), true);
   assert.equal(missions.includes('>받음<'), true);
   assert.equal(missions.includes('>수령<'), true);
 });
@@ -679,9 +680,9 @@ test('mission and season objective rows keep readable labels while reducing visi
   const readySeason = buildSeasonScreen({ xp: 180, claimedPassTiers: [0] });
 
   assert.equal(missions.includes('aria-label="첫 작전 완료 · 미션 진행 1/1 · 보상 20 젬 · 받음"'), true);
-  assert.equal(missions.includes('aria-label="유닛 훈련 · 미션 진행 1/1 · 보상 20 젬 · 수령 가능"'), true);
+  assert.equal(missions.includes('aria-label="유닛 강화 · 미션 진행 1/1 · 보상 20 젬 · 수령 가능"'), true);
   assert.equal(missions.includes('aria-label="외형 해금 · 미션 진행 0/1 · 보상 25 젬 · 진행중"'), true);
-  assert.equal(missions.includes('data-mission-claim="train-unit" aria-label="유닛 훈련 보상 20 젬 수령"'), true);
+  assert.equal(missions.includes('data-mission-claim="train-unit" aria-label="유닛 강화 보상 20 젬 수령"'), true);
   assert.equal(season.includes('aria-label="1단계 · 시즌 경험치 60/60 · 보상 20 젬 · 받음"'), true);
   assert.equal(season.includes('aria-label="2단계 · 시즌 경험치 80/160 · 보상 외형 · 진행중"'), true);
   assert.equal(readySeason.includes('data-pass-claim="1" aria-label="2단계 시즌 보상 외형 수령"'), true);
@@ -697,7 +698,7 @@ test('meta progression surfaces render compact visual progress bars', () => {
   assert.equal(collection.includes('class="meta-progress" data-progress-kind="training"'), true);
   assert.equal(collection.includes('style="--progress-fill:50%"'), true);
   assert.equal(collection.includes('role="progressbar" aria-valuemin="0" aria-valuemax="40" aria-valuenow="20"'), true);
-  assert.equal(collection.includes('aria-label="훈련 경험치 20/40"'), true);
+  assert.equal(collection.includes('aria-label="강화 경험치 20/40"'), true);
   assert.equal(missions.includes('class="meta-progress" data-progress-kind="mission"'), true);
   assert.equal(missions.includes('style="--progress-fill:100%"'), true);
   assert.equal(missions.includes('role="progressbar" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1"'), true);
@@ -787,7 +788,7 @@ test('lobby recommends the next profile action after rewards settle', () => {
   });
 
   assert.equal(trainingLobby.includes('data-lobby-open="collection"'), true);
-  assert.equal(trainingLobby.includes('훈련 가능'), true);
+  assert.equal(trainingLobby.includes('강화 가능'), true);
 
   const shopLobby = buildRebootLobby({
     gems: 90,

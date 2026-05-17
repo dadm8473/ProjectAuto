@@ -3548,7 +3548,8 @@ body[data-app-screen="season"] .app-screen::after {
 
 .meta-shelf-grid .unit-card button,
 .meta-shelf-grid .shop-card button {
-  z-index: 4;
+  position: relative;
+  z-index: 6;
   min-width: 88px;
   min-height: 44px;
   padding: 0 12px 2px;
@@ -3558,6 +3559,16 @@ body[data-app-screen="season"] .app-screen::after {
   background-position: 66.666% 0;
   filter: saturate(1.12) brightness(1.05) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.48));
   pointer-events: auto;
+}
+
+.unit-upgrade-label {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  z-index: 2;
+  display: inline-block;
+  transform: translateX(-50%);
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.9), 0 0 8px rgba(255, 230, 148, 0.34);
 }
 
 .meta-shelf-grid .card-passive-state {

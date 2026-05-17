@@ -434,7 +434,7 @@ function handleUnitUpgrade(event) {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.collectionList, `[data-unit-card="${selectorValue(unit.id)}"]`, 'training');
-  showRewardReveal('훈련 완료', `${unit.name} Lv.${currentLevel + 1}`, 'season_progress');
+  showRewardReveal('강화 완료', `${unit.name} Lv.${currentLevel + 1}`, 'season_progress');
   showToast(`${unit.name} Lv.${currentLevel + 1}`, 'reward');
 }
 
