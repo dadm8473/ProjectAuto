@@ -527,7 +527,7 @@ export function buildMissionScreen(profile = {}) {
     const action = received
       ? passiveCardState('받음', 'owned')
       : done
-        ? `<button type="button" data-mission-claim="${mission.id}">수령</button>`
+        ? `<button type="button" data-mission-claim="${mission.id}" aria-label="${mission.title} 보상 ${rewardLabel} 수령">수령</button>`
         : passiveCardState('진행중', 'locked');
     return `
     <article class="screen-card mission-card" data-mission="${mission.id}" data-owned="${received}" data-objective-state="${stampState}" aria-label="${mission.title} · 미션 진행 ${progress}/${mission.target} · 보상 ${rewardLabel} · ${actionLabel}">
@@ -573,7 +573,7 @@ export function buildSeasonScreen(profile = {}) {
     const action = received
       ? passiveCardState('받음', 'owned')
       : done
-        ? `<button type="button" data-pass-claim="${index}">수령</button>`
+        ? `<button type="button" data-pass-claim="${index}" aria-label="${index + 1}단계 시즌 보상 ${rewardLabel} 수령">수령</button>`
         : passiveCardState('진행중', 'locked');
     return `
     <article class="screen-card season-card" data-pass-tier="${index}" data-owned="${received}" data-objective-state="${stampState}" aria-label="${index + 1}단계 · 시즌 경험치 ${progress}/${tier.xp} · 보상 ${rewardLabel} · ${actionLabel}">

@@ -1357,6 +1357,7 @@ test('browser QA verifies first combat tap removes routine status copy', async (
   const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
 
   for (const marker of [
+    "await page.getByRole('button', { name: '로비로 돌아가기' }).click();",
     'async function assertFirstSummonTapFeedback(page)',
     "await page.getByRole('button', { name: '소환' }).click();",
     "document.querySelector('#summonMeter .meter-value')?.textContent === '0'",
@@ -1671,6 +1672,7 @@ test('meta screen titles use generated header plates instead of browser default 
 
   for (const marker of [
     '--meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title")',
+    '<button class="screen-back" data-open-screen="lobby" data-nav-icon="home" aria-label="로비로 돌아가기">홈</button>',
     '<h1 data-title-icon="collection">유닛 강화</h1>',
     '<h1 data-title-icon="shop">상점</h1>',
     '<h1 data-title-icon="missions">미션</h1>',

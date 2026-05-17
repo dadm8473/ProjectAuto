@@ -676,12 +676,15 @@ test('mission and season objective rows keep readable labels while reducing visi
     claimedMissions: ['first-run']
   });
   const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
+  const readySeason = buildSeasonScreen({ xp: 180, claimedPassTiers: [0] });
 
   assert.equal(missions.includes('aria-label="첫 작전 완료 · 미션 진행 1/1 · 보상 20 젬 · 받음"'), true);
   assert.equal(missions.includes('aria-label="유닛 훈련 · 미션 진행 1/1 · 보상 20 젬 · 수령 가능"'), true);
   assert.equal(missions.includes('aria-label="외형 해금 · 미션 진행 0/1 · 보상 25 젬 · 진행중"'), true);
+  assert.equal(missions.includes('data-mission-claim="train-unit" aria-label="유닛 훈련 보상 20 젬 수령"'), true);
   assert.equal(season.includes('aria-label="1단계 · 시즌 경험치 60/60 · 보상 20 젬 · 받음"'), true);
   assert.equal(season.includes('aria-label="2단계 · 시즌 경험치 80/160 · 보상 외형 · 진행중"'), true);
+  assert.equal(readySeason.includes('data-pass-claim="1" aria-label="2단계 시즌 보상 외형 수령"'), true);
   assert.equal(missions.includes('class="objective-detail"'), true);
   assert.equal(season.includes('class="objective-cost shop-price"'), true);
 });
