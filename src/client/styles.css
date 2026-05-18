@@ -2150,7 +2150,7 @@ body[data-app-screen="season"] .app-screen::after {
   position: absolute;
   right: 12px;
   bottom: 12px;
-  z-index: 2;
+  z-index: 4;
   display: grid;
   grid-template-columns: repeat(4, 20px);
   gap: 6px;
@@ -2183,9 +2183,118 @@ body[data-app-screen="season"] .app-screen::after {
   opacity: 1;
 }
 
+.lobby-toy-preview {
+  position: absolute;
+  inset: 8px 8px 10px 44%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.lobby-preview-unit,
+.lobby-preview-enemy,
+.lobby-preview-reward {
+  position: absolute;
+  margin: 0;
+  pointer-events: none;
+}
+
+.lobby-preview-unit {
+  width: 76px;
+  height: 76px;
+  background-image: url("/src/client/assets/generated/reboot-unit-atlas.png");
+  background-repeat: no-repeat;
+  background-size: 608px 76px;
+  transform-origin: 50% 82%;
+  filter: saturate(1.14) drop-shadow(0 11px 18px rgba(0, 0, 0, 0.58));
+}
+
+.lobby-preview-unit[data-sprite="spark_pin"] { background-position: 0 0; }
+.lobby-preview-unit[data-sprite="slow_coil"] { background-position: -152px 0; }
+.lobby-preview-unit[data-sprite="rescue_coil"] { background-position: -304px 0; }
+
+.lobby-preview-unit[data-preview-slot="front"] {
+  right: 74px;
+  bottom: 14px;
+  transform: scale(0.72);
+}
+
+.lobby-preview-unit[data-preview-slot="control"] {
+  right: 34px;
+  bottom: 24px;
+  transform: scale(0.64);
+}
+
+.lobby-preview-unit[data-preview-slot="rescue"] {
+  right: -4px;
+  bottom: 10px;
+  transform: scale(0.7);
+}
+
+.lobby-preview-enemy {
+  width: 46px;
+  height: 46px;
+  background-image: url("/src/client/assets/generated/reboot-enemy-atlas.png?v=enemy-atlas-v2");
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  filter: saturate(1.08) drop-shadow(0 9px 13px rgba(0, 0, 0, 0.56));
+}
+
+.lobby-preview-enemy[data-enemy-sprite="quick_noise"] {
+  left: 8px;
+  top: 18px;
+  background-position: 33.333% 0;
+  transform: scale(0.72) rotate(-5deg);
+}
+
+.lobby-preview-enemy[data-enemy-sprite="heavy_noise"] {
+  left: 42px;
+  top: 46px;
+  background-position: 66.666% 0;
+  transform: scale(0.88) rotate(4deg);
+}
+
+.lobby-preview-reward {
+  right: 8px;
+  top: 10px;
+  width: 42px;
+  height: 42px;
+  background-size: 400% 100%;
+  transform: rotate(6deg);
+  filter: saturate(1.2) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.54));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lobby-preview-unit,
+  .lobby-preview-enemy,
+  .lobby-preview-reward {
+    animation: lobbyPreviewFloat 2.8s ease-in-out infinite;
+  }
+
+  .lobby-preview-unit[data-preview-slot="control"],
+  .lobby-preview-enemy[data-enemy-sprite="heavy_noise"] {
+    animation-delay: -0.7s;
+  }
+
+  .lobby-preview-unit[data-preview-slot="rescue"],
+  .lobby-preview-reward {
+    animation-delay: -1.35s;
+  }
+}
+
+@keyframes lobbyPreviewFloat {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  50% {
+    translate: 0 -3px;
+  }
+}
+
 .operation-copy {
   position: relative;
-  z-index: 1;
+  z-index: 3;
   display: grid;
   gap: 2px;
   max-width: 66%;

@@ -389,6 +389,18 @@ function operationProgressMarkup(operation) {
       </span>`;
 }
 
+function lobbyToyPreviewMarkup() {
+  return `
+      <div class="lobby-toy-preview" aria-hidden="true">
+        <span class="lobby-preview-unit" data-sprite="spark_pin" data-preview-slot="front"></span>
+        <span class="lobby-preview-unit" data-sprite="slow_coil" data-preview-slot="control"></span>
+        <span class="lobby-preview-unit" data-sprite="rescue_coil" data-preview-slot="rescue"></span>
+        <span class="lobby-preview-enemy" data-enemy-sprite="quick_noise"></span>
+        <span class="lobby-preview-enemy" data-enemy-sprite="heavy_noise"></span>
+        <span class="lobby-preview-reward reward-token" data-reward-icon="unlock_capsule"></span>
+      </div>`;
+}
+
 export function buildRebootLobby(model = {}) {
   const gems = model.gems ?? 0;
   const nextAction = nextLobbyAction(model);
@@ -396,6 +408,7 @@ export function buildRebootLobby(model = {}) {
   return `
     <section class="operation-card" data-operation-poster="${operation.poster}">
       <img class="operation-poster-frame" src="/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1" alt="" aria-hidden="true">
+      ${lobbyToyPreviewMarkup()}
       ${operationProgressMarkup(operation)}
       <div class="operation-copy">
         <span>협동 작전</span>

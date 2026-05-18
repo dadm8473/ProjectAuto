@@ -3284,6 +3284,57 @@ test('lobby operation poster copy uses generated caption plates over the artwork
   }
 });
 
+test('lobby operation card stages generated unit enemy and reward sprites over the poster', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const { buildRebootLobby } = await import('../src/client/reboot_screens.js');
+  const lobby = buildRebootLobby({ gems: 40, processedRuns: [] });
+  const previewStart = lobby.indexOf('<div class="lobby-toy-preview"');
+  const previewEnd = lobby.indexOf('</div>', previewStart);
+  const previewMarkup = lobby.slice(previewStart, previewEnd + '</div>'.length);
+
+  for (const marker of [
+    'class="lobby-toy-preview"',
+    'class="lobby-preview-unit" data-sprite="spark_pin"',
+    'class="lobby-preview-unit" data-sprite="slow_coil"',
+    'class="lobby-preview-unit" data-sprite="rescue_coil"',
+    'class="lobby-preview-enemy" data-enemy-sprite="quick_noise"',
+    'class="lobby-preview-enemy" data-enemy-sprite="heavy_noise"',
+    'class="lobby-preview-reward reward-token" data-reward-icon="unlock_capsule"',
+    '.lobby-toy-preview',
+    '.lobby-preview-unit',
+    '.lobby-preview-enemy',
+    '.lobby-preview-reward',
+    'background-image: url("/src/client/assets/generated/reboot-unit-atlas.png");',
+    'background-size: 608px 76px;',
+    '.lobby-preview-unit[data-sprite="spark_pin"]',
+    '.lobby-preview-unit[data-sprite="slow_coil"]',
+    '.lobby-preview-unit[data-sprite="rescue_coil"]',
+    'background-image: url("/src/client/assets/generated/reboot-enemy-atlas.png?v=enemy-atlas-v2");',
+    'background-size: 400% 100%;',
+    '.lobby-preview-enemy[data-enemy-sprite="quick_noise"]',
+    '.lobby-preview-enemy[data-enemy-sprite="heavy_noise"]',
+    '.operation-copy {\n  position: relative;\n  z-index: 3;',
+    '.operation-progress {\n  position: absolute;\n  right: 12px;\n  bottom: 12px;\n  z-index: 4;'
+  ]) {
+    assert.equal(`${screens}\n${css}\n${lobby}`.includes(marker), true, marker);
+  }
+
+  assert.notEqual(previewStart, -1, 'lobby preview markup is missing');
+  assert.match(previewMarkup, /^<div class="lobby-toy-preview" aria-hidden="true">/);
+  assert.equal(previewMarkup.includes('unit-sprite'), false, 'hidden lobby preview should not shadow visible collection unit sprites');
+
+  const previewBlock = cssRuleBlock(css, '.lobby-toy-preview');
+  for (const forbidden of [
+    'background: rgba(',
+    'linear-gradient',
+    'border:',
+    'box-shadow:'
+  ]) {
+    assert.equal(previewBlock.includes(forbidden), false, forbidden);
+  }
+});
+
 test('lobby portrait layout budget keeps poster actions and dock from overlapping', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const layout = {
