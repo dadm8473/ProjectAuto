@@ -3896,7 +3896,8 @@ test('mission and season top counters sit on generated reward plates', async () 
 
   const captionBlock = cssRuleBlock(css, '.mission-board-copy p,\n.season-board-copy p');
   assert.equal(captionBlock.includes('width: max-content;'), true);
-  assert.equal(captionBlock.includes('padding: 2px 8px;'), true);
+  assert.equal(captionBlock.includes('padding: 4px 12px 5px;'), true);
+  assert.equal(captionBlock.includes('background-image: var(--meta-caption-plate);'), true);
   assert.equal(captionBlock.includes('background: rgba(2, 10, 12, 0.62);'), false);
 });
 
@@ -3916,6 +3917,44 @@ test('mission and season top copy sits on dedicated imagegen status plaques', as
   const sharedCounterBlock = cssRuleBlock(css, '.mission-board-copy strong,\n.season-board-copy strong');
   const seasonCounterBlock = cssRuleBlockAfter(css, '.season-board-copy strong', css.indexOf(sharedCounterBlock) + sharedCounterBlock.length);
   assert.equal(seasonCounterBlock.includes('background-position: 100% 0;'), true);
+});
+
+test('meta screen caption copy sits on generated mini plates instead of floating text', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--meta-caption-plate: url("/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1")',
+    '.meta-showcase-copy > span:first-child,',
+    '.mission-board-copy span,',
+    '.season-board-copy span,',
+    '.mission-board-copy p,',
+    '.season-board-copy p {',
+    'background-image: var(--meta-caption-plate);',
+    'background-size: 100% 100%;'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const captionBlock = cssRuleBlock(css, '.meta-showcase-copy > span:first-child,\n.mission-board-copy span,\n.season-board-copy span,\n.mission-board-copy p,\n.season-board-copy p');
+  for (const marker of [
+    'display: inline-grid;',
+    'place-items: center;',
+    'min-height: 24px;',
+    'background-image: var(--meta-caption-plate);',
+    'background-repeat: no-repeat;',
+    'background-size: 100% 100%;'
+  ]) {
+    assert.equal(captionBlock.includes(marker), true, marker);
+  }
+  assert.equal(captionBlock.includes('background: rgba('), false);
+  for (const forbidden of [
+    'border-radius: 999px',
+    'box-shadow:',
+    'linear-gradient',
+    'backdrop-filter'
+  ]) {
+    assert.equal(captionBlock.includes(forbidden), false, forbidden);
+  }
 });
 
 test('mission and season rows show generated reward tokens', async () => {

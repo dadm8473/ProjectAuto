@@ -63,6 +63,7 @@
   --meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row-alpha1");
   --meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges-alpha1");
   --meta-status-plaques: url("/src/client/assets/generated/reboot-meta-status-plaques.png?v=meta-status-plaques1");
+  --meta-caption-plate: url("/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1");
   --meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title");
   --meta-showcase-stage: url("/src/client/assets/generated/reboot-meta-showcase-stage.png?v=showcase-stage");
   --meta-shelf-grid: url("/src/client/assets/generated/reboot-meta-shelf-grid.png?v=meta-shelf-grid1");
@@ -2661,12 +2662,28 @@ body[data-app-screen="season"] .app-screen::after {
   text-shadow: 0 4px 13px rgba(0, 0, 0, 0.72);
 }
 
+.meta-showcase-copy > span:first-child,
 .mission-board-copy span,
-.season-board-copy span {
+.season-board-copy span,
+.mission-board-copy p,
+.season-board-copy p {
+  display: inline-grid;
+  place-items: center;
+  justify-self: start;
+  width: max-content;
+  max-width: 100%;
+  min-width: 74px;
+  min-height: 24px;
+  padding: 4px 12px 5px;
   color: var(--mint);
   font-size: 12px;
   font-weight: 1000;
   line-height: 1;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.82), 0 0 10px rgba(88, 215, 255, 0.24);
+  background-image: var(--meta-caption-plate);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.44));
 }
 
 .mission-board-copy strong,
@@ -2693,7 +2710,7 @@ body[data-app-screen="season"] .app-screen::after {
 .mission-board-copy p,
 .season-board-copy p {
   width: max-content;
-  padding: 2px 8px;
+  padding: 4px 12px 5px;
   overflow: hidden;
   color: rgba(245, 240, 220, 0.84);
   font-size: 12px;
@@ -2841,13 +2858,6 @@ body[data-app-screen="season"] .app-screen::after {
   align-content: center;
   gap: 5px;
   min-width: 0;
-}
-
-.meta-showcase-copy > span:first-child {
-  color: var(--mint);
-  font-size: 12px;
-  font-weight: 1000;
-  line-height: 1;
 }
 
 .meta-showcase-copy strong {

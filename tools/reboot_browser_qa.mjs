@@ -111,6 +111,40 @@ async function assertActiveNavLabelPlate(page, expectedText, label) {
   );
 }
 
+async function assertMetaCaptionPlates(page, selector, label, expectedCount = 1) {
+  const allCaptions = await page.locator(selector).evaluateAll((nodes) => nodes
+    .map((node) => {
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return {
+        text: node.textContent?.trim(),
+        display: style.display,
+        backgroundImage: style.backgroundImage,
+        backgroundSize: style.backgroundSize,
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        top: Math.round(rect.top),
+        bottom: Math.round(rect.bottom),
+        left: Math.round(rect.left),
+        right: Math.round(rect.right),
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight
+      };
+    }));
+  assert.equal(allCaptions.length, expectedCount, `${label} meta caption selector count changed: ${JSON.stringify(allCaptions)}`);
+  const captions = allCaptions.filter((caption) => caption.width > 0 && caption.height > 0);
+  assert.equal(captions.length, expectedCount, `${label} visible meta caption count changed: ${JSON.stringify(allCaptions)}`);
+  for (const caption of captions) {
+    assert.match(caption.backgroundImage, /reboot-meta-caption-plate/, `${label} caption lacks generated plate: ${JSON.stringify(caption)}`);
+    assert.equal(caption.backgroundSize, '100% 100%', `${label} caption plate not fitted: ${JSON.stringify(caption)}`);
+    assert.equal(caption.display, 'grid', `${label} caption display changed: ${JSON.stringify(caption)}`);
+    assert.equal(caption.width >= 74, true, `${label} caption too narrow: ${JSON.stringify(caption)}`);
+    assert.equal(caption.height >= 24, true, `${label} caption too shallow: ${JSON.stringify(caption)}`);
+    assert.equal(caption.left >= 0 && caption.right <= caption.viewportWidth, true, `${label} caption leaves viewport: ${JSON.stringify(caption)}`);
+    assert.equal(caption.top >= 0 && caption.bottom <= caption.viewportHeight, true, `${label} caption leaves vertical viewport: ${JSON.stringify(caption)}`);
+  }
+}
+
 async function assertSplashCtaClearsBottomDeck(page) {
   const geometry = await page.locator('#splashStartButton').evaluate((button) => {
     const rect = button.getBoundingClientRect();
@@ -261,6 +295,7 @@ async function verifyShell(page, viewport) {
   await page.getByRole('button', { name: '유닛' }).click();
   await assertActiveNavLabelPlate(page, '유닛', 'collection');
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
+  await assertMetaCaptionPlates(page, '#collectionScreen .meta-showcase-copy > span:first-child', 'collection', 1);
   await assertMetaListReachesDock(page, '#collectionList', 'collection');
   assert.equal(await page.locator('#collectionList .unit-card .sprite-token.unit-sprite').count(), 8);
   assert.equal(await page.locator('#collectionList .meta-showcase .sprite-token.unit-sprite').count(), 1);
@@ -268,6 +303,7 @@ async function verifyShell(page, viewport) {
   await page.getByRole('button', { name: '상점' }).click();
   await assertActiveNavLabelPlate(page, '상점', 'shop');
   await page.locator('.shop-cosmetic').first().waitFor({ state: 'visible' });
+  await assertMetaCaptionPlates(page, '#shopScreen .meta-showcase-copy > span:first-child', 'shop', 1);
   await assertMetaListReachesDock(page, '#shopList', 'shop');
   assert.equal(await page.locator('#shopList .shop-card .sprite-token.shop-cosmetic').count(), 5);
   assert.equal(await page.locator('#shopList .meta-showcase .sprite-token.shop-cosmetic').count(), 1);
@@ -275,6 +311,7 @@ async function verifyShell(page, viewport) {
   await page.getByRole('button', { name: '미션' }).click();
   await assertActiveNavLabelPlate(page, '미션', 'missions');
   await page.locator('#missionsList .mission-stamp-board').waitFor({ state: 'visible' });
+  await assertMetaCaptionPlates(page, '#missionsScreen .mission-board-copy span, #missionsScreen .mission-board-copy p', 'missions', 2);
   await assertMetaListReachesDock(page, '#missionsList', 'missions');
   assert.equal(await page.locator('#missionsList .mission-stamp-slot').count(), 3);
   assert.equal(await page.locator('#missionsList .mission-card').count(), 3);
@@ -282,6 +319,7 @@ async function verifyShell(page, viewport) {
   await page.getByRole('button', { name: '시즌' }).click();
   await assertActiveNavLabelPlate(page, '시즌', 'season');
   await page.locator('#seasonList .season-track-board').waitFor({ state: 'visible' });
+  await assertMetaCaptionPlates(page, '#seasonScreen .season-board-copy span, #seasonScreen .season-board-copy p', 'season', 2);
   await assertMetaListReachesDock(page, '#seasonList', 'season');
   assert.equal(await page.locator('#seasonList .season-track-node').count(), 4);
   assert.equal(await page.locator('#seasonList .season-card').count(), 4);
