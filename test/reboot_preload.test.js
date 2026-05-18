@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { access, readFile } from 'node:fs/promises';
 import { test } from 'node:test';
 
 import { CRITICAL_REBOOT_ASSETS, preloadCriticalRebootAssets } from '../src/client/reboot_preload.js';
@@ -45,6 +46,38 @@ test('critical reboot preload includes generated meta and result screen lighting
 
   for (const asset of required) {
     assert.equal(CRITICAL_REBOOT_ASSETS.includes(asset), true, asset);
+  }
+});
+
+test('critical reboot preload includes generated reward and meta polish overlays', () => {
+  const required = [
+    '/src/client/assets/generated/reboot-reward-reveal-payoff-stage.png?v=reward-payoff-stage1',
+    '/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console1'
+  ];
+
+  for (const asset of required) {
+    assert.equal(CRITICAL_REBOOT_ASSETS.includes(asset), true, asset);
+  }
+});
+
+test('critical reboot preload follows generated polish css asset urls', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const variables = [
+    '--reward-reveal-payoff-stage',
+    '--meta-lower-console'
+  ];
+
+  for (const variable of variables) {
+    const match = css.match(new RegExp(`${variable}: url\\("([^"]+)"\\)`));
+    assert.notEqual(match, null, variable);
+    assert.equal(CRITICAL_REBOOT_ASSETS.includes(match[1]), true, match[1]);
+  }
+});
+
+test('critical reboot preload entries point to committed generated assets', async () => {
+  for (const asset of CRITICAL_REBOOT_ASSETS) {
+    const pathname = asset.slice(1).split('?')[0];
+    await access(pathname);
   }
 });
 
