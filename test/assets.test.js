@@ -642,6 +642,14 @@ const IMAGEGEN_REBOOT_LOBBY_OPERATION_PROGRESS_RAIL = {
   minRuntimeBytes: 36_000
 };
 
+const IMAGEGEN_REBOOT_NAV_LABEL_PLATE = {
+  path: 'src/client/assets/generated/reboot-nav-label-plate.png',
+  source: 'docs/design/generation/source/reboot/style-lock/20260517-nav-label-plate-chromakey-imagegen.png',
+  width: 512,
+  height: 160,
+  minRuntimeBytes: 40_000
+};
+
 const IMAGEGEN_REBOOT_RESULT_AURAS = {
   path: 'src/client/assets/generated/reboot-result-outcome-auras.png',
   source: 'docs/design/generation/source/reboot/style-lock/20260516-result-outcome-auras-chromakey-imagegen.png',
@@ -1618,6 +1626,28 @@ test('lobby operation progress rail is promoted from imagegen source art', async
   assert.equal(alphaAt(image, image.width - 2, 1) < 10, true, 'operation progress rail has an opaque top-right corner');
   assert.equal(alphaAt(image, 1, image.height - 2) < 10, true, 'operation progress rail has an opaque bottom-left corner');
   assert.equal(alphaAt(image, image.width - 2, image.height - 2) < 10, true, 'operation progress rail has an opaque bottom-right corner');
+});
+
+test('bottom navigation active label plate is promoted from imagegen source art', async () => {
+  const asset = IMAGEGEN_REBOOT_NAV_LABEL_PLATE;
+  const source = await readFile(asset.source);
+  const runtime = await readFile(asset.path);
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+  assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+  assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+  assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+  assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+  const image = parsePng(runtime);
+  const bounds = alphaBounds(image, { x: 0, y: 0, width: asset.width, height: asset.height }, 18);
+  assert.equal(bounds.count > 9_000, true, `nav label plate is too sparse: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.minX >= 8, true, `nav label plate touches left edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxX <= asset.width - 9, true, `nav label plate touches right edge: ${JSON.stringify(bounds)}`);
+  assert.equal(alphaAt(image, 1, 1) < 10, true, 'nav label plate has an opaque top-left corner');
+  assert.equal(alphaAt(image, image.width - 2, 1) < 10, true, 'nav label plate has an opaque top-right corner');
+  assert.equal(alphaAt(image, 1, image.height - 2) < 10, true, 'nav label plate has an opaque bottom-left corner');
+  assert.equal(alphaAt(image, image.width - 2, image.height - 2) < 10, true, 'nav label plate has an opaque bottom-right corner');
 });
 
 test('meta item status overlays are transparent generated shelf objects', async () => {

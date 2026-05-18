@@ -33,6 +33,7 @@
   --screen-transition-wipe: url("/src/client/assets/generated/reboot-screen-transition-wipe.png?v=screen-wipe");
   --nav-icons: url("/src/client/assets/generated/reboot-nav-icons.png");
   --nav-button-glow: url("/src/client/assets/generated/reboot-nav-button-glow.png?v=nav-selector1");
+  --nav-label-plate: url("/src/client/assets/generated/reboot-nav-label-plate.png?v=nav-label-plate1");
   --nav-alert-badges: url("/src/client/assets/generated/reboot-nav-alert-badges.png?v=nav-alerts");
   --nav-button-glow-size: clamp(62px, 18vw, 76px);
   --title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png");
@@ -1954,12 +1955,15 @@ body[data-app-screen="season"] .app-screen::after {
   left: 50%;
   bottom: 5px;
   z-index: 2;
-  min-width: 2.6em;
-  padding: 2px 5px 3px;
-  border-radius: 999px;
+  min-width: 46px;
+  min-height: 22px;
+  padding: 4px 10px 5px;
   color: #fff4bd;
-  background: rgba(2, 15, 15, 0.76);
-  box-shadow: 0 0 9px rgba(88, 215, 255, 0.2);
+  background-image: var(--nav-label-plate);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.52));
   opacity: 0;
   visibility: hidden;
   transform: translate(-50%, 4px) scale(0.92);

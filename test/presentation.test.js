@@ -2893,7 +2893,10 @@ test('home navigation keeps labels accessible but only shows the active station 
     '<span class="nav-label">상점</span>',
     '<span class="nav-label">미션</span>',
     '<span class="nav-label">시즌</span>',
+    '--nav-label-plate: url("/src/client/assets/generated/reboot-nav-label-plate.png?v=nav-label-plate1")',
     '.bottom-dock button > .nav-label',
+    'background-image: var(--nav-label-plate);',
+    'background-size: 100% 100%;',
     'position: absolute;',
     '.bottom-dock button:not([data-nav-active="true"]) > .nav-label',
     'display: none;',
@@ -2913,6 +2916,15 @@ test('home navigation keeps labels accessible but only shows the active station 
     'button.blur();'
   ]) {
     assert.equal(`${html}\n${css}\n${app}`.includes(marker), true, marker);
+  }
+
+  const labelBlock = cssRuleBlock(css, '.bottom-dock button > .nav-label');
+  for (const forbidden of [
+    'border-radius: 999px;',
+    'background: rgba(2, 15, 15, 0.76);',
+    'box-shadow: 0 0 9px'
+  ]) {
+    assert.equal(labelBlock.includes(forbidden), false, forbidden);
   }
 });
 

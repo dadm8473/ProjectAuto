@@ -58,6 +58,59 @@ async function assertMetaListReachesDock(page, selector, label) {
   );
 }
 
+async function assertActiveNavLabelPlate(page, expectedText, label) {
+  const geometry = await page.locator('.bottom-dock button[data-nav-active="true"] > .nav-label').evaluate((node) => {
+    const labelBox = node.getBoundingClientRect();
+    const buttonBox = node.closest('button')?.getBoundingClientRect();
+    const dockBox = document.querySelector('.bottom-dock')?.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    return {
+      text: node.textContent?.trim(),
+      display: style.display,
+      opacity: Number.parseFloat(style.opacity),
+      visibility: style.visibility,
+      backgroundImage: style.backgroundImage,
+      backgroundSize: style.backgroundSize,
+      borderRadius: style.borderTopLeftRadius,
+      labelLeft: Math.round(labelBox.left),
+      labelRight: Math.round(labelBox.right),
+      labelTop: Math.round(labelBox.top),
+      labelBottom: Math.round(labelBox.bottom),
+      labelWidth: Math.round(labelBox.width),
+      labelHeight: Math.round(labelBox.height),
+      buttonLeft: Math.round(buttonBox?.left ?? 0),
+      buttonRight: Math.round(buttonBox?.right ?? 0),
+      buttonTop: Math.round(buttonBox?.top ?? 0),
+      buttonBottom: Math.round(buttonBox?.bottom ?? 0),
+      dockBottom: Math.round(dockBox?.bottom ?? 0)
+    };
+  });
+  assert.equal(geometry.text, expectedText, `${label} active nav label text: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.display, 'block', `${label} active nav label hidden: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.visibility, 'visible', `${label} active nav label invisible: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.opacity >= 0.98, true, `${label} active nav label faded: ${JSON.stringify(geometry)}`);
+  assert.match(geometry.backgroundImage, /reboot-nav-label-plate/, `${label} active nav label lacks generated plate`);
+  assert.equal(geometry.backgroundSize, '100% 100%', `${label} active nav label plate is not stretched to plate`);
+  assert.equal(geometry.borderRadius, '0px', `${label} active nav label still uses pill radius`);
+  assert.equal(geometry.labelWidth >= 46, true, `${label} active nav label too narrow: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.labelHeight >= 22, true, `${label} active nav label too shallow: ${JSON.stringify(geometry)}`);
+  assert.equal(
+    geometry.labelLeft >= geometry.buttonLeft + 2 && geometry.labelRight <= geometry.buttonRight - 2,
+    true,
+    `${label} active nav label escapes its button: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(
+    geometry.labelTop >= geometry.buttonTop + 32 && geometry.labelBottom <= geometry.buttonBottom + 1,
+    true,
+    `${label} active nav label overlaps the icon lane: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(
+    geometry.labelBottom <= geometry.dockBottom - 2,
+    true,
+    `${label} active nav label escapes the dock: ${JSON.stringify(geometry)}`
+  );
+}
+
 async function assertSplashCtaClearsBottomDeck(page) {
   const geometry = await page.locator('#splashStartButton').evaluate((button) => {
     const rect = button.getBoundingClientRect();
@@ -206,24 +259,28 @@ async function verifyShell(page, viewport) {
   await page.getByRole('button', { name: '첫 구원 작전 시작' }).waitFor({ state: 'visible' });
   assert.equal(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await page.getByRole('button', { name: '유닛' }).click();
+  await assertActiveNavLabelPlate(page, '유닛', 'collection');
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
   await assertMetaListReachesDock(page, '#collectionList', 'collection');
   assert.equal(await page.locator('#collectionList .unit-card .sprite-token.unit-sprite').count(), 8);
   assert.equal(await page.locator('#collectionList .meta-showcase .sprite-token.unit-sprite').count(), 1);
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
   await page.getByRole('button', { name: '상점' }).click();
+  await assertActiveNavLabelPlate(page, '상점', 'shop');
   await page.locator('.shop-cosmetic').first().waitFor({ state: 'visible' });
   await assertMetaListReachesDock(page, '#shopList', 'shop');
   assert.equal(await page.locator('#shopList .shop-card .sprite-token.shop-cosmetic').count(), 5);
   assert.equal(await page.locator('#shopList .meta-showcase .sprite-token.shop-cosmetic').count(), 1);
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
   await page.getByRole('button', { name: '미션' }).click();
+  await assertActiveNavLabelPlate(page, '미션', 'missions');
   await page.locator('#missionsList .mission-stamp-board').waitFor({ state: 'visible' });
   await assertMetaListReachesDock(page, '#missionsList', 'missions');
   assert.equal(await page.locator('#missionsList .mission-stamp-slot').count(), 3);
   assert.equal(await page.locator('#missionsList .mission-card').count(), 3);
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
   await page.getByRole('button', { name: '시즌' }).click();
+  await assertActiveNavLabelPlate(page, '시즌', 'season');
   await page.locator('#seasonList .season-track-board').waitFor({ state: 'visible' });
   await assertMetaListReachesDock(page, '#seasonList', 'season');
   assert.equal(await page.locator('#seasonList .season-track-node').count(), 4);
