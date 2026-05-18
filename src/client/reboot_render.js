@@ -790,6 +790,12 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
     ctx.stroke();
   }
   if (imageBackdrop && !compact) drawPlayerBoardTray(ctx, assets, x - 6, y - 14, w + 12, h + 10);
+  if (imageBackdrop && board.danger >= 50) {
+    const dangerPulseAlpha = board.danger >= 80 ? 0.66 : 0.44;
+    drawAtlasSprite(ctx, assets, 'board', 'danger_pulse_frame', x + w - 47, y + 31, compact ? 72 : 82, dangerPulseAlpha);
+  } else if (board.danger >= 80) {
+    drawAtlasSprite(ctx, assets, 'board', 'danger_pulse_frame', x + w - 36, y + 42, compact ? 48 : 56, 0.58);
+  }
   const showBoardText = !imageBackdrop;
   const showDangerText = !imageBackdrop || board.danger >= 50;
   if (showBoardText) {
@@ -799,12 +805,12 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
     ctx.fillText(title, x + 12, y + 18);
   }
   if (showDangerText) {
-    if (imageBackdrop) drawBoardLabelPlate(ctx, assets, 'danger', x + w - 90, y + 2, 86, 28, board.danger >= 80 ? 0.9 : 0.72);
-    ctx.fillStyle = board.danger >= 80 ? '#ff6f59' : '#a8b4a7';
-    ctx.fillText(`위험 ${Math.round(board.danger)}`, x + w - 66, y + 18);
-  }
-  if (board.danger >= 80) {
-    drawAtlasSprite(ctx, assets, 'board', 'danger_pulse_frame', x + w - 36, y + 42, compact ? 48 : 56, 0.58);
+    if (imageBackdrop) {
+      drawBoardLabelPlate(ctx, assets, 'danger', x + w - 90, y + 2, 86, 28, board.danger >= 80 ? 0.9 : 0.78);
+      drawAtlasSprite(ctx, assets, 'ui', 'partner_danger', x + w - 78, y + 16, 24, board.danger >= 80 ? 0.95 : 0.82);
+    }
+    ctx.fillStyle = board.danger >= 80 ? '#ff6f59' : '#ffd36a';
+    ctx.fillText(`위험 ${Math.round(board.danger)}`, imageBackdrop ? x + w - 60 : x + w - 66, y + 18);
   }
 
   const count = compact ? 4 : 5;

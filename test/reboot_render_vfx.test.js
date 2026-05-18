@@ -1834,6 +1834,7 @@ test('image backdrop hides board names and keeps danger labels on generated comb
     { width: 390, height: 620 },
     {
       backdrop: image(390, 620),
+      ui: image(1536, 256),
       board: image(1280, 256),
       boardLabelPlates: image(780, 80)
     }
@@ -1850,10 +1851,32 @@ test('image backdrop hides board names and keeps danger labels on generated comb
   const dangerTextIndex = ctx.commands.findIndex((command) => (
     command.type === 'fillText' && command.args[0] === '위험 52'
   ));
+  const warningPulseIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[1] === 1024
+      && command.args[2] === 0
+      && command.args[3] === 256
+      && command.args[4] === 256
+  ));
+  const warningIconIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1536
+      && command.args[0].naturalHeight === 256
+      && command.args[1] === 768
+      && command.args[2] === 0
+      && command.args[3] === 256
+      && command.args[4] === 256
+  ));
 
   assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '파트너 보드'), false);
   assert.equal(plateIndices.length >= 1, true, 'expected generated plate behind danger label');
   assert.equal(plateIndices.some((index) => index < dangerTextIndex), true, 'danger label should sit above a generated plate');
+  assert.notEqual(warningPulseIndex, -1, 'warning partner danger should use generated danger pulse before crisis threshold');
+  assert.equal(warningPulseIndex < dangerTextIndex, true, 'warning pulse should sit under the danger label text');
+  assert.notEqual(warningIconIndex, -1, 'warning partner danger should include the generated partner danger icon');
+  assert.equal(warningIconIndex < dangerTextIndex, true, 'warning icon should sit under the danger label text');
 });
 
 test('image backdrop suppresses idle partner board labels', () => {
