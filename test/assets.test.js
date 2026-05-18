@@ -441,7 +441,7 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
   },
   {
     path: 'src/client/assets/generated/reboot-meta-lower-console.png',
-    source: 'docs/design/generation/source/reboot/style-lock/20260518-meta-lower-console-imagegen.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260518-meta-lower-console-dense-imagegen.png',
     width: 430,
     height: 184,
     minRuntimeBytes: 100_000
@@ -1207,11 +1207,12 @@ test('meta lower console fills the dock gap with generated machinery instead of 
   const cyanDetailRatio = colorRatio(image, { x: 36, y: 62, width: 358, height: 98 }, (r, g, b) => r < 95 && g > 74 && b > 84);
   const flatVoidRatio = colorRatio(image, { x: 84, y: 44, width: 262, height: 116 }, (r, g, b) => Math.max(r, g, b) < 18);
 
-  assert.equal(centerMachinery.mean > 24, true, `meta lower console center still reads as empty black floor: ${centerMachinery.mean}`);
+  assert.equal(centerMachinery.mean > 34, true, `meta lower console center still reads as empty black floor: ${centerMachinery.mean}`);
   assert.equal(centerMachinery.mean < 72, true, `meta lower console center is too bright behind scroll fade: ${centerMachinery.mean}`);
-  assert.equal(lowerRails.brightRatio > 0.05, true, `meta lower console lacks readable generated rails: ${lowerRails.brightRatio}`);
-  assert.equal(cyanDetailRatio > 0.003, true, `meta lower console lacks signal-lit generated detail: ${cyanDetailRatio}`);
-  assert.equal(flatVoidRatio < 0.42, true, `meta lower console still has too much flat void: ${flatVoidRatio}`);
+  assert.equal(centerMachinery.brightRatio > 0.12, true, `meta lower console lacks readable central machinery: ${centerMachinery.brightRatio}`);
+  assert.equal(lowerRails.brightRatio > 0.09, true, `meta lower console lacks readable generated rails: ${lowerRails.brightRatio}`);
+  assert.equal(cyanDetailRatio > 0.01, true, `meta lower console lacks signal-lit generated detail: ${cyanDetailRatio}`);
+  assert.equal(flatVoidRatio < 0.28, true, `meta lower console still has too much flat void: ${flatVoidRatio}`);
 });
 
 test('battle backdrop lower board reads as arena floor instead of an empty web socket panel', async () => {

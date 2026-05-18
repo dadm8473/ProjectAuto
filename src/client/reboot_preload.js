@@ -7,7 +7,7 @@ export const CRITICAL_REBOOT_ASSETS = [
   '/src/client/assets/generated/reboot-lobby-backdrop.png',
   '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1',
   '/src/client/assets/generated/reboot-meta-screen-lighting.png?v=screen-lighting1',
-  '/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console1',
+  '/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console2',
   '/src/client/assets/generated/reboot-result-screen-lighting.png?v=screen-lighting1',
   '/src/client/assets/generated/reboot-reward-reveal-payoff-stage.png?v=reward-payoff-stage1',
   '/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1',

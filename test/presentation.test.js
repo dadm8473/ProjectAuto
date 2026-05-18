@@ -1044,7 +1044,7 @@ test('meta screens keep generated floor art separate from scroll-list clipping',
   ].join(',\n');
   const block = cssRuleBlock(css, selector);
 
-  assert.equal(css.includes('--meta-lower-console: url("/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console1")'), true);
+  assert.equal(css.includes('--meta-lower-console: url("/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console2")'), true);
   for (const marker of [
     'height: clamp(138px, 22dvh, 184px);',
     'z-index: 2;',

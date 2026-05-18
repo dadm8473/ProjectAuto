@@ -52,7 +52,7 @@ test('critical reboot preload includes generated meta and result screen lighting
 test('critical reboot preload includes generated reward and meta polish overlays', () => {
   const required = [
     '/src/client/assets/generated/reboot-reward-reveal-payoff-stage.png?v=reward-payoff-stage1',
-    '/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console1'
+    '/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console2'
   ];
 
   for (const asset of required) {
