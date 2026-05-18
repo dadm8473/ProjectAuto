@@ -2933,13 +2933,10 @@ body[data-app-screen="season"] .app-screen::after {
   text-overflow: ellipsis;
   white-space: nowrap;
   text-shadow: 0 2px 3px rgba(0, 0, 0, 0.9), 0 0 9px rgba(88, 215, 255, 0.34);
-  background-color: rgba(2, 8, 9, 0.62);
-  background-image: var(--meta-mini-badges);
+  background-image: var(--meta-caption-plate);
   background-repeat: no-repeat;
-  background-position: 50% 0;
-  background-size: 300% 100%;
-  border-radius: 5px;
-  box-shadow: inset 0 0 0 1px rgba(245, 240, 220, 0.08);
+  background-position: center;
+  background-size: 100% 100%;
 }
 
 .screen-back {

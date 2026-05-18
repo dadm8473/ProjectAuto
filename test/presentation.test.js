@@ -1524,6 +1524,29 @@ test('collection and shop start with generated showcase stages instead of list-f
   assert.equal(showcaseBlock.includes('backdrop-filter'), false);
 });
 
+test('meta showcase stat chips use generated caption plates instead of css pills', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  const chipBlock = cssRuleBlock(css, '.meta-showcase-chip');
+  for (const marker of [
+    'display: inline-grid;',
+    'background-image: var(--meta-caption-plate);',
+    'background-size: 100% 100%;',
+    'min-height: 26px;'
+  ]) {
+    assert.equal(chipBlock.includes(marker), true, marker);
+  }
+  for (const forbidden of [
+    'background-color:',
+    'border-radius:',
+    'box-shadow:',
+    'linear-gradient',
+    'backdrop-filter'
+  ]) {
+    assert.equal(chipBlock.includes(forbidden), false, forbidden);
+  }
+});
+
 test('meta list rows use dedicated generated game row frames', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');

@@ -148,6 +148,38 @@ async function assertMetaCaptionPlates(page, selector, label, expectedCount = 1)
   }
 }
 
+async function assertMetaShowcaseChips(page, selector, label, expectedCount) {
+  const chips = await page.locator(selector).evaluateAll((nodes) => nodes.map((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    return {
+      text: node.textContent?.trim(),
+      backgroundImage: style.backgroundImage,
+      backgroundSize: style.backgroundSize,
+      borderRadius: style.borderTopLeftRadius,
+      boxShadow: style.boxShadow,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      top: Math.round(rect.top),
+      bottom: Math.round(rect.bottom),
+      left: Math.round(rect.left),
+      right: Math.round(rect.right),
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight
+    };
+  }));
+  assert.equal(chips.length, expectedCount, `${label} showcase chip count changed: ${JSON.stringify(chips)}`);
+  for (const chip of chips) {
+    assert.match(chip.backgroundImage, /reboot-meta-caption-plate/, `${label} chip lacks generated plate: ${JSON.stringify(chip)}`);
+    assert.equal(chip.backgroundSize, '100% 100%', `${label} chip plate not fitted: ${JSON.stringify(chip)}`);
+    assert.equal(chip.borderRadius, '0px', `${label} chip still uses css pill radius: ${JSON.stringify(chip)}`);
+    assert.equal(chip.boxShadow, 'none', `${label} chip still uses css shadow surface: ${JSON.stringify(chip)}`);
+    assert.equal(chip.width >= 74 && chip.height >= 26, true, `${label} chip too small: ${JSON.stringify(chip)}`);
+    assert.equal(chip.left >= 0 && chip.right <= chip.viewportWidth, true, `${label} chip leaves viewport: ${JSON.stringify(chip)}`);
+    assert.equal(chip.top >= 0 && chip.bottom <= chip.viewportHeight, true, `${label} chip leaves vertical viewport: ${JSON.stringify(chip)}`);
+  }
+}
+
 async function assertOperationCopyClearsProgressRail(page) {
   const geometry = await page.evaluate(() => {
     const copyNodes = [...document.querySelectorAll('#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p')];
@@ -338,6 +370,7 @@ async function verifyShell(page, viewport) {
   await assertActiveNavLabelPlate(page, '유닛', 'collection');
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#collectionScreen .meta-showcase-copy > span:first-child', 'collection', 1);
+  await assertMetaShowcaseChips(page, '#collectionScreen .meta-showcase-chip', 'collection', 2);
   await assertMetaListReachesDock(page, '#collectionList', 'collection');
   assert.equal(await page.locator('#collectionList .unit-card .sprite-token.unit-sprite').count(), 8);
   assert.equal(await page.locator('#collectionList .meta-showcase .sprite-token.unit-sprite').count(), 1);
@@ -346,6 +379,7 @@ async function verifyShell(page, viewport) {
   await assertActiveNavLabelPlate(page, '상점', 'shop');
   await page.locator('.shop-cosmetic').first().waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#shopScreen .meta-showcase-copy > span:first-child', 'shop', 1);
+  await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'shop', 2);
   await assertMetaListReachesDock(page, '#shopList', 'shop');
   assert.equal(await page.locator('#shopList .shop-card .sprite-token.shop-cosmetic').count(), 5);
   assert.equal(await page.locator('#shopList .meta-showcase .sprite-token.shop-cosmetic').count(), 1);
@@ -388,6 +422,22 @@ async function verifyCompactLobby(page) {
   await page.getByRole('button', { name: '첫 구원 작전 시작' }).waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'compact lobby operation copy', 2);
   await assertOperationCopyClearsProgressRail(page);
+}
+
+async function verifyCompactMeta(page) {
+  await page.goto(baseUrl, { waitUntil: 'load' });
+  await page.locator('#loadingGate').waitFor({ state: 'hidden' });
+  await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
+  assert.equal(await page.locator('audio, video').count(), 0);
+  await page.getByRole('button', { name: '시작' }).click();
+  await page.getByRole('button', { name: '첫 구원 작전 시작' }).waitFor({ state: 'visible' });
+  await page.getByRole('button', { name: '유닛' }).click();
+  await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
+  await assertMetaShowcaseChips(page, '#collectionScreen .meta-showcase-chip', 'compact collection', 2);
+  await page.getByRole('button', { name: '로비로 돌아가기' }).click();
+  await page.getByRole('button', { name: '상점' }).click();
+  await page.locator('.shop-cosmetic').first().waitFor({ state: 'visible' });
+  await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'compact shop', 2);
 }
 
 async function verifyFastPlaythrough(page) {
@@ -460,6 +510,7 @@ async function main() {
       });
       const page = await context.newPage();
       await verifyCompactLobby(page);
+      await verifyCompactMeta(page);
       await assertNoErrors(errors, `compact lobby ${viewport.width}x${viewport.height}`);
       await context.close();
       console.log(`ok compact-lobby ${viewport.width}x${viewport.height}`);
