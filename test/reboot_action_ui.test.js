@@ -208,7 +208,7 @@ test('combat command labels show summon cooldown as charging time on the button'
     localBoardId: 'p1',
     actions: { summon: { enabled: false }, merge: { enabled: false }, rescue: { enabled: false } }
   }), {
-    summon: '충전 11초',
+    summon: '소환 11초',
     merge: '합성',
     rescue: '구원'
   });

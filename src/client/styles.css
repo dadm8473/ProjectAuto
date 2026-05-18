@@ -1307,6 +1307,29 @@ body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::after 
   z-index: 3;
 }
 
+.primary-actions[data-open-count="1"] button:disabled:not([data-unlocked="false"]) {
+  opacity: 1;
+  filter: brightness(1.04) saturate(1.04) drop-shadow(0 0 14px rgba(105, 243, 255, 0.16));
+}
+
+.primary-actions[data-open-count="1"] button:disabled:not([data-unlocked="false"]) > span {
+  max-width: min(170px, 52vw);
+  color: #fff8d6;
+  font-size: clamp(20px, 5.58vw, 24px);
+  font-weight: 1000;
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.82), 0 0 14px rgba(105, 243, 255, 0.34);
+}
+
+.primary-actions[data-open-count="1"] button:disabled:not([data-unlocked="false"])::before {
+  opacity: 1;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.42));
+}
+
+.primary-actions[data-open-count="1"] button:disabled:not([data-unlocked="false"])::after {
+  opacity: 0.46;
+  filter: saturate(1.02) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.36));
+}
+
 .primary-actions button[data-unlocked="false"] {
   gap: 0;
   align-self: center;

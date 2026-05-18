@@ -3,7 +3,7 @@ import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=merge-reason1';
-import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-chip2';
+import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=command-cooldown1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest1';
 import { preloadCriticalRebootAssets } from './reboot_preload.js?v=shell-backdrop1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=unit-roster1';
@@ -730,9 +730,14 @@ function updateButtons(current) {
   ]) {
     const enabled = actions[key].enabled && !onlineWaiting;
     const label = commandLabels[key];
+    const ariaLabel = label === ACTION_LABELS[key]
+      ? ACTION_LABELS[key]
+      : label.startsWith(ACTION_LABELS[key])
+        ? `${label} 후 가능`
+        : `${ACTION_LABELS[key]} ${label} 후 가능`;
     button.disabled = !enabled;
     button.querySelector('span').textContent = label;
-    button.setAttribute('aria-label', label === ACTION_LABELS[key] ? ACTION_LABELS[key] : `${ACTION_LABELS[key]} ${label} 후 가능`);
+    button.setAttribute('aria-label', ariaLabel);
     button.dataset.ready = String(enabled);
     button.dataset.unlocked = String(exposure[key]);
     button.dataset.focus = String(exposure.focus === key);

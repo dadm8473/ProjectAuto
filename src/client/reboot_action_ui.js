@@ -18,7 +18,7 @@ function summonCooldownLabel(current, localBoardId) {
   if ((resources.summon ?? 0) >= REBOOT_RULES.summon.cost) return '';
   const nextGrant = REBOOT_RULES.summon.grants.find((grant) => grant.at > current.now);
   if (!nextGrant) return '';
-  return `충전 ${Math.max(1, Math.ceil(nextGrant.at - current.now))}초`;
+  return `소환 ${Math.max(1, Math.ceil(nextGrant.at - current.now))}초`;
 }
 
 export function buildCombatActionExposure({ current, localBoardId, actions }) {

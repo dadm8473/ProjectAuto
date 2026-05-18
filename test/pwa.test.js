@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v1';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v2';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -41,8 +41,8 @@ test('service worker keeps the installable mobile game shell available after fir
     'event.request.mode === \'navigate\'',
     "caches.match('/index.html')",
     '/manifest.webmanifest',
-    '/src/client/styles.css?v=shell-backdrop1',
-    '/src/client/app.js?v=shell-backdrop1',
+    '/src/client/styles.css?v=command-cooldown1',
+    '/src/client/app.js?v=command-cooldown1',
     '/src/client/reboot_online.js',
     '/src/shared/game.js',
     '/src/shared/reboot_game.js',
@@ -74,9 +74,9 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v1'",
+    "cacheName === 'projectauto-reboot-shell-v2'",
     "await cache.match('/index.html')",
-    "await cache.match('/src/client/app.js?v=shell-backdrop1')",
+    "await cache.match('/src/client/app.js?v=command-cooldown1')",
     "await cache.match('/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1')",
     'await verifyInstallableShell(page);'
   ]) {

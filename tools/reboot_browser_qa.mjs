@@ -69,12 +69,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v1');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v2');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/app.js?v=shell-backdrop1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=shell-backdrop1'))
+      '/src/client/app.js?v=command-cooldown1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=command-cooldown1'))
         : false,
       '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1'))
@@ -92,7 +92,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v1', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v2', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1397,7 +1397,28 @@ async function assertFirstSummonTapFeedback(page) {
   await page.waitForFunction(() => document.querySelector('#summonMeter .meter-value')?.textContent === '0');
   assert.equal(await page.locator('#summonMeter .meter-value').textContent(), '0');
   assert.equal(await page.locator('.status-line').isVisible(), false);
-  assert.match(await page.locator('#summonButton span').textContent(), /충전\s+\d+초/);
+  const cooldown = await page.locator('#summonButton').evaluate((button) => {
+    const span = button.querySelector('span');
+    const buttonBox = button.getBoundingClientRect();
+    const textBox = span?.getBoundingClientRect();
+    const style = getComputedStyle(button);
+    const spanStyle = span ? getComputedStyle(span) : null;
+    return {
+      text: span?.textContent?.trim() ?? '',
+      opacity: Number.parseFloat(style.opacity),
+      filter: style.filter,
+      textFits: Boolean(textBox && textBox.width <= buttonBox.width - 56 && textBox.height <= buttonBox.height - 10),
+      textNotClipped: Boolean(span && span.scrollWidth <= span.clientWidth && span.scrollHeight <= span.clientHeight),
+      spanMaxWidth: spanStyle?.maxWidth ?? '',
+      spanOpacity: spanStyle ? Number.parseFloat(spanStyle.opacity) : 0
+    };
+  });
+  assert.match(cooldown.text, /소환\s+\d+초/);
+  assert.equal(cooldown.opacity >= 0.98, true, `cooldown command is too faded: ${JSON.stringify(cooldown)}`);
+  assert.equal(cooldown.filter.includes('grayscale'), false, `cooldown command still reads disabled: ${JSON.stringify(cooldown)}`);
+  assert.equal(cooldown.textFits, true, `cooldown text does not fit the generated command: ${JSON.stringify(cooldown)}`);
+  assert.equal(cooldown.textNotClipped, true, `cooldown label is clipped: ${JSON.stringify(cooldown)}`);
+  assert.equal(cooldown.spanOpacity >= 0.98, true, `cooldown label is faded: ${JSON.stringify(cooldown)}`);
 }
 
 async function verifyShell(page, viewport) {
