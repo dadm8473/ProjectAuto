@@ -149,7 +149,6 @@ button {
 
 button:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 1px rgba(105, 243, 255, 0.44), 0 0 14px rgba(105, 243, 255, 0.24);
   filter: brightness(1.1) saturate(1.08);
 }
 
@@ -1832,6 +1831,12 @@ body[data-app-screen="season"] .app-screen::after {
   opacity: 0;
 }
 
+.play-button:focus-visible .launch-button-frame,
+.match-button:focus-visible .launch-button-frame {
+  opacity: 1;
+  filter: saturate(1.18) brightness(1.16) drop-shadow(0 7px 15px rgba(244, 201, 93, 0.38));
+}
+
 .play-button > span,
 .match-button > span {
   position: relative;
@@ -3375,6 +3380,29 @@ body[data-app-screen="season"] .app-screen::after {
   text-shadow: 0 2px 7px rgba(0, 0, 0, 0.72);
 }
 
+.shop-card button:focus-visible:not(:disabled)::before,
+.unit-card button:focus-visible:not(:disabled)::before,
+.mission-card button:focus-visible:not(:disabled)::before,
+.season-card button:focus-visible:not(:disabled)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--meta-action-buttons);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  background-position: 0 0;
+  opacity: 0.72;
+  mix-blend-mode: screen;
+  filter: saturate(1.16) brightness(1.18);
+}
+
+.shop-card[data-owned="true"] button:focus-visible:not(:disabled)::before,
+.mission-card[data-owned="true"] button:focus-visible:not(:disabled)::before,
+.season-card[data-owned="true"] button:focus-visible:not(:disabled)::before {
+  background-position: 50% 0;
+}
+
 .card-passive-state {
   justify-self: center;
   min-width: 58px;
@@ -4084,12 +4112,42 @@ body[data-app-screen="season"] .app-screen::after {
 .result-overlay .result-action-primary { background-position: 0 0; }
 .result-overlay .result-action-secondary { background-position: 100% 0; }
 
+.result-overlay .result-action-button:focus-visible:not(:disabled)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--result-action-buttons);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  opacity: 0.7;
+  mix-blend-mode: screen;
+  filter: saturate(1.18) brightness(1.18);
+}
+
+.result-overlay .result-action-primary:focus-visible:not(:disabled)::after {
+  background-position: 0 0;
+}
+
+.result-overlay .result-action-secondary:focus-visible:not(:disabled)::after {
+  background-position: 100% 0;
+}
+
 .result-overlay[data-result-cta="claim"] .result-action-secondary {
   order: -1;
   background-position: 0 0;
 }
 
 .result-overlay[data-result-cta="claim"] .result-action-primary {
+  background-position: 100% 0;
+}
+
+.result-overlay[data-result-cta="claim"] .result-action-secondary:focus-visible:not(:disabled)::after {
+  background-position: 0 0;
+}
+
+.result-overlay[data-result-cta="claim"] .result-action-primary:focus-visible:not(:disabled)::after {
   background-position: 100% 0;
 }
 

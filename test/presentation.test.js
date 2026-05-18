@@ -1378,12 +1378,16 @@ test('combat command focus uses game feedback instead of a browser outline recta
 
   for (const marker of [
     'button:focus-visible {\n  outline: none;',
-    'box-shadow: 0 0 0 1px rgba(105, 243, 255, 0.44), 0 0 14px rgba(105, 243, 255, 0.24);',
     'filter: brightness(1.1) saturate(1.08);',
     '.primary-actions button:focus-visible:not(:disabled)',
     '.primary-actions button:focus-visible:not(:disabled)::after',
     '.primary-actions[data-open-count="1"] button[data-focus="true"]:focus-visible:not(:disabled)::after',
     '.primary-actions[data-open-count="1"] #summonButton[data-ready="true"]',
+    '.play-button:focus-visible .launch-button-frame,\n.match-button:focus-visible .launch-button-frame',
+    '.shop-card button:focus-visible:not(:disabled)::before,\n.unit-card button:focus-visible:not(:disabled)::before,\n.mission-card button:focus-visible:not(:disabled)::before,\n.season-card button:focus-visible:not(:disabled)::before',
+    'background-image: var(--meta-action-buttons);',
+    '.result-overlay .result-action-button:focus-visible:not(:disabled)::after',
+    'background-image: var(--result-action-buttons);',
     'background-image: none;',
     'border-color: transparent;'
   ]) {
@@ -1393,6 +1397,18 @@ test('combat command focus uses game feedback instead of a browser outline recta
   const firstCommandFocus = cssRuleBlock(css, '.primary-actions[data-open-count="1"] button[data-focus="true"]:focus-visible:not(:disabled)::after');
   assert.equal(firstCommandFocus.includes('outline'), false);
   assert.equal(firstCommandFocus.includes('opacity: 0.72;'), true);
+  const globalFocusBlock = cssRuleBlock(css, 'button:focus-visible');
+  assert.equal(globalFocusBlock.includes('box-shadow:'), false, 'global focus should not render a web-style css halo');
+  const launchFocusBlock = cssRuleBlock(css, '.play-button:focus-visible .launch-button-frame,\n.match-button:focus-visible .launch-button-frame');
+  assert.equal(launchFocusBlock.includes('opacity: 1;'), true);
+  assert.equal(launchFocusBlock.includes('box-shadow:'), false);
+  const metaFocusBlock = cssRuleBlock(css, '.shop-card button:focus-visible:not(:disabled)::before,\n.unit-card button:focus-visible:not(:disabled)::before,\n.mission-card button:focus-visible:not(:disabled)::before,\n.season-card button:focus-visible:not(:disabled)::before');
+  assert.equal(metaFocusBlock.includes('background-image: var(--meta-action-buttons);'), true);
+  assert.equal(metaFocusBlock.includes('box-shadow:'), false);
+  assert.equal(metaFocusBlock.includes('z-index:'), false, 'meta focus underlay should not sit above raw button labels');
+  const resultFocusBlock = cssRuleBlock(css, '.result-overlay .result-action-button:focus-visible:not(:disabled)::after');
+  assert.equal(resultFocusBlock.includes('background-image: var(--result-action-buttons);'), true);
+  assert.equal(resultFocusBlock.includes('box-shadow:'), false);
 });
 
 test('combat coach cues remove duplicate status text for every taught action', async () => {
