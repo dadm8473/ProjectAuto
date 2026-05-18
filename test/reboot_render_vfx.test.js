@@ -810,6 +810,66 @@ test('mini boss lower-curve sprites remain above the player board tray', () => {
   assert.equal(bossBottom <= 392, true, `lower-curve mini boss should remain above the player board tray: ${bossBottom}`);
 });
 
+test('mini boss shows a generated health plate on the battlefield', () => {
+  const ctx = mockContext();
+  const enemies = image(1024, 256);
+  const boardLabelPlates = image(780, 80);
+  const ui = image(1536, 256);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 104,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [
+        { enemyId: 'mini_boss', spriteKey: 'mini_boss', boardId: 'p1', progress: 0.72, hp: 120, maxHp: 500 }
+      ],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies,
+      ui,
+      boardLabelPlates,
+      board: image(1280, 256)
+    }
+  );
+
+  const healthTextIndex = ctx.commands.findIndex((command) => command.type === 'fillText' && command.args[0] === '24%');
+  const plateIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === boardLabelPlates
+      && command.args[7] >= 140
+      && command.args[8] >= 30
+  ));
+  const bossIconIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === ui
+      && command.args[1] === 1024
+      && command.args[2] === 0
+      && command.args[3] === 256
+      && command.args[4] === 256
+  ));
+  const healthFill = ctx.commands.find((command) => (
+    command.type === 'fillRect'
+      && command.args[2] > 8
+      && command.args[2] < 42
+      && command.args[3] <= 6
+  ));
+
+  assert.notEqual(healthTextIndex, -1, 'expected compact boss health percent text');
+  assert.notEqual(plateIndex, -1, 'expected generated plate behind boss health');
+  assert.notEqual(bossIconIndex, -1, 'expected generated boss icon on the health plate');
+  assert.equal(plateIndex < healthTextIndex, true, 'boss health text should sit above the generated plate');
+  assert.ok(healthFill, 'expected compact boss health fill bar');
+});
+
 test('random combat actions use generated reveal VFX without legacy action flashes', () => {
   const ctx = mockContext();
   drawRebootBattle(

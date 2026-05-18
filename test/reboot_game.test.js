@@ -374,6 +374,22 @@ test('boss_clutch accepts fractional last-second decisions until the boss spawns
   assert.equal(mergeBranch.result.reason, 'boss_final_hit');
 });
 
+test('serialized mini boss exposes live hp for the battlefield vitality plate', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'boss_clutch', seed: 612, branch: 'merge' });
+  advanceTo(game, 78);
+  castRescue(game, { playerId: 'p1' });
+  advanceTo(game, 96);
+  mergeToys(game, { playerId: 'p1' });
+  advanceTo(game, 108);
+
+  const boss = serializeRebootState(game).enemies.find((enemy) => enemy.enemyId === 'mini_boss');
+
+  assert.ok(boss, 'expected the mini boss to be serialized after spawning');
+  assert.equal(boss.maxHp, 220);
+  assert.equal(Number.isFinite(boss.hp), true);
+  assert.equal(boss.hp > 0 && boss.hp < boss.maxHp, true, `expected live boss hp, got ${boss.hp}`);
+});
+
 test('serializeRebootState omits rng internals and keeps player-readable action state', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 707 });
   advanceTo(game, 76);

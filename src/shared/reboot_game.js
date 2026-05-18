@@ -234,6 +234,36 @@ function enemyProgress(game, enemy) {
   return Math.max(0, Math.min(0.98, (age * spec.speed) / REBOOT_RULES.path.length));
 }
 
+function serializedBossHp(game, enemy) {
+  if (enemy.enemyId !== 'mini_boss') return null;
+  const maxHp = REBOOT_ENEMIES.mini_boss.hp;
+  const bossWindow = Math.max(1, 120 - REBOOT_RULES.boss.spawnAt);
+  const bossProgress = Math.max(0, Math.min(1, (game.now - REBOOT_RULES.boss.spawnAt) / bossWindow));
+  let targetHp = maxHp;
+  if (game.internal.bossChoice === 'summonSlow') {
+    targetHp = maxHp - ((maxHp - 28) * bossProgress);
+  } else if (game.internal.bossChoice === 'summonBurst' || game.internal.bossChoice === 'merge') {
+    targetHp = maxHp * (1 - bossProgress);
+  } else if (Number.isFinite(Number(game.boss?.remainingHp))) {
+    targetHp = game.boss.remainingHp;
+  }
+  return {
+    hp: Math.max(0, Math.ceil(targetHp)),
+    maxHp
+  };
+}
+
+function serializeEnemy(game, enemy) {
+  const spec = REBOOT_ENEMIES[enemy.enemyId] ?? REBOOT_ENEMIES.noise_shard;
+  const bossHp = serializedBossHp(game, enemy);
+  return {
+    ...enemy,
+    spriteKey: enemy.spriteKey ?? spec.spriteKey ?? enemy.enemyId,
+    progress: Number.isFinite(Number(enemy.progress)) ? Number(enemy.progress) : enemyProgress(game, enemy),
+    ...(bossHp ?? {})
+  };
+}
+
 function defeatDelay(enemyId) {
   if (enemyId === 'mini_boss') return 7.5;
   if (enemyId === 'heavy_noise') return 3.6;
@@ -534,7 +564,7 @@ export function serializeRebootState(game) {
     runId: game.runId,
     players: clone(game.players),
     boards: clone(game.boards),
-    enemies: clone(game.enemies),
+    enemies: game.enemies.map((enemy) => serializeEnemy(game, enemy)),
     resources: clone(game.resources),
     result: clone(game.result),
     events: clone(game.events),

@@ -751,6 +751,68 @@ function drawBoardLabelPlate(ctx, assets, variant, x, y, w, h, alpha = 0.76) {
   return true;
 }
 
+function bossHealthRatio(enemy = {}) {
+  const hp = Number(enemy.hp);
+  const maxHp = Number(enemy.maxHp);
+  if (!Number.isFinite(hp) || !Number.isFinite(maxHp) || maxHp <= 0) return null;
+  return Math.max(0, Math.min(1, hp / maxHp));
+}
+
+function isBossEnemy(enemy = {}) {
+  return enemy.enemyId === 'mini_boss'
+    || enemy.spriteKey === 'mini_boss'
+    || enemy.enemyId === 'boss'
+    || enemy.spriteKey === 'boss';
+}
+
+function drawBossVitalPlate(ctx, assets, enemy, x, y, size, imageBackdrop = true) {
+  if (!isBossEnemy(enemy)) return false;
+  const ratio = bossHealthRatio(enemy);
+  if (ratio === null) return false;
+  const plateImage = assets?.boardLabelPlates;
+  if (!plateImage?.complete || plateImage.naturalWidth <= 0) return false;
+
+  const w = 150;
+  const h = 32;
+  const sideOffset = x < 195 ? size * 0.28 : -w - size * 0.28;
+  const plateX = Math.max(16, Math.min(390 - w - 16, x + sideOffset));
+  const upperY = imageBackdrop ? 350 : 340;
+  const plateY = Math.max(150, Math.min(upperY, y - size * 0.98));
+
+  ctx.save();
+  ctx.globalAlpha *= 0.56;
+  ctx.fillStyle = 'rgba(16, 3, 5, 0.78)';
+  ctx.shadowColor = '#ff6f59';
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.roundRect(plateX + 13, plateY + 6, w - 21, h - 11, 7);
+  ctx.fill();
+  ctx.restore();
+
+  drawAtlasSprite(ctx, assets, 'board', 'danger_pulse_frame', plateX + 30, plateY + 17, 62, 0.42);
+  drawBoardLabelPlate(ctx, assets, 'danger', plateX, plateY, w, h, 0.88);
+
+  const barX = plateX + 64;
+  const barY = plateY + 21;
+  const barW = 52;
+  const hpLabel = `${Math.max(0, Math.ceil(ratio * 100))}%`;
+
+  ctx.save();
+  drawAtlasSprite(ctx, assets, 'ui', 'boss_warning', plateX + 31, plateY + 16, 24, 0.94);
+  ctx.globalAlpha *= 0.95;
+  ctx.fillStyle = 'rgba(28, 5, 6, 0.84)';
+  ctx.fillRect(barX, barY, barW, 4);
+  ctx.fillStyle = ratio <= 0.3 ? '#ff6f59' : '#f4c95d';
+  ctx.fillRect(barX, barY, Math.max(3, barW * ratio), 4);
+  ctx.fillStyle = '#fff7dc';
+  ctx.shadowColor = '#ff6f59';
+  ctx.shadowBlur = 9;
+  ctx.font = '900 12px system-ui';
+  ctx.fillText(hpLabel, plateX + 112, plateY + 15);
+  ctx.restore();
+  return true;
+}
+
 function drawHitBoltSprite(ctx, image, from, to, targetType, alpha = 1) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const dx = to.x - from.x;
@@ -1084,6 +1146,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false, options = {})
     }
     drawEnemyTrackTrail(ctx, assets, enemy, x, y, state.now);
     if (drawAtlasSprite(ctx, assets, 'enemies', enemy.spriteKey ?? enemy.enemyId, x, y, size)) {
+      drawBossVitalPlate(ctx, assets, enemy, x, y, size, imageBackdrop);
       return;
     }
     ctx.fillStyle = enemy.enemyId === 'mini_boss' ? '#ff6f59' : '#d94f45';
@@ -1092,6 +1155,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false, options = {})
     ctx.beginPath();
     ctx.roundRect(x - 10, y - 9, enemy.enemyId === 'mini_boss' ? 30 : 20, enemy.enemyId === 'mini_boss' ? 24 : 18, 6);
     ctx.fill();
+    drawBossVitalPlate(ctx, assets, enemy, x, y, size, imageBackdrop);
   });
   drawSignalCoreCriticalFlare(ctx, assets.signalCoreGates, state, imageBackdrop);
 
