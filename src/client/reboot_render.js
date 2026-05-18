@@ -504,6 +504,23 @@ function drawCombatActionSurgeSprite(ctx, image, index, layout, alpha = 1) {
   return true;
 }
 
+function drawCombatActionFallbackStamp(ctx, assets, type, cx, cy, alpha = 1) {
+  const meta = MOMENT_CALLOUTS[type];
+  if (!meta) return false;
+  if (drawActionStampPanel(ctx, assets.actionStamps, meta.index, cx - 44, cy - 22, 88, 44, alpha)) return true;
+  if (drawAtlasSprite(ctx, assets, 'ui', meta.icon, cx, cy, 42, alpha * 0.92)) return true;
+  ctx.save();
+  ctx.globalAlpha *= Math.min(0.72, alpha * 0.72);
+  ctx.fillStyle = meta.index === 1 ? '#f4c95d' : meta.index === 2 ? '#dff9ff' : '#58d7ff';
+  ctx.shadowColor = ctx.fillStyle;
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, 20, 9, -0.18, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  return true;
+}
+
 function drawSummonIgnitionSprite(ctx, image, index, cx, cy, w, h, alpha = 1) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const cellWidth = image.naturalWidth / 3;
@@ -1250,21 +1267,21 @@ function drawCombatVfx(ctx, state, assets = {}, localBoardId = 'p1') {
   for (const event of recentEvents(state, 'summon')) {
     const point = boardVfxPoint(state, event, localBoardId);
     const alpha = eventAlpha(state, event);
-    drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 0, point.x, point.y + 2, 126, 112, alpha * 0.92);
-    if (event.highlight) drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 2, point.x, point.y - 2, 128, 128, alpha * 0.78);
-    drawAtlasSprite(ctx, assets, 'vfx', 'summon_flash', point.x, point.y, 84, alpha);
+    const drewReveal = drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 0, point.x, point.y + 2, 126, 112, alpha * 0.92);
+    if (event.highlight && drewReveal) drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 2, point.x, point.y - 2, 128, 128, alpha * 0.78);
+    if (!drewReveal) drawCombatActionFallbackStamp(ctx, assets, 'summon', point.x, point.y, alpha * 0.84);
   }
   for (const event of recentEvents(state, 'merge')) {
     const point = boardVfxPoint(state, event, localBoardId);
     const alpha = eventAlpha(state, event);
-    drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 1, point.x, point.y, 146, 132, alpha * 0.88);
-    if (event.highlight) drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 2, point.x, point.y - 2, 132, 132, alpha * 0.74);
-    drawAtlasSprite(ctx, assets, 'vfx', 'merge_burst', point.x, point.y, 112, alpha);
+    const drewReveal = drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 1, point.x, point.y, 146, 132, alpha * 0.88);
+    if (event.highlight && drewReveal) drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 2, point.x, point.y - 2, 132, 132, alpha * 0.74);
+    if (!drewReveal) drawCombatActionFallbackStamp(ctx, assets, 'merge', point.x, point.y, alpha * 0.84);
   }
   for (const event of recentEvents(state, 'rescue')) {
     const alpha = eventAlpha(state, event);
-    drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 3, 195, 328, 156, 118, alpha * 0.9);
-    drawAtlasSprite(ctx, assets, 'vfx', 'rescue_flare', 195, 328, 132, alpha);
+    const drewReveal = drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 3, 195, 328, 156, 118, alpha * 0.9);
+    if (!drewReveal) drawCombatActionFallbackStamp(ctx, assets, 'rescue', 195, 328, alpha * 0.84);
   }
   drawHitBeams(ctx, state, assets, localBoardId);
   drawDeathBursts(ctx, state, assets);

@@ -7,6 +7,28 @@ function image(width = 256, height = 128) {
   return { complete: true, naturalWidth: width, naturalHeight: height };
 }
 
+function actionFlashDraws(commands, sourceX) {
+  return commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[1] === sourceX
+      && command.args[2] === 0
+      && command.args[3] === 256
+      && command.args[4] === 256
+      && [84, 112, 132].includes(command.args[7])
+  ));
+}
+
+function combatRevealIndex(commands, sourceX) {
+  return commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1920
+      && command.args[0].naturalHeight === 512
+      && command.args[1] === sourceX
+  ));
+}
+
 function mockContext() {
   const commands = [];
   const ctx = {
@@ -618,7 +640,7 @@ test('enemy sprites follow serialized track progress instead of a timer-only pat
   assert.equal(enemyDraw.args[5] + enemyDraw.args[7] / 2 > 260, true, 'enemy with high progress should render near the protected track end');
 });
 
-test('random combat actions draw generated reveal VFX before the small legacy flash', () => {
+test('random combat actions use generated reveal VFX without legacy action flashes', () => {
   const ctx = mockContext();
   drawRebootBattle(
     ctx,
@@ -658,20 +680,146 @@ test('random combat actions draw generated reveal VFX before the small legacy fl
   assert.equal(sourceXs.includes(960), true, 'expected rare reveal flash cell');
   assert.equal(sourceXs.includes(1440), true, 'expected rescue reveal cell');
 
-  const firstRevealIndex = ctx.commands.findIndex((command) => (
-    command.type === 'drawImage'
-      && command.args[0].naturalWidth === 1920
-      && command.args[0].naturalHeight === 512
-  ));
-  const firstLegacyVfxIndex = ctx.commands.findIndex((command) => (
-    command.type === 'drawImage'
-      && command.args[0].naturalWidth === 1280
-      && command.args[0].naturalHeight === 256
-      && [0, 256, 512].includes(command.args[1])
-  ));
+  const firstRevealIndex = combatRevealIndex(ctx.commands, 0);
+  const legacyActionFlashes = [0, 256, 512].flatMap((sourceX) => actionFlashDraws(ctx.commands, sourceX));
   assert.notEqual(firstRevealIndex, -1, 'expected generated reveal VFX to draw');
-  assert.notEqual(firstLegacyVfxIndex, -1, 'expected legacy compact flash to still draw');
-  assert.equal(firstRevealIndex < firstLegacyVfxIndex, true, 'big reveal should establish the moment before the compact flash');
+  assert.deepEqual(legacyActionFlashes, [], 'generated reveal VFX should replace the old compact action flashes');
+});
+
+test('combat action feedback falls back to generated action stamps while reveal VFX loads', () => {
+  const ctx = mockContext();
+  const actionStamps = image(768, 128);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 12.32,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }, { spriteKey: 'burst_pin' }] },
+        p2: { danger: 42, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [],
+      events: [
+        { type: 'summon', at: 12.02, playerId: 'p1', highlight: true },
+        { type: 'merge', at: 12.08, playerId: 'p1', highlight: true },
+        { type: 'rescue', at: 12.12, playerId: 'p1', highlight: true }
+      ],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1282, 256),
+      board: image(1281, 256),
+      vfx: image(1280, 256),
+      actionStamps,
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const stampDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === actionStamps
+      && command.args[1] === 512
+      && command.args[7] >= 240
+      && command.args[8] >= 70
+  ));
+  const compactFallbacks = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === actionStamps
+      && [0, 256, 512].includes(command.args[1])
+      && command.args[7] <= 96
+      && command.args[8] <= 54
+  ));
+  const compactSources = compactFallbacks.map((command) => command.args[1]);
+
+  assert.ok(stampDraw, 'expected generated action stamp fallback for the latest rescue action');
+  assert.equal(compactSources.includes(0), true, 'missing compact generated summon fallback stamp');
+  assert.equal(compactSources.includes(256), true, 'missing compact generated merge fallback stamp');
+  assert.equal(compactSources.includes(512), true, 'missing compact generated rescue fallback stamp');
+  assert.deepEqual([0, 256, 512].flatMap((sourceX) => actionFlashDraws(ctx.commands, sourceX)), []);
+});
+
+test('combat action feedback falls back to generated UI icons while stamp art loads', () => {
+  const ctx = mockContext();
+  const ui = image(1536, 256);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 12.32,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }, { spriteKey: 'burst_pin' }] },
+        p2: { danger: 42, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [],
+      events: [
+        { type: 'summon', at: 12.02, playerId: 'p1', highlight: true },
+        { type: 'merge', at: 12.08, playerId: 'p1', highlight: true },
+        { type: 'rescue', at: 12.12, playerId: 'p1', highlight: true }
+      ],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1282, 256),
+      board: image(1281, 256),
+      vfx: image(1280, 256),
+      ui,
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const iconSources = ctx.commands
+    .filter((command) => (
+      command.type === 'drawImage'
+        && command.args[0] === ui
+        && [0, 256, 512].includes(command.args[1])
+        && command.args[7] === 42
+    ))
+    .map((command) => command.args[1]);
+
+  assert.equal(iconSources.includes(0), true, 'missing generated summon icon fallback');
+  assert.equal(iconSources.includes(256), true, 'missing generated merge icon fallback');
+  assert.equal(iconSources.includes(512), true, 'missing generated rescue icon fallback');
+  assert.deepEqual([0, 256, 512].flatMap((sourceX) => actionFlashDraws(ctx.commands, sourceX)), []);
+});
+
+test('combat action feedback keeps an emergency pulse if fallback atlases are unavailable', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 12.32,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }, { spriteKey: 'burst_pin' }] },
+        p2: { danger: 42, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [],
+      events: [
+        { type: 'summon', at: 12.02, playerId: 'p1', highlight: true },
+        { type: 'merge', at: 12.08, playerId: 'p1', highlight: true },
+        { type: 'rescue', at: 12.12, playerId: 'p1', highlight: true }
+      ],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1282, 256),
+      board: image(1281, 256),
+      vfx: image(1280, 256),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const emergencyPulses = ctx.commands.filter((command) => (
+    command.type === 'ellipse'
+      && command.args[2] === 20
+      && command.args[3] === 9
+  ));
+
+  assert.equal(emergencyPulses.length >= 3, true, 'missing emergency action feedback pulses');
+  assert.deepEqual([0, 256, 512].flatMap((sourceX) => actionFlashDraws(ctx.commands, sourceX)), []);
 });
 
 test('boss death burst gets a generated battlefield finale behind the kill burst', () => {
@@ -754,6 +902,7 @@ test('player board uses a generated landing tray beneath summoned units', () => 
       units: image(1280, 256),
       board: image(1280, 256),
       vfx: image(1280, 256),
+      combatRevealVfx: image(1920, 512),
       playerBoardTray: image(780, 320)
     }
   );
@@ -777,20 +926,14 @@ test('player board uses a generated landing tray beneath summoned units', () => 
       && command.args[8] <= 78
       && command.args[6] < 456
   ));
-  const summonVfxIndex = ctx.commands.findIndex((command) => (
-    command.type === 'drawImage'
-      && command.args[0].naturalWidth === 1280
-      && command.args[0].naturalHeight === 256
-      && command.args[1] === 0
-      && command.args[2] === 0
-      && command.args[7] === 84
-  ));
+  const summonRevealIndex = combatRevealIndex(ctx.commands, 0);
 
   assert.notEqual(trayIndex, -1, 'expected generated player board tray to draw');
   assert.notEqual(unitIndex, -1, 'expected summoned unit to draw');
-  assert.notEqual(summonVfxIndex, -1, 'expected summon landing VFX to draw');
+  assert.notEqual(summonRevealIndex, -1, 'expected generated summon reveal VFX to draw');
   assert.equal(trayIndex < unitIndex, true, 'tray should sit beneath summoned units');
-  assert.equal(unitIndex < summonVfxIndex, true, 'summon flash should sit above the new unit');
+  assert.equal(unitIndex < summonRevealIndex, true, 'summon reveal should sit above the new unit');
+  assert.deepEqual(actionFlashDraws(ctx.commands, 0), [], 'summon should not use the old compact action flash');
 });
 
 test('player board anchors summoned units with a generated activation ring', () => {
@@ -912,7 +1055,7 @@ test('player board does not mark grade-two reboot units as normal merge ready', 
   assert.equal(mergeReadyFrames.length, 0, 'grade-two units should not get normal merge-ready frames');
 });
 
-test('first player summon gets a generated reward spotlight before the small flash', () => {
+test('first player summon gets a generated reward spotlight before the reveal VFX', () => {
   const ctx = mockContext();
   drawRebootBattle(
     ctx,
@@ -932,6 +1075,7 @@ test('first player summon gets a generated reward spotlight before the small fla
       units: image(1280, 256),
       board: image(1280, 256),
       vfx: image(1280, 256),
+      combatRevealVfx: image(1920, 512),
       firstCommandSpotlight: image(256, 128),
       playerBoardTray: image(780, 320)
     }
@@ -945,18 +1089,12 @@ test('first player summon gets a generated reward spotlight before the small fla
       && command.args[8] >= 88
       && command.args[6] >= 390
   ));
-  const summonVfxIndex = ctx.commands.findIndex((command) => (
-    command.type === 'drawImage'
-      && command.args[0].naturalWidth === 1280
-      && command.args[0].naturalHeight === 256
-      && command.args[1] === 0
-      && command.args[2] === 0
-      && command.args[7] === 84
-  ));
+  const summonRevealIndex = combatRevealIndex(ctx.commands, 0);
 
   assert.notEqual(spotlightIndex, -1, 'expected generated first-summon spotlight to draw on the player board');
-  assert.notEqual(summonVfxIndex, -1, 'expected summon flash to draw above the reward spotlight');
-  assert.equal(spotlightIndex < summonVfxIndex, true, 'reward spotlight should establish the summon moment before the flash');
+  assert.notEqual(summonRevealIndex, -1, 'expected summon reveal to draw above the reward spotlight');
+  assert.equal(spotlightIndex < summonRevealIndex, true, 'reward spotlight should establish the summon moment before the reveal');
+  assert.deepEqual(actionFlashDraws(ctx.commands, 0), [], 'first summon should not use the old compact action flash');
 });
 
 test('pre-summon board cue links the first command to the player socket', () => {
@@ -1219,7 +1357,7 @@ test('first summon cue owns attention after the brief operation intro', () => {
   assert.equal(cueDraws.length >= 1, true, 'expected first summon socket cue to remain after the intro clears');
 });
 
-test('first player summon sends generated ignition from board toward track before flash', () => {
+test('first player summon sends generated ignition from board toward track before reveal', () => {
   const ctx = mockContext();
   drawRebootBattle(
     ctx,
@@ -1240,6 +1378,7 @@ test('first player summon sends generated ignition from board toward track befor
       enemies: image(1024, 256),
       board: image(1280, 256),
       vfx: image(1280, 256),
+      combatRevealVfx: image(1920, 512),
       summonIgnition: image(768, 256),
       firstCommandSpotlight: image(256, 128),
       playerBoardTray: image(780, 320)
@@ -1252,17 +1391,12 @@ test('first player summon sends generated ignition from board toward track befor
       && command.args[0].naturalHeight === 256
       && [0, 256, 512].includes(command.args[1])
   ));
-  const summonVfxIndex = ctx.commands.findIndex((command) => (
-    command.type === 'drawImage'
-      && command.args[0].naturalWidth === 1280
-      && command.args[0].naturalHeight === 256
-      && command.args[1] === 0
-      && command.args[7] === 84
-  ));
+  const summonRevealIndex = combatRevealIndex(ctx.commands, 0);
 
   assert.equal(ignitionDraws.length >= 3, true, 'expected landing ring, lane wake, and spark ignition cells');
-  assert.notEqual(summonVfxIndex, -1, 'expected summon flash to still draw');
-  assert.equal(ctx.commands.indexOf(ignitionDraws[0]) < summonVfxIndex, true, 'ignition should make the board feel alive before the small flash');
+  assert.notEqual(summonRevealIndex, -1, 'expected summon reveal to draw');
+  assert.equal(ctx.commands.indexOf(ignitionDraws[0]) < summonRevealIndex, true, 'ignition should make the board feel alive before the reveal');
+  assert.deepEqual(actionFlashDraws(ctx.commands, 0), [], 'summon ignition should not hand off to the old compact action flash');
 });
 
 test('second online player gets first summon premium VFX on their own lower board', () => {
@@ -1311,7 +1445,7 @@ test('second online player gets first summon premium VFX on their own lower boar
   assert.equal(ignitionDraws.length >= 3, true, 'expected p2 first-summon ignition cells near the lower own board');
 });
 
-test('first player merge gets a generated board sigil before the burst', () => {
+test('first player merge gets a generated board sigil before the reveal VFX', () => {
   const ctx = mockContext();
   drawRebootBattle(
     ctx,
@@ -1331,6 +1465,7 @@ test('first player merge gets a generated board sigil before the burst', () => {
       units: image(1280, 256),
       board: image(1280, 256),
       vfx: image(1280, 256),
+      combatRevealVfx: image(1920, 512),
       cosmeticSigils: image(960, 128),
       playerBoardTray: image(780, 320)
     }
@@ -1347,21 +1482,15 @@ test('first player merge gets a generated board sigil before the burst', () => {
       && command.args[7] >= 300
       && command.args[8] >= 86
   ));
-  const mergeBurstIndex = ctx.commands.findIndex((command) => (
-    command.type === 'drawImage'
-      && command.args[0].naturalWidth === 1280
-      && command.args[0].naturalHeight === 256
-      && command.args[1] === 256
-      && command.args[2] === 0
-      && command.args[7] === 112
-  ));
+  const mergeRevealIndex = combatRevealIndex(ctx.commands, 480);
 
   assert.notEqual(mergeSigilIndex, -1, 'expected generated merge sigil to draw across the player board');
-  assert.notEqual(mergeBurstIndex, -1, 'expected merge burst to draw above the board sigil');
-  assert.equal(mergeSigilIndex < mergeBurstIndex, true, 'merge sigil should ground the success moment before the burst');
+  assert.notEqual(mergeRevealIndex, -1, 'expected generated merge reveal to draw above the board sigil');
+  assert.equal(mergeSigilIndex < mergeRevealIndex, true, 'merge sigil should ground the success moment before the reveal');
+  assert.deepEqual(actionFlashDraws(ctx.commands, 256), [], 'merge should not use the old compact action burst');
 });
 
-test('first player rescue gets a generated link sigil before the flare', () => {
+test('first player rescue gets a generated link sigil before the reveal VFX', () => {
   const ctx = mockContext();
   drawRebootBattle(
     ctx,
@@ -1382,6 +1511,7 @@ test('first player rescue gets a generated link sigil before the flare', () => {
       enemies: image(1024, 256),
       board: image(1280, 256),
       vfx: image(1280, 256),
+      combatRevealVfx: image(1920, 512),
       cosmeticSigils: image(960, 128),
       playerBoardTray: image(780, 320)
     }
@@ -1399,21 +1529,15 @@ test('first player rescue gets a generated link sigil before the flare', () => {
       && command.args[7] >= 300
       && command.args[8] >= 94
   ));
-  const rescueFlareIndex = ctx.commands.findIndex((command) => (
-    command.type === 'drawImage'
-      && command.args[0].naturalWidth === 1280
-      && command.args[0].naturalHeight === 256
-      && command.args[1] === 512
-      && command.args[2] === 0
-      && command.args[7] === 132
-  ));
+  const rescueRevealIndex = combatRevealIndex(ctx.commands, 1440);
 
   assert.notEqual(rescueSigilIndex, -1, 'expected generated rescue sigil to draw between the boards');
-  assert.notEqual(rescueFlareIndex, -1, 'expected rescue flare to draw above the link sigil');
-  assert.equal(rescueSigilIndex < rescueFlareIndex, true, 'rescue sigil should ground the co-op save before the flare');
+  assert.notEqual(rescueRevealIndex, -1, 'expected rescue reveal to draw above the link sigil');
+  assert.equal(rescueSigilIndex < rescueRevealIndex, true, 'rescue sigil should ground the co-op save before the reveal');
+  assert.deepEqual(actionFlashDraws(ctx.commands, 512), [], 'rescue should not use the old compact action flare');
 });
 
-test('merge and rescue moments get the latest full-canvas generated action surge before compact flashes', () => {
+test('merge and rescue moments use generated action surges before reveal VFX', () => {
   const mergeCtx = mockContext();
   const actionSurges = image(780, 620);
   drawRebootBattle(
@@ -1435,6 +1559,7 @@ test('merge and rescue moments get the latest full-canvas generated action surge
       enemies: image(1024, 256),
       board: image(1280, 256),
       vfx: image(1280, 256),
+      combatRevealVfx: image(1920, 512),
       playerBoardTray: image(780, 320),
       actionSurges
     }
@@ -1451,16 +1576,11 @@ test('merge and rescue moments get the latest full-canvas generated action surge
       && command.args[7] === 390
       && command.args[8] === 620
   ));
-  const mergeCtxBurstIndex = mergeCtx.commands.findIndex((command) => (
-    command.type === 'drawImage'
-      && command.args[0].naturalWidth === 1280
-      && command.args[0].naturalHeight === 256
-      && command.args[1] === 256
-      && command.args[7] === 112
-  ));
+  const mergeCtxRevealIndex = combatRevealIndex(mergeCtx.commands, 480);
 
   assert.notEqual(mergeCtxSurgeIndex, -1, 'expected generated merge action surge to cover the battlefield');
-  assert.equal(mergeCtxSurgeIndex < mergeCtxBurstIndex, true, 'merge surge should sell the action before the compact flash');
+  assert.equal(mergeCtxSurgeIndex < mergeCtxRevealIndex, true, 'merge surge should sell the action before the reveal');
+  assert.deepEqual(actionFlashDraws(mergeCtx.commands, 256), [], 'merge surge should not hand off to the old compact burst');
 
   const rescueCtx = mockContext();
   drawRebootBattle(
@@ -1485,6 +1605,7 @@ test('merge and rescue moments get the latest full-canvas generated action surge
       enemies: image(1024, 256),
       board: image(1280, 256),
       vfx: image(1280, 256),
+      combatRevealVfx: image(1920, 512),
       playerBoardTray: image(780, 320),
       actionSurges
     }
@@ -1514,17 +1635,12 @@ test('merge and rescue moments get the latest full-canvas generated action surge
       && command.args[7] === 390
       && command.args[8] === 620
   ));
-  const rescueFlareIndex = rescueCtx.commands.findIndex((command) => (
-    command.type === 'drawImage'
-      && command.args[0].naturalWidth === 1280
-      && command.args[0].naturalHeight === 256
-      && command.args[1] === 512
-      && command.args[7] === 132
-  ));
+  const rescueRevealIndex = combatRevealIndex(rescueCtx.commands, 1440);
 
   assert.equal(mergeSurgeIndex, -1, 'overlapping actions should not stack full-canvas merge and rescue surges');
   assert.notEqual(rescueSurgeIndex, -1, 'expected generated rescue action surge to cover the battlefield');
-  assert.equal(rescueSurgeIndex < rescueFlareIndex, true, 'rescue surge should sell the co-op save before the compact flare');
+  assert.equal(rescueSurgeIndex < rescueRevealIndex, true, 'rescue surge should sell the co-op save before the reveal');
+  assert.deepEqual(actionFlashDraws(rescueCtx.commands, 512), [], 'rescue surge should not hand off to the old compact flare');
 });
 
 test('rescue action surge sits above generated board trays so the save impact is not buried', () => {
@@ -1532,6 +1648,7 @@ test('rescue action surge sits above generated board trays so the save impact is
   const actionSurges = image(780, 620);
   const playerBoardTray = image(780, 320);
   const vfx = image(1280, 256);
+  const combatRevealVfx = image(1920, 512);
   drawRebootBattle(
     ctx,
     {
@@ -1552,7 +1669,8 @@ test('rescue action surge sits above generated board trays so the save impact is
       board: image(1280, 256),
       playerBoardTray,
       actionSurges,
-      vfx
+      vfx,
+      combatRevealVfx
     }
   );
 
@@ -1563,18 +1681,17 @@ test('rescue action surge sits above generated board trays so the save impact is
   const rescueSurgeIndex = ctx.commands.findIndex((command) => (
     command.type === 'drawImage' && command.args[0] === actionSurges && command.args[1] === 390
   ));
-  const rescueFlareIndex = ctx.commands.findIndex((command) => (
-    command.type === 'drawImage' && command.args[0] === vfx && command.args[1] === 512
-  ));
+  const rescueRevealIndex = combatRevealIndex(ctx.commands, 1440);
 
   assert.equal(trayIndexes.length >= 1, true, 'expected the local generated board tray to render');
   assert.notEqual(rescueSurgeIndex, -1, 'expected rescue action surge to render');
-  assert.notEqual(rescueFlareIndex, -1, 'expected compact rescue flare to render');
+  assert.notEqual(rescueRevealIndex, -1, 'expected rescue reveal to render');
   assert.equal(rescueSurgeIndex > Math.max(...trayIndexes), true, 'rescue surge should sit above board trays');
-  assert.equal(rescueSurgeIndex < rescueFlareIndex, true, 'compact rescue flare should still land on top of the surge');
+  assert.equal(rescueSurgeIndex < rescueRevealIndex, true, 'rescue reveal should land on top of the surge');
+  assert.deepEqual(actionFlashDraws(ctx.commands, 512), [], 'rescue action surge should not rely on the old compact flare');
 });
 
-test('merge reward surge lingers long enough to read after the tap flash', () => {
+test('merge reward surge lingers long enough to read after the tap feedback', () => {
   const ctx = mockContext();
   const actionSurges = image(780, 620);
   const cosmeticSigils = image(960, 128);
@@ -1627,7 +1744,7 @@ test('merge reward surge lingers long enough to read after the tap flash', () =>
     .reverse()
     .find((command) => command.type === 'globalAlpha')?.value ?? 0;
 
-  assert.notEqual(surgeIndex, -1, 'expected generated merge surge to remain visible after the first flash');
+  assert.notEqual(surgeIndex, -1, 'expected generated merge surge to remain visible after the first feedback beat');
   assert.notEqual(sigilIndex, -1, 'expected generated merge sigil to remain under the evolved unit');
   assert.equal(surgeAlpha >= 0.32, true, `late merge surge should stay readable: ${surgeAlpha}`);
   assert.equal(sigilAlpha >= 0.34, true, `late merge sigil should stay readable: ${sigilAlpha}`);
@@ -1722,6 +1839,7 @@ test('first player action clears the operation start cutin so combat feedback st
       enemies: image(1024, 256),
       board: image(1280, 256),
       vfx: image(1280, 256),
+      combatRevealVfx: image(1920, 512),
       hitBolts: image(768, 128),
       startCutin: image(390, 112),
       actionStamps: image(768, 128),
@@ -1739,17 +1857,12 @@ test('first player action clears the operation start cutin so combat feedback st
       && command.args[0].naturalWidth === 768
       && command.args[0].naturalHeight === 128
   ));
-  const summonVfxDraws = ctx.commands.filter((command) => (
-    command.type === 'drawImage'
-      && command.args[0].naturalWidth === 1280
-      && command.args[0].naturalHeight === 256
-      && command.args[1] === 0
-      && command.args[7] === 84
-  ));
+  const summonRevealIndex = combatRevealIndex(ctx.commands, 0);
 
   assert.deepEqual(startCutinDraws, []);
   assert.equal(hitBoltDraws.length >= 1, true, 'expected hit bolt to remain visible after first action');
-  assert.equal(summonVfxDraws.length >= 1, true, 'expected summon VFX to remain visible after first action');
+  assert.notEqual(summonRevealIndex, -1, 'expected summon reveal to remain visible after first action');
+  assert.deepEqual(actionFlashDraws(ctx.commands, 0), [], 'first action should no longer render the old compact summon flash');
 });
 
 test('compact combat action stamp stays readable long enough after the first summon', () => {
@@ -1783,7 +1896,7 @@ test('compact combat action stamp stays readable long enough after the first sum
       && command.args[0].naturalWidth === 768
       && command.args[0].naturalHeight === 128
   ));
-  assert.ok(stampDraw, 'expected compact summon action stamp to remain visible after the action flash');
+  assert.ok(stampDraw, 'expected compact summon action stamp to remain visible after the action feedback');
   assert.equal(stampDraw.args[6] >= 320, true, `action stamp should sit below the center track: ${stampDraw.args[6]}`);
   assert.equal(stampDraw.args[8] <= 78, true, `action stamp should stay compact: ${stampDraw.args[8]}`);
   const stampIndex = ctx.commands.indexOf(stampDraw);
@@ -1872,6 +1985,7 @@ test('rescue action stamp stays below boss warning copy during crisis timing', (
       && command.args[0].naturalWidth === 768
       && command.args[0].naturalHeight === 128
       && command.args[1] === 512
+      && command.args[7] >= 240
   ));
 	  assert.notEqual(bossTitleIndex, -1, 'expected boss warning title to render during crisis timing');
 	  assert.notEqual(actionSurgeIndex, -1, 'expected rescue action surge to render during crisis timing');

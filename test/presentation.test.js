@@ -2736,7 +2736,7 @@ test('combat renderer anchors a generated boss aura under boss enemies', async (
 
   const trackBlock = render.slice(render.indexOf('function drawTrack'), render.indexOf('function enemyScreenPoint'));
   assert.equal(trackBlock.indexOf('drawBossAura(ctx, assets, x, y, state.now);') < trackBlock.indexOf("drawAtlasSprite(ctx, assets, 'enemies'"), true);
-  const auraBlock = render.slice(render.indexOf('function drawBossAuraSprite'), render.indexOf('function drawHitBoltSprite'));
+  const auraBlock = render.slice(render.indexOf('function drawBossAuraSprite'), render.indexOf('function drawCombatRevealVfxSprite'));
   assert.equal(auraBlock.includes('fillStyle'), false);
   assert.equal(auraBlock.includes('roundRect'), false);
 });
