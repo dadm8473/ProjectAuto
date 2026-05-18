@@ -348,9 +348,9 @@ function formatResultRewards(rewards) {
   }).join(' · ');
 }
 
-function resultRewardMarkup(rewards) {
+function resultRewardMarkup(rewards, icon, label) {
   const rewardLabel = formatResultRewards(rewards);
-  return `<span class="result-reward-label" aria-hidden="true">획득</span> <strong class="result-reward-value" aria-hidden="true">${rewardLabel}</strong>`;
+  return `<span class="result-reward-label" aria-hidden="true">${label}</span> <span class="result-reward-icon" data-reward-icon="${selectorValue(icon)}" aria-hidden="true"></span> <strong class="result-reward-value" aria-hidden="true">${rewardLabel}</strong>`;
 }
 
 function resultHighlightMarkup(model) {
@@ -766,7 +766,8 @@ function showResult(current) {
   dom.resultNextGoal.textContent = model.nextGoal.label;
   dom.resultHighlights.innerHTML = resultHighlightMarkup(model);
   dom.resultReward.setAttribute('aria-label', `획득 ${formatResultRewards(model.rewards)}`);
-  dom.resultReward.innerHTML = resultRewardMarkup(model.rewards);
+  dom.resultReward.dataset.rewardTone = model.rewardTone;
+  dom.resultReward.innerHTML = resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel);
   dom.resultRetryLabel.textContent = model.primaryAction.label;
   dom.resultRetryButton.title = model.primaryAction.title ?? model.primaryAction.label;
   dom.resultRetryButton.setAttribute('aria-label', model.primaryAction.ariaLabel ?? model.primaryAction.label);

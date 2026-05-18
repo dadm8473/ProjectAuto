@@ -4853,15 +4853,45 @@ body[data-app-screen="season"] .app-screen::after {
   opacity: 0.68;
 }
 
+.result-overlay[data-result-status="won"] .result-reward[data-reward-tone="boss"]::after {
+  background-position: 0 0;
+  opacity: 1;
+  filter: saturate(1.34) drop-shadow(0 12px 18px rgba(255, 111, 89, 0.48));
+}
+
 .result-reward-label,
+.result-reward-icon,
 .result-reward-value {
   position: relative;
   z-index: 1;
-  grid-column: 2;
   min-width: 0;
+}
+
+.result-reward-label,
+.result-reward-value {
+  grid-column: 2;
   text-align: center;
   text-shadow: 0 3px 10px rgba(0, 0, 0, 0.78), 0 0 12px rgba(88, 215, 255, 0.22);
 }
+
+.result-reward-icon {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  justify-self: center;
+  align-self: center;
+  width: clamp(48px, calc(var(--result-panel-width) * 0.145), 58px);
+  aspect-ratio: 1 / 1;
+  pointer-events: none;
+  background-image: url("/src/client/assets/generated/reboot-reward-icons.png");
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.58));
+}
+
+.result-reward-icon[data-reward-icon="soft_currency"] { background-position: 0 0; }
+.result-reward-icon[data-reward-icon="cosmetic_shard"] { background-position: 33.333% 0; }
+.result-reward-icon[data-reward-icon="season_progress"] { background-position: 66.666% 0; }
+.result-reward-icon[data-reward-icon="unlock_capsule"] { background-position: 100% 0; }
 
 .result-reward-label {
   align-self: end;
@@ -4869,6 +4899,7 @@ body[data-app-screen="season"] .app-screen::after {
   font-size: 10px;
   font-weight: 1000;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .result-reward-value {
@@ -4922,12 +4953,20 @@ body[data-app-screen="season"] .app-screen::after {
     width: 58px;
   }
 
+  .result-reward-icon {
+    width: 42px;
+  }
+
   .result-overlay[data-result-status="won"] .result-reward::after {
     background-position: 100% 0;
   }
 
   .result-overlay[data-result-status="lost"] .result-reward::after {
     background-position: 50% 0;
+  }
+
+  .result-overlay[data-result-status="won"] .result-reward[data-reward-tone="boss"]::after {
+    background-position: 0 0;
   }
 
   .result-reward-value {

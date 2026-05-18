@@ -200,6 +200,31 @@ test('result model maps the key run moment to a generated medal type', () => {
   assert.equal(tactics.highlight.medal, 'tactics');
 });
 
+test('boss result model exposes generated boss loot presentation', () => {
+  const boss = buildRebootResultModel({
+    result: { status: 'won', reason: 'boss_final_hit' },
+    rewards: [{ type: 'soft', amount: 24 }]
+  });
+  const slowed = buildRebootResultModel({
+    result: { status: 'won', reason: 'boss_slowed' },
+    rewards: [{ type: 'soft', amount: 24 }]
+  });
+  const rescue = buildRebootResultModel({
+    result: { status: 'won', reason: 'partner_rescued' },
+    rewards: [{ type: 'soft', amount: 24 }]
+  });
+
+  assert.equal(boss.rewardTone, 'boss');
+  assert.equal(boss.rewardIcon, 'unlock_capsule');
+  assert.equal(boss.rewardLabel, '전리품');
+  assert.equal(slowed.rewardTone, 'boss');
+  assert.equal(slowed.rewardIcon, 'unlock_capsule');
+  assert.equal(slowed.rewardLabel, '전리품');
+  assert.equal(rescue.rewardTone, 'standard');
+  assert.equal(rescue.rewardIcon, 'soft_currency');
+  assert.equal(rescue.rewardLabel, '획득');
+});
+
 test('result model preserves multiple run highlights for generated result strips', () => {
   const model = buildRebootResultModel({
     result: {

@@ -72,6 +72,21 @@ function resultHighlights(result = {}, won = false) {
   return keys.map((key) => resultHighlightForKey(key, won));
 }
 
+function resultRewardPresentation(reason, won) {
+  if (won && ['boss_final_hit', 'boss_slowed'].includes(reason)) {
+    return {
+      rewardTone: 'boss',
+      rewardIcon: 'unlock_capsule',
+      rewardLabel: '전리품'
+    };
+  }
+  return {
+    rewardTone: 'standard',
+    rewardIcon: 'soft_currency',
+    rewardLabel: '획득'
+  };
+}
+
 export function unitUpgradeCost(level = 1) {
   return 40 + Math.max(0, level - 1) * 20;
 }
@@ -813,6 +828,7 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
     reason: { label: REASON_LABELS[reason] ?? '전투 완료', reason },
     nextGoal: { label: GOAL_LABELS[result?.nextGoal] ?? '핵심 타이밍 재도전', goal: result?.nextGoal ?? 'retry' },
     rewards,
+    ...resultRewardPresentation(reason, won),
     primaryAction,
     secondaryAction,
     forbiddenActions: []

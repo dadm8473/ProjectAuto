@@ -2278,9 +2278,11 @@ test('result reward copy names the earned currency instead of a generic reward n
     "if (reward.type === 'soft') return `보석 +${reward.amount}`;",
     'id="resultReward" class="result-reward" role="group"',
     "dom.resultReward.setAttribute('aria-label', `획득 ${formatResultRewards(model.rewards)}`);",
+    'dom.resultReward.dataset.rewardTone = model.rewardTone;',
     'class="result-reward-label" aria-hidden="true"',
+    'class="result-reward-icon"',
     'class="result-reward-value" aria-hidden="true"',
-    'resultRewardMarkup(model.rewards)'
+    'resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel)'
   ]) {
     assert.equal(`${index}\n${app}`.includes(marker), true, marker);
   }
@@ -2300,10 +2302,15 @@ test('result reward uses a generated claim capsule instead of a text strip', asy
     'background-image: var(--result-reward-capsules);',
     'background-size: 300% 100%;',
     'display: block;\n  align-self: start;\n  color: #fff4c2;',
-    'function resultRewardMarkup(rewards)',
+    'function resultRewardMarkup(rewards, icon, label)',
     'class="result-reward-label"',
+    'class="result-reward-icon"',
     'class="result-reward-value"',
-    'dom.resultReward.innerHTML = resultRewardMarkup(model.rewards);'
+    'dom.resultReward.innerHTML = resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel);',
+    '.result-reward-icon',
+    'background-image: url("/src/client/assets/generated/reboot-reward-icons.png");',
+    '.result-reward-icon[data-reward-icon="unlock_capsule"]',
+    '.result-overlay[data-result-status="won"] .result-reward[data-reward-tone="boss"]::after'
   ]) {
     assert.equal(`${css}\n${app}`.includes(marker), true, marker);
   }
