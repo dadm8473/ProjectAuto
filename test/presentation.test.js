@@ -4259,6 +4259,35 @@ test('mission and season screens use generated stamp and reward-track boards', a
   assert.equal(css.includes('.meta-summary[data-summary-kind="season"]'), false);
 });
 
+test('mission and season top boards promote one generated reward claim command', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const missions = buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] });
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [] });
+
+  for (const marker of [
+    'function buildFeaturedMissionCommand',
+    'function buildFeaturedSeasonCommand',
+    'class="mission-board-command"',
+    'class="season-board-command"',
+    'class="featured-objective-action"',
+    'class="reward-token board-feature-reward"',
+    'data-featured-mission="${featuredMission?.id ?? \'\'}"',
+    'data-featured-tier="${featuredTier?.index ?? \'\'}"',
+    '.mission-board-command,',
+    '.season-board-command',
+    '.featured-objective-action',
+    '.board-feature-reward'
+  ]) {
+    assert.equal(`${css}\n${screens}\n${missions}\n${season}`.includes(marker), true, marker);
+  }
+
+  assert.equal(cssRuleBlock(css, '.featured-objective-action').includes('background-image: var(--meta-action-buttons);'), true);
+  const focusBlock = cssRuleBlock(css, '.featured-objective-action:focus-visible::before');
+  assert.equal(focusBlock.includes('background-image: var(--meta-action-buttons);'), true);
+  assert.equal(focusBlock.includes('mix-blend-mode: screen;'), true);
+});
+
 test('mission and season top counters sit on generated reward plates', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 

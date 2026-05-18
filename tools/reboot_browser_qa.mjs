@@ -25,6 +25,14 @@ const collectionReadyProfile = {
   claimedMissions: ['train-unit'],
   unitLevels: { spark_pin: 2 }
 };
+const rewardReadyProfile = {
+  ...shopReadyProfile,
+  gems: 0,
+  xp: 80,
+  processedRuns: ['run-1'],
+  claimedMissions: [],
+  claimedPassTiers: []
+};
 const viewports = [
   { width: 375, height: 812 },
   { width: 390, height: 844 },
@@ -426,6 +434,145 @@ async function assertLobbyNextActionShop(page, label) {
   assert.equal(nextAction.beacon, 'shop', `${label} should prioritize shop after no unit upgrade remains: ${JSON.stringify(nextAction)}`);
   assert.equal(nextAction.action, '외형 해금', `${label} next action should be shop unlock: ${JSON.stringify(nextAction)}`);
   assert.match(nextAction.text, /외형 해금 가능/, `${label} lobby next strip lost shop-ready copy: ${JSON.stringify(nextAction)}`);
+}
+
+async function assertObjectiveBoardCommand(page, selector, label, expectedState) {
+  const geometry = await page.locator(selector).evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const commandNode = node.querySelector('.mission-board-command, .season-board-command');
+    const copyStrong = node.querySelector('.mission-board-copy strong, .season-board-copy strong');
+    const control = node.querySelector('.featured-objective-action, .featured-objective-passive');
+    const reward = node.querySelector('.board-feature-reward');
+    const command = commandNode?.getBoundingClientRect();
+    const counter = copyStrong?.getBoundingClientRect();
+    const action = control?.getBoundingClientRect();
+    const rewardBox = reward?.getBoundingClientRect();
+    const before = control ? getComputedStyle(control, '::before') : null;
+    return {
+      state: node.getAttribute('data-board-state'),
+      featuredMission: node.getAttribute('data-featured-mission'),
+      featuredTier: node.getAttribute('data-featured-tier'),
+      commandClass: commandNode?.className ?? '',
+      controlClass: control?.className ?? '',
+      controlText: control?.textContent?.trim() ?? '',
+      controlPointerEvents: control ? getComputedStyle(control).pointerEvents : '',
+      rewardBackground: reward ? getComputedStyle(reward).backgroundImage : '',
+      focusBackground: before?.backgroundImage ?? '',
+      focusBlend: before?.mixBlendMode ?? '',
+      boardRight: Math.round(rect.right),
+      boardBottom: Math.round(rect.bottom),
+      commandLeft: Math.round(command?.left ?? 0),
+      commandTop: Math.round(command?.top ?? 0),
+      counterRight: Math.round(counter?.right ?? 0),
+      counterBottom: Math.round(counter?.bottom ?? 0),
+      actionWidth: Math.round(action?.width ?? 0),
+      actionHeight: Math.round(action?.height ?? 0),
+      actionLeft: Math.round(action?.left ?? 0),
+      actionRight: Math.round(action?.right ?? 0),
+      actionBottom: Math.round(action?.bottom ?? 0),
+      rewardWidth: Math.round(rewardBox?.width ?? 0),
+      rewardRight: Math.round(rewardBox?.right ?? 0),
+      viewportWidth: window.innerWidth
+    };
+  });
+  assert.equal(geometry.state, expectedState, `${label} board state changed: ${JSON.stringify(geometry)}`);
+  assert.match(geometry.rewardBackground, /reboot-reward-icons/, `${label} lacks generated reward icon: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.rewardWidth >= 34, true, `${label} reward icon is too small: ${JSON.stringify(geometry)}`);
+  assert.equal(
+    geometry.actionWidth >= 58 && geometry.actionHeight >= 30 && geometry.actionBottom <= geometry.boardBottom,
+    true,
+    `${label} command is not a usable board action: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(
+    geometry.actionRight <= geometry.boardRight && geometry.actionRight <= geometry.viewportWidth,
+    true,
+    `${label} command clips past the right edge: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(
+    geometry.rewardRight <= geometry.actionLeft - 2,
+    true,
+    `${label} reward icon overlaps the command button: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(
+    geometry.counterRight <= geometry.commandLeft - 2 || geometry.commandTop >= geometry.counterBottom + 2,
+    true,
+    `${label} counter plaque overlaps the featured command: ${JSON.stringify(geometry)}`
+  );
+  if (expectedState === 'ready') {
+    assert.equal(geometry.controlClass.includes('featured-objective-action'), true, `${label} claim button was not rendered: ${JSON.stringify(geometry)}`);
+    assert.equal(geometry.controlText, '수령', `${label} claim button copy changed: ${JSON.stringify(geometry)}`);
+    assert.equal(geometry.controlPointerEvents, 'auto', `${label} claim button cannot receive taps: ${JSON.stringify(geometry)}`);
+    await page.locator(`${selector} .featured-objective-action`).first().evaluate((node) => {
+      node.focus({ focusVisible: true });
+    });
+    const focusArt = await page.locator(`${selector} .featured-objective-action`).first().evaluate((node) => {
+      const before = getComputedStyle(node, '::before');
+      return {
+        backgroundImage: before.backgroundImage,
+        mixBlendMode: before.mixBlendMode
+      };
+    });
+    assert.match(focusArt.backgroundImage, /reboot-meta-action-buttons/, `${label} focused claim button lacks generated focus art: ${JSON.stringify(focusArt)}`);
+    assert.equal(focusArt.mixBlendMode, 'screen', `${label} focused claim button lacks screen focus blend: ${JSON.stringify(focusArt)}`);
+  } else {
+    assert.equal(geometry.controlClass.includes('featured-objective-passive'), true, `${label} passive command was not rendered: ${JSON.stringify(geometry)}`);
+  }
+}
+
+async function assertFeaturedMissionClaimFlow(page, label) {
+  const before = await page.locator('#missionsList .mission-stamp-board .featured-objective-action').first().evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const hit = document.elementFromPoint(centerX, centerY);
+    return {
+      missionId: node.getAttribute('data-mission-claim'),
+      text: node.textContent?.trim(),
+      hitMissionId: hit?.closest?.('[data-mission-claim]')?.getAttribute('data-mission-claim') ?? '',
+      hitIsFeaturedButton: hit === node || node.contains(hit),
+      centerX: Math.round(centerX),
+      centerY: Math.round(centerY)
+    };
+  });
+  assert.equal(before.missionId, 'first-run', `${label} featured mission id changed: ${JSON.stringify(before)}`);
+  assert.equal(before.text, '수령', `${label} featured mission copy changed: ${JSON.stringify(before)}`);
+  assert.equal(before.hitMissionId, 'first-run', `${label} featured mission CTA center is blocked: ${JSON.stringify(before)}`);
+  assert.equal(before.hitIsFeaturedButton, true, `${label} featured mission CTA hit a different layer: ${JSON.stringify(before)}`);
+
+  await page.locator('#missionsList .mission-stamp-board .featured-objective-action').first().click();
+  await page.waitForFunction((key) => {
+    const profile = JSON.parse(localStorage.getItem(key) ?? '{}');
+    return profile.claimedMissions?.includes('first-run') && profile.gems === 20;
+  }, profileStorageKey);
+  await assertObjectiveBoardCommand(page, '#missionsList .mission-stamp-board', `${label} after claim`, 'locked');
+}
+
+async function assertFeaturedSeasonClaimFlow(page, label) {
+  const before = await page.locator('#seasonList .season-track-board .featured-objective-action').first().evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const hit = document.elementFromPoint(centerX, centerY);
+    return {
+      tier: node.getAttribute('data-pass-claim'),
+      text: node.textContent?.trim(),
+      hitTier: hit?.closest?.('[data-pass-claim]')?.getAttribute('data-pass-claim') ?? '',
+      hitIsFeaturedButton: hit === node || node.contains(hit),
+      centerX: Math.round(centerX),
+      centerY: Math.round(centerY)
+    };
+  });
+  assert.equal(before.tier, '0', `${label} featured season tier changed: ${JSON.stringify(before)}`);
+  assert.equal(before.text, '수령', `${label} featured season copy changed: ${JSON.stringify(before)}`);
+  assert.equal(before.hitTier, '0', `${label} featured season CTA center is blocked: ${JSON.stringify(before)}`);
+  assert.equal(before.hitIsFeaturedButton, true, `${label} featured season CTA hit a different layer: ${JSON.stringify(before)}`);
+
+  await page.locator('#seasonList .season-track-board .featured-objective-action').first().click();
+  await page.waitForFunction((key) => {
+    const profile = JSON.parse(localStorage.getItem(key) ?? '{}');
+    return profile.claimedPassTiers?.includes(0) && profile.gems === 40;
+  }, profileStorageKey);
+  await assertObjectiveBoardCommand(page, '#seasonList .season-track-board', `${label} after claim`, 'locked');
 }
 
 async function assertShopFeatureOffer(page, label) {
@@ -1158,6 +1305,7 @@ async function verifyShell(page, viewport) {
   await page.locator('#missionsList .mission-stamp-board').waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#missionsScreen .mission-board-copy span, #missionsScreen .mission-board-copy p', 'missions', 2);
   await assertBannerOverlayClear(page, '#missionsScreen .mission-stamp-board', 'mission banner');
+  await assertObjectiveBoardCommand(page, '#missionsList .mission-stamp-board', 'mission locked board', 'locked');
   await assertMetaListReachesDock(page, '#missionsList', 'missions');
   assert.equal(await page.locator('#missionsList .mission-stamp-slot').count(), 3);
   assert.equal(await page.locator('#missionsList .mission-card').count(), 3);
@@ -1168,6 +1316,7 @@ async function verifyShell(page, viewport) {
   await page.locator('#seasonList .season-track-board').waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#seasonScreen .season-board-copy span, #seasonScreen .season-board-copy p', 'season', 2);
   await assertBannerOverlayClear(page, '#seasonScreen .season-track-board', 'season banner');
+  await assertObjectiveBoardCommand(page, '#seasonList .season-track-board', 'season locked board', 'locked');
   await assertMetaListReachesDock(page, '#seasonList', 'season');
   assert.equal(await page.locator('#seasonList .season-track-node').count(), 4);
   assert.equal(await page.locator('#seasonList .season-card').count(), 4);
@@ -1224,6 +1373,31 @@ async function verifyCompactMeta(page) {
   await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'compact shop', 2);
   await assertShopFeatureOffer(page, 'compact ready shop');
   await assertFeaturedShopPurchaseFlow(page, 'compact ready shop');
+}
+
+async function verifyCompactRewardBoards(page) {
+  await page.goto(baseUrl, { waitUntil: 'load' });
+  await page.evaluate(({ key, profile }) => {
+    localStorage.setItem(key, JSON.stringify(profile));
+  }, { key: profileStorageKey, profile: rewardReadyProfile });
+  await page.reload({ waitUntil: 'load' });
+  await page.locator('#loadingGate').waitFor({ state: 'hidden' });
+  await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
+  assert.equal(await page.locator('audio, video').count(), 0);
+  await page.getByRole('button', { name: '시작' }).click();
+  await page.getByRole('button', { name: '미션', exact: true }).waitFor({ state: 'visible' });
+
+  await page.getByRole('button', { name: '미션', exact: true }).click();
+  await page.locator('#missionsList .mission-stamp-board[data-board-state="ready"]').waitFor({ state: 'visible' });
+  await assertObjectiveBoardCommand(page, '#missionsList .mission-stamp-board', 'compact ready mission board', 'ready');
+  await assertFeaturedMissionClaimFlow(page, 'compact ready mission board');
+
+  await page.getByRole('button', { name: '로비로 돌아가기' }).click();
+  await page.getByRole('button', { name: '시즌', exact: true }).click();
+  await page.locator('#seasonList .season-track-board[data-board-state="ready"]').waitFor({ state: 'visible' });
+  await assertObjectiveBoardCommand(page, '#seasonList .season-track-board', 'compact ready season board', 'ready');
+  await assertFeaturedSeasonClaimFlow(page, 'compact ready season board');
+  await page.evaluate((key) => localStorage.removeItem(key), profileStorageKey);
 }
 
 async function verifyFastPlaythrough(page) {
@@ -1323,6 +1497,7 @@ async function main() {
       const page = await context.newPage();
       await verifyCompactLobby(page);
       await verifyCompactMeta(page);
+      await verifyCompactRewardBoards(page);
       await context.addInitScript(() => {
         if (new URLSearchParams(location.search).get('qaFast') !== '1') return;
         let frameNow = 0;

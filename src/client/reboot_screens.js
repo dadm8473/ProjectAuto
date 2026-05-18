@@ -288,13 +288,36 @@ function missionCardState(state) {
   return 'locked';
 }
 
+function buildFeaturedMissionCommand(featuredMission) {
+  if (!featuredMission) {
+    return `
+      <div class="mission-board-command" data-feature-command="locked">
+        <span class="reward-token board-feature-reward" data-reward-icon="unlock_capsule" aria-hidden="true"></span>
+        ${passiveCardStateMarkup('진행중', 'locked', '진행중', 'featured-objective-passive')}
+      </div>
+    `;
+  }
+  const rewardLabel = rewardGrantLabel(featuredMission.reward);
+  return `
+      <div class="mission-board-command" data-feature-command="ready">
+        <span class="reward-token board-feature-reward" data-reward-icon="${rewardIconForGrant(featuredMission.reward, 'mission')}" aria-hidden="true"></span>
+        <button type="button" class="featured-objective-action" data-mission-claim="${featuredMission.id}" aria-label="${featuredMission.title} 보상 ${rewardLabel} 수령">수령</button>
+      </div>
+    `;
+}
+
 function buildMissionStampBoard(profile = {}, claimed = new Set()) {
   const claimable = countClaimableMissions(profile);
   const boardStatus = claimable > 0 ? '수령 가능' : '작전 진행';
   const boardAriaState = claimable > 0 ? `수령 가능 ${claimable}개` : '대기 보상 없음';
-  const stamps = REBOOT_MISSIONS.map((mission) => {
+  const missionStates = REBOOT_MISSIONS.map((mission) => {
     const progress = missionProgress(profile, mission);
     const state = missionState(progress, mission.target, claimed.has(mission.id));
+    return { mission, progress, state };
+  });
+  const featuredMission = missionStates.find(({ state }) => state === 'ready')?.mission;
+  const boardState = featuredMission ? 'ready' : 'locked';
+  const stamps = missionStates.map(({ mission, progress, state }) => {
     return `
       <span class="mission-stamp-slot" data-mission-state="${state}" data-mission-id="${mission.id}" aria-label="${mission.title} ${progress}/${mission.target}">
         <span class="reward-token mission-reward-token" data-reward-icon="${rewardIconForGrant(mission.reward, 'mission')}" aria-hidden="true"></span>
@@ -303,12 +326,13 @@ function buildMissionStampBoard(profile = {}, claimed = new Set()) {
   }).join('');
 
   return `
-    <section class="mission-stamp-board" data-board-kind="missions" aria-label="미션 보드 · ${boardAriaState} · 완료 목표 보상 전환">
+    <section class="mission-stamp-board" data-board-kind="missions" aria-label="미션 보드 · ${boardAriaState} · 완료 목표 보상 전환" data-featured-mission="${featuredMission?.id ?? ''}" data-board-state="${boardState}">
       <div class="mission-board-copy">
         <span>받을 보상</span>
         <strong>${claimable}</strong>
         <p>${boardStatus}</p>
       </div>
+      ${buildFeaturedMissionCommand(featuredMission)}
       <div class="mission-stamp-grid">${stamps}</div>
     </section>
   `;
@@ -326,13 +350,36 @@ function seasonCardState(state) {
   return 'locked';
 }
 
+function buildFeaturedSeasonCommand(featuredTier) {
+  if (!featuredTier) {
+    return `
+      <div class="season-board-command" data-feature-command="locked">
+        <span class="reward-token board-feature-reward" data-reward-icon="season_progress" aria-hidden="true"></span>
+        ${passiveCardStateMarkup('보상 없음', 'locked', '대기', 'featured-objective-passive')}
+      </div>
+    `;
+  }
+  const rewardLabel = rewardGrantLabel(featuredTier.tier.grant);
+  return `
+      <div class="season-board-command" data-feature-command="ready">
+        <span class="reward-token board-feature-reward" data-reward-icon="${rewardIconForGrant(featuredTier.tier.grant, 'season')}" aria-hidden="true"></span>
+        <button type="button" class="featured-objective-action" data-pass-claim="${featuredTier.index}" aria-label="${featuredTier.index + 1}단계 시즌 보상 ${rewardLabel} 수령">수령</button>
+      </div>
+    `;
+}
+
 function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
   const xp = profile.xp ?? 0;
   const claimable = countClaimablePassTiers(profile);
   const rewardStatus = claimable > 0 ? `보상 ${claimable}개` : '보상 없음';
   const rewardAriaState = claimable > 0 ? `보상 가능 ${claimable}개` : '대기 보상 없음';
-  const nodes = SHOP.pass.tiers.map((tier, index) => {
+  const tierStates = SHOP.pass.tiers.map((tier, index) => {
     const state = seasonState(xp, tier, index, claimed);
+    return { tier, index, state };
+  });
+  const featuredTier = tierStates.find(({ state }) => state === 'ready');
+  const boardState = featuredTier ? 'ready' : 'locked';
+  const nodes = tierStates.map(({ tier, index, state }) => {
     return `
       <span class="season-track-node" data-season-state="${state}" data-pass-tier="${index}" aria-label="${index + 1}단계 ${Math.min(xp, tier.xp)}/${tier.xp}">
         <span class="reward-token season-reward-token" data-reward-icon="${rewardIconForGrant(tier.grant, 'season')}" aria-hidden="true"></span>
@@ -341,12 +388,13 @@ function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
   }).join('');
 
   return `
-    <section class="season-track-board" data-board-kind="season" aria-label="시즌 보드 · 시즌 경험치 ${xp} · ${rewardAriaState}">
+    <section class="season-track-board" data-board-kind="season" aria-label="시즌 보드 · 시즌 경험치 ${xp} · ${rewardAriaState}" data-featured-tier="${featuredTier?.index ?? ''}" data-board-state="${boardState}">
       <div class="season-board-copy">
         <span>시즌 XP</span>
         <strong>${xp}</strong>
         <p>${rewardStatus}</p>
       </div>
+      ${buildFeaturedSeasonCommand(featuredTier)}
       <div class="season-track-rail">${nodes}</div>
     </section>
   `;

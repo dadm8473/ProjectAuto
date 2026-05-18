@@ -622,6 +622,32 @@ test('mission screen starts with a stamp board instead of a web list summary', (
   assert.equal(missions.includes('class="meta-summary screen-card"'), false);
 });
 
+test('mission board exposes one dominant claim command when a reward is ready', () => {
+  const missions = buildMissionScreen({
+    processedRuns: ['run-1'],
+    unitLevels: {},
+    unlocks: [],
+    claimedMissions: []
+  });
+
+  assert.equal(missions.includes('class="mission-stamp-board"'), true);
+  assert.equal(missions.includes('data-featured-mission="first-run"'), true);
+  assert.equal(missions.includes('data-board-state="ready"'), true);
+  assert.equal(missions.includes('class="mission-board-command"'), true);
+  assert.equal(missions.includes('class="reward-token board-feature-reward" data-reward-icon="soft_currency"'), true);
+  assert.equal(missions.includes('class="featured-objective-action" data-mission-claim="first-run"'), true);
+  assert.equal(missions.indexOf('class="mission-board-command"') < missions.indexOf('class="meta-progress-board"'), true);
+});
+
+test('mission board uses a passive generated command when no reward is ready', () => {
+  const missions = buildMissionScreen({ processedRuns: [], claimedMissions: [] });
+
+  assert.equal(missions.includes('data-board-state="locked"'), true);
+  assert.equal(missions.includes('data-featured-mission=""'), true);
+  assert.equal(missions.includes('class="card-passive-state featured-objective-passive" data-passive-state="locked" aria-label="진행중">진행중</span>'), true);
+  assert.equal(missions.includes('class="featured-objective-action"'), false);
+});
+
 test('season screen starts with a reward track instead of a web list summary', () => {
   const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
 
@@ -633,6 +659,27 @@ test('season screen starts with a reward track instead of a web list summary', (
   assert.equal(season.includes('data-reward-icon="season_progress"'), true);
   assert.equal(season.includes('data-reward-icon="cosmetic_shard"'), true);
   assert.equal(season.includes('class="meta-summary screen-card"'), false);
+});
+
+test('season board exposes one dominant claim command when a reward is ready', () => {
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [] });
+
+  assert.equal(season.includes('class="season-track-board"'), true);
+  assert.equal(season.includes('data-featured-tier="0"'), true);
+  assert.equal(season.includes('data-board-state="ready"'), true);
+  assert.equal(season.includes('class="season-board-command"'), true);
+  assert.equal(season.includes('class="reward-token board-feature-reward" data-reward-icon="season_progress"'), true);
+  assert.equal(season.includes('class="featured-objective-action" data-pass-claim="0"'), true);
+  assert.equal(season.indexOf('class="season-board-command"') < season.indexOf('class="meta-progress-board"'), true);
+});
+
+test('season board uses a passive generated command when no reward is ready', () => {
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
+
+  assert.equal(season.includes('data-board-state="locked"'), true);
+  assert.equal(season.includes('data-featured-tier=""'), true);
+  assert.equal(season.includes('class="card-passive-state featured-objective-passive" data-passive-state="locked" aria-label="보상 없음">대기</span>'), true);
+  assert.equal(season.includes('class="featured-objective-action"'), false);
 });
 
 test('mission and season top boards keep large copy numeric while preserving full accessible meaning', () => {
