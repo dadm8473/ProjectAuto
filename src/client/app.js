@@ -794,6 +794,7 @@ function loop(now) {
   lastTime = now;
   if (appScreen === 'battle' && !game.result && game.mode !== 'online') tickGame(game, dt);
   const current = state();
+  playtestRecorder.recordCombatSnapshot(current);
   drawRebootBattle(ctx, current, { width: dom.canvas.width, height: dom.canvas.height }, rebootAssets, {
     equippedCosmetic: profile.equippedCosmetic,
     reducedMotion: reduceMotion.matches,

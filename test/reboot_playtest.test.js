@@ -21,6 +21,19 @@ test('disabled playtest recorder keeps normal sessions invisible', () => {
     screensVisited: [],
     actionCounts: { summon: 0, merge: 0, rescue: 0, failed: 0 },
     firstAction: null,
+    earlyEngagement: {
+      firstActionWithin8s: false,
+      partnerJoinedWithin30s: false,
+      threatSeenWithin30s: false,
+      rewardFeedbackWithin30s: false,
+      passed: false,
+      moments: {
+        firstAction: null,
+        partnerJoined: null,
+        threatSeen: null,
+        rewardFeedback: null
+      }
+    },
     completedCoreLoopWithin120s: false,
     result: null,
     durationMs: 0
@@ -56,6 +69,19 @@ test('playtest recorder summarizes whether the first 120 seconds taught the core
   assert.deepEqual(summary.screensVisited, ['splash', 'lobby', 'battle']);
   assert.deepEqual(summary.actionCounts, { summon: 1, merge: 1, rescue: 1, failed: 0 });
   assert.deepEqual(summary.firstAction, { action: 'summon', atSeconds: 5.2 });
+  assert.deepEqual(summary.earlyEngagement, {
+    firstActionWithin8s: true,
+    partnerJoinedWithin30s: false,
+    threatSeenWithin30s: false,
+    rewardFeedbackWithin30s: false,
+    passed: false,
+    moments: {
+      firstAction: 5.2,
+      partnerJoined: null,
+      threatSeen: null,
+      rewardFeedback: null
+    }
+  });
   assert.equal(summary.completedCoreLoopWithin120s, true);
   assert.deepEqual(summary.result, {
     status: 'won',
@@ -84,6 +110,80 @@ test('playtest recorder flags late or incomplete core-loop understanding', () =>
 
   assert.deepEqual(recorder.summary().actionCounts, { summon: 1, merge: 0, rescue: 1, failed: 1 });
   assert.equal(recorder.summary().completedCoreLoopWithin120s, false);
+});
+
+test('playtest recorder proves the first 30 seconds create action co-op threat and reward feedback', () => {
+  let clock = 0;
+  const recorder = createPlaytestRecorder({ enabled: true, now: () => clock });
+
+  recorder.recordScreen('battle');
+  clock = 900;
+  recorder.recordCombatSnapshot({
+    now: 0.9,
+    enemies: [{ enemyId: 'noise_shard', progress: 0.12 }],
+    events: [],
+    effects: []
+  });
+  clock = 5200;
+  recorder.recordAction('summon', { ok: true, atSeconds: 5.2 });
+  clock = 10400;
+  recorder.recordCombatSnapshot({
+    now: 10.4,
+    enemies: [],
+    events: [{ type: 'partner_auto', action: 'summon', playerId: 'p2', at: 10 }],
+    effects: []
+  });
+  clock = 13200;
+  recorder.recordCombatSnapshot({
+    now: 13.2,
+    enemies: [],
+    events: [],
+    effects: [{ type: 'death_burst', rewardCharge: 1, rewardLink: 1 }]
+  });
+
+  assert.deepEqual(recorder.summary().earlyEngagement, {
+    firstActionWithin8s: true,
+    partnerJoinedWithin30s: true,
+    threatSeenWithin30s: true,
+    rewardFeedbackWithin30s: true,
+    passed: true,
+    moments: {
+      firstAction: 5.2,
+      partnerJoined: 10,
+      threatSeen: 0.9,
+      rewardFeedback: 13.2
+    }
+  });
+});
+
+test('playtest recorder rejects late first-30-second engagement signals', () => {
+  let clock = 0;
+  const recorder = createPlaytestRecorder({ enabled: true, now: () => clock });
+
+  recorder.recordScreen('battle');
+  clock = 11200;
+  recorder.recordAction('summon', { ok: true, atSeconds: 11.2 });
+  clock = 31000;
+  recorder.recordCombatSnapshot({
+    now: 31,
+    enemies: [{ enemyId: 'noise_shard', progress: 0.2 }],
+    events: [{ type: 'partner_auto', action: 'summon', playerId: 'p2', at: 31 }],
+    effects: [{ type: 'death_burst', rewardCharge: 1, rewardLink: 1 }]
+  });
+
+  assert.deepEqual(recorder.summary().earlyEngagement, {
+    firstActionWithin8s: false,
+    partnerJoinedWithin30s: false,
+    threatSeenWithin30s: false,
+    rewardFeedbackWithin30s: false,
+    passed: false,
+    moments: {
+      firstAction: 11.2,
+      partnerJoined: null,
+      threatSeen: null,
+      rewardFeedback: null
+    }
+  });
 });
 
 test('playtest recorder keeps stored result in sync with post-result screen events', () => {

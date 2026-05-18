@@ -62,6 +62,11 @@ async function main() {
     assert.equal(await page.locator('#resultTitle').isVisible(), true, 'playtest run should reach result');
     const summary = await page.evaluate(() => window.__rebootPlaytestSummary?.());
     assert.equal(summary.enabled, true);
+    assert.equal(summary.earlyEngagement.passed, true);
+    assert.equal(summary.earlyEngagement.firstActionWithin8s, true);
+    assert.equal(summary.earlyEngagement.partnerJoinedWithin30s, true);
+    assert.equal(summary.earlyEngagement.threatSeenWithin30s, true);
+    assert.equal(summary.earlyEngagement.rewardFeedbackWithin30s, true);
     assert.equal(summary.completedCoreLoopWithin120s, true);
     assert.equal(summary.actionCounts.summon > 0, true);
     assert.equal(summary.actionCounts.merge > 0, true);
