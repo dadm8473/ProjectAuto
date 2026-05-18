@@ -1604,8 +1604,10 @@ test('collection and shop start with generated showcase stages instead of list-f
   for (const marker of [
     '--meta-showcase-stage: url("/src/client/assets/generated/reboot-meta-showcase-stage.png?v=showcase-stage")',
     'function buildMetaShowcase',
-    'class="meta-showcase"',
-    'class="meta-showcase-preview"',
+    'class="meta-showcase unit-feature-showcase"',
+    'class="meta-showcase shop-feature-showcase"',
+    'class="meta-showcase-preview unit-feature-pedestal"',
+    'class="meta-showcase-preview shop-feature-pedestal"',
     'class="meta-showcase-copy"',
     'class="meta-showcase-stats"',
     'class="meta-showcase-chip"',
@@ -1620,7 +1622,7 @@ test('collection and shop start with generated showcase stages instead of list-f
     assert.equal(`${css}\n${screens}\n${collection}\n${shop}`.includes(marker), true, marker);
   }
 
-  assert.equal(collection.indexOf('class="meta-showcase"') < collection.indexOf('class="screen-card unit-card"'), true);
+  assert.equal(collection.indexOf('class="meta-showcase unit-feature-showcase"') < collection.indexOf('class="screen-card unit-card"'), true);
   assert.equal(shop.indexOf('class="meta-showcase"') < shop.indexOf('class="screen-card shop-card"'), true);
 
   const showcaseBlock = css.slice(css.indexOf('.meta-showcase'), css.indexOf('.meta-showcase-preview'));
@@ -3938,7 +3940,8 @@ test('meta screens expose game-like status headers before scroll lists', async (
     'buildMetaShowcase',
     'buildMissionStampBoard',
     'buildSeasonTrackBoard',
-    'class="meta-showcase"',
+    'class="meta-showcase unit-feature-showcase"',
+    'class="meta-showcase shop-feature-showcase"',
     'class="mission-stamp-board"',
     'class="season-track-board"',
     'data-showcase-kind="collection"',
@@ -3969,13 +3972,46 @@ test('unit training screen uses the active generated showcase stage', async () =
     'data-showcase-kind="collection"',
     '대표 유닛',
     'stats: [`Lv.${featuredLevel}`, `${Math.min(xp, featuredCost)}/${featuredCost} 경험치`]',
-    'class="meta-showcase-preview"',
+    'class="meta-showcase-preview unit-feature-pedestal"',
     'class="sprite-token unit-sprite"'
   ]) {
     assert.equal(`${css}\n${screens}\n${collection}`.includes(marker), true, marker);
   }
 
   assert.equal(css.includes('.meta-summary[data-summary-kind="collection"]'), false);
+});
+
+test('unit training featured offer uses a generated stage with one dominant upgrade action', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const collection = buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 2 } });
+
+  for (const marker of [
+    'function buildUnitFeaturedShowcase',
+    'class="meta-showcase unit-feature-showcase"',
+    'data-featured-unit="${featuredUnit.id}"',
+    'data-featured-state="${featuredState}"',
+    'class="meta-showcase-preview unit-feature-pedestal"',
+    'class="unit-feature-ring"',
+    'class="featured-unit-action"',
+    '.unit-feature-showcase',
+    '.unit-feature-pedestal',
+    '.unit-feature-ring',
+    '.featured-unit-action',
+    '.unit-feature-showcase .unit-sprite',
+    '.unit-feature-showcase .unit-cost'
+  ]) {
+    assert.equal(`${css}\n${screens}\n${collection}`.includes(marker), true, marker);
+  }
+
+  assert.equal(cssRuleBlock(css, '.unit-feature-showcase').includes('background-image: var(--training-banner);'), true);
+  assert.equal(cssRuleBlock(css, '.unit-feature-pedestal').includes('background-image: var(--meta-showcase-stage);'), true);
+  assert.equal(css.includes('--unit-activation-ring: url("/src/client/assets/generated/reboot-unit-activation-ring.png?v=unit-activation-ring1")'), true);
+  assert.equal(cssRuleBlock(css, '.unit-feature-ring').includes('background-image: var(--unit-activation-ring);'), true);
+
+  const focusBlock = cssRuleBlock(css, '.featured-unit-action:focus-visible::before');
+  assert.equal(focusBlock.includes('background-image: var(--meta-action-buttons);'), true);
+  assert.equal(focusBlock.includes('mix-blend-mode: screen;'), true);
 });
 
 test('shop cosmetics use a dedicated imagegen item atlas', async () => {

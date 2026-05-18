@@ -394,6 +394,29 @@ test('reboot collection renders unit upgrade state from profile XP and levels', 
   assert.equal(collection.includes('>경험치 부족<'), false);
 });
 
+test('reboot collection opens with a featured upgrade command instead of only unit shelf cards', () => {
+  const collection = buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 2 } });
+
+  assert.equal(collection.includes('class="meta-showcase unit-feature-showcase"'), true);
+  assert.equal(collection.includes('data-featured-unit="spark_pin"'), true);
+  assert.equal(collection.includes('data-featured-state="ready"'), true);
+  assert.equal(collection.includes('class="meta-showcase-preview unit-feature-pedestal"'), true);
+  assert.equal(collection.includes('class="unit-feature-ring"'), true);
+  assert.equal(collection.includes('class="featured-unit-action" data-unit-upgrade="spark_pin"'), true);
+  assert.equal(collection.indexOf('class="meta-showcase unit-feature-showcase"') < collection.indexOf('class="meta-shelf-grid" data-shelf-kind="collection"'), true);
+});
+
+test('locked collection feature uses a passive generated command state', () => {
+  const collection = buildRebootCollection({ xp: 0, unitLevels: {} });
+
+  assert.equal(collection.includes('class="meta-showcase unit-feature-showcase"'), true);
+  assert.equal(collection.includes('data-featured-unit="spark_pin"'), true);
+  assert.equal(collection.includes('data-featured-state="locked"'), true);
+  assert.equal(collection.includes('class="unit-feature-ring"'), true);
+  assert.equal(collection.includes('class="card-passive-state featured-unit-passive" data-passive-state="locked" aria-label="경험치 부족">부족</span>'), true);
+  assert.equal(collection.includes('class="featured-unit-action"'), false);
+});
+
 test('inactive meta states render as passive chips instead of disabled fake action buttons', () => {
   const collection = buildRebootCollection({ xp: 0, unitLevels: {} });
   const shop = buildRebootShop({ gems: 0, unlocks: [] });
@@ -455,7 +478,7 @@ test('meta screens start with compact actionable status headers', () => {
 
 test('meta summary detail copy stays compact for generated header banners', () => {
   const screens = [
-    { html: buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 2 } }), pattern: /<section class="meta-showcase"[\s\S]*?<p>(.*?)<\/p>/ },
+    { html: buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 2 } }), pattern: /<section class="meta-showcase(?: [^"]*)?"[\s\S]*?<p>(.*?)<\/p>/ },
     { html: buildRebootShop({ gems: 100, unlocks: [] }), pattern: /<section class="meta-showcase(?: [^"]*)?"[\s\S]*?<p>(.*?)<\/p>/ },
     { html: buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] }), pattern: /<section class="mission-stamp-board"[\s\S]*?<p>(.*?)<\/p>/ },
     { html: buildSeasonScreen({ xp: 60, claimedPassTiers: [] }), pattern: /<section class="season-track-board"[\s\S]*?<p>(.*?)<\/p>/ }
@@ -554,7 +577,7 @@ test('collection and shop items sit inside a generated shelf grid', () => {
 
   assert.equal(collection.includes('class="meta-shelf-grid" data-shelf-kind="collection"'), true);
   assert.equal(shop.includes('class="meta-shelf-grid" data-shelf-kind="shop"'), true);
-  assert.equal(collection.indexOf('class="meta-showcase"') < collection.indexOf('class="meta-shelf-grid"'), true);
+  assert.equal(collection.indexOf('class="meta-showcase unit-feature-showcase"') < collection.indexOf('class="meta-shelf-grid"'), true);
   assert.equal(shop.indexOf('class="meta-showcase"') < shop.indexOf('class="meta-shelf-grid"'), true);
   assert.equal(collection.indexOf('class="meta-shelf-grid"') < collection.indexOf('class="screen-card unit-card"'), true);
   assert.equal(shop.indexOf('class="meta-shelf-grid"') < shop.indexOf('class="screen-card shop-card"'), true);

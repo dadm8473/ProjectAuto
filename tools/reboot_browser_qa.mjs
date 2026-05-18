@@ -19,6 +19,12 @@ const shopReadyProfile = {
   processedRuns: [],
   unitLevels: {}
 };
+const collectionReadyProfile = {
+  ...shopReadyProfile,
+  xp: 80,
+  claimedMissions: ['train-unit'],
+  unitLevels: { spark_pin: 2 }
+};
 const viewports = [
   { width: 375, height: 812 },
   { width: 390, height: 844 },
@@ -272,6 +278,154 @@ async function assertMetaShowcaseChips(page, selector, label, expectedCount) {
     assert.equal(chip.left >= 0 && chip.right <= chip.viewportWidth, true, `${label} chip leaves viewport: ${JSON.stringify(chip)}`);
     assert.equal(chip.top >= 0 && chip.bottom <= chip.viewportHeight, true, `${label} chip leaves vertical viewport: ${JSON.stringify(chip)}`);
   }
+}
+
+async function assertUnitFeatureOffer(page, label) {
+  const geometry = await page.locator('#collectionList .unit-feature-showcase').evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const pedestalNode = node.querySelector('.unit-feature-pedestal');
+    const control = node.querySelector('.featured-unit-action, .featured-unit-passive');
+    const pedestal = pedestalNode?.getBoundingClientRect();
+    const icon = node.querySelector('.sprite-token.unit-sprite')?.getBoundingClientRect();
+    const ring = node.querySelector('.unit-feature-ring')?.getBoundingClientRect();
+    const command = node.querySelector('.unit-feature-command')?.getBoundingClientRect();
+    const action = control?.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    const pedestalStyle = pedestalNode ? getComputedStyle(pedestalNode) : null;
+    const ringStyle = node.querySelector('.unit-feature-ring')
+      ? getComputedStyle(node.querySelector('.unit-feature-ring'))
+      : null;
+    return {
+      state: node.getAttribute('data-featured-state'),
+      backgroundImage: style.backgroundImage,
+      pedestalBackground: pedestalStyle?.backgroundImage ?? '',
+      ringBackground: ringStyle?.backgroundImage ?? '',
+      showcaseTop: Math.round(rect.top),
+      showcaseRight: Math.round(rect.right),
+      showcaseBottom: Math.round(rect.bottom),
+      showcaseHeight: Math.round(rect.height),
+      pedestalRight: Math.round(pedestal?.right ?? 0),
+      pedestalWidth: Math.round(pedestal?.width ?? 0),
+      iconWidth: Math.round(icon?.width ?? 0),
+      iconHeight: Math.round(icon?.height ?? 0),
+      iconTop: Math.round(icon?.top ?? 0),
+      iconBottom: Math.round(icon?.bottom ?? 0),
+      ringWidth: Math.round(ring?.width ?? 0),
+      ringHeight: Math.round(ring?.height ?? 0),
+      commandLeft: Math.round(command?.left ?? 0),
+      commandTop: Math.round(command?.top ?? 0),
+      actionWidth: Math.round(action?.width ?? 0),
+      actionHeight: Math.round(action?.height ?? 0),
+      actionLeft: Math.round(action?.left ?? 0),
+      actionRight: Math.round(action?.right ?? 0),
+      actionBottom: Math.round(action?.bottom ?? 0),
+      costRight: Math.round(node.querySelector('.unit-feature-cost')?.getBoundingClientRect().right ?? 0),
+      controlClass: control?.className ?? '',
+      controlPointerEvents: control ? getComputedStyle(control).pointerEvents : '',
+      viewportWidth: window.innerWidth
+    };
+  });
+  assert.match(geometry.backgroundImage, /reboot-training-banner/, `${label} feature lacks training banner: ${JSON.stringify(geometry)}`);
+  assert.match(geometry.pedestalBackground, /reboot-meta-showcase-stage/, `${label} feature lacks generated pedestal: ${JSON.stringify(geometry)}`);
+  assert.match(geometry.ringBackground, /reboot-unit-activation-ring/, `${label} feature lacks generated unit pedestal ring: ${JSON.stringify(geometry)}`);
+  assert.match(geometry.state, /^(ready|locked)$/, `${label} unknown feature state: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.showcaseHeight >= 188, true, `${label} feature too short: ${JSON.stringify(geometry)}`);
+  const minPedestalWidth = label.includes('compact') ? 96 : 116;
+  assert.equal(geometry.pedestalWidth >= minPedestalWidth, true, `${label} pedestal too narrow: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.iconWidth >= 76 && geometry.iconHeight >= 76, true, `${label} featured unit too small: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.ringWidth >= 104 && geometry.ringHeight >= 104, true, `${label} unit ring too small: ${JSON.stringify(geometry)}`);
+  assert.equal(
+    geometry.iconTop >= geometry.showcaseTop && geometry.iconBottom <= geometry.showcaseBottom,
+    true,
+    `${label} featured unit escapes stage: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(
+    geometry.actionWidth >= 58 && geometry.actionHeight >= 30 && geometry.actionBottom <= geometry.showcaseBottom,
+    true,
+    `${label} feature action is not a usable command: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(
+    geometry.actionRight <= geometry.showcaseRight && geometry.actionRight <= geometry.viewportWidth,
+    true,
+    `${label} feature action clips past the right edge: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(
+    geometry.costRight <= geometry.actionLeft - 2,
+    true,
+    `${label} feature cost overlaps the command button: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(
+    geometry.commandTop >= geometry.showcaseBottom - 72 || geometry.commandLeft >= geometry.pedestalRight - 4,
+    true,
+    `${label} feature command overlaps unit pedestal: ${JSON.stringify(geometry)}`
+  );
+  if (label.includes('ready')) {
+    assert.equal(geometry.state, 'ready', `${label} feature should be upgrade-ready: ${JSON.stringify(geometry)}`);
+    assert.equal(geometry.controlClass.includes('featured-unit-action'), true, `${label} feature action was not rendered: ${JSON.stringify(geometry)}`);
+  }
+  if (label.includes('locked')) {
+    assert.equal(geometry.state, 'locked', `${label} feature should be locked: ${JSON.stringify(geometry)}`);
+    assert.equal(geometry.controlClass.includes('featured-unit-passive'), true, `${label} passive state was not rendered: ${JSON.stringify(geometry)}`);
+  }
+  if (geometry.controlClass.includes('featured-unit-action')) {
+    assert.equal(geometry.controlPointerEvents, 'auto', `${label} feature button cannot receive taps: ${JSON.stringify(geometry)}`);
+    await page.locator('#collectionList .featured-unit-action').first().evaluate((node) => {
+      node.focus({ focusVisible: true });
+    });
+    const focusArt = await page.locator('#collectionList .featured-unit-action').first().evaluate((node) => {
+      const before = getComputedStyle(node, '::before');
+      return {
+        backgroundImage: before.backgroundImage,
+        mixBlendMode: before.mixBlendMode,
+        opacity: before.opacity
+      };
+    });
+    assert.match(focusArt.backgroundImage, /reboot-meta-action-buttons/, `${label} focused feature button lacks generated focus art: ${JSON.stringify(focusArt)}`);
+    assert.equal(focusArt.mixBlendMode, 'screen', `${label} focused feature button lacks screen focus blend: ${JSON.stringify(focusArt)}`);
+  }
+}
+
+async function assertFeaturedUnitUpgradeFlow(page, label) {
+  const before = await page.locator('#collectionList .featured-unit-action').first().evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const hit = document.elementFromPoint(centerX, centerY);
+    return {
+      unitId: node.getAttribute('data-unit-upgrade'),
+      text: node.textContent?.trim(),
+      hitTag: hit?.tagName ?? '',
+      hitClass: hit?.className ?? '',
+      hitUnitId: hit?.closest?.('[data-unit-upgrade]')?.getAttribute('data-unit-upgrade') ?? '',
+      hitIsFeaturedButton: hit === node || node.contains(hit),
+      centerX: Math.round(centerX),
+      centerY: Math.round(centerY)
+    };
+  });
+  assert.equal(before.unitId, 'spark_pin', `${label} featured CTA missing unit id: ${JSON.stringify(before)}`);
+  assert.equal(before.text, '강화', `${label} featured CTA should be ready to upgrade: ${JSON.stringify(before)}`);
+  assert.equal(before.hitUnitId, 'spark_pin', `${label} featured CTA center is blocked by another layer: ${JSON.stringify(before)}`);
+  assert.equal(before.hitIsFeaturedButton, true, `${label} featured CTA center hit a different upgrade layer: ${JSON.stringify(before)}`);
+
+  await page.locator('#collectionList .featured-unit-action').first().click();
+  await page.waitForFunction((key) => {
+    const profile = JSON.parse(localStorage.getItem(key) ?? '{}');
+    return profile.xp === 20 && profile.unitLevels?.spark_pin === 3;
+  }, profileStorageKey);
+  await page.locator('#collectionList .unit-feature-showcase[data-featured-state="locked"]').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#collectionList .featured-unit-action').count(), 0, `${label} featured upgrade button should disappear after spending XP`);
+  assert.equal(await page.locator('#collectionList .featured-unit-passive').first().textContent(), '부족');
+}
+
+async function assertLobbyNextActionShop(page, label) {
+  const nextAction = await page.locator('#lobbyScreen .next-hook').evaluate((node) => ({
+    beacon: node.getAttribute('data-next-beacon'),
+    action: node.getAttribute('data-next-action'),
+    text: node.textContent?.replace(/\s+/g, ' ').trim() ?? ''
+  }));
+  assert.equal(nextAction.beacon, 'shop', `${label} should prioritize shop after no unit upgrade remains: ${JSON.stringify(nextAction)}`);
+  assert.equal(nextAction.action, '외형 해금', `${label} next action should be shop unlock: ${JSON.stringify(nextAction)}`);
+  assert.match(nextAction.text, /외형 해금 가능/, `${label} lobby next strip lost shop-ready copy: ${JSON.stringify(nextAction)}`);
 }
 
 async function assertShopFeatureOffer(page, label) {
@@ -981,6 +1135,7 @@ async function verifyShell(page, viewport) {
   await assertMetaCaptionPlates(page, '#collectionScreen .meta-showcase-copy > span:first-child', 'collection', 1);
   await assertMetaShowcaseChips(page, '#collectionScreen .meta-showcase-chip', 'collection', 2);
   await assertBannerOverlayClear(page, '#collectionScreen .meta-showcase', 'collection showcase');
+  await assertUnitFeatureOffer(page, 'collection locked');
   await assertMetaListReachesDock(page, '#collectionList', 'collection');
   assert.equal(await page.locator('#collectionList .unit-card .sprite-token.unit-sprite').count(), 8);
   assert.equal(await page.locator('#collectionList .meta-showcase .sprite-token.unit-sprite').count(), 1);
@@ -1050,7 +1205,7 @@ async function verifyCompactMeta(page) {
   await page.goto(baseUrl, { waitUntil: 'load' });
   await page.evaluate(({ key, profile }) => {
     localStorage.setItem(key, JSON.stringify(profile));
-  }, { key: profileStorageKey, profile: shopReadyProfile });
+  }, { key: profileStorageKey, profile: collectionReadyProfile });
   await page.reload({ waitUntil: 'load' });
   await page.locator('#loadingGate').waitFor({ state: 'hidden' });
   await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
@@ -1060,7 +1215,10 @@ async function verifyCompactMeta(page) {
   await page.getByRole('button', { name: '유닛' }).click();
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
   await assertMetaShowcaseChips(page, '#collectionScreen .meta-showcase-chip', 'compact collection', 2);
+  await assertUnitFeatureOffer(page, 'compact ready collection');
+  await assertFeaturedUnitUpgradeFlow(page, 'compact ready collection');
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
+  await assertLobbyNextActionShop(page, 'compact shop-only priority');
   await page.getByRole('button', { name: '상점' }).click();
   await page.locator('.shop-cosmetic').first().waitFor({ state: 'visible' });
   await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'compact shop', 2);

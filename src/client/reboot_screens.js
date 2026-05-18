@@ -403,6 +403,46 @@ function trainingAvailabilityCopy(profile = {}) {
   return trainable > 0 ? `${trainable}기 강화 가능` : '강화 대기';
 }
 
+function unitFeatureState({ xp, cost }) {
+  return xp >= cost ? 'ready' : 'locked';
+}
+
+function buildUnitFeatureAction(featuredUnit, featuredState) {
+  if (featuredState === 'ready') {
+    return `<button type="button" class="featured-unit-action" data-unit-upgrade="${featuredUnit.id}" aria-label="${featuredUnit.name} 강화">강화</button>`;
+  }
+  return passiveCardStateMarkup('경험치 부족', 'locked', '부족', 'featured-unit-passive');
+}
+
+function buildUnitFeaturedShowcase({ featuredUnit, profile, xp, unitLevels }) {
+  const featuredLevel = unitLevels[featuredUnit.id] ?? 1;
+  const featuredCost = unitUpgradeCost(featuredLevel);
+  const featuredState = unitFeatureState({ xp, cost: featuredCost });
+  const roleLabel = ROLE_LABELS[featuredUnit.role] ?? featuredUnit.role;
+  const stateLabel = featuredState === 'ready' ? '강화 가능' : '경험치 부족';
+  const previewExtra = '<span class="unit-feature-ring" aria-hidden="true"></span>';
+  const action = `
+      <div class="unit-feature-command">
+        <span class="unit-cost unit-feature-cost" aria-label="강화 비용 ${featuredCost} 경험치">${featuredCost}</span>
+        ${buildUnitFeatureAction(featuredUnit, featuredState)}
+      </div>`;
+  return buildMetaShowcase({
+    kind: 'collection',
+    label: '대표 유닛',
+    title: featuredUnit.name,
+    detail: `${roleLabel} · ${trainingAvailabilityCopy(profile)}`,
+    stats: [`Lv.${featuredLevel}`, `${Math.min(xp, featuredCost)}/${featuredCost} 경험치`],
+    spriteClass: 'unit-sprite',
+    spriteAttr: 'data-sprite',
+    spriteValue: featuredUnit.spriteKey,
+    extraClass: 'unit-feature-showcase',
+    attrs: ` data-featured-unit="${featuredUnit.id}" data-featured-state="${featuredState}" aria-label="대표 강화 ${featuredUnit.name} · ${roleLabel} · Lv.${featuredLevel} · 강화 비용 ${featuredCost} 경험치 · ${stateLabel}"`,
+    previewExtra,
+    previewClass: 'unit-feature-pedestal',
+    action
+  });
+}
+
 function operationProgressMarkup(operation) {
   return `
       <span class="operation-progress" aria-label="작전 진행 ${operation.step}/${operation.total}">
@@ -461,18 +501,7 @@ export function buildRebootCollection(profile = {}) {
   const xp = profile.xp ?? 0;
   const unitLevels = profile.unitLevels ?? {};
   const featuredUnit = Object.values(REBOOT_UNITS).find((unit) => xp >= unitUpgradeCost(unitLevels[unit.id] ?? 1)) ?? Object.values(REBOOT_UNITS)[0];
-  const featuredLevel = unitLevels[featuredUnit.id] ?? 1;
-  const featuredCost = unitUpgradeCost(featuredLevel);
-  const showcase = buildMetaShowcase({
-    kind: 'collection',
-    label: '대표 유닛',
-    title: featuredUnit.name,
-    detail: `${ROLE_LABELS[featuredUnit.role] ?? featuredUnit.role} · ${trainingAvailabilityCopy(profile)}`,
-    stats: [`Lv.${featuredLevel}`, `${Math.min(xp, featuredCost)}/${featuredCost} 경험치`],
-    spriteClass: 'unit-sprite',
-    spriteAttr: 'data-sprite',
-    spriteValue: featuredUnit.spriteKey
-  });
+  const showcase = buildUnitFeaturedShowcase({ featuredUnit, profile, xp, unitLevels });
   const units = Object.values(REBOOT_UNITS).map((unit) => {
     const level = unitLevels[unit.id] ?? 1;
     const cost = unitUpgradeCost(level);
