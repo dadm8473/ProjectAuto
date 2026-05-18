@@ -4738,20 +4738,19 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .result-overlay[data-result-cta="claim"] .result-action-secondary {
-  order: -1;
-  background-position: 0 0;
+  background-position: 100% 0;
 }
 
 .result-overlay[data-result-cta="claim"] .result-action-primary {
-  background-position: 100% 0;
-}
-
-.result-overlay[data-result-cta="claim"] .result-action-secondary:focus-visible:not(:disabled)::after {
   background-position: 0 0;
 }
 
-.result-overlay[data-result-cta="claim"] .result-action-primary:focus-visible:not(:disabled)::after {
+.result-overlay[data-result-cta="claim"] .result-action-secondary:focus-visible:not(:disabled)::after {
   background-position: 100% 0;
+}
+
+.result-overlay[data-result-cta="claim"] .result-action-primary:focus-visible:not(:disabled)::after {
+  background-position: 0 0;
 }
 
 .result-overlay .result-action-button::before {

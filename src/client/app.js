@@ -747,7 +747,7 @@ function showResult(current) {
     atSeconds: current.now
   });
   dom.resultOverlay.dataset.resultStatus = model.status;
-  dom.resultOverlay.dataset.resultCta = rewardClaimActions.has(model.secondaryAction.action) ? 'claim' : 'default';
+  dom.resultOverlay.dataset.resultCta = rewardClaimActions.has(model.primaryAction.action) ? 'claim' : 'default';
   dom.resultCode.textContent = model.code;
   dom.resultTitle.textContent = model.title;
   dom.resultReason.textContent = model.reason.label;
@@ -758,6 +758,7 @@ function showResult(current) {
   dom.resultRetryLabel.textContent = model.primaryAction.label;
   dom.resultRetryButton.title = model.primaryAction.title ?? model.primaryAction.label;
   dom.resultRetryButton.setAttribute('aria-label', model.primaryAction.ariaLabel ?? model.primaryAction.label);
+  dom.resultRetryButton.dataset.resultOpen = model.primaryAction.action;
   dom.resultLobbyLabel.textContent = model.secondaryAction.label;
   dom.resultLobbyButton.title = model.secondaryAction.title ?? model.secondaryAction.label;
   dom.resultLobbyButton.setAttribute('aria-label', model.secondaryAction.ariaLabel ?? model.secondaryAction.label);
@@ -773,8 +774,11 @@ function retry() {
   setScreen('battle');
 }
 
-function handleResultSecondary() {
-  const target = dom.resultLobbyButton.dataset.resultOpen || 'home';
+function handleResultAction(target) {
+  if (target === 'retry') {
+    retry();
+    return;
+  }
   dom.resultOverlay.hidden = true;
   if (target === 'claim-missions') {
     if (!claimReadyMissionsFromResult()) showToast('수령할 미션 보상이 없습니다', 'warning');
@@ -787,6 +791,14 @@ function handleResultSecondary() {
     return;
   }
   setScreen(target === 'home' ? 'lobby' : target);
+}
+
+function handleResultPrimary() {
+  handleResultAction(dom.resultRetryButton.dataset.resultOpen || 'retry');
+}
+
+function handleResultSecondary() {
+  handleResultAction(dom.resultLobbyButton.dataset.resultOpen || 'home');
 }
 
 function loop(now) {
@@ -820,7 +832,7 @@ function bind() {
   dom.shopList.addEventListener('click', handleShopPurchase);
   dom.missionsList.addEventListener('click', handleMissionClaim);
   dom.seasonList.addEventListener('click', handlePassClaim);
-  dom.resultRetryButton.addEventListener('click', retry);
+  dom.resultRetryButton.addEventListener('click', handleResultPrimary);
   dom.resultLobbyButton.addEventListener('click', handleResultSecondary);
   dom.rewardReveal.addEventListener('click', hideRewardReveal);
   document.querySelectorAll('[data-open-screen]').forEach((button) => {

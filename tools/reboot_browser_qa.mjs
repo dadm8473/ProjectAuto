@@ -1538,17 +1538,20 @@ async function verifyFastPlaythrough(page) {
   assert.equal(await page.locator('#resultTitle').isVisible(), true, `missing result: ${events.join(', ')}`);
   assert.equal(await page.locator('#resultTitle').textContent(), '승리');
   assert.equal(await page.locator('#resultOverlay').getAttribute('data-result-status'), 'won');
-  assert.equal(await page.locator('#resultLobbyButton span').textContent(), '보상 수령');
-  assert.equal(await page.locator('#resultLobbyButton').getAttribute('aria-label'), '받을 미션 보상 수령');
-  assert.equal(await page.locator('#resultLobbyButton').getAttribute('data-result-open'), 'claim-missions');
+  assert.equal(await page.locator('#resultOverlay').getAttribute('data-result-cta'), 'claim');
+  assert.equal(await page.locator('#resultRetryButton span').textContent(), '보상 수령');
+  assert.equal(await page.locator('#resultRetryButton').getAttribute('aria-label'), '받을 미션 보상 수령');
+  assert.equal(await page.locator('#resultRetryButton').getAttribute('data-result-open'), 'claim-missions');
+  assert.equal(await page.locator('#resultLobbyButton span').textContent(), '다음 작전');
+  assert.equal(await page.locator('#resultLobbyButton').getAttribute('data-result-open'), 'retry');
   await assertResultGeneratedCopySurfaces(page);
   assert.match(
     await page.locator('.result-panel').evaluate((node) => getComputedStyle(node, '::after').backgroundImage),
     /reboot-result-badges/
   );
   assert.equal(events.filter((entry) => entry.startsWith('rescue@')).length, 1, events.join(', '));
-  assert.equal(await page.locator('#resultRetryButton').isVisible(), true);
-  await page.locator('#resultLobbyButton').click();
+  assert.equal(await page.locator('#resultLobbyButton').isVisible(), true);
+  await page.locator('#resultRetryButton').click();
   await page.locator('#seasonList .season-card').first().waitFor({ state: 'visible' });
   assert.equal(await page.locator('body').getAttribute('data-app-screen'), 'season');
   assert.equal(await page.locator('#rewardReveal').isVisible(), true);

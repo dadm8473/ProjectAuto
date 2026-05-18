@@ -51,9 +51,10 @@ test('result model prioritizes reason, next goal, rewards, retry, and home', () 
   assert.deepEqual(model.forbiddenActions, []);
 });
 
-test('result model routes secondary action to direct reward claims or clear profile screens', () => {
+test('result model promotes ready profile rewards and growth as the primary result action', () => {
   const missionModel = buildRebootResultModel({
     result: { status: 'won', reason: 'partner_rescued' },
+    seedName: 'tutorial_success',
     profile: {
       gems: 24,
       xp: 60,
@@ -63,13 +64,20 @@ test('result model routes secondary action to direct reward claims or clear prof
     }
   });
 
-  assert.equal(missionModel.secondaryAction.action, 'claim-missions');
-  assert.equal(missionModel.secondaryAction.label, '보상 수령');
-  assert.equal(missionModel.secondaryAction.title, '받을 미션 보상');
-  assert.equal(missionModel.secondaryAction.ariaLabel, '받을 미션 보상 수령');
+  assert.equal(missionModel.primaryAction.action, 'claim-missions');
+  assert.equal(missionModel.primaryAction.label, '보상 수령');
+  assert.equal(missionModel.primaryAction.title, '받을 미션 보상');
+  assert.equal(missionModel.primaryAction.ariaLabel, '받을 미션 보상 수령');
+  assert.deepEqual(missionModel.secondaryAction, {
+    label: '다음 작전',
+    action: 'retry',
+    title: '보스 막타 작전',
+    ariaLabel: '보스 막타 작전 시작'
+  });
 
   const seasonModel = buildRebootResultModel({
     result: { status: 'won', reason: 'partner_rescued' },
+    seedName: 'tutorial_success',
     profile: {
       gems: 24,
       xp: 80,
@@ -79,13 +87,15 @@ test('result model routes secondary action to direct reward claims or clear prof
     }
   });
 
-  assert.equal(seasonModel.secondaryAction.action, 'claim-season');
-  assert.equal(seasonModel.secondaryAction.label, '보상 수령');
-  assert.equal(seasonModel.secondaryAction.title, '시즌 보상 도착');
-  assert.equal(seasonModel.secondaryAction.ariaLabel, '시즌 보상 도착 수령');
+  assert.equal(seasonModel.primaryAction.action, 'claim-season');
+  assert.equal(seasonModel.primaryAction.label, '보상 수령');
+  assert.equal(seasonModel.primaryAction.title, '시즌 보상 도착');
+  assert.equal(seasonModel.primaryAction.ariaLabel, '시즌 보상 도착 수령');
+  assert.equal(seasonModel.secondaryAction.action, 'retry');
 
   const trainingModel = buildRebootResultModel({
     result: { status: 'won', reason: 'partner_rescued' },
+    seedName: 'tutorial_success',
     profile: {
       gems: 24,
       xp: 60,
@@ -95,8 +105,9 @@ test('result model routes secondary action to direct reward claims or clear prof
     }
   });
 
-  assert.equal(trainingModel.secondaryAction.action, 'collection');
-  assert.equal(trainingModel.secondaryAction.label, '강화');
+  assert.equal(trainingModel.primaryAction.action, 'collection');
+  assert.equal(trainingModel.primaryAction.label, '강화');
+  assert.equal(trainingModel.secondaryAction.action, 'retry');
 });
 
 test('lobby next action maps each priority to a generated beacon key', () => {

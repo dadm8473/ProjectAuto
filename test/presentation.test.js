@@ -2195,20 +2195,22 @@ test('result actions use dedicated generated button frames', async () => {
 test('result reward claim action is promoted to the generated primary button', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
   for (const marker of [
     "const rewardClaimActions = new Set(['claim-missions', 'claim-season']);",
-    "dom.resultOverlay.dataset.resultCta = rewardClaimActions.has(model.secondaryAction.action) ? 'claim' : 'default';",
-    '.result-overlay[data-result-cta="claim"] .result-action-secondary',
-    'order: -1;',
-    'background-position: 0 0;',
+    "dom.resultOverlay.dataset.resultCta = rewardClaimActions.has(model.primaryAction.action) ? 'claim' : 'default';",
+    'const primaryAction = profileAction ?? nextOperationAction ?? retryAction;',
+    'const secondaryAction = profileAction ? (nextOperationAction ?? homeAction) : homeAction;',
+    'dom.resultRetryButton.dataset.resultOpen = model.primaryAction.action',
     '.result-overlay[data-result-cta="claim"] .result-action-primary',
-    'background-position: 100% 0;'
+    'background-position: 0 0;'
   ]) {
-    assert.equal(`${css}\n${app}`.includes(marker), true, marker);
+    assert.equal(`${css}\n${app}\n${screens}`.includes(marker), true, marker);
   }
 
   assert.equal(css.includes('.result-overlay[data-result-cta="claim"] .result-action-secondary {\n  display: none;'), false);
+  assert.equal(css.includes('.result-overlay[data-result-cta="claim"] .result-action-secondary {\n  order: -1;'), false);
 });
 
 test('result reward copy names the earned currency instead of a generic reward number', async () => {
@@ -3649,7 +3651,7 @@ test('result reward strip uses generated reward burst art', async () => {
   }
 });
 
-test('result secondary action can claim ready rewards without an extra tap', async () => {
+test('result actions can claim ready rewards without an extra tap', async () => {
   const app = await readFile('src/client/app.js', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
@@ -3658,6 +3660,7 @@ test('result secondary action can claim ready rewards without an extra tap', asy
     "resultCode: qs('#resultCode')",
     'dom.resultCode.textContent = model.code',
     'dom.resultLobbyLabel.textContent = model.secondaryAction.label',
+    'dom.resultRetryButton.dataset.resultOpen = model.primaryAction.action',
     'dom.resultLobbyButton.dataset.resultOpen = model.secondaryAction.action',
     "action: 'claim-missions'",
     "action: 'claim-season'",
@@ -3672,6 +3675,8 @@ test('result secondary action can claim ready rewards without an extra tap', asy
     'changed && !options.preserveRewardReveal',
     "showRewardReveal('미션 보상'",
     "showRewardReveal('시즌 보상'",
+    'function handleResultAction(target)',
+    'function handleResultPrimary()',
     'function handleResultSecondary()',
     "setScreen(target === 'home' ? 'lobby' : target)",
     "return { label: nextAction.cta, action: nextAction.screen",
