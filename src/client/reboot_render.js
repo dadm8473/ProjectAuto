@@ -11,6 +11,17 @@ const ACTION_SURGE_DURATION = 2.0;
 const ACTION_SURGE_HOLD_SECONDS = 0.85;
 const MERGE_REWARD_SIGIL_DURATION = 1.9;
 const MERGE_REWARD_SIGIL_HOLD_SECONDS = 0.85;
+const GENERATED_TRACK_PATH = [
+  { p: 0, x: 196, y: 158 },
+  { p: 0.12, x: 202, y: 205 },
+  { p: 0.24, x: 284, y: 248 },
+  { p: 0.36, x: 284, y: 288 },
+  { p: 0.49, x: 160, y: 301 },
+  { p: 0.6, x: 82, y: 334 },
+  { p: 0.7, x: 89, y: 348 },
+  { p: 0.82, x: 270, y: 356 },
+  { p: 1, x: 300, y: 345 }
+];
 
 export const REBOOT_ATLAS_MANIFEST = {
   units: {
@@ -580,7 +591,7 @@ function drawEnemyTrackTrail(ctx, assets, enemy, x, y, now = 0) {
   return true;
 }
 
-function drawEnemySpawnGate(ctx, image, enemies = [], now = 0) {
+function drawEnemySpawnGate(ctx, image, enemies = [], now = 0, imageBackdrop = true) {
   if (!enemies.length || !image?.complete || image.naturalWidth <= 0) return false;
   const hasBoss = enemies.some((enemy) => enemy.enemyId === 'mini_boss' || enemy.spriteKey === 'mini_boss');
   const hasHeavy = enemies.some((enemy) => enemy.enemyId === 'heavy_noise' || enemy.spriteKey === 'heavy_noise');
@@ -589,10 +600,10 @@ function drawEnemySpawnGate(ctx, image, enemies = [], now = 0) {
   const width = hasBoss ? 118 : index === 1 ? 108 : 92;
   const height = hasBoss ? 88 : index === 1 ? 76 : 66;
   const alpha = Math.min(0.88, 0.66 + Math.max(0, Math.sin(now * 5.3)) * 0.12);
-  const gateX = 76;
+  const gate = trackPointFromProgress(0.02, 0, imageBackdrop);
   ctx.save();
   ctx.globalAlpha *= alpha;
-  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, gateX - width / 2, 286 - height / 2, width, height);
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, gate.x - width / 2, gate.y - height / 2, width, height);
   ctx.restore();
   return true;
 }
@@ -625,12 +636,12 @@ function openingThreatPreviewAlpha(state = {}, options = {}) {
   return 0;
 }
 
-function drawOpeningThreatPreview(ctx, state, assets = {}, options = {}) {
+function drawOpeningThreatPreview(ctx, state, assets = {}, options = {}, imageBackdrop = true) {
   const alpha = openingThreatPreviewAlpha(state, options);
   if (alpha <= 0) return false;
 
   const previewEnemy = { enemyId: 'noise_shard', spriteKey: 'noise_shard', progress: 0.08, lane: 0.25 };
-  const point = trackPointFromProgress(0.075 + Math.max(0, Math.sin(state.now * 2.3)) * 0.012, 0.25);
+  const point = trackPointFromProgress(0.075 + Math.max(0, Math.sin(state.now * 2.3)) * 0.012, 0.25, imageBackdrop);
   const preview = assets?.openingThreatPreview;
   if (preview?.complete && preview.naturalWidth > 0) {
     const width = state.now > OPENING_THREAT_PREVIEW_END ? 148 : 116;
@@ -644,7 +655,7 @@ function drawOpeningThreatPreview(ctx, state, assets = {}, options = {}) {
 
   ctx.save();
   ctx.globalAlpha *= alpha;
-  drawEnemySpawnGate(ctx, assets.enemySpawnGates, [previewEnemy], state.now);
+  drawEnemySpawnGate(ctx, assets.enemySpawnGates, [previewEnemy], state.now, imageBackdrop);
   drawEnemyTrackTrail(ctx, assets, previewEnemy, point.x, point.y, state.now);
   drawAtlasSprite(ctx, assets, 'enemies', previewEnemy.spriteKey, point.x, point.y, 46, 0.86);
   ctx.restore();
@@ -658,7 +669,7 @@ function isSignalCoreCritical(state = {}) {
   return danger >= 80 || bossThreat || endpointThreat || (state.now >= 92 && state.now < 102);
 }
 
-function drawSignalCoreGate(ctx, image, state = {}) {
+function drawSignalCoreGate(ctx, image, state = {}, imageBackdrop = true) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const critical = isSignalCoreCritical(state);
   const index = critical ? 1 : 0;
@@ -667,27 +678,29 @@ function drawSignalCoreGate(ctx, image, state = {}) {
   const width = critical ? 146 : 116;
   const height = critical ? 106 : 84;
   const alpha = Math.min(0.94, (critical ? 0.84 : 0.62) + pulse);
-  const coreX = critical ? 312 : 320;
+  const core = trackPointFromProgress(0.98, 0, imageBackdrop);
+  const drawY = imageBackdrop && critical ? core.y - 8 : core.y;
   ctx.save();
   ctx.globalAlpha *= alpha;
-  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, coreX - width / 2, 286 - height / 2, width, height);
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, core.x - width / 2, drawY - height / 2, width, height);
   ctx.restore();
   return true;
 }
 
-function drawSignalCoreCriticalFlare(ctx, image, state = {}) {
+function drawSignalCoreCriticalFlare(ctx, image, state = {}, imageBackdrop = true) {
   if (!image?.complete || image.naturalWidth <= 0 || !isSignalCoreCritical(state)) return false;
   const cellWidth = image.naturalWidth / 2;
   const pulse = Math.max(0, Math.sin((Number(state.now) || 0) * 8.6)) * 0.1;
   const width = 176;
   const height = 128;
-  const coreX = 312;
+  const core = trackPointFromProgress(0.98, 0, imageBackdrop);
+  const drawY = imageBackdrop ? core.y - 20 : core.y;
   ctx.save();
   ctx.globalCompositeOperation = 'screen';
   ctx.globalAlpha *= Math.min(0.58, 0.38 + pulse);
   ctx.shadowColor = 'rgba(255, 101, 54, 0.72)';
   ctx.shadowBlur = 24;
-  ctx.drawImage(image, cellWidth, 0, cellWidth, image.naturalHeight, coreX - width / 2, 286 - height / 2, width, height);
+  ctx.drawImage(image, cellWidth, 0, cellWidth, image.naturalHeight, core.x - width / 2, drawY - height / 2, width, height);
   ctx.restore();
   return true;
 }
@@ -1060,11 +1073,11 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false, options = {})
   }
 
   const enemies = state.enemies.slice(0, 8);
-  drawEnemySpawnGate(ctx, assets.enemySpawnGates, enemies, state.now);
-  drawOpeningThreatPreview(ctx, state, assets, options);
-  drawSignalCoreGate(ctx, assets.signalCoreGates, state);
+  drawEnemySpawnGate(ctx, assets.enemySpawnGates, enemies, state.now, imageBackdrop);
+  drawOpeningThreatPreview(ctx, state, assets, options, imageBackdrop);
+  drawSignalCoreGate(ctx, assets.signalCoreGates, state, imageBackdrop);
   enemies.forEach((enemy, index) => {
-    const { x, y } = enemyScreenPoint(state, index, enemy);
+    const { x, y } = enemyScreenPoint(state, index, enemy, imageBackdrop);
     const size = enemy.enemyId === 'mini_boss' ? 66 : 44;
     if (enemy.enemyId === 'mini_boss') {
       drawBossAura(ctx, assets, x, y, state.now);
@@ -1080,7 +1093,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false, options = {})
     ctx.roundRect(x - 10, y - 9, enemy.enemyId === 'mini_boss' ? 30 : 20, enemy.enemyId === 'mini_boss' ? 24 : 18, 6);
     ctx.fill();
   });
-  drawSignalCoreCriticalFlare(ctx, assets.signalCoreGates, state);
+  drawSignalCoreCriticalFlare(ctx, assets.signalCoreGates, state, imageBackdrop);
 
   ctx.restore();
 }
@@ -1090,21 +1103,44 @@ function laneForEnemy(enemy = {}) {
   return enemy.boardId === 'p2' ? -0.45 : 0.25;
 }
 
-function enemyScreenPoint(state, index, enemy = null) {
-  if (Number.isFinite(Number(enemy?.progress))) return trackPointFromProgress(Number(enemy.progress), laneForEnemy(enemy));
+function enemyScreenPoint(state, index, enemy = null, imageBackdrop = true) {
+  if (Number.isFinite(Number(enemy?.progress))) return trackPointFromProgress(Number(enemy.progress), laneForEnemy(enemy), imageBackdrop);
   const p = ((state.now * 0.045 + index * 0.12) % 1);
-  return {
-    x: 70 + p * 250,
-    y: 285 + Math.sin(p * Math.PI * 2) * 34
-  };
+  return trackPointFromProgress(p, index % 2 === 0 ? 0.25 : -0.25, imageBackdrop);
 }
 
-function trackPointFromProgress(progress = 0, lane = 0) {
+function trackPointFromProgress(progress = 0, lane = 0, imageBackdrop = true) {
   const p = Math.max(0, Math.min(1, Number(progress) || 0));
   const laneOffset = Math.max(-1, Math.min(1, Number(lane) || 0)) * 10;
+  if (!imageBackdrop) {
+    return {
+      x: 70 + p * 250,
+      y: 285 + Math.sin(p * Math.PI * 2) * 34 + laneOffset
+    };
+  }
+  let from = GENERATED_TRACK_PATH[0];
+  let to = GENERATED_TRACK_PATH.at(-1);
+  for (let index = 0; index < GENERATED_TRACK_PATH.length - 1; index += 1) {
+    const start = GENERATED_TRACK_PATH[index];
+    const end = GENERATED_TRACK_PATH[index + 1];
+    if (p >= start.p && p <= end.p) {
+      from = start;
+      to = end;
+      break;
+    }
+  }
+  const span = Math.max(0.001, to.p - from.p);
+  const t = Math.max(0, Math.min(1, (p - from.p) / span));
+  const x = from.x + (to.x - from.x) * t;
+  const y = from.y + (to.y - from.y) * t;
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.max(1, Math.hypot(dx, dy));
+  const normalX = -dy / length;
+  const normalY = dx / length;
   return {
-    x: 70 + p * 250,
-    y: 285 + Math.sin(p * Math.PI * 2) * 34 + laneOffset
+    x: x + normalX * laneOffset,
+    y: y + normalY * laneOffset
   };
 }
 
@@ -1238,12 +1274,12 @@ function drawRewardPickups(ctx, assets, effect, point, boss, alpha) {
   return drawRewardPickupSprite(ctx, assets.rewardPickups, pickupIndex, cx, cy, w, h, pickupAlpha);
 }
 
-function drawDeathBursts(ctx, state, assets = {}) {
+function drawDeathBursts(ctx, state, assets = {}, imageBackdrop = true) {
   const bursts = (state.effects ?? [])
     .filter((effect) => effect.type === 'death_burst')
     .slice(-5);
   for (const effect of bursts) {
-    const point = trackPointFromProgress(effect.targetProgress, effect.targetLane);
+    const point = trackPointFromProgress(effect.targetProgress, effect.targetLane, imageBackdrop);
     const boss = effect.targetType === 'boss' || effect.targetType === 'mini_boss';
     const size = boss ? 120 : 78;
     const ttlMax = boss ? 1.25 : 0.78;
@@ -1256,13 +1292,13 @@ function drawDeathBursts(ctx, state, assets = {}) {
   }
 }
 
-function drawHitBeams(ctx, state, assets = {}, localBoardId = 'p1') {
+function drawHitBeams(ctx, state, assets = {}, localBoardId = 'p1', imageBackdrop = true) {
   const hits = (state.effects ?? [])
     .filter((effect) => effect.type === 'hit')
     .slice(-6);
   for (const effect of hits) {
     const from = boardSlotPoint(effect.playerId, effect.slot, localBoardId);
-    const to = trackPointFromProgress(effect.targetProgress, effect.targetLane);
+    const to = trackPointFromProgress(effect.targetProgress, effect.targetLane, imageBackdrop);
     const alpha = Math.max(0.16, Math.min(0.86, (effect.ttl ?? 0.62) / 0.62));
     if (!drawHitBoltSprite(ctx, assets.hitBolts, from, to, effect.targetType, alpha)) {
       const dx = to.x - from.x;
@@ -1288,7 +1324,7 @@ function drawHitBeams(ctx, state, assets = {}, localBoardId = 'p1') {
   }
 }
 
-function drawCombatVfx(ctx, state, assets = {}, localBoardId = 'p1') {
+function drawCombatVfx(ctx, state, assets = {}, localBoardId = 'p1', imageBackdrop = true) {
   for (const event of recentEvents(state, 'summon')) {
     const point = boardVfxPoint(state, event, localBoardId);
     const alpha = eventAlpha(state, event);
@@ -1308,10 +1344,10 @@ function drawCombatVfx(ctx, state, assets = {}, localBoardId = 'p1') {
     const drewReveal = drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 3, 195, 328, 156, 118, alpha * 0.9);
     if (!drewReveal) drawCombatActionFallbackStamp(ctx, assets, 'rescue', 195, 328, alpha * 0.84);
   }
-  drawHitBeams(ctx, state, assets, localBoardId);
-  drawDeathBursts(ctx, state, assets);
+  drawHitBeams(ctx, state, assets, localBoardId, imageBackdrop);
+  drawDeathBursts(ctx, state, assets, imageBackdrop);
   if (state.enemies.length > 0) {
-    const point = enemyScreenPoint(state, 0, state.enemies[0]);
+    const point = enemyScreenPoint(state, 0, state.enemies[0], imageBackdrop);
     const alpha = 0.34 + Math.max(0, Math.sin(state.now * 12)) * 0.22;
     drawAtlasSprite(ctx, assets, 'vfx', 'enemy_hit_spark', point.x + 7, point.y - 7, 46, alpha);
   }
@@ -1570,7 +1606,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawFirstMergeRewardSigil(ctx, state, assets, options.reducedMotion, localBoardId);
   drawFirstRescueRewardSigil(ctx, state, assets, options.reducedMotion, localBoardId);
   drawRescueBeam(ctx, state, assets);
-  drawCombatVfx(ctx, state, assets, localBoardId);
+  drawCombatVfx(ctx, state, assets, localBoardId, imageBackdrop);
   const drewDualCrisis = drawDualCrisisCutin(ctx, state, assets, localBoardId);
   if (!drewDualCrisis) {
     drawBossWarningCutin(ctx, state, assets);

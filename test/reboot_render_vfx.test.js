@@ -45,6 +45,7 @@ function mockContext() {
       ctx._lineStart = { x, y };
       commands.push({ type: 'moveTo', x, y });
     },
+    bezierCurveTo: (...args) => commands.push({ type: 'bezierCurveTo', args }),
     lineTo(x, y) {
       commands.push({ type: 'lineTo', x, y, from: ctx._lineStart });
     },
@@ -204,11 +205,98 @@ test('enemy spawn gate draws as a generated battlefield object before enemy spri
   const spawnGateIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === enemySpawnGates);
   const enemyIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === enemies);
   const spawnGateDraw = ctx.commands[spawnGateIndex];
+  const spawnGateCenterX = spawnGateDraw.args[5] + spawnGateDraw.args[7] / 2;
+  const spawnGateCenterY = spawnGateDraw.args[6] + spawnGateDraw.args[8] / 2;
 
   assert.notEqual(spawnGateIndex, -1, 'expected generated enemy spawn gate to anchor the intrusion point');
   assert.notEqual(enemyIndex, -1, 'expected enemy sprites to render');
   assert.equal(spawnGateDraw.args[5] >= 24, true, 'spawn gate should sit inside the visible track entrance');
+  assert.equal(spawnGateCenterX >= 160 && spawnGateCenterX <= 230, true, `spawn gate should sit on the generated S-road entrance: ${spawnGateCenterX}`);
+  assert.equal(spawnGateCenterY >= 130 && spawnGateCenterY <= 215, true, `spawn gate should sit on the generated S-road entrance: ${spawnGateCenterY}`);
   assert.equal(spawnGateIndex < enemyIndex, true, 'spawn gate should sit behind enemies on the track');
+});
+
+test('early enemy sprites sit on the generated S-road instead of side decoration', () => {
+  const ctx = mockContext();
+  const enemies = image(1024, 256);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 4,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [
+        { enemyId: 'noise_shard', spriteKey: 'noise_shard', boardId: 'p1', progress: 0.08 }
+      ],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies,
+      board: image(1280, 256),
+      enemyTrackTrails: image(1024, 128)
+    }
+  );
+
+  const enemyDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === enemies);
+  assert.ok(enemyDraw, 'expected enemy atlas draw');
+  const enemyCenterX = enemyDraw.args[5] + enemyDraw.args[7] / 2;
+  const enemyCenterY = enemyDraw.args[6] + enemyDraw.args[8] / 2;
+
+  assert.equal(enemyCenterX >= 160 && enemyCenterX <= 240, true, `early enemy should stay on the generated track entrance: ${enemyCenterX}`);
+  assert.equal(enemyCenterY >= 150 && enemyCenterY <= 230, true, `early enemy should stay on the generated track entrance: ${enemyCenterY}`);
+});
+
+test('fallback track keeps gates and enemies on the fallback road while backdrop loads', () => {
+  const ctx = mockContext();
+  const enemies = image(1024, 256);
+  const enemySpawnGates = image(768, 192);
+  const signalCoreGates = image(512, 192);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 4,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [
+        { enemyId: 'noise_shard', spriteKey: 'noise_shard', boardId: 'p1', progress: 0.08 }
+      ],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      units: image(1280, 256),
+      enemies,
+      board: image(1280, 256),
+      enemySpawnGates,
+      signalCoreGates
+    }
+  );
+
+  const spawnGateDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === enemySpawnGates);
+  const enemyDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === enemies);
+  const coreDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === signalCoreGates);
+  assert.ok(spawnGateDraw, 'expected fallback spawn gate draw');
+  assert.ok(enemyDraw, 'expected fallback enemy draw');
+  assert.ok(coreDraw, 'expected fallback signal core draw');
+
+  const spawnGateCenterX = spawnGateDraw.args[5] + spawnGateDraw.args[7] / 2;
+  const enemyCenterX = enemyDraw.args[5] + enemyDraw.args[7] / 2;
+  const coreCenterY = coreDraw.args[6] + coreDraw.args[8] / 2;
+
+  assert.equal(spawnGateCenterX <= 130, true, `fallback spawn gate should stay on the fallback road entrance: ${spawnGateCenterX}`);
+  assert.equal(enemyCenterX <= 140, true, `fallback early enemy should stay on the fallback road: ${enemyCenterX}`);
+  assert.equal(coreCenterY <= 330, true, `fallback signal core should stay on the fallback road end: ${coreCenterY}`);
 });
 
 test('opening combat previews an incoming threat before the first serialized enemy arrives', () => {
@@ -446,10 +534,15 @@ test('signal core gate anchors the protected end of the track before enemies arr
   const coreIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === signalCoreGates);
   const enemyIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === enemies);
   const coreDraw = ctx.commands[coreIndex];
+  const coreCenterX = coreDraw.args[5] + coreDraw.args[7] / 2;
+  const coreCenterY = coreDraw.args[6] + coreDraw.args[8] / 2;
+  const coreBottom = coreDraw.args[6] + coreDraw.args[8];
 
   assert.notEqual(coreIndex, -1, 'expected generated signal core gate at the protected track end');
   assert.notEqual(enemyIndex, -1, 'expected enemy sprites to render');
-  assert.equal(coreDraw.args[5] >= 260, true, 'signal core gate should sit near the right-side track endpoint');
+  assert.equal(coreCenterX >= 260, true, 'signal core gate should sit near the right-side track endpoint');
+  assert.equal(coreCenterY >= 340 && coreCenterY <= 370, true, `signal core gate should anchor the visible lower generated track end: ${coreCenterY}`);
+  assert.equal(coreBottom <= 392, true, `signal core gate should not be buried under the player board tray: ${coreBottom}`);
   assert.equal(coreIndex < enemyIndex, true, 'signal core gate should sit behind enemies so the threat reads clearly');
 });
 
@@ -524,6 +617,11 @@ test('signal core gate reinforces endpoint pressure over enemies with a critical
     criticalCoreDraws.some(({ index }) => index > enemyIndex),
     true,
     'critical signal flare should stay visible over endpoint enemies'
+  );
+  assert.equal(
+    criticalCoreDraws.every(({ command }) => command.args[6] + command.args[8] <= 392),
+    true,
+    'critical endpoint core and flare should stay above the player board tray'
   );
 });
 
@@ -637,7 +735,79 @@ test('enemy sprites follow serialized track progress instead of a timer-only pat
 
   const enemyDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === enemies);
   assert.ok(enemyDraw, 'expected enemy atlas draw');
+  const enemyCenterY = enemyDraw.args[6] + enemyDraw.args[8] / 2;
+  const enemyBottom = enemyDraw.args[6] + enemyDraw.args[8];
   assert.equal(enemyDraw.args[5] + enemyDraw.args[7] / 2 > 260, true, 'enemy with high progress should render near the protected track end');
+  assert.equal(enemyCenterY >= 350, true, `enemy with high progress should render on the lower generated track end: ${enemyCenterY}`);
+  assert.equal(enemyBottom <= 392, true, `enemy with high progress should remain above the player board tray: ${enemyBottom}`);
+});
+
+test('mini boss endpoint sprites remain above the player board tray', () => {
+  const ctx = mockContext();
+  const enemies = image(1024, 256);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 102,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [
+        { enemyId: 'mini_boss', spriteKey: 'mini_boss', boardId: 'p1', progress: 0.82 }
+      ],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies,
+      bossAuras: image(768, 192),
+      board: image(1280, 256)
+    }
+  );
+
+  const bossDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === enemies);
+  assert.ok(bossDraw, 'expected mini boss atlas draw');
+  const bossBottom = bossDraw.args[6] + bossDraw.args[8];
+  assert.equal(bossBottom <= 392, true, `mini boss endpoint should remain above the player board tray: ${bossBottom}`);
+});
+
+test('mini boss lower-curve sprites remain above the player board tray', () => {
+  const ctx = mockContext();
+  const enemies = image(1024, 256);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 96,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [
+        { enemyId: 'mini_boss', spriteKey: 'mini_boss', boardId: 'p1', progress: 0.7 }
+      ],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies,
+      bossAuras: image(768, 192),
+      board: image(1280, 256)
+    }
+  );
+
+  const bossDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === enemies);
+  assert.ok(bossDraw, 'expected lower-curve mini boss atlas draw');
+  const bossBottom = bossDraw.args[6] + bossDraw.args[8];
+  assert.equal(bossBottom <= 392, true, `lower-curve mini boss should remain above the player board tray: ${bossBottom}`);
 });
 
 test('random combat actions use generated reveal VFX without legacy action flashes', () => {

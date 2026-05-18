@@ -2923,7 +2923,7 @@ test('death burst effects use a dedicated transparent generated VFX asset', asyn
     'drawFinaleBurstSprite',
     'drawDeathBursts',
     "effect.type === 'death_burst'",
-    'trackPointFromProgress(effect.targetProgress, effect.targetLane)',
+    'trackPointFromProgress(effect.targetProgress, effect.targetLane, imageBackdrop)',
     'if (boss) drawFinaleBurstSprite(ctx, assets.fieldFinaleBursts, 0',
     'drawImageCover(ctx, assets.killBurst',
     "drawAtlasSprite(ctx, assets, 'rewards'"
@@ -2969,7 +2969,7 @@ test('hit effects draw generated short bolt sprites without screen-crossing beam
     'drawHitBeams',
     "effect.type === 'hit'",
     'boardSlotPoint(effect.playerId, effect.slot, localBoardId)',
-    'trackPointFromProgress(effect.targetProgress, effect.targetLane)',
+    'trackPointFromProgress(effect.targetProgress, effect.targetLane, imageBackdrop)',
     'const boltLength = Math.min(Math.max(48, length * 0.34), 108);',
     'const centerX = to.x - Math.cos(angle) * boltLength * 0.42;',
     'drawHitBoltSprite(ctx, assets.hitBolts'
