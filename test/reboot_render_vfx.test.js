@@ -1817,7 +1817,7 @@ test('merge reward surge lingers long enough to read after the tap feedback', ()
   assert.equal(sigilAlpha >= 0.34, true, `late merge sigil should stay readable: ${sigilAlpha}`);
 });
 
-test('image backdrop board labels sit on generated combat plates', () => {
+test('image backdrop hides board names and keeps danger labels on generated combat plates', () => {
   const ctx = mockContext();
   drawRebootBattle(
     ctx,
@@ -1847,15 +1847,12 @@ test('image backdrop board labels sit on generated combat plates', () => {
         && command.args[0].naturalHeight === 80
     ))
     .map(({ index }) => index);
-  const partnerTextIndex = ctx.commands.findIndex((command) => (
-    command.type === 'fillText' && command.args[0] === '파트너 보드'
-  ));
   const dangerTextIndex = ctx.commands.findIndex((command) => (
     command.type === 'fillText' && command.args[0] === '위험 52'
   ));
 
-  assert.equal(plateIndices.length >= 2, true, 'expected generated plates behind partner and danger labels');
-  assert.equal(plateIndices.some((index) => index < partnerTextIndex), true, 'partner label should sit above a generated plate');
+  assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '파트너 보드'), false);
+  assert.equal(plateIndices.length >= 1, true, 'expected generated plate behind danger label');
   assert.equal(plateIndices.some((index) => index < dangerTextIndex), true, 'danger label should sit above a generated plate');
 });
 

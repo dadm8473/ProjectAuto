@@ -790,8 +790,7 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
     ctx.stroke();
   }
   if (imageBackdrop && !compact) drawPlayerBoardTray(ctx, assets, x - 6, y - 14, w + 12, h + 10);
-  const compactBoardActive = compact && ((board.units?.length ?? 0) > 0 || board.danger >= 50);
-  const showBoardText = !imageBackdrop || compactBoardActive;
+  const showBoardText = !imageBackdrop;
   const showDangerText = !imageBackdrop || board.danger >= 50;
   if (showBoardText) {
     if (imageBackdrop) drawBoardLabelPlate(ctx, assets, 'board', x + 4, y + 2, compact ? 118 : 106, 28, 0.68);
