@@ -1490,6 +1490,12 @@ test('meta screens use generated game chrome instead of css-only panels', async 
     css.indexOf('.lobby-card,\n.screen-card,\n.result-panel'),
     css.indexOf('.lobby-card::before')
   );
+  assert.equal(sharedCardSurface.includes('border-color: transparent;'), true);
+  assert.equal(sharedCardSurface.includes('border-radius: 0;'), true);
+  assert.equal(sharedCardSurface.includes('background: transparent;'), true);
+  assert.equal(sharedCardSurface.includes('box-shadow: none;'), true);
+  assert.equal(sharedCardSurface.includes('background: rgba('), false);
+  assert.equal(sharedCardSurface.includes('box-shadow:\n    inset'), false);
   assert.equal(sharedCardSurface.includes('linear-gradient'), false);
   assert.equal(sharedCardSurface.includes('backdrop-filter'), false);
 });
