@@ -86,7 +86,7 @@ function recordingCanvasContext() {
 
 function stateWithPartnerAutoPing() {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
-  advanceRebootGameTo(game, 18.1);
+  advanceRebootGameTo(game, 11.1);
   const state = serializeRebootState(game);
   state.events = state.events.filter((event) => event.type !== 'wave');
   return state;

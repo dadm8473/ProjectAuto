@@ -14,7 +14,7 @@ const HIT_EFFECT_INTERVAL = 0.48;
 const HIT_EFFECT_TTL = 0.62;
 
 const BOT_PARTNER_SCRIPT = [
-  { at: 18, unitId: 'spark_pin', highlight: false },
+  { at: 10, unitId: 'spark_pin', highlight: false },
   { at: 46, unitId: 'slow_coil', highlight: true },
   { at: 88, unitId: 'rescue_coil', action: 'rescue', highlight: true }
 ];

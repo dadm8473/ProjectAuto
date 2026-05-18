@@ -211,6 +211,18 @@ test('bot partner visibly contributes with scripted board actions', () => {
   assert.equal(partnerEvents.some((event) => event.highlight), true);
 });
 
+test('bot partner joins before the first combat lull feels solo', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1214 });
+  advanceTo(game, 12);
+
+  const partnerEvents = game.events.filter((event) => event.type === 'partner_auto');
+
+  assert.equal(game.boards.p2.units.length >= 1, true);
+  assert.equal(partnerEvents.length >= 1, true);
+  assert.equal(partnerEvents[0].at <= 12, true);
+  assert.equal(partnerEvents[0].action, 'summon');
+});
+
 test('bot partner marks the late rescue-coil script as rescue support', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1213 });
   advanceTo(game, 89);
