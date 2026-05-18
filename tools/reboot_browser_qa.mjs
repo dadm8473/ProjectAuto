@@ -206,6 +206,22 @@ async function assertGeneratedCardSurface(page, selector, label, framePattern) {
   }
 }
 
+async function assertBannerOverlayClear(page, selector, label) {
+  const overlay = await page.locator(selector).first().evaluate((node) => {
+    const after = getComputedStyle(node, '::after');
+    return {
+      backgroundColor: after.backgroundColor,
+      backgroundImage: after.backgroundImage,
+      backdropFilter: after.backdropFilter,
+      webkitBackdropFilter: after.webkitBackdropFilter ?? 'none'
+    };
+  });
+  assert.equal(overlay.backgroundColor, 'rgba(0, 0, 0, 0)', `${label} banner still has css dimmer: ${JSON.stringify(overlay)}`);
+  assert.equal(overlay.backgroundImage, 'none', `${label} banner overlay still has css image/gradient: ${JSON.stringify(overlay)}`);
+  assert.equal(overlay.backdropFilter, 'none', `${label} banner overlay still uses backdrop filter: ${JSON.stringify(overlay)}`);
+  assert.equal(overlay.webkitBackdropFilter, 'none', `${label} banner overlay still uses webkit backdrop filter: ${JSON.stringify(overlay)}`);
+}
+
 async function assertOperationCopyClearsProgressRail(page) {
   const geometry = await page.evaluate(() => {
     const copyNodes = [...document.querySelectorAll('#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p')];
@@ -397,6 +413,7 @@ async function verifyShell(page, viewport) {
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#collectionScreen .meta-showcase-copy > span:first-child', 'collection', 1);
   await assertMetaShowcaseChips(page, '#collectionScreen .meta-showcase-chip', 'collection', 2);
+  await assertBannerOverlayClear(page, '#collectionScreen .meta-showcase', 'collection showcase');
   await assertMetaListReachesDock(page, '#collectionList', 'collection');
   assert.equal(await page.locator('#collectionList .unit-card .sprite-token.unit-sprite').count(), 8);
   assert.equal(await page.locator('#collectionList .meta-showcase .sprite-token.unit-sprite').count(), 1);
@@ -407,6 +424,7 @@ async function verifyShell(page, viewport) {
   await page.locator('.shop-cosmetic').first().waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#shopScreen .meta-showcase-copy > span:first-child', 'shop', 1);
   await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'shop', 2);
+  await assertBannerOverlayClear(page, '#shopScreen .meta-showcase', 'shop showcase');
   await assertMetaListReachesDock(page, '#shopList', 'shop');
   assert.equal(await page.locator('#shopList .shop-card .sprite-token.shop-cosmetic').count(), 5);
   assert.equal(await page.locator('#shopList .meta-showcase .sprite-token.shop-cosmetic').count(), 1);
@@ -416,6 +434,7 @@ async function verifyShell(page, viewport) {
   await assertActiveNavLabelPlate(page, '미션', 'missions');
   await page.locator('#missionsList .mission-stamp-board').waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#missionsScreen .mission-board-copy span, #missionsScreen .mission-board-copy p', 'missions', 2);
+  await assertBannerOverlayClear(page, '#missionsScreen .mission-stamp-board', 'mission banner');
   await assertMetaListReachesDock(page, '#missionsList', 'missions');
   assert.equal(await page.locator('#missionsList .mission-stamp-slot').count(), 3);
   assert.equal(await page.locator('#missionsList .mission-card').count(), 3);
@@ -425,6 +444,7 @@ async function verifyShell(page, viewport) {
   await assertActiveNavLabelPlate(page, '시즌', 'season');
   await page.locator('#seasonList .season-track-board').waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#seasonScreen .season-board-copy span, #seasonScreen .season-board-copy p', 'season', 2);
+  await assertBannerOverlayClear(page, '#seasonScreen .season-track-board', 'season banner');
   await assertMetaListReachesDock(page, '#seasonList', 'season');
   assert.equal(await page.locator('#seasonList .season-track-node').count(), 4);
   assert.equal(await page.locator('#seasonList .season-card').count(), 4);
