@@ -583,7 +583,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=loading-gate1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-lighting1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=loading-gate1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter-state1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-chip1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-icons1">'), false);
@@ -666,7 +667,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-copy1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=screen-lighting1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=loading-gate1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-meter-state1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-chip1"></script>'), false);
@@ -773,7 +775,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets } from './reboot_preload.js?v=loading-gate2';",
+    "import { preloadCriticalRebootAssets } from './reboot_preload.js?v=screen-lighting1';",
     'preloadCriticalRebootAssets().then(hideLoadingGate, hideLoadingGate);',
     'function hideLoadingGate()',
     "dom.loadingGate.dataset.loadingState = 'ready';",
@@ -836,6 +838,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
   assert.equal(keyframesBlock.includes('translateX'), false);
 
   assert.equal(app.includes("from './reboot_preload.js?v=loading-gate1'"), false);
+  assert.equal(app.includes("from './reboot_preload.js?v=loading-gate2'"), false);
 });
 
 test('playtest mode records first-run understanding without adding visible UI', async () => {
@@ -922,7 +925,10 @@ test('meta screens use imagegen app backdrops instead of pure css scenery', asyn
   for (const marker of [
     '--lobby-backdrop: url("/src/client/assets/generated/reboot-lobby-backdrop.png")',
     '--meta-backdrop: url("/src/client/assets/generated/reboot-meta-backdrop.png")',
+    '--meta-screen-lighting: url("/src/client/assets/generated/reboot-meta-screen-lighting.png?v=screen-lighting1")',
     '.screen-overlay::before',
+    '.screen-overlay::after',
+    'background-image: var(--meta-screen-lighting);',
     '[data-screen="splash"]::before',
     '[data-screen="lobby"]::before',
     '[data-screen="collection"]::before',
@@ -932,6 +938,11 @@ test('meta screens use imagegen app backdrops instead of pure css scenery', asyn
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
+
+  const overlayBlock = cssRuleBlock(css, '.screen-overlay::after');
+  assert.equal(overlayBlock.includes('background-image: var(--meta-screen-lighting);'), true);
+  assert.equal(overlayBlock.includes('linear-gradient'), false);
+  assert.equal(overlayBlock.includes('radial-gradient'), false);
 });
 
 test('meta screen lists can scroll after larger imagegen unit sprites', async () => {
@@ -1338,7 +1349,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=loading-gate1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=screen-lighting1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=loading-gate1'), false);
 
   const firstDockBlock = cssRuleBlock(css, 'body[data-app-screen="battle"] .action-panel:has(.primary-actions[data-open-count="1"])::after');
   assert.equal(firstDockBlock.includes('background-image: var(--combat-command-console-v2);'), true);
@@ -1476,14 +1488,21 @@ test('result screen uses imagegen reward backdrop instead of a plain overlay', a
 
   for (const marker of [
     '--result-backdrop: url("/src/client/assets/generated/reboot-result-backdrop.png")',
+    '--result-screen-lighting: url("/src/client/assets/generated/reboot-result-screen-lighting.png?v=screen-lighting1")',
     '.result-overlay::before',
     '.result-overlay::after',
     'background-image: var(--result-backdrop)',
+    'background-image: var(--result-screen-lighting);',
     '.result-reward::before',
     'background-image: url("/src/client/assets/generated/reboot-reward-icons.png")'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
+
+  const overlayBlock = cssRuleBlock(css, '.result-overlay::after');
+  assert.equal(overlayBlock.includes('background-image: var(--result-screen-lighting);'), true);
+  assert.equal(overlayBlock.includes('linear-gradient'), false);
+  assert.equal(overlayBlock.includes('radial-gradient'), false);
 });
 
 test('combat board renderer uses generated merge and danger accent frames', async () => {
@@ -3443,6 +3462,7 @@ test('splash uses a generated bottom deck instead of an empty lower web footer',
     'inset: auto 0 0;',
     'height: clamp(86px, 14dvh, 116px);',
     'background-image: var(--splash-bottom-deck);',
+    'opacity: 1;',
     'background-position: center bottom;',
     'background-size: 100% 100%;',
     '.splash-screen::after',
@@ -3473,6 +3493,7 @@ test('splash uses a generated bottom deck instead of an empty lower web footer',
 
   const overlayBlock = cssRuleBlock(css, '[data-screen="splash"]::after');
   assert.equal(overlayBlock.includes('z-index: 0;'), true);
+  assert.equal(overlayBlock.includes('opacity: 1;'), true);
   assert.equal(overlayBlock.includes('var(--splash-footer-shroud)'), false);
 
   const shellMaskBlock = cssRuleBlock(css, 'body[data-app-screen="splash"] .shell::after');

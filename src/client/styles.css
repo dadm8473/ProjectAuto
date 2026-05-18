@@ -14,6 +14,8 @@
   --lobby-backdrop: url("/src/client/assets/generated/reboot-lobby-backdrop.png");
   --meta-backdrop: url("/src/client/assets/generated/reboot-meta-backdrop.png");
   --result-backdrop: url("/src/client/assets/generated/reboot-result-backdrop.png");
+  --meta-screen-lighting: url("/src/client/assets/generated/reboot-meta-screen-lighting.png?v=screen-lighting1");
+  --result-screen-lighting: url("/src/client/assets/generated/reboot-result-screen-lighting.png?v=screen-lighting1");
   --result-badges: url("/src/client/assets/generated/reboot-result-badges.png");
   --result-panel-frame: url("/src/client/assets/generated/reboot-result-panel-frame.png?v=frame-alpha1");
   --result-action-buttons: url("/src/client/assets/generated/reboot-result-action-buttons.png?v=result-actions-alpha1");
@@ -1507,9 +1509,11 @@ body[data-app-screen="battle"][data-online-waiting="true"] #summonButton[data-ma
   position: absolute;
   inset: 0;
   z-index: 0;
-  background:
-    linear-gradient(180deg, rgba(5, 8, 8, 0.16), rgba(5, 8, 8, 0.18) 52%, rgba(5, 8, 8, 0.44)),
-    radial-gradient(circle at 50% 44%, rgba(88, 215, 255, 0.12), transparent 38%);
+  background-image: var(--meta-screen-lighting);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  opacity: 0.34;
   pointer-events: none;
 }
 
@@ -1521,6 +1525,7 @@ body[data-app-screen="battle"][data-online-waiting="true"] #summonButton[data-ma
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: 100% auto;
+  opacity: 1;
 }
 
 .result-overlay::after {
@@ -1528,9 +1533,11 @@ body[data-app-screen="battle"][data-online-waiting="true"] #summonButton[data-ma
   position: absolute;
   inset: 0;
   z-index: 0;
-  background:
-    linear-gradient(180deg, rgba(5, 8, 8, 0.1), rgba(5, 8, 8, 0.26) 48%, rgba(5, 8, 8, 0.42)),
-    radial-gradient(circle at 50% 65%, rgba(244, 201, 93, 0.14), transparent 34%);
+  background-image: var(--result-screen-lighting);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  opacity: 0.42;
   pointer-events: none;
 }
 

@@ -279,6 +279,20 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 90_000
   },
   {
+    path: 'src/client/assets/generated/reboot-meta-screen-lighting.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260518-meta-screen-lighting-imagegen.png',
+    width: 430,
+    height: 932,
+    minRuntimeBytes: 260_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-result-screen-lighting.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260518-result-screen-lighting-imagegen.png',
+    width: 430,
+    height: 932,
+    minRuntimeBytes: 300_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-toast-callouts.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-toast-callouts-imagegen.png',
     width: 1024,
@@ -1261,6 +1275,26 @@ test('splash bottom deck adds generated floor detail instead of a flat web foote
   assert.equal(lowerMachinery.brightRatio > 0.035, true, `splash lower deck lacks readable generated machinery: ${lowerMachinery.brightRatio}`);
   assert.equal(cyanDetailRatio > 0.004, true, `splash lower deck lacks signal-lit detail: ${cyanDetailRatio}`);
   assert.equal(flatBlackRatio < 0.5, true, `splash lower deck still reads as flat black footer: ${flatBlackRatio}`);
+});
+
+test('screen lighting mattes are generated art, not flat css gradient replacements', async () => {
+  const meta = parsePng(await readFile('src/client/assets/generated/reboot-meta-screen-lighting.png'));
+  const result = parsePng(await readFile('src/client/assets/generated/reboot-result-screen-lighting.png'));
+
+  assert.equal(meta.width, 430);
+  assert.equal(meta.height, 932);
+  assert.equal(result.width, 430);
+  assert.equal(result.height, 932);
+
+  const metaCenter = luminanceStats(meta, { x: 90, y: 170, width: 250, height: 530 }, 54);
+  const metaTop = luminanceStats(meta, { x: 40, y: 0, width: 350, height: 120 }, 54);
+  const resultCenter = luminanceStats(result, { x: 90, y: 170, width: 250, height: 530 }, 64);
+  const resultEdge = luminanceStats(result, { x: 0, y: 160, width: 50, height: 600 }, 64);
+
+  assert.equal(metaCenter.mean > metaTop.mean + 28, true, `meta lighting lacks generated center falloff: ${JSON.stringify({ metaCenter, metaTop })}`);
+  assert.equal(metaCenter.brightRatio > 0.28, true, `meta lighting is too flat or dark: ${JSON.stringify(metaCenter)}`);
+  assert.equal(resultCenter.mean > resultEdge.mean + 52, true, `result lighting lacks warm reward falloff: ${JSON.stringify({ resultCenter, resultEdge })}`);
+  assert.equal(resultCenter.brightRatio > 0.72, true, `result lighting lacks readable reward glow: ${JSON.stringify(resultCenter)}`);
 });
 
 test('generated UI frames use alpha instead of baked black rectangles', async () => {

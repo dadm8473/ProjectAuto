@@ -36,6 +36,17 @@ test('critical reboot preload includes generated lobby navigation dock assets', 
   }
 });
 
+test('critical reboot preload includes generated meta and result screen lighting mattes', () => {
+  const required = [
+    '/src/client/assets/generated/reboot-meta-screen-lighting.png?v=screen-lighting1',
+    '/src/client/assets/generated/reboot-result-screen-lighting.png?v=screen-lighting1'
+  ];
+
+  for (const asset of required) {
+    assert.equal(CRITICAL_REBOOT_ASSETS.includes(asset), true, asset);
+  }
+});
+
 test('preloadCriticalRebootAssets resolves after loading every requested image', async () => {
   const requested = [];
 
