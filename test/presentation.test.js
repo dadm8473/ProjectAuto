@@ -1044,11 +1044,11 @@ test('meta screens keep generated floor art separate from scroll-list clipping',
   ].join(',\n');
   const block = cssRuleBlock(css, selector);
 
-  assert.equal(css.includes('--meta-list-shutter: url("/src/client/assets/generated/reboot-meta-list-shutter.png?v=meta-list-shutter2")'), true);
+  assert.equal(css.includes('--meta-lower-console: url("/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console1")'), true);
   for (const marker of [
     'height: clamp(138px, 22dvh, 184px);',
     'z-index: 2;',
-    'background-image: var(--meta-list-shutter);',
+    'background-image: var(--meta-lower-console);',
     'background-position: center bottom;',
     'background-size: 100% 100%;',
     'pointer-events: none;'

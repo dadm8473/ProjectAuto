@@ -50,7 +50,7 @@
   --splash-bottom-deck: url("/src/client/assets/generated/reboot-splash-bottom-deck.png?v=splash-bottom-deck2");
   --splash-floor-cap: url("/src/client/assets/generated/reboot-splash-floor-cap.png?v=splash-floor-cap-matte4");
   --meta-footer-shroud: url("/src/client/assets/generated/reboot-meta-footer-shroud.png?v=meta-footer-shroud");
-  --meta-list-shutter: url("/src/client/assets/generated/reboot-meta-list-shutter.png?v=meta-list-shutter2");
+  --meta-lower-console: url("/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console1");
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
   --lobby-operation-posters: url("/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1");
   --lobby-operation-progress-rail: url("/src/client/assets/generated/reboot-lobby-operation-progress-rail.png?v=operation-progress1");
@@ -1605,7 +1605,7 @@ body[data-app-screen="season"] .app-screen::after {
   bottom: 0;
   height: clamp(138px, 22dvh, 184px);
   z-index: 2;
-  background-image: var(--meta-list-shutter);
+  background-image: var(--meta-lower-console);
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: 100% 100%;
