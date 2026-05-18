@@ -196,8 +196,13 @@ function cardStateBadge(state) {
   return CARD_STATE_BADGES[state] ?? CARD_STATE_BADGES.locked;
 }
 
+function passiveCardStateMarkup(label, state = 'locked', displayLabel = label, extraClass = '') {
+  const className = extraClass ? `card-passive-state ${extraClass}` : 'card-passive-state';
+  return `<span class="${className}" data-passive-state="${state}" aria-label="${label}">${displayLabel}</span>`;
+}
+
 function passiveCardState(label, state = 'locked', displayLabel = label) {
-  return `<span class="card-passive-state" data-passive-state="${state}" aria-label="${label}">${displayLabel}</span>`;
+  return passiveCardStateMarkup(label, state, displayLabel);
 }
 
 function rewardGrantLabel(grant = {}) {
@@ -235,11 +240,29 @@ export function buildMetaNavAlerts(profile = {}) {
   };
 }
 
-function buildMetaShowcase({ kind, label, title, detail, chip, stats, spriteClass, spriteAttr, spriteValue }) {
+function buildMetaShowcase({
+  kind,
+  label,
+  title,
+  detail,
+  chip,
+  stats,
+  spriteClass,
+  spriteAttr,
+  spriteValue,
+  extraClass = '',
+  attrs = '',
+  previewClass = '',
+  previewExtra = '',
+  action = ''
+}) {
+  const className = extraClass ? `meta-showcase ${extraClass}` : 'meta-showcase';
+  const previewClassName = previewClass ? `meta-showcase-preview ${previewClass}` : 'meta-showcase-preview';
   const statBadges = (stats ?? (chip ? [chip] : [])).map((stat) => `<span class="meta-showcase-chip">${stat}</span>`).join('');
   return `
-    <section class="meta-showcase" data-showcase-kind="${kind}" data-summary-kind="${kind}">
-      <div class="meta-showcase-preview">
+    <section class="${className}" data-showcase-kind="${kind}" data-summary-kind="${kind}"${attrs}>
+      <div class="${previewClassName}">
+        ${previewExtra}
         <span class="sprite-token ${spriteClass}" ${spriteAttr}="${spriteValue}" aria-hidden="true"></span>
       </div>
       <div class="meta-showcase-copy">
@@ -248,6 +271,7 @@ function buildMetaShowcase({ kind, label, title, detail, chip, stats, spriteClas
         <p>${detail}</p>
       </div>
       <div class="meta-showcase-stats" aria-label="${kind} 상태">${statBadges}</div>
+      ${action}
     </section>
   `;
 }
@@ -477,12 +501,49 @@ export function buildRebootCollection(profile = {}) {
   return `${showcase}<section class="meta-shelf-grid" data-shelf-kind="collection">${units}</section>`;
 }
 
-export function buildRebootShop(profile = {}) {
-  const gems = profile.gems ?? 0;
-  const unlocks = Array.isArray(profile.unlocks) ? profile.unlocks : [];
-  const items = SHOP.items.filter((item) => item.category === 'cosmetic' && item.grant?.cosmetic);
-  const featuredItem = items.find((item) => !unlocks.includes(item.grant.cosmetic) && gems >= (item.price?.gems ?? 0)) ?? items[0];
-  const showcase = buildMetaShowcase({
+function shopFeatureState({ item, profile, unlocks, gems }) {
+  const cosmetic = item.grant.cosmetic;
+  const owned = unlocks.includes(cosmetic);
+  const equipped = owned && profile.equippedCosmetic === cosmetic;
+  const price = item.price?.gems ?? 0;
+  if (equipped) return 'equipped';
+  if (owned) return 'owned';
+  if (gems < price) return 'locked';
+  return 'ready';
+}
+
+function buildShopFeatureAction(featuredItem, featuredState) {
+  if (featuredState === 'ready') {
+    return `<button type="button" class="featured-shop-action" data-shop-buy="${featuredItem.id}" aria-label="${featuredItem.name} 해금">해금</button>`;
+  }
+  if (featuredState === 'owned') {
+    return `<button type="button" class="featured-shop-action" data-shop-buy="${featuredItem.id}" aria-label="${featuredItem.name} 착용">착용</button>`;
+  }
+  if (featuredState === 'equipped') {
+    return passiveCardStateMarkup('장착중', 'owned', '장착중', 'featured-shop-passive');
+  }
+  return passiveCardStateMarkup('보석 부족', 'locked', '부족', 'featured-shop-passive');
+}
+
+function buildShopFeaturedShowcase({ featuredItem, profile, unlocks, gems }) {
+  const featuredState = shopFeatureState({ item: featuredItem, profile, unlocks, gems });
+  const price = featuredItem.price?.gems ?? 0;
+  const stateLabel = featuredState === 'equipped'
+    ? '장착중'
+    : featuredState === 'owned'
+      ? '착용 가능'
+      : featuredState === 'ready'
+        ? '해금 가능'
+        : '보석 부족';
+  const previewExtra = `
+        <span class="cosmetic-equip-aura shop-feature-aura" data-cosmetic-effect="${featuredItem.id}" aria-hidden="true"></span>
+        <span class="reward-token shop-feature-currency" data-reward-icon="soft_currency" aria-hidden="true"></span>`;
+  const action = `
+      <div class="shop-feature-command">
+        <span class="shop-price shop-feature-price" aria-label="해금 비용 ${price} 보석">${price}</span>
+        ${buildShopFeatureAction(featuredItem, featuredState)}
+      </div>`;
+  return buildMetaShowcase({
     kind: 'shop',
     label: '추천 외형',
     title: featuredItem.name,
@@ -490,8 +551,21 @@ export function buildRebootShop(profile = {}) {
     stats: [`보유 ${gems} 보석`, `가격 ${featuredItem.price?.gems ?? 0} 보석`],
     spriteClass: 'shop-cosmetic',
     spriteAttr: 'data-shop-cosmetic',
-    spriteValue: featuredItem.id
+    spriteValue: featuredItem.id,
+    extraClass: 'shop-feature-showcase',
+    attrs: ` data-featured-shop="${featuredItem.id}" data-featured-state="${featuredState}" aria-label="추천 외형 ${featuredItem.name} · ${featuredItem.description} · ${price} 보석 · ${stateLabel}"`,
+    previewExtra,
+    previewClass: 'shop-feature-pedestal',
+    action
   });
+}
+
+export function buildRebootShop(profile = {}) {
+  const gems = profile.gems ?? 0;
+  const unlocks = Array.isArray(profile.unlocks) ? profile.unlocks : [];
+  const items = SHOP.items.filter((item) => item.category === 'cosmetic' && item.grant?.cosmetic);
+  const featuredItem = items.find((item) => !unlocks.includes(item.grant.cosmetic) && gems >= (item.price?.gems ?? 0)) ?? items[0];
+  const showcase = buildShopFeaturedShowcase({ featuredItem, profile, unlocks, gems });
   const shopItems = items.map((item) => {
     const cosmetic = item.grant.cosmetic;
     const owned = unlocks.includes(cosmetic);

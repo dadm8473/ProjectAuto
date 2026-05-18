@@ -7,6 +7,18 @@ const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 
 const baseUrl = process.argv[2] ?? 'http://localhost:4173/?mute=1';
+const profileStorageKey = 'projectauto.reboot.profile.v1';
+const shopReadyProfile = {
+  version: 1,
+  gems: 120,
+  xp: 0,
+  claimedMissions: [],
+  claimedPassTiers: [],
+  unlocks: [],
+  equippedCosmetic: '',
+  processedRuns: [],
+  unitLevels: {}
+};
 const viewports = [
   { width: 375, height: 812 },
   { width: 390, height: 844 },
@@ -260,6 +272,133 @@ async function assertMetaShowcaseChips(page, selector, label, expectedCount) {
     assert.equal(chip.left >= 0 && chip.right <= chip.viewportWidth, true, `${label} chip leaves viewport: ${JSON.stringify(chip)}`);
     assert.equal(chip.top >= 0 && chip.bottom <= chip.viewportHeight, true, `${label} chip leaves vertical viewport: ${JSON.stringify(chip)}`);
   }
+}
+
+async function assertShopFeatureOffer(page, label) {
+  const geometry = await page.locator('#shopList .shop-feature-showcase').evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const pedestalNode = node.querySelector('.shop-feature-pedestal');
+    const control = node.querySelector('.featured-shop-action, .featured-shop-passive');
+    const pedestal = pedestalNode?.getBoundingClientRect();
+    const icon = node.querySelector('.sprite-token.shop-cosmetic')?.getBoundingClientRect();
+    const command = node.querySelector('.shop-feature-command')?.getBoundingClientRect();
+    const action = control?.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    const pedestalStyle = pedestalNode ? getComputedStyle(pedestalNode) : null;
+    return {
+      state: node.getAttribute('data-featured-state'),
+      backgroundImage: style.backgroundImage,
+      pedestalBackground: pedestalStyle?.backgroundImage ?? '',
+      showcaseTop: Math.round(rect.top),
+      showcaseRight: Math.round(rect.right),
+      showcaseBottom: Math.round(rect.bottom),
+      showcaseHeight: Math.round(rect.height),
+      pedestalRight: Math.round(pedestal?.right ?? 0),
+      pedestalWidth: Math.round(pedestal?.width ?? 0),
+      iconWidth: Math.round(icon?.width ?? 0),
+      iconHeight: Math.round(icon?.height ?? 0),
+      iconTop: Math.round(icon?.top ?? 0),
+      iconBottom: Math.round(icon?.bottom ?? 0),
+      commandLeft: Math.round(command?.left ?? 0),
+      commandTop: Math.round(command?.top ?? 0),
+      actionWidth: Math.round(action?.width ?? 0),
+      actionHeight: Math.round(action?.height ?? 0),
+      actionLeft: Math.round(action?.left ?? 0),
+      actionRight: Math.round(action?.right ?? 0),
+      actionBottom: Math.round(action?.bottom ?? 0),
+      priceRight: Math.round(node.querySelector('.shop-feature-price')?.getBoundingClientRect().right ?? 0),
+      controlClass: control?.className ?? '',
+      controlPointerEvents: control ? getComputedStyle(control).pointerEvents : '',
+      viewportWidth: window.innerWidth
+    };
+  });
+  assert.match(geometry.backgroundImage, /reboot-shop-banner/, `${label} feature lacks shop banner: ${JSON.stringify(geometry)}`);
+  assert.match(geometry.pedestalBackground, /reboot-meta-showcase-stage/, `${label} feature lacks generated pedestal: ${JSON.stringify(geometry)}`);
+  assert.match(geometry.state, /^(ready|locked|owned|equipped)$/, `${label} unknown feature state: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.showcaseHeight >= 196, true, `${label} feature too short: ${JSON.stringify(geometry)}`);
+  const minPedestalWidth = label.includes('compact') ? 96 : 118;
+  assert.equal(geometry.pedestalWidth >= minPedestalWidth, true, `${label} pedestal too narrow: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.iconWidth >= 58 && geometry.iconHeight >= 58, true, `${label} featured cosmetic too small: ${JSON.stringify(geometry)}`);
+  assert.equal(
+    geometry.iconTop >= geometry.showcaseTop && geometry.iconBottom <= geometry.showcaseBottom,
+    true,
+    `${label} featured cosmetic escapes stage: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(
+    geometry.actionWidth >= 58 && geometry.actionHeight >= 30 && geometry.actionBottom <= geometry.showcaseBottom,
+    true,
+    `${label} feature action is not a usable command: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(
+    geometry.actionRight <= geometry.showcaseRight && geometry.actionRight <= geometry.viewportWidth,
+    true,
+    `${label} feature action clips past the right edge: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(
+    geometry.priceRight <= geometry.actionLeft - 2,
+    true,
+    `${label} feature price overlaps the command button: ${JSON.stringify(geometry)}`
+  );
+  assert.equal(
+    geometry.commandTop >= geometry.showcaseBottom - 72 || geometry.commandLeft >= geometry.pedestalRight - 4,
+    true,
+    `${label} feature command overlaps cosmetic pedestal: ${JSON.stringify(geometry)}`
+  );
+  if (label.includes('ready')) {
+    assert.equal(geometry.state, 'ready', `${label} feature should be purchase-ready: ${JSON.stringify(geometry)}`);
+    assert.equal(geometry.controlClass.includes('featured-shop-action'), true, `${label} feature action was not rendered: ${JSON.stringify(geometry)}`);
+  }
+  if (geometry.controlClass.includes('featured-shop-action')) {
+    assert.equal(geometry.controlPointerEvents, 'auto', `${label} feature button cannot receive taps: ${JSON.stringify(geometry)}`);
+    await page.locator('#shopList .featured-shop-action').first().evaluate((node) => {
+      node.focus({ focusVisible: true });
+    });
+    const focusArt = await page.locator('#shopList .featured-shop-action').first().evaluate((node) => {
+      const before = getComputedStyle(node, '::before');
+      return {
+        backgroundImage: before.backgroundImage,
+        mixBlendMode: before.mixBlendMode,
+        opacity: before.opacity
+      };
+    });
+    assert.match(focusArt.backgroundImage, /reboot-meta-action-buttons/, `${label} focused feature button lacks generated focus art: ${JSON.stringify(focusArt)}`);
+    assert.equal(focusArt.mixBlendMode, 'screen', `${label} focused feature button lacks screen focus blend: ${JSON.stringify(focusArt)}`);
+  }
+}
+
+async function assertFeaturedShopPurchaseFlow(page, label) {
+  const before = await page.locator('#shopList .featured-shop-action').first().evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const hit = document.elementFromPoint(centerX, centerY);
+    return {
+      buyId: node.getAttribute('data-shop-buy'),
+      text: node.textContent?.trim(),
+      hitTag: hit?.tagName ?? '',
+      hitClass: hit?.className ?? '',
+      hitBuyId: hit?.closest?.('[data-shop-buy]')?.getAttribute('data-shop-buy') ?? '',
+      hitIsFeaturedButton: hit === node || node.contains(hit),
+      centerX: Math.round(centerX),
+      centerY: Math.round(centerY)
+    };
+  });
+  assert.equal(before.buyId, 'mythic-aura', `${label} featured CTA missing purchase id: ${JSON.stringify(before)}`);
+  assert.equal(before.text, '해금', `${label} featured CTA should be ready to unlock: ${JSON.stringify(before)}`);
+  assert.equal(before.hitBuyId, 'mythic-aura', `${label} featured CTA center is blocked by another layer: ${JSON.stringify(before)}`);
+  assert.equal(before.hitIsFeaturedButton, true, `${label} featured CTA center hit a different purchase layer: ${JSON.stringify(before)}`);
+
+  await page.locator('#shopList .featured-shop-action').first().click();
+  await page.waitForFunction((key) => {
+    const profile = JSON.parse(localStorage.getItem(key) ?? '{}');
+    return profile.gems === 30
+      && profile.unlocks?.includes('mythic-aura')
+      && profile.equippedCosmetic === 'mythic-aura';
+  }, profileStorageKey);
+  await page.locator('#shopList .shop-feature-showcase[data-featured-state="equipped"]').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#shopList .featured-shop-action').count(), 0, `${label} featured unlock button should disappear after equip`);
+  assert.equal(await page.locator('#shopList .featured-shop-passive').first().textContent(), '장착중');
+  await page.evaluate((key) => localStorage.removeItem(key), profileStorageKey);
 }
 
 async function assertGeneratedCardSurface(page, selector, label, framePattern) {
@@ -853,6 +992,7 @@ async function verifyShell(page, viewport) {
   await assertMetaCaptionPlates(page, '#shopScreen .meta-showcase-copy > span:first-child', 'shop', 1);
   await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'shop', 2);
   await assertBannerOverlayClear(page, '#shopScreen .meta-showcase', 'shop showcase');
+  await assertShopFeatureOffer(page, 'shop');
   await assertMetaListReachesDock(page, '#shopList', 'shop');
   assert.equal(await page.locator('#shopList .shop-card .sprite-token.shop-cosmetic').count(), 5);
   assert.equal(await page.locator('#shopList .meta-showcase .sprite-token.shop-cosmetic').count(), 1);
@@ -908,6 +1048,10 @@ async function verifyCompactLobby(page) {
 
 async function verifyCompactMeta(page) {
   await page.goto(baseUrl, { waitUntil: 'load' });
+  await page.evaluate(({ key, profile }) => {
+    localStorage.setItem(key, JSON.stringify(profile));
+  }, { key: profileStorageKey, profile: shopReadyProfile });
+  await page.reload({ waitUntil: 'load' });
   await page.locator('#loadingGate').waitFor({ state: 'hidden' });
   await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
   assert.equal(await page.locator('audio, video').count(), 0);
@@ -920,6 +1064,8 @@ async function verifyCompactMeta(page) {
   await page.getByRole('button', { name: '상점' }).click();
   await page.locator('.shop-cosmetic').first().waitFor({ state: 'visible' });
   await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'compact shop', 2);
+  await assertShopFeatureOffer(page, 'compact ready shop');
+  await assertFeaturedShopPurchaseFlow(page, 'compact ready shop');
 }
 
 async function verifyFastPlaythrough(page) {

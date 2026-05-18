@@ -4008,7 +4008,7 @@ test('shop screen uses the active generated showcase stage', async () => {
     'data-showcase-kind="shop"',
     '추천 외형',
     'stats: [`보유 ${gems} 보석`, `가격 ${featuredItem.price?.gems ?? 0} 보석`]',
-    'class="meta-showcase-preview"',
+    'class="meta-showcase-preview shop-feature-pedestal"',
     'class="sprite-token shop-cosmetic"'
   ]) {
     assert.equal(`${css}\n${screens}\n${shop}`.includes(marker), true, marker);
@@ -4029,6 +4029,39 @@ test('shop showcase promotes the generated cosmetic icon above the dark banner a
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
+});
+
+test('shop featured offer uses a generated stage with one dominant purchase action', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const shop = buildRebootShop({ gems: 120, unlocks: [] });
+
+  for (const marker of [
+    'function buildShopFeaturedShowcase',
+    'class="meta-showcase shop-feature-showcase"',
+    'data-featured-shop="${featuredItem.id}"',
+    'data-featured-state="${featuredState}"',
+    'class="meta-showcase-preview shop-feature-pedestal"',
+    'class="featured-shop-action"',
+    '.shop-feature-showcase',
+    '.shop-feature-pedestal',
+    '.featured-shop-action',
+    '.shop-feature-showcase .shop-cosmetic',
+    '.shop-feature-showcase .shop-price'
+  ]) {
+    assert.equal(`${css}\n${screens}\n${shop}`.includes(marker), true, marker);
+  }
+
+  assert.equal(cssRuleBlock(css, '.shop-feature-showcase').includes('background-image: var(--shop-banner);'), true);
+  assert.equal(cssRuleBlock(css, '.shop-feature-pedestal').includes('background-image: var(--meta-showcase-stage);'), true);
+
+  const focusBlock = cssRuleBlock(css, '.featured-shop-action:focus-visible::before');
+  assert.equal(focusBlock.includes('background-image: var(--meta-action-buttons);'), true);
+  assert.equal(focusBlock.includes('mix-blend-mode: screen;'), true);
+
+  const reduceBlock = cssRuleBlockAfter(css, '@media (prefers-reduced-motion: reduce)', css.indexOf('@keyframes cosmeticShelfEquipPulse'));
+  assert.equal(reduceBlock.includes('.shop-feature-showcase[data-featured-state="equipped"] .shop-feature-aura'), true);
+  assert.equal(reduceBlock.includes('animation: none;'), true);
 });
 
 test('meta banner art is not dimmed by css-only rgba overlays', async () => {

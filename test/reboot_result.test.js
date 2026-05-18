@@ -352,6 +352,31 @@ test('reboot shop renders earned-gem cosmetic purchases with owned and locked st
   assert.equal(shop.includes('run_boost'), false);
 });
 
+test('reboot shop opens with a featured cosmetic offer instead of only shelf cards', () => {
+  const shop = buildRebootShop({ gems: 120, unlocks: [] });
+
+  assert.equal(shop.includes('class="meta-showcase shop-feature-showcase"'), true);
+  assert.equal(shop.includes('data-featured-shop="mythic-aura"'), true);
+  assert.equal(shop.includes('data-featured-state="ready"'), true);
+  assert.equal(shop.includes('class="meta-showcase-preview shop-feature-pedestal"'), true);
+  assert.equal(shop.includes('class="featured-shop-action" data-shop-buy="mythic-aura"'), true);
+  assert.equal(shop.indexOf('class="meta-showcase shop-feature-showcase"') < shop.indexOf('class="meta-shelf-grid" data-shelf-kind="shop"'), true);
+});
+
+test('equipped shop feature shows generated aura and passive equipped state', () => {
+  const shop = buildRebootShop({
+    gems: 0,
+    unlocks: ['mythic-aura'],
+    equippedCosmetic: 'mythic-aura'
+  });
+
+  assert.equal(shop.includes('data-featured-shop="mythic-aura"'), true);
+  assert.equal(shop.includes('data-featured-state="equipped"'), true);
+  assert.equal(shop.includes('class="cosmetic-equip-aura shop-feature-aura"'), true);
+  assert.equal(shop.includes('class="card-passive-state featured-shop-passive" data-passive-state="owned" aria-label="장착중">장착중</span>'), true);
+  assert.equal(shop.includes('class="featured-shop-action"'), false);
+});
+
 test('reboot collection renders unit upgrade state from profile XP and levels', () => {
   const collection = buildRebootCollection({ xp: 50, unitLevels: { spark_pin: 2 } });
 
@@ -431,7 +456,7 @@ test('meta screens start with compact actionable status headers', () => {
 test('meta summary detail copy stays compact for generated header banners', () => {
   const screens = [
     { html: buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 2 } }), pattern: /<section class="meta-showcase"[\s\S]*?<p>(.*?)<\/p>/ },
-    { html: buildRebootShop({ gems: 100, unlocks: [] }), pattern: /<section class="meta-showcase"[\s\S]*?<p>(.*?)<\/p>/ },
+    { html: buildRebootShop({ gems: 100, unlocks: [] }), pattern: /<section class="meta-showcase(?: [^"]*)?"[\s\S]*?<p>(.*?)<\/p>/ },
     { html: buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] }), pattern: /<section class="mission-stamp-board"[\s\S]*?<p>(.*?)<\/p>/ },
     { html: buildSeasonScreen({ xp: 60, claimedPassTiers: [] }), pattern: /<section class="season-track-board"[\s\S]*?<p>(.*?)<\/p>/ }
   ];
