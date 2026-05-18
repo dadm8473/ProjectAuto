@@ -977,10 +977,13 @@ test('meta screen lists fill the lower app area instead of stopping like a spars
   for (const marker of [
     'min-height: clamp(98px, 27vw, 112px);',
     'padding: 10px 12px;',
-    'box-shadow: 0 10px 20px rgba(0, 0, 0, 0.42);'
+    'background: transparent;',
+    'box-shadow: none;'
   ]) {
     assert.equal(cardBlock.includes(marker), true, marker);
   }
+  assert.equal(cardBlock.includes('background: rgba('), false);
+  assert.equal(cardBlock.includes('box-shadow: 0'), false);
 });
 
 test('meta screen list mask fades short-phone card clipping into the generated footer shutter', async () => {
@@ -1574,7 +1577,10 @@ test('meta list rows use dedicated generated game row frames', async () => {
     css.indexOf('.unit-card,\n.shop-card,\n.mission-card,\n.season-card'),
     css.indexOf('.unit-card::before')
   );
-  assert.equal(rowSurfaceBlock.includes('background: rgba(2, 7, 8, 0.58);'), true);
+  assert.equal(rowSurfaceBlock.includes('background: transparent;'), true);
+  assert.equal(rowSurfaceBlock.includes('box-shadow: none;'), true);
+  assert.equal(rowSurfaceBlock.includes('background: rgba('), false);
+  assert.equal(rowSurfaceBlock.includes('box-shadow: 0'), false);
   assert.equal(rowSurfaceBlock.includes('linear-gradient'), false);
   assert.equal(rowSurfaceBlock.includes('backdrop-filter'), false);
 
@@ -1587,7 +1593,7 @@ test('meta list rows use dedicated generated game row frames', async () => {
   }
 
   assert.equal(rowSurfaceBlock.includes('min-height: 34px;'), false);
-  assert.equal(css.includes('background: transparent;\n  box-shadow: 0 10px 20px'), false);
+  assert.equal(css.includes('background: rgba(2, 7, 8, 0.58);'), false);
 });
 
 test('meta row compact chips use generated mini badge frames', async () => {

@@ -180,6 +180,32 @@ async function assertMetaShowcaseChips(page, selector, label, expectedCount) {
   }
 }
 
+async function assertGeneratedCardSurface(page, selector, label, framePattern) {
+  const surfaces = await page.locator(selector).evaluateAll((nodes) => nodes.map((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    const before = getComputedStyle(node, '::before');
+    return {
+      backgroundColor: style.backgroundColor,
+      backgroundImage: style.backgroundImage,
+      boxShadow: style.boxShadow,
+      beforeBackgroundImage: before.backgroundImage,
+      beforeBackgroundSize: before.backgroundSize,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    };
+  }));
+  assert.equal(surfaces.length > 0, true, `${label} has no card surfaces`);
+  for (const surface of surfaces) {
+    assert.equal(surface.backgroundColor, 'rgba(0, 0, 0, 0)', `${label} still has css card fill: ${JSON.stringify(surface)}`);
+    assert.equal(surface.backgroundImage, 'none', `${label} still has element-level css card image: ${JSON.stringify(surface)}`);
+    assert.equal(surface.boxShadow, 'none', `${label} still has css card shadow: ${JSON.stringify(surface)}`);
+    assert.match(surface.beforeBackgroundImage, framePattern, `${label} lacks generated card frame: ${JSON.stringify(surface)}`);
+    assert.equal(surface.beforeBackgroundSize.endsWith('100%'), true, `${label} generated frame not fitted: ${JSON.stringify(surface)}`);
+    assert.equal(surface.width > 0 && surface.height > 0, true, `${label} card surface collapsed: ${JSON.stringify(surface)}`);
+  }
+}
+
 async function assertOperationCopyClearsProgressRail(page) {
   const geometry = await page.evaluate(() => {
     const copyNodes = [...document.querySelectorAll('#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p')];
@@ -374,6 +400,7 @@ async function verifyShell(page, viewport) {
   await assertMetaListReachesDock(page, '#collectionList', 'collection');
   assert.equal(await page.locator('#collectionList .unit-card .sprite-token.unit-sprite').count(), 8);
   assert.equal(await page.locator('#collectionList .meta-showcase .sprite-token.unit-sprite').count(), 1);
+  await assertGeneratedCardSurface(page, '#collectionList .meta-shelf-grid .unit-card', 'collection shelf card', /reboot-meta-item-status-overlays/);
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
   await page.getByRole('button', { name: '상점' }).click();
   await assertActiveNavLabelPlate(page, '상점', 'shop');
@@ -383,6 +410,7 @@ async function verifyShell(page, viewport) {
   await assertMetaListReachesDock(page, '#shopList', 'shop');
   assert.equal(await page.locator('#shopList .shop-card .sprite-token.shop-cosmetic').count(), 5);
   assert.equal(await page.locator('#shopList .meta-showcase .sprite-token.shop-cosmetic').count(), 1);
+  await assertGeneratedCardSurface(page, '#shopList .meta-shelf-grid .shop-card', 'shop shelf card', /reboot-meta-item-status-overlays/);
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
   await page.getByRole('button', { name: '미션' }).click();
   await assertActiveNavLabelPlate(page, '미션', 'missions');
@@ -391,6 +419,7 @@ async function verifyShell(page, viewport) {
   await assertMetaListReachesDock(page, '#missionsList', 'missions');
   assert.equal(await page.locator('#missionsList .mission-stamp-slot').count(), 3);
   assert.equal(await page.locator('#missionsList .mission-card').count(), 3);
+  await assertGeneratedCardSurface(page, '#missionsList .mission-card', 'mission row card', /reboot-meta-objective-rails/);
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
   await page.getByRole('button', { name: '시즌' }).click();
   await assertActiveNavLabelPlate(page, '시즌', 'season');
@@ -399,6 +428,7 @@ async function verifyShell(page, viewport) {
   await assertMetaListReachesDock(page, '#seasonList', 'season');
   assert.equal(await page.locator('#seasonList .season-track-node').count(), 4);
   assert.equal(await page.locator('#seasonList .season-card').count(), 4);
+  await assertGeneratedCardSurface(page, '#seasonList .season-card', 'season row card', /reboot-meta-objective-rails/);
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
 
   await page.getByRole('button', { name: '첫 구원 작전 시작' }).click();

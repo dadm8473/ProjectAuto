@@ -3094,8 +3094,8 @@ body[data-app-screen="season"] .app-screen::after {
 .mission-card,
 .season-card {
   border-color: transparent;
-  background: rgba(2, 7, 8, 0.58);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.42);
+  background: transparent;
+  box-shadow: none;
   min-height: clamp(98px, 27vw, 112px);
   display: grid;
   align-items: center;
