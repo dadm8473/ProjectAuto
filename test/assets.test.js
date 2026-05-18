@@ -631,6 +631,14 @@ const IMAGEGEN_REBOOT_META_FEEDBACK = [
   }
 ];
 
+const IMAGEGEN_REBOOT_REWARD_REVEAL_PAYOFF_STAGE = {
+  path: 'src/client/assets/generated/reboot-reward-reveal-payoff-stage.png',
+  source: 'docs/design/generation/source/reboot/style-lock/20260518-reward-reveal-payoff-stage-chromakey-imagegen.png',
+  width: 430,
+  height: 260,
+  minRuntimeBytes: 45_000
+};
+
 const IMAGEGEN_REBOOT_OBJECTIVE_STAMPS = {
   path: 'src/client/assets/generated/reboot-meta-objective-status-stamps.png',
   source: 'docs/design/generation/source/reboot/style-lock/20260516-meta-objective-status-stamps-chromakey-imagegen.png',
@@ -1621,6 +1629,34 @@ test('reboot meta reward feedback is promoted from imagegen and readable per cel
       assert.equal(bounds.maxY <= image.height - 9, true, `meta claim burst cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
     }
   }
+});
+
+test('reward reveal payoff stage is promoted from imagegen with transparent composition', async () => {
+  const asset = IMAGEGEN_REBOOT_REWARD_REVEAL_PAYOFF_STAGE;
+  const source = await readFile(asset.source);
+  const runtime = await readFile(asset.path);
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+  assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+  assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+  assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+  assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+  const image = parsePng(runtime);
+  const corners = [
+    alphaAt(image, 2, 2),
+    alphaAt(image, image.width - 3, 2),
+    alphaAt(image, 2, image.height - 3),
+    alphaAt(image, image.width - 3, image.height - 3)
+  ];
+  const centerGlow = luminanceStats(image, { x: 122, y: 44, width: 186, height: 132 }, 62);
+  const centerCoverage = alphaCoverage(image, { x: 96, y: 28, width: 238, height: 166 }, 24);
+  const edgeCoverage = alphaCoverage(image, { x: 0, y: 0, width: image.width, height: image.height }, 24);
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, `reward payoff stage has opaque corners: ${corners.join(',')}`);
+  assert.equal(centerCoverage > 0.28, true, `reward payoff stage lacks a readable central burst: ${centerCoverage}`);
+  assert.equal(centerGlow.brightRatio > 0.18, true, `reward payoff stage is too dull for a reward peak: ${JSON.stringify(centerGlow)}`);
+  assert.equal(edgeCoverage < 0.72, true, `reward payoff stage still reads as a full rectangular web card: ${edgeCoverage}`);
 });
 
 test('reboot objective status stamps are promoted from imagegen sources', async () => {

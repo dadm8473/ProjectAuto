@@ -1138,6 +1138,83 @@ async function assertRewardToastGeneratedSurface(page) {
   assert.equal(surface.width >= 188 && surface.height >= 46, true, `reward toast collapsed: ${JSON.stringify(surface)}`);
 }
 
+async function assertRewardRevealGeneratedSurface(page) {
+  await page.waitForFunction(() => {
+    const node = document.querySelector('#rewardReveal');
+    return node && !node.hidden && Number(getComputedStyle(node, '::after').opacity) > 0.6;
+  }, null, { timeout: 1000 });
+
+  const surface = await page.evaluate(async () => {
+    async function analyzeGeneratedImage(backgroundImage) {
+      const url = backgroundImage.match(/url\(["']?([^"')]+)["']?\)/)?.[1];
+      if (!url) return { url: null, loaded: false, width: 0, height: 0, visiblePixels: 0 };
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      const loaded = new Promise((resolve) => {
+        image.onload = () => resolve(true);
+        image.onerror = () => resolve(false);
+      });
+      image.src = url;
+      if (!await loaded) return { url, loaded: false, width: 0, height: 0, visiblePixels: 0 };
+      const width = Math.min(image.naturalWidth, 256);
+      const height = Math.min(image.naturalHeight, 256);
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext('2d');
+      context.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight, 0, 0, width, height);
+      const data = context.getImageData(0, 0, width, height).data;
+      let visiblePixels = 0;
+      for (let index = 3; index < data.length; index += 4) {
+        if (data[index] > 24) visiblePixels += 1;
+      }
+      return { url, loaded: true, width: image.naturalWidth, height: image.naturalHeight, visiblePixels };
+    }
+
+    const node = document.querySelector('#rewardReveal');
+    if (!node) return { missing: true };
+    const rect = node.getBoundingClientRect();
+    const after = getComputedStyle(node, '::after');
+    const title = document.querySelector('#rewardRevealTitle')?.getBoundingClientRect();
+    const detail = document.querySelector('#rewardRevealDetail')?.getBoundingClientRect();
+    return {
+      hidden: node.hidden,
+      datasetRevealKind: node.dataset.revealKind,
+      afterBackgroundImage: after.backgroundImage,
+      afterBackgroundSize: after.backgroundSize,
+      afterOpacity: after.opacity,
+      afterMixBlendMode: after.mixBlendMode,
+      image: await analyzeGeneratedImage(after.backgroundImage),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      left: Math.round(rect.left),
+      right: Math.round(rect.right),
+      top: Math.round(rect.top),
+      bottom: Math.round(rect.bottom),
+      viewportWidth: innerWidth,
+      viewportHeight: innerHeight,
+      titleInside: title ? title.left >= rect.left && title.right <= rect.right && title.top >= rect.top && title.bottom <= rect.bottom : false,
+      detailInside: detail ? detail.left >= rect.left && detail.right <= rect.right && detail.top >= rect.top && detail.bottom <= rect.bottom : false
+    };
+  });
+  assert.equal(surface.missing, undefined, `reward reveal unavailable: ${JSON.stringify(surface)}`);
+  assert.equal(surface.hidden, false, `reward reveal unexpectedly hidden: ${JSON.stringify(surface)}`);
+  assert.equal(surface.datasetRevealKind, 'soft_currency', `reward reveal kind changed: ${JSON.stringify(surface)}`);
+  assert.match(surface.afterBackgroundImage, /reboot-reward-reveal-payoff-stage/, `reward reveal lacks generated payoff stage: ${JSON.stringify(surface)}`);
+  assert.equal(surface.afterBackgroundSize, '100% 100%', `reward reveal payoff stage sizing changed: ${JSON.stringify(surface)}`);
+  assert.equal(Number(surface.afterOpacity) > 0.6, true, `reward reveal payoff stage too faint: ${JSON.stringify(surface)}`);
+  assert.equal(surface.afterMixBlendMode, 'screen', `reward reveal payoff stage blend changed: ${JSON.stringify(surface)}`);
+  assert.equal(surface.image.loaded, true, `reward reveal payoff stage image failed to load: ${JSON.stringify(surface)}`);
+  assert.equal(surface.image.width, 430, `reward reveal payoff stage width changed: ${JSON.stringify(surface)}`);
+  assert.equal(surface.image.height, 260, `reward reveal payoff stage height changed: ${JSON.stringify(surface)}`);
+  assert.equal(surface.image.visiblePixels > 6_000, true, `reward reveal payoff stage is visually blank: ${JSON.stringify(surface)}`);
+  const minimumWidth = Math.min(298, surface.viewportWidth - 22);
+  assert.equal(surface.width >= minimumWidth && surface.height >= 180, true, `reward reveal collapsed: ${JSON.stringify(surface)}`);
+  assert.equal(surface.left >= 0 && surface.right <= surface.viewportWidth, true, `reward reveal leaves viewport: ${JSON.stringify(surface)}`);
+  assert.equal(surface.top >= 0 && surface.bottom <= surface.viewportHeight, true, `reward reveal leaves vertical viewport: ${JSON.stringify(surface)}`);
+  assert.equal(surface.titleInside && surface.detailInside, true, `reward reveal copy escaped generated panel: ${JSON.stringify(surface)}`);
+}
+
 async function assertReadyRescueUsesGeneratedStateArt(page) {
   const surfaces = await page.evaluate(() => {
     const button = document.querySelector('#rescueButton');
@@ -1443,6 +1520,7 @@ async function verifyFastPlaythrough(page) {
   assert.equal(await page.locator('body').getAttribute('data-app-screen'), 'season');
   assert.equal(await page.locator('#rewardReveal').isVisible(), true);
   assert.match(await page.locator('#rewardReveal').textContent(), /미션 보상/);
+  await assertRewardRevealGeneratedSurface(page);
   assert.match(await page.locator('#seasonList').textContent(), /수령/);
   assert.match(await page.locator('#missionsList .mission-card').first().textContent(), /받음/);
 }

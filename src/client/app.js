@@ -28,6 +28,7 @@ import { createRebootOnlineClient } from './reboot_online.js';
 const qs = (selector) => document.querySelector(selector);
 const query = new URLSearchParams(location.search);
 const muted = query.get('mute') === '1';
+const qaFast = query.get('qaFast') === '1';
 const playtestEnabled = query.get('playtest') === '1';
 const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)') ?? { matches: false };
 
@@ -85,7 +86,7 @@ const ctx = dom.canvas.getContext('2d');
 const rebootAssets = createRebootAssetImages();
 const PROFILE_STORAGE_KEY = 'projectauto.reboot.profile.v1';
 const TOAST_VISIBLE_MS = 1400;
-const REWARD_REVEAL_MS = 1500;
+const REWARD_REVEAL_MS = qaFast ? 6000 : 1500;
 const SCREEN_TRANSITION_MS = 280;
 const ONLINE_CONNECT_FALLBACK_MS = 2600;
 const MATCH_BANNER_FLASH_MS = 1500;
@@ -147,11 +148,13 @@ function showToast(text, kind = 'info') {
 function hideRewardReveal() {
   clearTimeout(showRewardReveal.timer);
   dom.rewardReveal.hidden = true;
+  delete dom.rewardReveal.dataset.revealKind;
 }
 
 function showRewardReveal(title, detail, icon = 'soft_currency') {
   dom.rewardRevealTitle.textContent = title;
   dom.rewardRevealDetail.textContent = detail;
+  dom.rewardReveal.dataset.revealKind = icon;
   dom.rewardRevealIcon.dataset.revealIcon = icon;
   dom.rewardReveal.hidden = false;
   clearTimeout(showRewardReveal.timer);

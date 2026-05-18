@@ -30,6 +30,7 @@
   --result-medals: url("/src/client/assets/generated/reboot-result-medals.png?v=result-medals");
   --toast-callouts: url("/src/client/assets/generated/reboot-toast-callouts.png?v=toast-callouts");
   --reward-reveal-panel: url("/src/client/assets/generated/reboot-reward-reveal-panel.png?v=reward-reveal");
+  --reward-reveal-payoff-stage: url("/src/client/assets/generated/reboot-reward-reveal-payoff-stage.png?v=reward-payoff-stage1");
   --result-panel-width: min(calc(100vw - 28px), calc((100dvh - 52px) * 0.6964), 390px);
   --result-panel-top-pad: clamp(108px, calc(var(--result-panel-width) * 0.31), 128px);
   --screen-chrome: url("/src/client/assets/generated/reboot-screen-chrome.png");
@@ -889,6 +890,22 @@ body[data-app-screen="season"] .toast {
   display: none;
 }
 
+.reward-reveal::after {
+  content: "";
+  position: absolute;
+  inset: clamp(3px, 1.16vw, 5px) clamp(4px, 1.4vw, 6px);
+  z-index: 1;
+  pointer-events: none;
+  background-image: var(--reward-reveal-payoff-stage);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+  opacity: 0.72;
+  mix-blend-mode: screen;
+  filter: saturate(1.04);
+  animation: rewardRevealPayoff 1.15s ease-out both;
+}
+
 .reward-reveal-burst {
   position: absolute;
   inset: 26px 22px -8px;
@@ -948,6 +965,12 @@ body[data-app-screen="season"] .toast {
   0% { opacity: 0; transform: scale(0.84); }
   22% { opacity: 0.72; transform: scale(1.04); }
   100% { opacity: 0.58; transform: scale(1); }
+}
+
+@keyframes rewardRevealPayoff {
+  0% { opacity: 0; transform: scale(0.76); }
+  22% { opacity: 0.86; transform: scale(1.03); }
+  100% { opacity: 0.72; transform: scale(1); }
 }
 
 .action-panel {

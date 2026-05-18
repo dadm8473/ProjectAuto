@@ -3750,6 +3750,22 @@ test('browser QA verifies reward toast stays on generated callout art', async ()
   }
 });
 
+test('browser QA verifies reward reveal uses the generated payoff stage', async () => {
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    'async function assertRewardRevealGeneratedSurface(page)',
+    'reboot-reward-reveal-payoff-stage',
+    "getComputedStyle(node, '::after')",
+    'assert.match(surface.afterBackgroundImage, /reboot-reward-reveal-payoff-stage/',
+    'assert.equal(surface.datasetRevealKind, \'soft_currency\'',
+    'const minimumWidth = Math.min(298, surface.viewportWidth - 22);',
+    'await assertRewardRevealGeneratedSurface(page);'
+  ]) {
+    assert.equal(qa.includes(marker), true, marker);
+  }
+});
+
 test('profile rewards use a generated reveal panel instead of toast-only feedback', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
@@ -3762,11 +3778,17 @@ test('profile rewards use a generated reveal panel instead of toast-only feedbac
     'id="rewardRevealDetail"',
     '<strong id="rewardRevealDetail">보석 +0</strong>',
     '--reward-reveal-panel: url("/src/client/assets/generated/reboot-reward-reveal-panel.png?v=reward-reveal")',
+    '--reward-reveal-payoff-stage: url("/src/client/assets/generated/reboot-reward-reveal-payoff-stage.png?v=reward-payoff-stage1")',
     '.reward-reveal',
+    '.reward-reveal::after',
     '.reward-reveal[hidden]',
     'background-image: var(--reward-reveal-panel);',
+    'background-image: var(--reward-reveal-payoff-stage);',
     '.reward-reveal-icon',
+    'dom.rewardReveal.dataset.revealKind = icon;',
     'data-reveal-icon="soft_currency"',
+    "const qaFast = query.get('qaFast') === '1';",
+    'const REWARD_REVEAL_MS = qaFast ? 6000 : 1500;',
     'function showRewardReveal(title, detail, icon = \'soft_currency\')',
     'dom.rewardReveal.hidden = false;',
     'clearTimeout(showRewardReveal.timer);',
@@ -3782,6 +3804,10 @@ test('profile rewards use a generated reveal panel instead of toast-only feedbac
   const revealBlock = css.slice(css.indexOf('.reward-reveal {'), css.indexOf('.reward-reveal[hidden]'));
   assert.equal(revealBlock.includes('background: rgba'), false);
   assert.equal(revealBlock.includes('linear-gradient'), false);
+  const payoffBlock = cssRuleBlock(css, '.reward-reveal::after');
+  assert.equal(payoffBlock.includes('var(--reward-reveal-payoff-stage)'), true);
+  assert.equal(payoffBlock.includes('box-shadow'), false);
+  assert.equal(payoffBlock.includes('linear-gradient'), false);
 });
 
 test('meta reward actions flash their source cards with generated claim bursts', async () => {
