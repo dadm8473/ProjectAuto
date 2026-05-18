@@ -1863,7 +1863,9 @@ test('meta screen titles use generated header plates instead of browser default 
     '.hub-screen .screen-back',
     'position: absolute;',
     '.hub-screen .screen-back::before',
-    'opacity: 0;'
+    'opacity: 1;',
+    '.hub-screen .screen-back::after',
+    'background-image: var(--nav-button-glow);'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -1871,6 +1873,12 @@ test('meta screen titles use generated header plates instead of browser default 
   const titleBlock = css.slice(css.indexOf('.hub-screen h1'), css.indexOf('.screen-list'));
   assert.equal(titleBlock.includes('font-size: 2em'), false);
   assert.equal(titleBlock.includes('margin-block-start'), false);
+  const hubBackBlock = cssRuleBlock(css, '.hub-screen .screen-back::before');
+  assert.equal(hubBackBlock.includes('opacity: 0;'), false);
+  const backGlowBlock = cssRuleBlock(css, '.hub-screen .screen-back::after');
+  assert.equal(backGlowBlock.includes('background-image: var(--nav-button-glow);'), true);
+  assert.equal(backGlowBlock.includes('background-size: 400% 100%;'), true);
+  assert.equal(backGlowBlock.includes('pointer-events: none;'), true);
 });
 
 test('meta row actions use generated state buttons instead of generic web buttons', async () => {

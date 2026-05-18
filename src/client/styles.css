@@ -2585,8 +2585,25 @@ body[data-app-screen="season"] .app-screen::after {
   background: transparent;
 }
 
+.hub-screen .screen-back::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  z-index: 0;
+  background-image: var(--nav-button-glow);
+  background-repeat: no-repeat;
+  background-position: 100% 0;
+  background-size: 400% 100%;
+  opacity: 0.72;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
 .hub-screen .screen-back::before {
-  opacity: 0;
+  position: relative;
+  z-index: 1;
+  opacity: 1;
+  filter: saturate(1.08) brightness(1.08) drop-shadow(0 5px 10px rgba(0, 0, 0, 0.54));
 }
 
 .screen-list {
