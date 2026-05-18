@@ -824,10 +824,8 @@ body[data-app-screen="season"] .toast {
   padding: 10px 46px 10px 44px;
   background-image: var(--toast-callouts);
   background-position: 100% 0;
-  box-shadow:
-    inset 0 1px rgba(245, 240, 220, 0.18),
-    0 12px 30px rgba(244, 201, 93, 0.2),
-    0 18px 34px rgba(0, 0, 0, 0.48);
+  text-shadow: none;
+  box-shadow: none;
 }
 
 .toast[data-toast-kind="reward"]::before,
@@ -848,7 +846,7 @@ body[data-app-screen="season"] .toast {
   background-repeat: no-repeat;
   background-size: 112px 28px;
   background-position: 0 0;
-  filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.5));
+  filter: none;
 }
 
 .toast[data-toast-kind="reward"]::after {

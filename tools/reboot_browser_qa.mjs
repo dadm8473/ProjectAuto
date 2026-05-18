@@ -396,6 +396,101 @@ async function assertCombatToastClearsDock(page) {
   );
 }
 
+async function assertRewardToastGeneratedSurface(page) {
+  const surface = await page.evaluate(async () => {
+    async function analyzeGeneratedImage(backgroundImage, columns, cell) {
+      const url = backgroundImage.match(/url\(["']?([^"')]+)["']?\)/)?.[1];
+      if (!url) return { url: null, loaded: false, width: 0, height: 0, visiblePixels: 0 };
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      const loaded = new Promise((resolve) => {
+        image.onload = () => resolve(true);
+        image.onerror = () => resolve(false);
+      });
+      image.src = url;
+      if (!await loaded) return { url, loaded: false, width: 0, height: 0, visiblePixels: 0 };
+      const canvas = document.createElement('canvas');
+      const sourceX = Math.floor((image.naturalWidth / columns) * cell);
+      const sourceWidth = Math.floor(image.naturalWidth / columns);
+      const sourceHeight = image.naturalHeight;
+      const width = Math.min(sourceWidth, 256);
+      const height = Math.min(sourceHeight, 256);
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext('2d');
+      context.drawImage(image, sourceX, 0, sourceWidth, sourceHeight, 0, 0, width, height);
+      const data = context.getImageData(0, 0, width, height).data;
+      let visiblePixels = 0;
+      for (let index = 3; index < data.length; index += 4) {
+        if (data[index] > 16) visiblePixels += 1;
+      }
+      return { url, loaded: true, width: image.naturalWidth, height: image.naturalHeight, sourceX, sourceWidth, visiblePixels };
+    }
+
+    const node = document.querySelector('.toast');
+    if (!node) return { missing: true };
+    const wasHidden = node.hidden;
+    const previousText = node.textContent;
+    const previousKind = node.dataset.toastKind;
+    node.hidden = false;
+    node.textContent = '검수 보상';
+    node.dataset.toastKind = 'reward';
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    const before = getComputedStyle(node, '::before');
+    const after = getComputedStyle(node, '::after');
+    const snapshot = {
+      backgroundImage: style.backgroundImage,
+      backgroundSize: style.backgroundSize,
+      backgroundPosition: style.backgroundPosition,
+      backgroundPositionX: style.backgroundPositionX,
+      backgroundPositionY: style.backgroundPositionY,
+      boxShadow: style.boxShadow,
+      textShadow: style.textShadow,
+      borderRadii: [
+        style.borderTopLeftRadius,
+        style.borderTopRightRadius,
+        style.borderBottomRightRadius,
+        style.borderBottomLeftRadius
+      ],
+      beforeBackgroundImage: before.backgroundImage,
+      beforeFilter: before.filter,
+      afterBackgroundImage: after.backgroundImage,
+      images: {
+        callout: await analyzeGeneratedImage(style.backgroundImage, 2, 1),
+        icon: await analyzeGeneratedImage(before.backgroundImage, 4, 0),
+        burst: await analyzeGeneratedImage(after.backgroundImage, 4, 0)
+      },
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    };
+    if (previousKind) node.dataset.toastKind = previousKind;
+    else delete node.dataset.toastKind;
+    node.hidden = wasHidden;
+    node.textContent = previousText;
+    return snapshot;
+  });
+  assert.equal(surface.missing, undefined, `reward toast unavailable: ${JSON.stringify(surface)}`);
+  assert.match(surface.backgroundImage, /reboot-toast-callouts/, `reward toast lacks generated callout art: ${JSON.stringify(surface)}`);
+  assert.equal(surface.backgroundSize, '200% 100%', `reward toast callout sizing changed: ${JSON.stringify(surface)}`);
+  assert.equal(surface.backgroundPositionX, '100%', `reward toast does not use reward callout cell: ${JSON.stringify(surface)}`);
+  assert.equal(surface.backgroundPositionY, '0px', `reward toast vertical callout cell changed: ${JSON.stringify(surface)}`);
+  assert.equal(surface.boxShadow, 'none', `reward toast still has css shadow: ${JSON.stringify(surface)}`);
+  assert.equal(surface.textShadow, 'none', `reward toast still has css text shadow: ${JSON.stringify(surface)}`);
+  for (const radius of surface.borderRadii) {
+    assert.equal(radius, '0px', `reward toast still has css radius: ${JSON.stringify(surface)}`);
+  }
+  assert.match(surface.beforeBackgroundImage, /reboot-reward-icons/, `reward toast lacks generated reward icon: ${JSON.stringify(surface)}`);
+  assert.equal(surface.beforeFilter, 'none', `reward toast icon still has css filter shadow: ${JSON.stringify(surface)}`);
+  assert.match(surface.afterBackgroundImage, /reboot-reward-burst/, `reward toast lacks generated reward burst: ${JSON.stringify(surface)}`);
+  for (const [name, image] of Object.entries(surface.images)) {
+    assert.equal(image.loaded, true, `reward toast ${name} image failed to load: ${JSON.stringify(surface)}`);
+    assert.equal(image.width > 0 && image.height > 0, true, `reward toast ${name} image is empty: ${JSON.stringify(surface)}`);
+    assert.equal(image.visiblePixels > 16, true, `reward toast ${name} image is visually blank: ${JSON.stringify(surface)}`);
+  }
+  assert.equal(surface.width >= 188 && surface.height >= 46, true, `reward toast collapsed: ${JSON.stringify(surface)}`);
+}
+
 async function assertInjectedSafeAreaKeepsCombatTouchable(page) {
   const geometry = await page.evaluate(async () => {
     const root = document.documentElement;
@@ -529,6 +624,7 @@ async function verifyShell(page, viewport) {
   assert.notEqual(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await assertCombatDockSafeArea(page);
   await assertCombatToastClearsDock(page);
+  await assertRewardToastGeneratedSurface(page);
   await assertInjectedSafeAreaKeepsCombatTouchable(page);
   await assertFirstSummonTapFeedback(page);
 }

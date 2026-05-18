@@ -3553,6 +3553,37 @@ test('profile rewards use generated burst feedback instead of plain text toasts'
   ]) {
     assert.equal(`${css}\n${app}`.includes(marker), true, marker);
   }
+
+  const rewardToastBlock = cssRuleBlock(css, '.toast[data-toast-kind="reward"]');
+  const rewardIconBlock = cssRuleBlock(css, '.toast[data-toast-kind="reward"]::before');
+  assert.equal(rewardToastBlock.includes('box-shadow: none;'), true);
+  assert.equal(rewardToastBlock.includes('text-shadow: none;'), true);
+  assert.equal(rewardToastBlock.includes('box-shadow:\n    inset 0 1px'), false);
+  assert.equal(rewardIconBlock.includes('filter: none;'), true);
+  assert.equal(rewardIconBlock.includes('drop-shadow'), false);
+});
+
+test('browser QA verifies reward toast stays on generated callout art', async () => {
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    'async function assertRewardToastGeneratedSurface(page)',
+    'node.dataset.toastKind = \'reward\';',
+    'async function analyzeGeneratedImage(backgroundImage, columns, cell)',
+    'const sourceX = Math.floor((image.naturalWidth / columns) * cell);',
+    'visiblePixels > 16',
+    'assert.match(surface.backgroundImage, /reboot-toast-callouts/',
+    "assert.equal(surface.backgroundPositionX, '100%'",
+    "assert.equal(surface.backgroundPositionY, '0px'",
+    "assert.equal(surface.textShadow, 'none'",
+    "assert.equal(surface.beforeFilter, 'none'",
+    "for (const radius of surface.borderRadii)",
+    "assert.equal(radius, '0px'",
+    "assert.equal(surface.boxShadow, 'none'",
+    "await assertRewardToastGeneratedSurface(page);"
+  ]) {
+    assert.equal(qa.includes(marker), true, marker);
+  }
 });
 
 test('profile rewards use a generated reveal panel instead of toast-only feedback', async () => {
