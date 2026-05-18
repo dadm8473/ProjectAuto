@@ -1211,6 +1211,42 @@ test('combat action buttons use generated icons instead of text-only web buttons
   assert.equal(actionBlock.includes('z-index: 1;'), true, 'action buttons must render above the first command spotlight');
 });
 
+test('ready rescue command variants use generated state art instead of a css halo', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    '--combat-action-ready-pulses: url("/src/client/assets/generated/reboot-action-ready-pulses.png?v=action-ready")',
+    '.primary-actions button[data-ready="true"]::after',
+    'background-image: var(--combat-action-ready-pulses);',
+    'background-image: var(--combat-critical-action-rings);',
+    '#rescueButton[data-ready="true"]::after { background-position: 100% 0; }'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const readyPulseBlock = cssRuleBlock(css, '.primary-actions button[data-ready="true"]::after');
+  assert.equal(readyPulseBlock.includes('opacity: 0.32;'), true);
+  assert.equal(readyPulseBlock.includes('transform: scale(0.96);'), true);
+
+  const rescueReadyBlock = cssRuleBlock(css, '#rescueButton[data-ready="true"]');
+  assert.equal(rescueReadyBlock.includes('box-shadow'), false, 'rescue ready state should rely on generated pulse cells, not css glow');
+
+  for (const marker of [
+    'async function assertReadyRescueUsesGeneratedStateArt(page)',
+    'for (const critical of [false, true])',
+    "button.dataset.critical = critical ? 'true' : 'false'",
+    'expectedImage: critical ? /reboot-critical-action-rings/ : /reboot-action-ready-pulses/',
+    "label: critical ? 'critical rescue' : 'ready rescue'"
+  ]) {
+    assert.equal(qa.includes(marker), true, marker);
+  }
+  const criticalAssignment = qa.indexOf("button.dataset.critical = critical ? 'true' : 'false';");
+  const styleSnapshot = qa.indexOf('const style = getComputedStyle(button);', criticalAssignment);
+  const sampledCriticalState = qa.slice(criticalAssignment, styleSnapshot);
+  assert.equal(sampledCriticalState.includes('delete button.dataset.critical'), false);
+});
+
 test('combat disabled action buttons keep generated command frames readable', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 

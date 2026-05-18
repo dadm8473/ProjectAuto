@@ -1375,7 +1375,6 @@ body[data-app-screen="battle"][data-coach-cue] .action-panel {
 
 #rescueButton[data-ready="true"] {
   border-color: var(--mint);
-  box-shadow: 0 0 18px rgba(88, 215, 255, 0.28);
 }
 
 .primary-actions[data-open-count="1"] #summonButton[data-ready="true"] {

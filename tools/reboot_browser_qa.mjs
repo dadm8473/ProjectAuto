@@ -491,6 +491,62 @@ async function assertRewardToastGeneratedSurface(page) {
   assert.equal(surface.width >= 188 && surface.height >= 46, true, `reward toast collapsed: ${JSON.stringify(surface)}`);
 }
 
+async function assertReadyRescueUsesGeneratedStateArt(page) {
+  const surfaces = await page.evaluate(() => {
+    const button = document.querySelector('#rescueButton');
+    if (!button) return { missing: true };
+    const previousReady = button.dataset.ready;
+    const previousUnlocked = button.dataset.unlocked;
+    const previousCritical = button.dataset.critical;
+    const previousDisabled = button.disabled;
+    const snapshots = [];
+    try {
+      for (const critical of [false, true]) {
+        button.disabled = false;
+        button.dataset.ready = 'true';
+        button.dataset.unlocked = 'true';
+        button.dataset.critical = critical ? 'true' : 'false';
+        const style = getComputedStyle(button);
+        const after = getComputedStyle(button, '::after');
+        snapshots.push({
+          label: critical ? 'critical rescue' : 'ready rescue',
+          expectedImage: critical ? /reboot-critical-action-rings/ : /reboot-action-ready-pulses/,
+          minOpacity: critical ? 0.45 : 0.3,
+          boxShadow: style.boxShadow,
+          backgroundImage: style.backgroundImage,
+          afterBackgroundImage: after.backgroundImage,
+          afterBackgroundSize: after.backgroundSize,
+          afterBackgroundPositionX: after.backgroundPositionX,
+          afterBackgroundPositionY: after.backgroundPositionY,
+          afterOpacity: after.opacity,
+          afterMixBlendMode: after.mixBlendMode
+        });
+      }
+      return { snapshots };
+    } finally {
+      if (previousReady === undefined) delete button.dataset.ready;
+      else button.dataset.ready = previousReady;
+      if (previousUnlocked === undefined) delete button.dataset.unlocked;
+      else button.dataset.unlocked = previousUnlocked;
+      if (previousCritical === undefined) delete button.dataset.critical;
+      else button.dataset.critical = previousCritical;
+      button.disabled = previousDisabled;
+    }
+  });
+  assert.equal(surfaces.missing, undefined, `ready rescue unavailable: ${JSON.stringify(surfaces)}`);
+  assert.equal(surfaces.snapshots?.length, 2, `ready rescue states missing: ${JSON.stringify(surfaces)}`);
+  for (const surface of surfaces.snapshots) {
+    assert.equal(surface.boxShadow, 'none', `${surface.label} still uses css halo: ${JSON.stringify(surface)}`);
+    assert.match(surface.backgroundImage, /reboot-combat-action-buttons/, `${surface.label} lacks generated button body: ${JSON.stringify(surface)}`);
+    assert.match(surface.afterBackgroundImage, surface.expectedImage, `${surface.label} lacks generated state art: ${JSON.stringify(surface)}`);
+    assert.equal(surface.afterBackgroundSize, '300% 100%', `${surface.label} state art slicing changed: ${JSON.stringify(surface)}`);
+    assert.equal(surface.afterBackgroundPositionX, '100%', `${surface.label} does not use rescue cell: ${JSON.stringify(surface)}`);
+    assert.equal(surface.afterBackgroundPositionY, '0px', `${surface.label} y position changed: ${JSON.stringify(surface)}`);
+    assert.equal(Number.parseFloat(surface.afterOpacity) >= surface.minOpacity, true, `${surface.label} art is too faint: ${JSON.stringify(surface)}`);
+    assert.equal(surface.afterMixBlendMode, 'screen', `${surface.label} blend changed: ${JSON.stringify(surface)}`);
+  }
+}
+
 async function assertInjectedSafeAreaKeepsCombatTouchable(page) {
   const geometry = await page.evaluate(async () => {
     const root = document.documentElement;
@@ -625,6 +681,7 @@ async function verifyShell(page, viewport) {
   await assertCombatDockSafeArea(page);
   await assertCombatToastClearsDock(page);
   await assertRewardToastGeneratedSurface(page);
+  await assertReadyRescueUsesGeneratedStateArt(page);
   await assertInjectedSafeAreaKeepsCombatTouchable(page);
   await assertFirstSummonTapFeedback(page);
 }
