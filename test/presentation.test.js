@@ -116,7 +116,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=merge-reason1'",
     "from './reboot_action_ui.js?v=action-simplify1'",
     "from './reboot_render.js?v=unit-roster1'",
-    "from './reboot_screens.js?v=objective-counter-plate1'",
+    "from './reboot_screens.js?v=lobby-focus1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -672,7 +672,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-simplify1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-focus1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=command-cooldown1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shell-backdrop1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=screen-lighting1"></script>'), false);
@@ -748,7 +748,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=objective-counter-plate1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=lobby-focus1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=shelf-price1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-item-status1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), false);
@@ -3441,7 +3441,6 @@ test('lobby reward and next hooks use generated intel strips instead of web card
   for (const marker of [
     '--lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1")',
     '--lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next")',
-    '--lobby-battle-ready-cue: url("/src/client/assets/generated/reboot-lobby-battle-ready-cue.png?v=battle-ready-cue")',
     'class="lobby-intel-strip reward-hook"',
     'aria-label="보유 보석 ${gems}, 외형 해금 전용 재화"',
     'class="lobby-currency-icon" data-reward-icon="soft_currency"',
@@ -3452,7 +3451,6 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     'class="lobby-intel-frame"',
     'class="lobby-next-beacon"',
     'class="lobby-next-state" aria-label="${nextAction.label}"',
-    'class="lobby-battle-cue"',
     'data-next-beacon="${nextAction.beacon}"',
     "nextAction.screen === 'battle'",
     '/src/client/assets/generated/reboot-lobby-intel-gems.png?v=intel-strips-alpha1',
@@ -3461,16 +3459,11 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     '.lobby-intel-frame',
     '.lobby-next-beacon',
     '.lobby-intel-strip > .lobby-next-beacon',
-    '.lobby-battle-cue',
-    '.lobby-intel-strip > .lobby-battle-cue',
-    '.next-hook[data-next-beacon="battle"] .lobby-battle-cue',
     '[data-next-beacon="mission"]',
     '[data-next-beacon="season"]',
     '[data-next-beacon="training"]',
     '[data-next-beacon="shop"]',
-    '[data-next-beacon="battle"]',
     'background-image: var(--lobby-next-beacons);',
-    'background-image: var(--lobby-battle-ready-cue);',
     'background-image: var(--meta-mini-badges);',
     '.lobby-intel-strip > span,\n.lobby-intel-strip > strong,\n.lobby-intel-strip > p,\n.lobby-intel-strip > button',
     '.next-hook > .lobby-next-state',
@@ -3501,6 +3494,12 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     'class="lobby-card reward-hook"',
     'class="lobby-card next-hook"',
     'data-lobby-open="battle"',
+    'class="lobby-battle-cue"',
+    '--lobby-battle-ready-cue',
+    '.lobby-battle-cue',
+    '.next-hook[data-next-beacon="battle"]',
+    '[data-next-beacon="battle"]',
+    'background-image: var(--lobby-battle-ready-cue);',
     '<span>보유 보석</span>',
     '<p>외형만 해금</p>',
     '<span>${nextAction.label}</span>',
@@ -3510,8 +3509,22 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     '전투력 판매 없이 외형만 해금합니다',
     '보상을 모아 유닛과 외형을 여세요'
   ]) {
-    assert.equal(screens.includes(forbidden), false, forbidden);
+    assert.equal(`${css}\n${screens}`.includes(forbidden), false, forbidden);
   }
+});
+
+test('battle-ready lobby omits redundant next-action strip to keep the first screen focused', async () => {
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    'function buildLobbyNextActionStrip(nextAction)',
+    "if (nextAction.screen === 'battle') return '';",
+    '${buildLobbyNextActionStrip(nextAction)}'
+  ]) {
+    assert.equal(screens.includes(marker), true, marker);
+  }
+  assert.equal(screens.includes('<section class="lobby-intel-strip next-hook"'), false);
+  assert.equal(screens.includes('class="lobby-battle-cue"'), false);
 });
 
 test('lobby next state chip uses generated caption plate instead of a css pill', async () => {
@@ -3822,6 +3835,19 @@ test('browser QA verifies reward reveal uses the generated payoff stage', async 
     'assert.equal(surface.datasetRevealKind, \'soft_currency\'',
     'const minimumWidth = Math.min(298, surface.viewportWidth - 22);',
     'await assertRewardRevealGeneratedSurface(page);'
+  ]) {
+    assert.equal(qa.includes(marker), true, marker);
+  }
+});
+
+test('browser QA clicks the lobby next-action strip before trusting meta routing', async () => {
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    "const nextActionButton = page.locator('#lobbyScreen .next-hook [data-lobby-open=\"shop\"]');",
+    'await assertTouchableHitTarget(page, nextActionButton, `${label} next action shop button`);',
+    'await nextActionButton.click();',
+    "await page.locator('#shopScreen .shop-cosmetic').first().waitFor({ state: 'visible' });"
   ]) {
     assert.equal(qa.includes(marker), true, marker);
   }

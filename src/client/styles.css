@@ -56,7 +56,6 @@
   --lobby-operation-progress-rail: url("/src/client/assets/generated/reboot-lobby-operation-progress-rail.png?v=operation-progress1");
   --lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1");
   --lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next");
-  --lobby-battle-ready-cue: url("/src/client/assets/generated/reboot-lobby-battle-ready-cue.png?v=battle-ready-cue");
   --lobby-launch-console: url("/src/client/assets/generated/reboot-lobby-launch-console.png?v=launch-console1");
   --lobby-launch-bay: url("/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1");
   --launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta-alpha1");
@@ -2574,37 +2573,9 @@ body[data-app-screen="season"] .app-screen::after {
   background-position: 75% 0;
 }
 
-.lobby-next-beacon[data-next-beacon="battle"] {
-  background-position: 100% 0;
-}
-
-.lobby-intel-strip > .lobby-battle-cue {
-  position: absolute;
-  right: 24px;
-  top: 50%;
-  z-index: 1;
-  width: 54px;
-  height: 54px;
-  transform: translateY(-50%);
-  background-image: var(--lobby-battle-ready-cue);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  filter: saturate(1.14) drop-shadow(0 7px 12px rgba(0, 0, 0, 0.58));
-  pointer-events: none;
-}
-
-.next-hook[data-next-beacon="battle"] .lobby-battle-cue {
-  display: block;
-}
-
 @media (prefers-reduced-motion: no-preference) {
   .next-hook .lobby-next-beacon {
     animation: lobbyNextBeaconPulse 1800ms ease-in-out infinite;
-  }
-
-  .next-hook[data-next-beacon="battle"] .lobby-battle-cue {
-    animation: lobbyBattleCuePulse 1600ms ease-in-out infinite;
   }
 }
 
@@ -2618,19 +2589,6 @@ body[data-app-screen="season"] .app-screen::after {
   50% {
     opacity: 1;
     transform: translateY(-50%) scale(1.05);
-  }
-}
-
-@keyframes lobbyBattleCuePulse {
-  0%,
-  100% {
-    opacity: 0.9;
-    transform: translateY(-50%) translateY(0) scale(0.96);
-  }
-
-  50% {
-    opacity: 1;
-    transform: translateY(-50%) translateY(4px) scale(1.03);
   }
 }
 

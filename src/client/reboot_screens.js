@@ -440,10 +440,24 @@ export function postRewardRoute(profile = {}, fallbackScreen = 'lobby') {
 }
 
 function buildLobbyNextActionControl(nextAction) {
-  if (nextAction.screen === 'battle') {
-    return '<span class="lobby-battle-cue" aria-hidden="true"></span>';
-  }
   return `<button type="button" data-lobby-open="${nextAction.screen}" aria-label="${nextAction.label} ${nextAction.cta}">${nextAction.cta}</button>`;
+}
+
+function buildLobbyNextActionStrip(nextAction) {
+  if (nextAction.screen === 'battle') return '';
+  return `
+    <section
+      class="lobby-intel-strip next-hook"
+      aria-label="${nextAction.label}: ${nextAction.title}. ${nextAction.detail}"
+      data-next-action="${nextAction.label}"
+      data-next-beacon="${nextAction.beacon}">
+      <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-next.png?v=intel-strips-alpha1" alt="" aria-hidden="true">
+      <span class="lobby-next-beacon" data-next-beacon="${nextAction.beacon}" aria-hidden="true"></span>
+      <span class="lobby-next-state" aria-label="${nextAction.label}">${nextAction.status}</span>
+      <strong>${nextAction.title}</strong>
+      <p>${nextAction.detail}</p>
+      ${buildLobbyNextActionControl(nextAction)}
+    </section>`;
 }
 
 function trainingAvailabilityCopy(profile = {}) {
@@ -534,14 +548,7 @@ export function buildRebootLobby(model = {}) {
       <strong class="lobby-currency-value">${gems}</strong>
       <span class="lobby-currency-label">보석</span>
     </section>
-    <section class="lobby-intel-strip next-hook" aria-label="${nextAction.label}: ${nextAction.title}. ${nextAction.detail}" data-next-action="${nextAction.label}" data-next-beacon="${nextAction.beacon}">
-      <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-next.png?v=intel-strips-alpha1" alt="" aria-hidden="true">
-      <span class="lobby-next-beacon" data-next-beacon="${nextAction.beacon}" aria-hidden="true"></span>
-      <span class="lobby-next-state" aria-label="${nextAction.label}">${nextAction.status}</span>
-      <strong>${nextAction.title}</strong>
-      <p>${nextAction.detail}</p>
-      ${buildLobbyNextActionControl(nextAction)}
-    </section>
+    ${buildLobbyNextActionStrip(nextAction)}
   `;
 }
 

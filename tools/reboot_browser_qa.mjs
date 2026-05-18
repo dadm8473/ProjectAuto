@@ -58,6 +58,26 @@ async function assertNoErrors(errors, label) {
   assert.deepEqual(errors, [], `${label} console/page errors`);
 }
 
+async function assertTouchableHitTarget(page, locator, label) {
+  const hit = await locator.evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const target = document.elementFromPoint(centerX, centerY);
+    return {
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      centerX: Math.round(centerX),
+      centerY: Math.round(centerY),
+      hitTag: target?.tagName ?? '',
+      hitClass: target?.className ?? '',
+      hitIsTarget: target === node || node.contains(target)
+    };
+  });
+  assert.equal(hit.width >= 42 && hit.height >= 42, true, `${label} lost mobile hit size: ${JSON.stringify(hit)}`);
+  assert.equal(hit.hitIsTarget, true, `${label} center is blocked: ${JSON.stringify(hit)}`);
+}
+
 async function verifyInstallableShell(page) {
   await page.goto(baseUrl, { waitUntil: 'load' });
   const status = await page.evaluate(async () => {
@@ -69,12 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v3');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v4');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/app.js?v=action-simplify1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=action-simplify1'))
+      '/src/client/app.js?v=lobby-focus1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=lobby-focus1'))
+        : false,
+      '/src/client/reboot_screens.js?v=lobby-focus1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=lobby-focus1'))
         : false,
       '/src/client/reboot_action_ui.js?v=action-simplify1': cache
         ? Boolean(await cache.match('/src/client/reboot_action_ui.js?v=action-simplify1'))
@@ -95,7 +118,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v3', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v4', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -477,6 +500,11 @@ async function assertLobbyNextActionShop(page, label) {
   assert.equal(nextAction.beacon, 'shop', `${label} should prioritize shop after no unit upgrade remains: ${JSON.stringify(nextAction)}`);
   assert.equal(nextAction.action, '외형 해금', `${label} next action should be shop unlock: ${JSON.stringify(nextAction)}`);
   assert.match(nextAction.text, /외형 해금 가능/, `${label} lobby next strip lost shop-ready copy: ${JSON.stringify(nextAction)}`);
+  const nextActionButton = page.locator('#lobbyScreen .next-hook [data-lobby-open="shop"]');
+  await assertTouchableHitTarget(page, nextActionButton, `${label} next action shop button`);
+  await nextActionButton.click();
+  await page.locator('#shopScreen .shop-cosmetic').first().waitFor({ state: 'visible' });
+  assert.equal(await page.locator('body').getAttribute('data-app-screen'), 'shop');
 }
 
 async function assertObjectiveBoardCommand(page, selector, label, expectedState) {
@@ -896,6 +924,19 @@ async function assertOperationCopyClearsProgressRail(page) {
     true,
     `operation copy overlaps progress rail on portrait lobby: ${JSON.stringify(geometry)}`
   );
+}
+
+async function assertBattleReadyLobbyStaysFocused(page) {
+  const surface = await page.evaluate(() => ({
+    nextHookCount: document.querySelectorAll('#lobbyScreen .next-hook').length,
+    operationVisible: Boolean(document.querySelector('#lobbyScreen .operation-card')),
+    launchVisible: Boolean(document.querySelector('#launchBotButton')),
+    rewardVisible: Boolean(document.querySelector('#lobbyScreen .reward-hook'))
+  }));
+  assert.equal(surface.operationVisible, true, `battle-ready lobby lost operation poster: ${JSON.stringify(surface)}`);
+  assert.equal(surface.launchVisible, true, `battle-ready lobby lost launch command: ${JSON.stringify(surface)}`);
+  assert.equal(surface.rewardVisible, true, `battle-ready lobby lost currency strip: ${JSON.stringify(surface)}`);
+  assert.equal(surface.nextHookCount, 0, `battle-ready lobby should not duplicate the launch intent: ${JSON.stringify(surface)}`);
 }
 
 async function assertSplashCtaClearsBottomDeck(page) {
@@ -1488,7 +1529,7 @@ async function verifyShell(page, viewport) {
   await page.getByRole('button', { name: '첫 구원 작전 시작' }).waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'lobby operation copy', 2);
   await assertOperationCopyClearsProgressRail(page);
-  await assertMetaCaptionPlates(page, '#lobbyScreen .lobby-next-state', 'lobby next state', 1);
+  await assertBattleReadyLobbyStaysFocused(page);
   assert.equal(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await page.getByRole('button', { name: '유닛' }).click();
   await assertActiveNavLabelPlate(page, '유닛', 'collection');
@@ -1563,6 +1604,7 @@ async function verifyCompactLobby(page) {
   await page.getByRole('button', { name: '첫 구원 작전 시작' }).waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'compact lobby operation copy', 2);
   await assertOperationCopyClearsProgressRail(page);
+  await assertBattleReadyLobbyStaysFocused(page);
 }
 
 async function verifyCompactMeta(page) {
@@ -1583,8 +1625,6 @@ async function verifyCompactMeta(page) {
   await assertFeaturedUnitUpgradeFlow(page, 'compact ready collection');
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
   await assertLobbyNextActionShop(page, 'compact shop-only priority');
-  await page.getByRole('button', { name: '상점' }).click();
-  await page.locator('.shop-cosmetic').first().waitFor({ state: 'visible' });
   await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'compact shop', 2);
   await assertShopFeatureOffer(page, 'compact ready shop');
   await assertFeaturedShopPurchaseFlow(page, 'compact ready shop');

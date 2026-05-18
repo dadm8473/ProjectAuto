@@ -861,13 +861,6 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 20_000
   },
   {
-    path: 'src/client/assets/generated/reboot-lobby-battle-ready-cue.png',
-    source: 'docs/design/generation/source/reboot/style-lock/20260514-lobby-battle-ready-cue-chromakey-imagegen.png',
-    width: 128,
-    height: 128,
-    minRuntimeBytes: 10_000
-  },
-  {
     path: 'src/client/assets/generated/reboot-combat-coach-cues.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-coach-cues-chromakey-imagegen.png',
     width: 768,
@@ -2272,7 +2265,7 @@ test('battle cosmetic sigil cells stay transparent and readable under the player
 test('lobby next action beacon cells stay transparent and readable inside the recommendation strip', async () => {
   const image = parsePng(await readFile('src/client/assets/generated/reboot-lobby-next-beacons.png'));
   const cellWidth = 128;
-  for (let cell = 0; cell < 5; cell += 1) {
+  for (let cell = 0; cell < 4; cell += 1) {
     const bounds = alphaBounds(image, { x: cell * cellWidth, y: 0, width: cellWidth, height: image.height }, 28);
     assert.equal(bounds.count > 1_500, true, `lobby next beacon cell ${cell} has no readable subject`);
     assert.equal(bounds.minX >= 8, true, `lobby next beacon cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
@@ -2280,24 +2273,6 @@ test('lobby next action beacon cells stay transparent and readable inside the re
     assert.equal(bounds.minY >= 8, true, `lobby next beacon cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 9, true, `lobby next beacon cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
-});
-
-test('lobby battle ready cue stays transparent and readable without becoming another button', async () => {
-  const image = parsePng(await readFile('src/client/assets/generated/reboot-lobby-battle-ready-cue.png'));
-  const corners = [
-    alphaAt(image, 2, 2),
-    alphaAt(image, image.width - 3, 2),
-    alphaAt(image, 2, image.height - 3),
-    alphaAt(image, image.width - 3, image.height - 3)
-  ];
-  const bounds = alphaBounds(image, { x: 0, y: 0, width: image.width, height: image.height }, 28);
-
-  assert.equal(corners.every((alpha) => alpha < 10), true, 'battle ready cue keeps transparent corners');
-  assert.equal(bounds.count > 1_800, true, `battle ready cue has no readable subject: ${bounds.count}`);
-  assert.equal(bounds.minX >= 8, true, `battle ready cue touches left edge: ${JSON.stringify(bounds)}`);
-  assert.equal(bounds.maxX <= image.width - 9, true, `battle ready cue touches right edge: ${JSON.stringify(bounds)}`);
-  assert.equal(bounds.minY >= 8, true, `battle ready cue touches top edge: ${JSON.stringify(bounds)}`);
-  assert.equal(bounds.maxY <= image.height - 9, true, `battle ready cue touches bottom edge: ${JSON.stringify(bounds)}`);
 });
 
 test('combat coach cue cells keep each teaching prompt visible and padded', async () => {

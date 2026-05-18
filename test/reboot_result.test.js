@@ -952,10 +952,8 @@ test('lobby next action uses compact game-state chips while preserving meaning f
     claimedPassTiers: []
   });
 
-  assert.equal(
-    missionLobby.includes('class="lobby-intel-strip next-hook" aria-label="미션 보상: 받을 미션 보상. 완료 목표 수령"'),
-    true
-  );
+  assert.equal(missionLobby.includes('class="lobby-intel-strip next-hook"'), true);
+  assert.equal(missionLobby.includes('aria-label="미션 보상: 받을 미션 보상. 완료 목표 수령"'), true);
   assert.equal(missionLobby.includes('class="lobby-next-state" aria-label="미션 보상">수령</span>'), true);
   assert.equal(missionLobby.includes('data-lobby-open="missions" aria-label="미션 보상 수령"'), true);
   assert.equal(missionLobby.includes('>보상 보기<'), false);
@@ -983,15 +981,15 @@ test('lobby next action uses compact game-state chips while preserving meaning f
     unlocks: ['mythic-aura', 'founder-board', 'merge-effect', 'rescue-effect', 'profile-frame']
   });
 
-  assert.equal(
-    battleLobby.includes('class="lobby-intel-strip next-hook" aria-label="다음 작전: 첫 구원 작전. 파트너 구원 · 보스 저지"'),
-    true
-  );
-  assert.equal(battleLobby.includes('class="lobby-next-state" aria-label="다음 작전">준비</span>'), true);
+  assert.equal(battleLobby.includes('class="lobby-intel-strip next-hook"'), false);
+  assert.equal(battleLobby.includes('data-next-beacon="battle"'), false);
+  assert.equal(battleLobby.includes('class="lobby-next-state" aria-label="다음 작전">준비</span>'), false);
+  assert.equal(battleLobby.includes('<strong>첫 구원 작전</strong>'), true);
+  assert.equal(battleLobby.includes('<p>파트너 구원 · 보스 저지</p>'), true);
   assert.equal(battleLobby.includes('<span>다음 작전</span>'), false);
 });
 
-test('battle-ready lobby does not duplicate the primary launch button inside the next-action strip', () => {
+test('battle-ready lobby keeps launch intent in the operation poster and launch console only', () => {
   const lobby = buildRebootLobby({
     gems: 0,
     xp: 0,
@@ -1001,8 +999,9 @@ test('battle-ready lobby does not duplicate the primary launch button inside the
     unlocks: ['mythic-aura', 'founder-board', 'merge-effect', 'rescue-effect', 'profile-frame']
   });
 
-  assert.equal(lobby.includes('data-next-beacon="battle"'), true);
-  assert.equal(lobby.includes('class="lobby-battle-cue"'), true);
+  assert.equal(lobby.includes('class="lobby-intel-strip next-hook"'), false);
+  assert.equal(lobby.includes('data-next-beacon="battle"'), false);
+  assert.equal(lobby.includes('class="lobby-battle-cue"'), false);
   assert.equal(lobby.includes('data-lobby-open="battle"'), false);
   assert.equal(lobby.includes('>출전<'), false);
 });
