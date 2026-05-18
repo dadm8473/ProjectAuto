@@ -172,6 +172,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     height: 320,
     source: 'imagegen'
   },
+  playerBoardBridge: {
+    src: '/src/client/assets/generated/reboot-player-board-bridge.png?v=player-board-bridge1',
+    width: 780,
+    height: 220,
+    source: 'imagegen'
+  },
   unitActivationRing: {
     src: '/src/client/assets/generated/reboot-unit-activation-ring.png?v=unit-activation-ring1',
     width: 512,
@@ -334,6 +340,8 @@ export function createRebootAssetImages() {
   cosmeticSigils.src = REBOOT_EFFECT_MANIFEST.cosmeticSigils.src;
   const playerBoardTray = new Image();
   playerBoardTray.src = REBOOT_EFFECT_MANIFEST.playerBoardTray.src;
+  const playerBoardBridge = new Image();
+  playerBoardBridge.src = REBOOT_EFFECT_MANIFEST.playerBoardBridge.src;
   const unitActivationRing = new Image();
   unitActivationRing.src = REBOOT_EFFECT_MANIFEST.unitActivationRing.src;
   const actionSurges = new Image();
@@ -358,7 +366,7 @@ export function createRebootAssetImages() {
   openingThreatPreview.src = REBOOT_EFFECT_MANIFEST.openingThreatPreview.src;
   const signalCoreGates = new Image();
   signalCoreGates.src = REBOOT_EFFECT_MANIFEST.signalCoreGates.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, directiveBanner, partnerAssistPings, partnerStandbySigils, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts, enemySpawnGates, openingThreatPreview, signalCoreGates };
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, directiveBanner, partnerAssistPings, partnerStandbySigils, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, playerBoardBridge, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts, enemySpawnGates, openingThreatPreview, signalCoreGates };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -690,6 +698,18 @@ function drawPlayerBoardTray(ctx, assets, x, y, w, h) {
   ctx.save();
   ctx.globalAlpha *= 0.94;
   ctx.drawImage(image, x, y, w, h);
+  ctx.restore();
+  return true;
+}
+
+function drawPlayerBoardBridge(ctx, assets, layout) {
+  const image = assets?.playerBoardBridge;
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const height = Math.min(146, Math.max(128, Math.round(layout.height * 0.21)));
+  const y = Math.max(360, layout.height - height);
+  ctx.save();
+  ctx.globalAlpha *= 0.9;
+  ctx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight, 0, y, 390, height);
   ctx.restore();
   return true;
 }
@@ -1535,6 +1555,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawCombatStartCutin(ctx, state, assets);
   drawCombatCrisisOverlays(ctx, state, assets, localBoardId);
   drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
+  drawPlayerBoardBridge(ctx, assets, layout);
   drawBoard(ctx, state.boards[localBoardId], 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
   if (!options.onlineWaiting) drawPreSummonSocketCue(ctx, state, assets, localBoardId);
   if (!options.onlineWaiting) drawFirstSummonLandingBeacon(ctx, state, assets, localBoardId);

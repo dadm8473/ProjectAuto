@@ -798,6 +798,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 40_000
   },
   {
+    path: 'src/client/assets/generated/reboot-player-board-bridge.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260518-player-board-bridge-chromakey-imagegen.png',
+    width: 780,
+    height: 220,
+    minRuntimeBytes: 60_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-critical-action-rings.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-critical-action-rings-chromakey-imagegen.png',
     width: 768,
@@ -1965,6 +1972,30 @@ test('player board tray stays transparent and readable under summoned units', as
   assert.equal(bounds.maxX <= image.width - 17, true, `player board tray touches right edge: ${JSON.stringify(bounds)}`);
   assert.equal(bounds.minY >= 12, true, `player board tray touches top edge: ${JSON.stringify(bounds)}`);
   assert.equal(bounds.maxY <= image.height - 13, true, `player board tray touches bottom edge: ${JSON.stringify(bounds)}`);
+});
+
+test('player board bridge fills the lower combat gap with transparent generated machinery', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-player-board-bridge.png'));
+  assert.equal(image.width, 780);
+  assert.equal(image.height, 220);
+
+  const corners = [
+    alphaAt(image, 3, 3),
+    alphaAt(image, image.width - 4, 3),
+    alphaAt(image, 3, image.height - 4),
+    alphaAt(image, image.width - 4, image.height - 4)
+  ];
+  const centerConsole = luminanceStats(image, { x: 170, y: 44, width: 440, height: 118 }, 48);
+  const lowerRails = luminanceStats(image, { x: 84, y: 142, width: 612, height: 54 }, 48);
+  const centerCoverage = alphaCoverage(image, { x: 96, y: 34, width: 588, height: 146 }, 32);
+  const cyanDetailRatio = colorRatio(image, { x: 96, y: 34, width: 588, height: 146 }, (r, g, b) => r < 95 && g > 74 && b > 84);
+
+  assert.equal(corners.every((alpha) => alpha < 12), true, `player board bridge has opaque corners: ${corners.join(',')}`);
+  assert.equal(centerCoverage > 0.34, true, `player board bridge has no readable machinery silhouette: ${centerCoverage}`);
+  assert.equal(centerConsole.mean > 30, true, `player board bridge center still reads as empty black floor: ${centerConsole.mean}`);
+  assert.equal(centerConsole.mean < 76, true, `player board bridge is too bright behind the player board: ${centerConsole.mean}`);
+  assert.equal(lowerRails.brightRatio > 0.08, true, `player board bridge lacks lower rails: ${lowerRails.brightRatio}`);
+  assert.equal(cyanDetailRatio > 0.008, true, `player board bridge lacks signal-lit detail: ${cyanDetailRatio}`);
 });
 
 test('meta progress bar cells keep track and fill rows readable', async () => {

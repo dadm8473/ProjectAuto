@@ -1019,6 +1019,33 @@ async function assertActionDockRenderedBoundaryScreenshot(page) {
   }
 }
 
+async function assertBattleLowerBridgeRendered(page) {
+  const canvas = await page.locator('#gameCanvas').evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    return {
+      x: Math.round(rect.left),
+      y: Math.round(rect.top),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    };
+  });
+  const bridgeTop = Math.round(canvas.height * 0.79);
+  const clip = {
+    x: canvas.x,
+    y: canvas.y + bridgeTop,
+    width: canvas.width,
+    height: Math.min(96, canvas.height - bridgeTop)
+  };
+  const image = parseScreenshotPng(await page.screenshot({ clip, scale: 'css' }));
+  const centerBridge = screenshotBandStats(image, { x: 42, y: 20, width: image.width - 84, height: 42 }, 52);
+  const lowerRail = screenshotBandStats(image, { x: 34, y: 58, width: image.width - 68, height: 28 }, 52);
+
+  assert.equal(image.width >= 300 && image.height >= 84, true, `battle lower bridge screenshot is too small: ${JSON.stringify({ canvas, image })}`);
+  assert.equal(centerBridge.mean > 34, true, `battle lower bridge still reads as an empty dark gap: ${JSON.stringify({ canvas, centerBridge, lowerRail })}`);
+  assert.equal(centerBridge.brightRatio > 0.1, true, `battle lower bridge lacks generated machinery highlights: ${JSON.stringify({ canvas, centerBridge, lowerRail })}`);
+  assert.equal(lowerRail.brightRatio > 0.08, true, `battle lower bridge lower rail is not visible above the dock: ${JSON.stringify({ canvas, centerBridge, lowerRail })}`);
+}
+
 async function assertCombatToastClearsDock(page) {
   const geometry = await page.evaluate(() => {
     const toast = document.querySelector('.toast');
@@ -1414,6 +1441,7 @@ async function verifyShell(page, viewport) {
   await assertCombatDockSafeArea(page);
   await assertActionDockGeneratedConsoleSurface(page);
   await assertActionDockRenderedBoundaryScreenshot(page);
+  await assertBattleLowerBridgeRendered(page);
   await assertCombatToastClearsDock(page);
   await assertRewardToastGeneratedSurface(page);
   await assertReadyRescueUsesGeneratedStateArt(page);

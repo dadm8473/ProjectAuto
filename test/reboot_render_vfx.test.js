@@ -936,6 +936,73 @@ test('player board uses a generated landing tray beneath summoned units', () => 
   assert.deepEqual(actionFlashDraws(ctx.commands, 0), [], 'summon should not use the old compact action flash');
 });
 
+test('player board lower bridge fills the command gap with generated arena machinery', () => {
+  const ctx = mockContext();
+  const playerBoardBridge = image(780, 220);
+  const playerBoardTray = image(780, 320);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 2,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      board: image(1280, 256),
+      playerBoardBridge,
+      playerBoardTray
+    }
+  );
+
+  const bridgeIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === playerBoardBridge);
+  const trayIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === playerBoardTray);
+  const bridgeDraw = ctx.commands[bridgeIndex];
+
+  assert.notEqual(bridgeIndex, -1, 'expected generated lower bridge to fill the gap above the command dock');
+  assert.notEqual(trayIndex, -1, 'expected generated player board tray to remain');
+  assert.equal(bridgeIndex < trayIndex, true, 'lower bridge should sit behind the player board tray');
+  assert.equal(bridgeDraw.args[5], 0, 'lower bridge should span from the canvas edge');
+  assert.equal(bridgeDraw.args[6] >= 486, true, `lower bridge starts too high or low: ${bridgeDraw.args[6]}`);
+  assert.equal(bridgeDraw.args[7], 390, 'lower bridge should cover the full portrait canvas width');
+  assert.equal(bridgeDraw.args[8] >= 124, true, 'lower bridge should be tall enough to remove the black floor gap');
+});
+
+test('player board lower bridge stays inside short combat canvases', () => {
+  const ctx = mockContext();
+  const playerBoardBridge = image(780, 220);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 2,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 500 },
+    {
+      backdrop: image(390, 620),
+      board: image(1280, 256),
+      playerBoardBridge
+    }
+  );
+
+  const bridgeDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === playerBoardBridge);
+  assert.ok(bridgeDraw, 'expected lower bridge on short canvas');
+  assert.equal(bridgeDraw.args[6] >= 360, true, `lower bridge should remain in the lower canvas: ${bridgeDraw.args[6]}`);
+  assert.equal(bridgeDraw.args[6] + bridgeDraw.args[8] <= 500, true, `lower bridge clips below the short canvas: ${bridgeDraw.args[6]} + ${bridgeDraw.args[8]}`);
+});
+
 test('player board anchors summoned units with a generated activation ring', () => {
   const ctx = mockContext();
   drawRebootBattle(

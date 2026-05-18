@@ -20,7 +20,8 @@ export const CRITICAL_REBOOT_ASSETS = [
   '/src/client/assets/generated/reboot-nav-alert-badges.png?v=nav-alerts',
   '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1',
   '/src/client/assets/generated/reboot-combat-hud-frame.png',
-  '/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1'
+  '/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1',
+  '/src/client/assets/generated/reboot-player-board-bridge.png?v=player-board-bridge1'
 ];
 
 function preloadOneImage(src, ImageCtor, timeoutMs) {

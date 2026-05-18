@@ -1550,10 +1550,15 @@ test('combat board renderer uses compact landing markers over imagegen map floor
 
   for (const marker of [
     "src: '/src/client/assets/generated/reboot-player-board-tray.png?v=player-tray'",
+    "src: '/src/client/assets/generated/reboot-player-board-bridge.png?v=player-board-bridge1'",
     'const playerBoardTray = new Image();',
     'playerBoardTray.src = REBOOT_EFFECT_MANIFEST.playerBoardTray.src;',
+    'const playerBoardBridge = new Image();',
+    'playerBoardBridge.src = REBOOT_EFFECT_MANIFEST.playerBoardBridge.src;',
+    'function drawPlayerBoardBridge(ctx, assets, layout)',
     'function drawPlayerBoardTray(ctx, assets, x, y, w, h) {',
     'const partnerId = partnerBoardId(localBoardId);',
+    'drawPlayerBoardBridge(ctx, assets, layout);',
     'drawBoard(ctx, state.boards[localBoardId], 24, 392, 342, 138,',
     'if (imageBackdrop && !compact) drawPlayerBoardTray(ctx, assets, x - 6, y - 14, w + 12, h + 10);',
     "const socketKey = compact ? 'partner_socket' : 'player_socket';",
