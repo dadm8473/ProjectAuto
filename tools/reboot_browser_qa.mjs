@@ -291,6 +291,7 @@ async function verifyShell(page, viewport) {
 
   await page.getByRole('button', { name: '시작' }).click();
   await page.getByRole('button', { name: '첫 구원 작전 시작' }).waitFor({ state: 'visible' });
+  await assertMetaCaptionPlates(page, '#lobbyScreen .lobby-next-state', 'lobby next state', 1);
   assert.equal(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await page.getByRole('button', { name: '유닛' }).click();
   await assertActiveNavLabelPlate(page, '유닛', 'collection');

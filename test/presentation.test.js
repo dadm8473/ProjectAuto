@@ -3215,6 +3215,30 @@ test('lobby reward and next hooks use generated intel strips instead of web card
   }
 });
 
+test('lobby next state chip uses generated caption plate instead of a css pill', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  const stateBlock = cssRuleBlock(css, '.next-hook > .lobby-next-state');
+  for (const marker of [
+    'background-image: var(--meta-caption-plate);',
+    'background-size: 100% 100%;',
+    'min-width: 74px;',
+    'min-height: 24px;'
+  ]) {
+    assert.equal(stateBlock.includes(marker), true, marker);
+  }
+  for (const forbidden of [
+    'background-color:',
+    'background-image: var(--meta-mini-badges);',
+    'border-radius:',
+    'box-shadow:',
+    'linear-gradient',
+    'backdrop-filter'
+  ]) {
+    assert.equal(stateBlock.includes(forbidden), false, forbidden);
+  }
+});
+
 test('splash uses a generated title emblem instead of plain text only branding', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
