@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { inflateSync } from 'node:zlib';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
@@ -29,6 +30,87 @@ function withParam(url, key, value) {
 
 async function assertNoErrors(errors, label) {
   assert.deepEqual(errors, [], `${label} console/page errors`);
+}
+
+function parseScreenshotPng(bytes) {
+  let offset = 8;
+  const chunks = [];
+  while (offset < bytes.length) {
+    const length = bytes.readUInt32BE(offset);
+    const type = bytes.subarray(offset + 4, offset + 8).toString('ascii');
+    const data = bytes.subarray(offset + 8, offset + 8 + length);
+    chunks.push({ type, data });
+    offset += length + 12;
+  }
+  const ihdr = chunks.find((chunk) => chunk.type === 'IHDR')?.data;
+  assert.ok(ihdr, 'screenshot PNG is missing IHDR');
+  const width = ihdr.readUInt32BE(0);
+  const height = ihdr.readUInt32BE(4);
+  const bitDepth = ihdr[8];
+  const colorType = ihdr[9];
+  const interlace = ihdr[12];
+  assert.equal(bitDepth, 8, `unsupported screenshot bit depth ${bitDepth}`);
+  assert.equal(colorType === 2 || colorType === 6, true, `unsupported screenshot color type ${colorType}`);
+  assert.equal(interlace, 0, 'interlaced screenshots are unsupported');
+
+  const compressed = Buffer.concat(chunks.filter((chunk) => chunk.type === 'IDAT').map((chunk) => chunk.data));
+  const raw = inflateSync(compressed);
+  const bytesPerPixel = colorType === 6 ? 4 : 3;
+  const stride = width * bytesPerPixel;
+  const decoded = Buffer.alloc(width * height * bytesPerPixel);
+  let inputOffset = 0;
+  for (let y = 0; y < height; y += 1) {
+    const filter = raw[inputOffset];
+    inputOffset += 1;
+    const row = raw.subarray(inputOffset, inputOffset + stride);
+    inputOffset += stride;
+    const outRow = decoded.subarray(y * stride, (y + 1) * stride);
+    const prevRow = y === 0 ? null : decoded.subarray((y - 1) * stride, y * stride);
+    for (let x = 0; x < stride; x += 1) {
+      const left = x >= bytesPerPixel ? outRow[x - bytesPerPixel] : 0;
+      const up = prevRow ? prevRow[x] : 0;
+      const upLeft = prevRow && x >= bytesPerPixel ? prevRow[x - bytesPerPixel] : 0;
+      if (filter === 0) outRow[x] = row[x];
+      else if (filter === 1) outRow[x] = (row[x] + left) & 255;
+      else if (filter === 2) outRow[x] = (row[x] + up) & 255;
+      else if (filter === 3) outRow[x] = (row[x] + Math.floor((left + up) / 2)) & 255;
+      else if (filter === 4) {
+        const p = left + up - upLeft;
+        const pa = Math.abs(p - left);
+        const pb = Math.abs(p - up);
+        const pc = Math.abs(p - upLeft);
+        const predictor = pa <= pb && pa <= pc ? left : pb <= pc ? up : upLeft;
+        outRow[x] = (row[x] + predictor) & 255;
+      } else {
+        throw new Error(`Unsupported PNG filter ${filter}`);
+      }
+    }
+  }
+  const pixels = Buffer.alloc(width * height * 4);
+  for (let source = 0, target = 0; source < decoded.length; source += bytesPerPixel, target += 4) {
+    pixels[target] = decoded[source];
+    pixels[target + 1] = decoded[source + 1];
+    pixels[target + 2] = decoded[source + 2];
+    pixels[target + 3] = colorType === 6 ? decoded[source + 3] : 255;
+  }
+  return { width, height, pixels };
+}
+
+function screenshotBandStats(image, rect, brightThreshold = 52) {
+  let total = 0;
+  let sum = 0;
+  let bright = 0;
+  for (let y = rect.y; y < rect.y + rect.height; y += 1) {
+    for (let x = rect.x; x < rect.x + rect.width; x += 1) {
+      const offset = (y * image.width + x) * 4;
+      if (image.pixels[offset + 3] <= 16) continue;
+      const luma = (image.pixels[offset] * 0.2126) + (image.pixels[offset + 1] * 0.7152) + (image.pixels[offset + 2] * 0.0722);
+      total += 1;
+      sum += luma;
+      if (luma > brightThreshold) bright += 1;
+    }
+  }
+  return { mean: sum / total, brightRatio: bright / total };
 }
 
 async function assertMetaListReachesDock(page, selector, label) {
@@ -367,6 +449,131 @@ async function assertCombatDockSafeArea(page) {
   );
 }
 
+async function assertActionDockGeneratedConsoleSurface(page) {
+  const surface = await page.locator('.action-panel').evaluate(async (node) => {
+    async function analyzeGeneratedDockImage(backgroundImage) {
+      const url = backgroundImage.match(/url\(["']?([^"')]+)["']?\)/)?.[1];
+      if (!url) return { url: null, loaded: false, width: 0, height: 0 };
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      const loaded = new Promise((resolve) => {
+        image.onload = () => resolve(true);
+        image.onerror = () => resolve(false);
+      });
+      image.src = url;
+      if (!await loaded) return { url, loaded: false, width: 0, height: 0 };
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext('2d');
+      context.drawImage(image, 0, 0);
+
+      function bandStats(rect, brightThreshold) {
+        const pixels = context.getImageData(rect.x, rect.y, rect.width, rect.height).data;
+        let total = 0;
+        let bright = 0;
+        let alpha = 0;
+        for (let index = 0; index < pixels.length; index += 4) {
+          if (pixels[index + 3] > 16) alpha += 1;
+          if (pixels[index + 3] <= 220) continue;
+          const luma = (pixels[index] * 0.2126) + (pixels[index + 1] * 0.7152) + (pixels[index + 2] * 0.0722);
+          total += 1;
+          if (luma > brightThreshold) bright += 1;
+        }
+        return {
+          alphaRatio: alpha / (rect.width * rect.height),
+          brightRatio: bright / total
+        };
+      }
+
+      const dockTopEdgeBand = bandStats({ x: 40, y: 0, width: 350, height: 18 }, 52);
+      const dockBodyBand = bandStats({ x: 40, y: 24, width: 350, height: 18 }, 52);
+      return { url, loaded: true, width: image.naturalWidth, height: image.naturalHeight, dockTopEdgeBand, dockBodyBand };
+    }
+
+    const before = getComputedStyle(node, '::before');
+    return {
+      beforeBackgroundImage: before.backgroundImage,
+      beforeBackgroundSize: before.backgroundSize,
+      beforeBackgroundPosition: before.backgroundPosition,
+      beforeBorderTopWidth: before.borderTopWidth,
+      beforeBorderTopStyle: before.borderTopStyle,
+      image: await analyzeGeneratedDockImage(before.backgroundImage)
+    };
+  });
+  assert.match(surface.beforeBackgroundImage, /reboot-combat-action-dock/, `action dock lacks generated console art: ${JSON.stringify(surface)}`);
+  assert.equal(surface.beforeBackgroundSize, '100% 100%', `action dock generated art no longer fills dock: ${JSON.stringify(surface)}`);
+  assert.match(surface.beforeBackgroundPosition, /50% 100%|center bottom/, `action dock generated art position changed: ${JSON.stringify(surface)}`);
+  assert.equal(surface.beforeBorderTopWidth, '0px', `action dock still uses css top border: ${JSON.stringify(surface)}`);
+  assert.equal(surface.beforeBorderTopStyle, 'none', `action dock still has css border style: ${JSON.stringify(surface)}`);
+  assert.equal(surface.image.loaded, true, `action dock generated image failed to load: ${JSON.stringify(surface)}`);
+  assert.equal(surface.image.width === 430 && surface.image.height === 128, true, `action dock generated image dimensions changed: ${JSON.stringify(surface)}`);
+  assert.equal(surface.image.dockTopEdgeBand.alphaRatio > 0.98, true, `action dock generated top divider is too transparent: ${JSON.stringify(surface)}`);
+  assert.equal(surface.image.dockTopEdgeBand.brightRatio > 0.32, true, `action dock generated top divider lacks edge highlights: ${JSON.stringify(surface)}`);
+  assert.equal(
+    surface.image.dockBodyBand.brightRatio < surface.image.dockTopEdgeBand.brightRatio - 0.08,
+    true,
+    `action dock generated top divider does not separate from body: ${JSON.stringify(surface)}`
+  );
+}
+
+async function assertActionDockRenderedBoundaryScreenshot(page) {
+  const panel = await page.locator('.action-panel').evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    return {
+      x: Math.round(rect.left),
+      y: Math.round(rect.top),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    };
+  });
+  const clip = {
+    x: panel.x,
+    y: panel.y,
+    width: panel.width,
+    height: Math.min(panel.height, 64)
+  };
+  const qaDockSurfaceStyle = await page.addStyleTag({
+    content: 'body[data-qa-action-dock-surface="true"] .action-panel::after { display: none !important; }'
+  });
+  await page.locator('body').evaluate((node) => {
+    node.dataset.qaActionDockSurface = 'true';
+  });
+  const previousVisibility = await page.locator('.action-panel > *').evaluateAll((elements) => (
+    elements.map((element) => {
+      const visibility = element.style.visibility;
+      element.style.visibility = 'hidden';
+      return visibility;
+    })
+  ));
+
+  try {
+    const image = parseScreenshotPng(await page.screenshot({ clip, scale: 'css' }));
+    const sampleX = Math.min(40, Math.max(10, Math.floor(image.width * 0.1)));
+    const sampleWidth = image.width - (sampleX * 2);
+    const renderedTopEdgeBand = screenshotBandStats(image, { x: sampleX, y: 0, width: sampleWidth, height: 18 }, 52);
+    const renderedBodyBand = screenshotBandStats(image, { x: sampleX, y: 24, width: sampleWidth, height: 18 }, 52);
+
+    assert.equal(image.width >= 300 && image.height >= 56, true, `rendered action dock screenshot is too small: ${JSON.stringify({ panel, image })}`);
+    assert.equal(renderedTopEdgeBand.mean > 40, true, `rendered action dock top edge is too flat or hidden: ${JSON.stringify({ panel, renderedTopEdgeBand, renderedBodyBand })}`);
+    assert.equal(
+      renderedTopEdgeBand.mean > renderedBodyBand.mean + 8,
+      true,
+      `rendered action dock boundary does not separate from body: ${JSON.stringify({ panel, renderedTopEdgeBand, renderedBodyBand })}`
+    );
+  } finally {
+    await page.locator('.action-panel > *').evaluateAll((elements, visibilities) => {
+      elements.forEach((element, index) => {
+        element.style.visibility = visibilities[index] ?? '';
+      });
+    }, previousVisibility);
+    await page.locator('body').evaluate((node) => {
+      delete node.dataset.qaActionDockSurface;
+    });
+    await qaDockSurfaceStyle.evaluate((node) => node.remove());
+  }
+}
+
 async function assertCombatToastClearsDock(page) {
   const geometry = await page.evaluate(() => {
     const toast = document.querySelector('.toast');
@@ -679,6 +886,8 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#bossMeter').isVisible(), false);
   assert.notEqual(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await assertCombatDockSafeArea(page);
+  await assertActionDockGeneratedConsoleSurface(page);
+  await assertActionDockRenderedBoundaryScreenshot(page);
   await assertCombatToastClearsDock(page);
   await assertRewardToastGeneratedSurface(page);
   await assertReadyRescueUsesGeneratedStateArt(page);

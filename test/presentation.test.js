@@ -4320,6 +4320,8 @@ test('combat HUD brand reads as a generated operation badge, not a web header', 
 
 test('combat shell chrome renders the generated action dock as a full command console', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+  const assets = await readFile('test/assets.test.js', 'utf8');
 
   for (const marker of [
     '--combat-hud-row: clamp(72px, 22.33vw, 96px);',
@@ -4332,13 +4334,31 @@ test('combat shell chrome renders the generated action dock as a full command co
     'background-position: center bottom;',
     'background-size: 100% 100%;',
     'opacity: 0.92;',
-    'border-top: 1px solid rgba(244, 201, 93, 0.22);',
-    'min-height: clamp(48px, 13.02vw, 56px);'
+    'min-height: clamp(48px, 13.02vw, 56px);',
+    'async function assertActionDockGeneratedConsoleSurface(page)',
+    'beforeBorderTopWidth',
+    'beforeBorderTopStyle',
+    'combat action dock generated asset keeps a visible top divider without css border',
+    'dockTopEdgeBand',
+    'async function analyzeGeneratedDockImage',
+    'async function assertActionDockRenderedBoundaryScreenshot(page)',
+    "page.screenshot({ clip, scale: 'css' })",
+    "page.locator('.action-panel > *').evaluateAll",
+    "element.style.visibility = 'hidden'",
+    'previousVisibility',
+    'data-qa-action-dock-surface',
+    '.action-panel::after { display: none !important; }',
+    'renderedTopEdgeBand',
+    'renderedBodyBand',
+    'renderedTopEdgeBand.mean > renderedBodyBand.mean + 8'
   ]) {
-    assert.equal(css.includes(marker), true, marker);
+    assert.equal(`${css}\n${qa}\n${assets}`.includes(marker), true, marker);
   }
 
   assert.equal(css.includes('body[data-app-screen="battle"] .hud::before {\n  background-image: var(--combat-hud-frame);'), true);
+  const actionDockBlock = cssRuleBlock(css, 'body[data-app-screen="battle"] .action-panel::before');
+  assert.equal(actionDockBlock.includes('border-top:'), false, 'action dock edge should come from generated chrome, not a css panel rule');
+  assert.equal(actionDockBlock.includes('border:'), false, 'action dock generated chrome should not use css border edging');
 });
 
 test('first combat command state covers empty dock sockets with a generated one-button shroud', async () => {

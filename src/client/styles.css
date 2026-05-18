@@ -442,7 +442,6 @@ body[data-app-screen="battle"] .action-panel::before {
   background-position: center bottom;
   background-size: 100% 100%;
   opacity: 0.92;
-  border-top: 1px solid rgba(244, 201, 93, 0.22);
 }
 
 body[data-app-screen="battle"] .action-panel:has(.primary-actions[data-open-count="1"])::after {

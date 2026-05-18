@@ -1201,6 +1201,17 @@ test('combat action dock fills the command row with generated console art', asyn
   assert.equal(rightEdge.mean < 28, true, `action dock right edge looks clipped: ${rightEdge.mean}`);
 });
 
+test('combat action dock generated asset keeps a visible top divider without css border', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-combat-action-dock.png'));
+  const dockTopEdgeBand = luminanceStats(image, { x: 40, y: 0, width: 350, height: 18 }, 52);
+  const dockBodyBand = luminanceStats(image, { x: 40, y: 24, width: 350, height: 18 }, 52);
+  const edgeCoverage = alphaCoverage(image, { x: 40, y: 0, width: 350, height: 18 }, 16);
+
+  assert.equal(edgeCoverage > 0.98, true, `action dock top divider is not opaque enough: ${edgeCoverage}`);
+  assert.equal(dockTopEdgeBand.brightRatio > 0.32, true, `action dock top divider lacks generated edge highlights: ${dockTopEdgeBand.brightRatio}`);
+  assert.equal(dockBodyBand.brightRatio < dockTopEdgeBand.brightRatio - 0.08, true, `action dock top divider does not separate from body: ${JSON.stringify({ dockTopEdgeBand, dockBodyBand })}`);
+});
+
 test('combat first command dock cover hides empty lower sockets during one-button onboarding', async () => {
   const image = parsePng(await readFile('src/client/assets/generated/reboot-combat-first-command-dock.png'));
   assert.equal(image.width, 390);
