@@ -222,6 +222,76 @@ async function assertBannerOverlayClear(page, selector, label) {
   assert.equal(overlay.webkitBackdropFilter, 'none', `${label} banner overlay still uses webkit backdrop filter: ${JSON.stringify(overlay)}`);
 }
 
+async function assertResultGeneratedCopySurfaces(page) {
+  const copySurfaces = await page.locator('#resultTitle, #resultReason, #resultNextGoal').evaluateAll((nodes) => nodes.map((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    return {
+      text: node.textContent?.trim(),
+      backgroundImage: style.backgroundImage,
+      backgroundSize: style.backgroundSize,
+      boxShadow: style.boxShadow,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      left: Math.round(rect.left),
+      right: Math.round(rect.right),
+      top: Math.round(rect.top),
+      bottom: Math.round(rect.bottom),
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight
+    };
+  }));
+  assert.equal(copySurfaces.length, 3, `result copy surface count changed: ${JSON.stringify(copySurfaces)}`);
+  for (const surface of copySurfaces) {
+    assert.match(surface.backgroundImage, /reboot-result-copy-plates/, `result copy lacks generated plate: ${JSON.stringify(surface)}`);
+    assert.equal(surface.backgroundSize, '200% 100%', `result copy plate sizing changed: ${JSON.stringify(surface)}`);
+    assert.equal(surface.boxShadow, 'none', `result copy still has css shadow surface: ${JSON.stringify(surface)}`);
+    assert.equal(surface.width > 0 && surface.height >= 30, true, `result copy collapsed: ${JSON.stringify(surface)}`);
+    assert.equal(surface.left >= 0 && surface.right <= surface.viewportWidth, true, `result copy leaves viewport: ${JSON.stringify(surface)}`);
+    assert.equal(surface.top >= 0 && surface.bottom <= surface.viewportHeight, true, `result copy leaves vertical viewport: ${JSON.stringify(surface)}`);
+  }
+
+  const highlightSurfaces = await page.locator('.result-highlights span').evaluateAll((nodes) => nodes.map((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    return {
+      text: node.textContent?.trim(),
+      backgroundImage: style.backgroundImage,
+      backgroundSize: style.backgroundSize,
+      boxShadow: style.boxShadow,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    };
+  }));
+  assert.equal(highlightSurfaces.length >= 1, true, `result highlight density changed: ${JSON.stringify(highlightSurfaces)}`);
+  for (const surface of highlightSurfaces) {
+    assert.match(surface.backgroundImage, /reboot-result-detail-strips/, `result highlight lacks generated strip: ${JSON.stringify(surface)}`);
+    assert.equal(surface.backgroundSize, '200% 100%', `result highlight strip sizing changed: ${JSON.stringify(surface)}`);
+    assert.equal(surface.boxShadow, 'none', `result highlight still has css shadow surface: ${JSON.stringify(surface)}`);
+    assert.equal(surface.width > 0 && surface.height >= 44, true, `result highlight collapsed: ${JSON.stringify(surface)}`);
+  }
+
+  const rewardSurface = await page.locator('.result-reward').evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    const before = getComputedStyle(node, '::before');
+    const after = getComputedStyle(node, '::after');
+    return {
+      backgroundImage: style.backgroundImage,
+      boxShadow: style.boxShadow,
+      beforeBackgroundImage: before.backgroundImage,
+      afterBackgroundImage: after.backgroundImage,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    };
+  });
+  assert.equal(rewardSurface.backgroundImage, 'none', `result reward should not reuse detail strip: ${JSON.stringify(rewardSurface)}`);
+  assert.equal(rewardSurface.boxShadow, 'none', `result reward still has css shadow surface: ${JSON.stringify(rewardSurface)}`);
+  assert.match(rewardSurface.beforeBackgroundImage, /reboot-result-reward-capsules/, `result reward lacks left generated capsule: ${JSON.stringify(rewardSurface)}`);
+  assert.match(rewardSurface.afterBackgroundImage, /reboot-result-reward-capsules/, `result reward lacks right generated capsule: ${JSON.stringify(rewardSurface)}`);
+  assert.equal(rewardSurface.width > 0 && rewardSurface.height >= 68, true, `result reward collapsed: ${JSON.stringify(rewardSurface)}`);
+}
+
 async function assertOperationCopyClearsProgressRail(page) {
   const geometry = await page.evaluate(() => {
     const copyNodes = [...document.querySelectorAll('#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p')];
@@ -521,6 +591,7 @@ async function verifyFastPlaythrough(page) {
   assert.equal(await page.locator('#resultLobbyButton span').textContent(), '보상 수령');
   assert.equal(await page.locator('#resultLobbyButton').getAttribute('aria-label'), '받을 미션 보상 수령');
   assert.equal(await page.locator('#resultLobbyButton').getAttribute('data-result-open'), 'claim-missions');
+  await assertResultGeneratedCopySurfaces(page);
   assert.match(
     await page.locator('.result-panel').evaluate((node) => getComputedStyle(node, '::after').backgroundImage),
     /reboot-result-badges/
@@ -534,6 +605,31 @@ async function verifyFastPlaythrough(page) {
   assert.match(await page.locator('#rewardReveal').textContent(), /미션 보상/);
   assert.match(await page.locator('#seasonList').textContent(), /수령/);
   assert.match(await page.locator('#missionsList .mission-card').first().textContent(), /받음/);
+}
+
+async function verifyCompactResult(page) {
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page.goto(withParam(baseUrl, 'qaFast', '1'), { waitUntil: 'load' });
+  await page.getByRole('button', { name: '시작' }).click();
+  await page.getByRole('button', { name: '첫 구원 작전 시작' }).click();
+  await page.locator('#summonButton').waitFor({ state: 'visible' });
+
+  const deadline = Date.now() + 12000;
+  while (Date.now() < deadline) {
+    if (await page.locator('#resultTitle').isVisible()) break;
+    if (await page.locator('#rescueButton').isEnabled()) {
+      await page.locator('#rescueButton').click();
+    } else if (await page.locator('#mergeButton').isEnabled()) {
+      await page.locator('#mergeButton').click();
+    } else if (await page.locator('#summonButton').isEnabled()) {
+      await page.locator('#summonButton').click();
+    }
+    await page.waitForTimeout(20);
+  }
+
+  assert.equal(await page.locator('#resultTitle').isVisible(), true, 'compact result should be reached');
+  assert.equal(await page.locator('#resultTitle').textContent(), '승리');
+  await assertResultGeneratedCopySurfaces(page);
 }
 
 async function main() {
@@ -561,6 +657,16 @@ async function main() {
       const page = await context.newPage();
       await verifyCompactLobby(page);
       await verifyCompactMeta(page);
+      await context.addInitScript(() => {
+        if (new URLSearchParams(location.search).get('qaFast') !== '1') return;
+        let frameNow = 0;
+        window.requestAnimationFrame = (callback) => {
+          frameNow += 80;
+          return window.setTimeout(() => callback(frameNow), 1);
+        };
+        window.cancelAnimationFrame = (id) => window.clearTimeout(id);
+      });
+      await verifyCompactResult(page);
       await assertNoErrors(errors, `compact lobby ${viewport.width}x${viewport.height}`);
       await context.close();
       console.log(`ok compact-lobby ${viewport.width}x${viewport.height}`);

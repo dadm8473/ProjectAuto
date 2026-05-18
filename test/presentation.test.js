@@ -2146,7 +2146,7 @@ test('result highlights use generated strip frames while reward uses a loot caps
 
   for (const marker of [
     '--result-detail-strips: url("/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail-alpha1")',
-    '.result-highlights span,\n.result-reward',
+    '.result-highlights span {',
     'background-image: var(--result-detail-strips);',
     'background-size: 200% 100%;',
     'min-height: 48px;',
@@ -2157,18 +2157,19 @@ test('result highlights use generated strip frames while reward uses a loot caps
     assert.equal(css.includes(marker), true, marker);
   }
 
-  const sharedStripBlock = css.slice(
-    css.indexOf('.result-highlights span,\n.result-reward'),
-    css.indexOf('.result-reward::before')
-  );
+  const sharedStripBlock = cssRuleBlockAfter(css, '.result-highlights span', css.indexOf('.result-highlights {'));
   const rewardStart = css.indexOf('\n.result-reward {', css.indexOf('.result-medal[data-result-medal="tactics"]'));
   assert.notEqual(rewardStart, -1, '.result-reward block is missing');
   const rewardEnd = css.indexOf('\n}', rewardStart);
   const rewardBlock = css.slice(rewardStart, rewardEnd + 2);
   assert.equal(sharedStripBlock.includes('background: rgba(88, 215, 255, 0.1);'), false);
   assert.equal(sharedStripBlock.includes('border: 1px solid rgba(88, 215, 255, 0.22);'), false);
+  assert.equal(sharedStripBlock.includes('.result-reward'), false);
   assert.equal(rewardBlock.includes('display: grid;'), true);
+  assert.equal(rewardBlock.includes('background: transparent;'), true);
   assert.equal(rewardBlock.includes('background-image: none;'), true);
+  assert.equal(rewardBlock.includes('background-image: var(--result-detail-strips);'), false);
+  assert.equal(rewardBlock.includes('box-shadow: none;'), true);
 });
 
 test('result highlights use generated run medal badges instead of text-only callouts', async () => {
@@ -2259,16 +2260,41 @@ test('result debrief copy plates protect text from generated finale effects', as
     '#resultTitle,\n#resultReason,\n#resultNextGoal',
     'z-index: 3;',
     '-webkit-text-stroke: 1px rgba(0, 0, 0, 0.24);',
-    'box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.52), 0 8px 16px rgba(0, 0, 0, 0.28);',
-    '.result-highlights span,\n.result-reward',
-    'box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.46), 0 6px 14px rgba(0, 0, 0, 0.24);'
+    'background-image: var(--result-copy-plates);',
+    '.result-highlights span {',
+    'background-image: var(--result-detail-strips);'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
 
   const copyBlock = css.slice(css.indexOf('#resultTitle'), css.indexOf('.result-actions'));
+  const copySurfaceBlock = cssRuleBlockAfter(
+    css,
+    '#resultTitle,\n#resultReason,\n#resultNextGoal',
+    css.indexOf('#resultNextGoal {\n  font-size: 12px;')
+  );
+  const detailStripBlock = cssRuleBlockAfter(css, '.result-highlights span', css.indexOf('.result-highlights {'));
   assert.equal(copyBlock.includes('linear-gradient'), false);
   assert.equal(copyBlock.includes('backdrop-filter'), false);
+  assert.equal(copySurfaceBlock.includes('box-shadow: none;'), true);
+  assert.equal(detailStripBlock.includes('box-shadow: none;'), true);
+  assert.equal(detailStripBlock.includes('.result-reward'), false);
+  assert.equal(copyBlock.includes('box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.52), 0 8px 16px rgba(0, 0, 0, 0.28);'), false);
+  assert.equal(detailStripBlock.includes('box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.46), 0 6px 14px rgba(0, 0, 0, 0.24);'), false);
+});
+
+test('browser QA covers generated result copy surfaces on short phones', async () => {
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    'async function verifyCompactResult(page)',
+    "await page.goto(withParam(baseUrl, 'qaFast', '1'), { waitUntil: 'load' });",
+    'await assertResultGeneratedCopySurfaces(page);',
+    "await page.setViewportSize({ width: 320, height: 568 });",
+    'await verifyCompactResult(page);'
+  ]) {
+    assert.equal(qa.includes(marker), true, marker);
+  }
 });
 
 test('shop equipped cosmetics use generated expression aura instead of inert owned buttons', async () => {
