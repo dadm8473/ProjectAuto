@@ -286,7 +286,18 @@ test('combat action exposure counts only visible learned commands for console st
   }).openCount, 3);
 });
 
-test('combat action exposure keeps rescue locked during minor early partner danger', () => {
+test('combat action exposure collapses back to one cooldown command when no useful action is available', () => {
+  assert.deepEqual(buildCombatActionExposure({
+    current: {
+      ...state({ now: 82, p2Danger: 35, p1Units: [{ id: 'merged', grade: 2 }] }),
+      resources: { p1: { summon: 0, rescue: 0 } }
+    },
+    localBoardId: 'p1',
+    actions: { summon: { enabled: false }, merge: { enabled: false }, rescue: { enabled: false } }
+  }), { summon: true, merge: false, rescue: false, focus: 'summon', openCount: 1 });
+});
+
+test('combat action exposure keeps inactive tactical verbs hidden during minor early partner danger', () => {
   assert.deepEqual(buildCombatActionExposure({
     current: {
       ...state({ now: 18, p2Danger: 29 }),
@@ -294,7 +305,7 @@ test('combat action exposure keeps rescue locked during minor early partner dang
     },
     localBoardId: 'p1',
     actions: { summon: { enabled: true }, merge: { enabled: false }, rescue: { enabled: false } }
-  }), { summon: true, merge: true, rescue: false, focus: 'summon', openCount: 2 });
+  }), { summon: true, merge: false, rescue: false, focus: 'summon', openCount: 1 });
 });
 
 test('locked merge action reason names grade-one merge candidates', () => {

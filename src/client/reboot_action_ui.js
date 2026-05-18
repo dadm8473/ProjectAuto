@@ -5,13 +5,21 @@ const BOSS_DECISION_END = 102;
 const RESCUE_DANGER_CUE = 70;
 const SUMMON_COACH_END = 16;
 const MERGE_COACH_END = 64;
-const MERGE_EXPOSURE_TIME = 18;
-const RESCUE_EXPOSURE_TIME = 58;
 const BASE_COMMAND_LABELS = {
   summon: '소환',
   merge: '합성',
   rescue: '구원'
 };
+
+function hasMergePotential(board) {
+  const counts = new Map();
+  for (const unit of board.units ?? []) {
+    const grade = Number(unit.grade ?? 1);
+    if (grade >= 2) continue;
+    counts.set(grade, (counts.get(grade) ?? 0) + 1);
+  }
+  return [...counts.values()].some((count) => count >= REBOOT_RULES.merge.requiredSameGrade);
+}
 
 function summonCooldownLabel(current, localBoardId) {
   const resources = current.resources?.[localBoardId] ?? { summon: 0 };
@@ -25,9 +33,8 @@ export function buildCombatActionExposure({ current, localBoardId, actions }) {
   const board = current.boards?.[localBoardId] ?? current.boards?.p1 ?? { units: [] };
   const partner = localBoardId === 'p1' ? 'p2' : 'p1';
   const partnerDanger = current.boards?.[partner]?.danger ?? 0;
-  const resources = current.resources?.[localBoardId] ?? { rescue: 0 };
-  const merge = Boolean(actions.merge?.enabled) || (board.units?.length ?? 0) >= 2 || current.now >= MERGE_EXPOSURE_TIME;
-  const rescue = Boolean(actions.rescue?.enabled) || partnerDanger >= RESCUE_DANGER_CUE || (resources.rescue ?? 0) > 0 || current.now >= RESCUE_EXPOSURE_TIME;
+  const merge = Boolean(actions.merge?.enabled) || hasMergePotential(board);
+  const rescue = Boolean(actions.rescue?.enabled) || partnerDanger >= RESCUE_DANGER_CUE;
   let focus = 'summon';
   if (rescue && (partnerDanger >= RESCUE_DANGER_CUE || actions.rescue?.enabled)) focus = 'rescue';
   else if (merge && actions.merge?.enabled) focus = 'merge';

@@ -114,7 +114,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   for (const marker of [
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=merge-reason1'",
-    "from './reboot_action_ui.js?v=command-cooldown1'",
+    "from './reboot_action_ui.js?v=action-simplify1'",
     "from './reboot_render.js?v=unit-roster1'",
     "from './reboot_screens.js?v=objective-counter-plate1'",
     "from './reboot_online.js'"
@@ -672,7 +672,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=command-cooldown1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-simplify1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=command-cooldown1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shell-backdrop1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=screen-lighting1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-copy1"></script>'), false);
@@ -1222,7 +1223,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
   assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::before'), false);
 
   for (const marker of [
-    "from './reboot_action_ui.js?v=command-cooldown1'",
+    "from './reboot_action_ui.js?v=action-simplify1'",
     'buildCombatCoachCue',
     'buildCombatCommandLabels',
     'buildCombatStatusPrompt',
@@ -1530,6 +1531,28 @@ test('browser QA verifies first combat tap removes routine status copy', async (
     'assert.equal(cooldown.textFits, true',
     'assert.equal(cooldown.textNotClipped, true',
     'await assertFirstSummonTapFeedback(page);'
+  ]) {
+    assert.equal(qa.includes(marker), true, marker);
+  }
+});
+
+test('browser QA verifies post-rescue state returns to one summon command', async () => {
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    'async function assertPostRescueCommandCollapse(page)',
+    "document.querySelector('.primary-actions')?.dataset.openCount === '1'",
+    "assert.equal(collapse.primary.openCount, '1'",
+    "assert.equal(collapse.primary.focus, 'summon'",
+    'const summonCoolingDown = /소환\\s+\\d+초/.test(collapse.summon.text);',
+    "const summonReady = collapse.summon.text === '소환';",
+    'assert.equal(summonCoolingDown || summonReady, true',
+    'const mergeReadyBeforeRescue = await page.locator(\'#mergeButton\').isEnabled();',
+    'if (mergeReadyBeforeRescue) {',
+    "events.push(`merge@${seconds}`);",
+    'assert.equal(collapse.merge.hidden, true',
+    'assert.equal(collapse.rescue.hidden, true',
+    'await assertPostRescueCommandCollapse(page);'
   ]) {
     assert.equal(qa.includes(marker), true, marker);
   }

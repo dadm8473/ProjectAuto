@@ -69,12 +69,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v2');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v3');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/app.js?v=command-cooldown1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=command-cooldown1'))
+      '/src/client/app.js?v=action-simplify1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=action-simplify1'))
+        : false,
+      '/src/client/reboot_action_ui.js?v=action-simplify1': cache
+        ? Boolean(await cache.match('/src/client/reboot_action_ui.js?v=action-simplify1'))
         : false,
       '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1'))
@@ -92,7 +95,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v2', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v3', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1421,6 +1424,47 @@ async function assertFirstSummonTapFeedback(page) {
   assert.equal(cooldown.spanOpacity >= 0.98, true, `cooldown label is faded: ${JSON.stringify(cooldown)}`);
 }
 
+async function assertPostRescueCommandCollapse(page) {
+  await page.waitForFunction(() => document.querySelector('.primary-actions')?.dataset.openCount === '1');
+  const collapse = await page.evaluate(() => {
+    const readButton = (selector) => {
+      const button = document.querySelector(selector);
+      const span = button?.querySelector('span');
+      const rect = button?.getBoundingClientRect();
+      const style = button ? getComputedStyle(button) : null;
+      return {
+        text: span?.textContent?.trim() ?? '',
+        disabled: button?.disabled ?? true,
+        unlocked: button?.dataset.unlocked ?? '',
+        focus: button?.dataset.focus ?? '',
+        display: style?.display ?? '',
+        hidden: !rect || rect.width <= 1 || rect.height <= 1 || style?.display === 'none'
+      };
+    };
+    const primary = document.querySelector('.primary-actions');
+    return {
+      primary: {
+        openCount: primary?.dataset.openCount ?? '',
+        focus: primary?.dataset.focus ?? ''
+      },
+      summon: readButton('#summonButton'),
+      merge: readButton('#mergeButton'),
+      rescue: readButton('#rescueButton')
+    };
+  });
+  assert.equal(collapse.primary.openCount, '1', `post-rescue dock should collapse: ${JSON.stringify(collapse)}`);
+  assert.equal(collapse.primary.focus, 'summon', `post-rescue dock should return to summon: ${JSON.stringify(collapse)}`);
+  const summonCoolingDown = /소환\s+\d+초/.test(collapse.summon.text);
+  const summonReady = collapse.summon.text === '소환';
+  assert.equal(summonCoolingDown || summonReady, true, `summon command should stay readable: ${JSON.stringify(collapse)}`);
+  if (summonCoolingDown) {
+    assert.equal(collapse.summon.disabled, true, `summon cooldown should be locked briefly: ${JSON.stringify(collapse)}`);
+  }
+  assert.equal(collapse.summon.hidden, false, `summon cooldown command disappeared: ${JSON.stringify(collapse)}`);
+  assert.equal(collapse.merge.hidden, true, `inactive merge should not stay as a mobile command: ${JSON.stringify(collapse)}`);
+  assert.equal(collapse.rescue.hidden, true, `spent rescue should not stay as a mobile command: ${JSON.stringify(collapse)}`);
+}
+
 async function verifyShell(page, viewport) {
   await page.goto(baseUrl, { waitUntil: 'load' });
   await page.locator('#loadingGate').waitFor({ state: 'hidden' });
@@ -1578,14 +1622,26 @@ async function verifyFastPlaythrough(page) {
   await page.locator('#summonButton').waitFor({ state: 'visible' });
 
   const events = [];
+  let postRescueCollapseChecked = false;
   const deadline = Date.now() + 12000;
   while (Date.now() < deadline) {
     if (await page.locator('#resultTitle').isVisible()) break;
     const timeText = await page.locator('#timeMeter').textContent();
     const seconds = Number.parseInt(timeText ?? '0', 10) || 0;
     if (await page.locator('#rescueButton').isEnabled()) {
+      const mergeReadyBeforeRescue = await page.locator('#mergeButton').isEnabled();
+      if (mergeReadyBeforeRescue) {
+        await page.locator('#mergeButton').click();
+        events.push(`merge@${seconds}`);
+        await page.waitForTimeout(20);
+        continue;
+      }
       await page.locator('#rescueButton').click();
       events.push(`rescue@${seconds}`);
+      if (!postRescueCollapseChecked) {
+        await assertPostRescueCommandCollapse(page);
+        postRescueCollapseChecked = true;
+      }
     } else if (await page.locator('#mergeButton').isEnabled()) {
       await page.locator('#mergeButton').click();
       events.push(`merge@${seconds}`);
@@ -1611,6 +1667,7 @@ async function verifyFastPlaythrough(page) {
     /reboot-result-badges/
   );
   assert.equal(events.filter((entry) => entry.startsWith('rescue@')).length, 1, events.join(', '));
+  assert.equal(postRescueCollapseChecked, true, events.join(', '));
   assert.equal(await page.locator('#resultLobbyButton').isVisible(), true);
   await page.locator('#resultRetryButton').click();
   await page.locator('#seasonList .season-card').first().waitFor({ state: 'visible' });
