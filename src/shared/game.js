@@ -17,7 +17,7 @@ import {
   serializeRebootState,
   summonToy,
   tickRebootGame
-} from './reboot_game.js?v=combat-meter2';
+} from './reboot_game.js?v=boss-vitality1';
 
 let nextId = 1;
 let nextRunId = 1;

@@ -1,4 +1,4 @@
-import { castLinkPulse, createGame, mergeRelays, serializeState, supplyRelay, tickGame } from '../shared/game.js?v=combat-meter2';
+import { castLinkPulse, createGame, mergeRelays, serializeState, supplyRelay, tickGame } from '../shared/game.js?v=boss-vitality1';
 import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
@@ -6,7 +6,7 @@ import { buildRebootActionState, commandForRebootAction } from './reboot_actions
 import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-simplify1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest1';
 import { preloadCriticalRebootAssets } from './reboot_preload.js?v=shell-backdrop1';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=unit-roster1';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=boss-vitality1';
 import {
   buildMetaNavAlerts,
   buildMissionScreen,
@@ -22,7 +22,7 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=combat-meter2';
+} from './reboot_screens.js?v=boss-vitality1';
 import { createRebootOnlineClient } from './reboot_online.js';
 
 const qs = (selector) => document.querySelector(selector);

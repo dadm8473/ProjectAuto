@@ -112,12 +112,12 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
 
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
-    "from '../shared/game.js?v=combat-meter2'",
+    "from '../shared/game.js?v=boss-vitality1'",
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=action-simplify1'",
-    "from './reboot_render.js?v=unit-roster1'",
-    "from './reboot_screens.js?v=combat-meter2'",
+    "from './reboot_render.js?v=boss-vitality1'",
+    "from './reboot_screens.js?v=boss-vitality1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -673,7 +673,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter2"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=boss-vitality1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=command-cooldown1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-focus1"></script>'), false);
@@ -728,7 +729,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=unit-roster1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=boss-vitality1'"), true);
   assert.equal(app.includes("from './reboot_render.js?v=match-banner-cutin1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=action-surges1'"), false);
   assert.equal(app.includes("from './reboot_action_ui.js?v=action-focus2'"), false);
@@ -751,7 +752,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=combat-meter2'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=boss-vitality1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=lobby-focus1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=shelf-price1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-item-status1'"), false);
@@ -4597,15 +4598,15 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     '`전력 ${resources.summon}`',
     "reason: actions.summon ? '소환 가능' : '전력 부족'",
     "return { ok: false, reason: '전력이 부족합니다.' };",
-    "from '../shared/game.js?v=combat-meter2'",
+    "from '../shared/game.js?v=boss-vitality1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=combat-meter2'",
-    "from './reboot_game.js?v=combat-meter2'",
-    "from '../shared/game.js?v=combat-meter2'",
+    "from './reboot_screens.js?v=boss-vitality1'",
+    "from './reboot_game.js?v=boss-vitality1'",
+    "from '../shared/game.js?v=boss-vitality1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=combat-meter2',
-    '/src/shared/game.js?v=combat-meter2',
-    '/src/shared/reboot_game.js?v=combat-meter2'
+    '/src/client/reboot_screens.js?v=boss-vitality1',
+    '/src/shared/game.js?v=boss-vitality1',
+    '/src/shared/reboot_game.js?v=boss-vitality1'
   ]) {
     assert.equal(`${html}\n${app}\n${actions}\n${rebootGame}\n${sharedGame}\n${screens}\n${sw}`.includes(marker), true, marker);
   }
