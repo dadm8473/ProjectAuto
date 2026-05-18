@@ -11,6 +11,9 @@ const viewports = [
   { width: 390, height: 844 },
   { width: 430, height: 932 }
 ];
+const compactLobbyViewports = [
+  { width: 320, height: 568 }
+];
 
 const localChromiumPaths = [
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -143,6 +146,42 @@ async function assertMetaCaptionPlates(page, selector, label, expectedCount = 1)
     assert.equal(caption.left >= 0 && caption.right <= caption.viewportWidth, true, `${label} caption leaves viewport: ${JSON.stringify(caption)}`);
     assert.equal(caption.top >= 0 && caption.bottom <= caption.viewportHeight, true, `${label} caption leaves vertical viewport: ${JSON.stringify(caption)}`);
   }
+}
+
+async function assertOperationCopyClearsProgressRail(page) {
+  const geometry = await page.evaluate(() => {
+    const copyNodes = [...document.querySelectorAll('#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p')];
+    const progress = document.querySelector('#lobbyScreen .operation-progress');
+    if (!copyNodes.length || !progress) {
+      return { missing: true };
+    }
+    const copyRects = copyNodes.map((node) => {
+      const rect = node.getBoundingClientRect();
+      return {
+        text: node.textContent?.trim(),
+        left: Math.round(rect.left),
+        right: Math.round(rect.right),
+        top: Math.round(rect.top),
+        bottom: Math.round(rect.bottom)
+      };
+    });
+    const progressRect = progress.getBoundingClientRect();
+    const copyRight = Math.max(...copyRects.map((rect) => rect.right));
+    return {
+      viewportWidth: window.innerWidth,
+      copyRects,
+      copyRight,
+      progressLeft: Math.round(progressRect.left),
+      progressRight: Math.round(progressRect.right),
+      gap: Math.round(progressRect.left - copyRight)
+    };
+  });
+  assert.equal(geometry.missing, undefined, `operation copy/progress geometry unavailable: ${JSON.stringify(geometry)}`);
+  assert.equal(
+    geometry.gap >= 8,
+    true,
+    `operation copy overlaps progress rail on portrait lobby: ${JSON.stringify(geometry)}`
+  );
 }
 
 async function assertSplashCtaClearsBottomDeck(page) {
@@ -291,6 +330,8 @@ async function verifyShell(page, viewport) {
 
   await page.getByRole('button', { name: '시작' }).click();
   await page.getByRole('button', { name: '첫 구원 작전 시작' }).waitFor({ state: 'visible' });
+  await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'lobby operation copy', 2);
+  await assertOperationCopyClearsProgressRail(page);
   await assertMetaCaptionPlates(page, '#lobbyScreen .lobby-next-state', 'lobby next state', 1);
   assert.equal(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await page.getByRole('button', { name: '유닛' }).click();
@@ -336,6 +377,17 @@ async function verifyShell(page, viewport) {
   await assertCombatToastClearsDock(page);
   await assertInjectedSafeAreaKeepsCombatTouchable(page);
   await assertFirstSummonTapFeedback(page);
+}
+
+async function verifyCompactLobby(page) {
+  await page.goto(baseUrl, { waitUntil: 'load' });
+  await page.locator('#loadingGate').waitFor({ state: 'hidden' });
+  await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
+  assert.equal(await page.locator('audio, video').count(), 0);
+  await page.getByRole('button', { name: '시작' }).click();
+  await page.getByRole('button', { name: '첫 구원 작전 시작' }).waitFor({ state: 'visible' });
+  await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'compact lobby operation copy', 2);
+  await assertOperationCopyClearsProgressRail(page);
 }
 
 async function verifyFastPlaythrough(page) {
@@ -392,6 +444,26 @@ async function main() {
     ...(executablePath ? { executablePath } : {})
   });
   try {
+    for (const viewport of compactLobbyViewports) {
+      const errors = [];
+      const context = await browser.newContext({
+        viewport,
+        deviceScaleFactor: 2,
+        hasTouch: true,
+        isMobile: true
+      });
+      context.on('page', (page) => {
+        page.on('console', (message) => {
+          if (message.type() === 'error') errors.push(message.text());
+        });
+        page.on('pageerror', (error) => errors.push(error.message));
+      });
+      const page = await context.newPage();
+      await verifyCompactLobby(page);
+      await assertNoErrors(errors, `compact lobby ${viewport.width}x${viewport.height}`);
+      await context.close();
+      console.log(`ok compact-lobby ${viewport.width}x${viewport.height}`);
+    }
     for (const viewport of viewports) {
       const errors = [];
       const context = await browser.newContext({

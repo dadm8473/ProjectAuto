@@ -2185,11 +2185,28 @@ body[data-app-screen="season"] .app-screen::after {
   padding: 0 0 18px 18px;
 }
 
+.operation-copy span,
+.operation-copy p {
+  display: inline-grid;
+  place-items: center;
+  justify-self: start;
+  width: max-content;
+  max-width: 100%;
+  min-width: 74px;
+  min-height: 24px;
+  padding: 4px 12px 5px;
+  line-height: 1;
+  background-image: var(--meta-caption-plate);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.44));
+}
+
 .operation-copy span {
   color: rgba(244, 201, 93, 0.94);
   font-size: 11px;
   font-weight: 900;
-  line-height: 1;
 }
 
 .operation-copy strong {
@@ -2199,10 +2216,20 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .operation-copy p {
+  min-width: 148px;
   margin: 0;
   color: rgba(245, 240, 220, 0.8);
   font-size: 12px;
-  line-height: 1;
+}
+
+@media (max-width: 340px) {
+  .operation-copy p {
+    width: 126px;
+    min-width: 126px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.05;
+  }
 }
 
 .screen-overlay button:not([data-nav-icon])::before,

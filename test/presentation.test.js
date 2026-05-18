@@ -3096,6 +3096,30 @@ test('lobby operation card uses a dedicated generated mission poster', async () 
   }
 });
 
+test('lobby operation poster copy uses generated caption plates over the artwork', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  const captionBlock = cssRuleBlock(css, '.operation-copy span,\n.operation-copy p');
+  for (const marker of [
+    'display: inline-grid;',
+    'background-image: var(--meta-caption-plate);',
+    'background-size: 100% 100%;',
+    'min-height: 24px;'
+  ]) {
+    assert.equal(captionBlock.includes(marker), true, marker);
+  }
+  for (const forbidden of [
+    'background-color:',
+    'background: rgba(',
+    'border-radius:',
+    'box-shadow:',
+    'linear-gradient',
+    'backdrop-filter'
+  ]) {
+    assert.equal(captionBlock.includes(forbidden), false, forbidden);
+  }
+});
+
 test('lobby portrait layout budget keeps poster actions and dock from overlapping', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const layout = {
