@@ -293,6 +293,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 300_000
   },
   {
+    path: 'src/client/assets/generated/reboot-app-shell-backdrop.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260518-app-shell-backdrop-imagegen.png',
+    width: 430,
+    height: 932,
+    minRuntimeBytes: 280_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-toast-callouts.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-toast-callouts-imagegen.png',
     width: 1024,
@@ -1295,6 +1302,21 @@ test('screen lighting mattes are generated art, not flat css gradient replacemen
   assert.equal(metaCenter.brightRatio > 0.28, true, `meta lighting is too flat or dark: ${JSON.stringify(metaCenter)}`);
   assert.equal(resultCenter.mean > resultEdge.mean + 52, true, `result lighting lacks warm reward falloff: ${JSON.stringify({ resultCenter, resultEdge })}`);
   assert.equal(resultCenter.brightRatio > 0.72, true, `result lighting lacks readable reward glow: ${JSON.stringify(resultCenter)}`);
+});
+
+test('app shell backdrop is generated mobile scene art, not a flat css gradient', async () => {
+  const shell = parsePng(await readFile('src/client/assets/generated/reboot-app-shell-backdrop.png'));
+
+  assert.equal(shell.width, 430);
+  assert.equal(shell.height, 932);
+
+  const center = luminanceStats(shell, { x: 90, y: 160, width: 250, height: 560 }, 48);
+  const topEdge = luminanceStats(shell, { x: 0, y: 0, width: 430, height: 90 }, 48);
+  const lowerDeck = luminanceStats(shell, { x: 40, y: 705, width: 350, height: 180 }, 48);
+
+  assert.equal(center.mean > topEdge.mean + 18, true, `app shell center lacks generated light falloff: ${JSON.stringify({ center, topEdge })}`);
+  assert.equal(center.brightRatio > 0.2, true, `app shell center is too flat or dark: ${JSON.stringify(center)}`);
+  assert.equal(lowerDeck.mean > 22, true, `app shell lower deck is too empty: ${JSON.stringify(lowerDeck)}`);
 });
 
 test('generated UI frames use alpha instead of baked black rectangles', async () => {

@@ -11,6 +11,7 @@
   --mint: #8ee6d2;
   --app-safe-area-top: env(safe-area-inset-top);
   --app-safe-area-bottom: env(safe-area-inset-bottom);
+  --app-shell-backdrop: url("/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1");
   --lobby-backdrop: url("/src/client/assets/generated/reboot-lobby-backdrop.png");
   --meta-backdrop: url("/src/client/assets/generated/reboot-meta-backdrop.png");
   --result-backdrop: url("/src/client/assets/generated/reboot-result-backdrop.png");
@@ -167,9 +168,11 @@ button:disabled {
   grid-template-rows: calc(var(--combat-hud-row) + var(--app-safe-area-top)) minmax(0, 1fr) calc(var(--combat-action-row) + var(--combat-action-safe-lift) + var(--app-safe-area-bottom));
   overflow: hidden;
   isolation: isolate;
-  background:
-    radial-gradient(circle at 50% 35%, rgba(88, 215, 255, 0.12), transparent 36%),
-    linear-gradient(180deg, #111817, #050808 72%);
+  background-color: #050808;
+  background-image: var(--app-shell-backdrop);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
 }
 
 .loading-gate {
@@ -184,9 +187,7 @@ button:disabled {
   overflow: hidden;
   isolation: isolate;
   background-color: #020707;
-  background-image:
-    linear-gradient(180deg, rgba(4, 10, 11, 0.76), rgba(4, 10, 11, 0.34) 52%, rgba(2, 5, 5, 0.92)),
-    var(--lobby-backdrop);
+  background-image: var(--app-shell-backdrop);
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;

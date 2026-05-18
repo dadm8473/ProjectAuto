@@ -583,7 +583,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-lighting1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shell-backdrop1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-lighting1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=loading-gate1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter-state1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-chip1">'), false);
@@ -667,7 +668,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=screen-lighting1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shell-backdrop1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=screen-lighting1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=loading-gate1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-meter-state1"></script>'), false);
@@ -775,7 +777,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets } from './reboot_preload.js?v=screen-lighting1';",
+    "import { preloadCriticalRebootAssets } from './reboot_preload.js?v=shell-backdrop1';",
     'preloadCriticalRebootAssets().then(hideLoadingGate, hideLoadingGate);',
     'function hideLoadingGate()',
     "dom.loadingGate.dataset.loadingState = 'ready';",
@@ -839,6 +841,24 @@ test('startup uses a generated game loading gate while critical assets warm up',
 
   assert.equal(app.includes("from './reboot_preload.js?v=loading-gate1'"), false);
   assert.equal(app.includes("from './reboot_preload.js?v=loading-gate2'"), false);
+  assert.equal(app.includes("from './reboot_preload.js?v=screen-lighting1'"), false);
+});
+
+test('app shell and loading gate use generated scene art instead of css gradients', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  assert.equal(css.includes('--app-shell-backdrop: url("/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1")'), true);
+
+  const shellBlock = cssRuleBlock(css, '.shell');
+  assert.equal(shellBlock.includes('background-image: var(--app-shell-backdrop);'), true);
+  assert.equal(shellBlock.includes('linear-gradient'), false);
+  assert.equal(shellBlock.includes('radial-gradient'), false);
+
+  const loadingGateBlock = cssRuleBlock(css, '.loading-gate');
+  assert.equal(loadingGateBlock.includes('background-image: var(--app-shell-backdrop);'), true);
+  assert.equal(loadingGateBlock.includes('var(--lobby-backdrop)'), false);
+  assert.equal(loadingGateBlock.includes('linear-gradient'), false);
+  assert.equal(loadingGateBlock.includes('radial-gradient'), false);
 });
 
 test('playtest mode records first-run understanding without adding visible UI', async () => {
@@ -1349,7 +1369,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=screen-lighting1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=shell-backdrop1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=screen-lighting1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=loading-gate1'), false);
 
   const firstDockBlock = cssRuleBlock(css, 'body[data-app-screen="battle"] .action-panel:has(.primary-actions[data-open-count="1"])::after');

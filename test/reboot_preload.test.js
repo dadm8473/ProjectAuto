@@ -38,6 +38,7 @@ test('critical reboot preload includes generated lobby navigation dock assets', 
 
 test('critical reboot preload includes generated meta and result screen lighting mattes', () => {
   const required = [
+    '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1',
     '/src/client/assets/generated/reboot-meta-screen-lighting.png?v=screen-lighting1',
     '/src/client/assets/generated/reboot-result-screen-lighting.png?v=screen-lighting1'
   ];
