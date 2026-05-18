@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v4';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v6';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -42,11 +42,13 @@ test('service worker keeps the installable mobile game shell available after fir
     "caches.match('/index.html')",
     '/manifest.webmanifest',
     '/src/client/styles.css?v=command-cooldown1',
-    '/src/client/app.js?v=lobby-focus1',
+    '/src/client/app.js?v=combat-meter2',
+    '/src/client/reboot_actions.js?v=combat-meter2',
+    '/src/client/reboot_screens.js?v=combat-meter2',
     '/src/client/reboot_action_ui.js?v=action-simplify1',
     '/src/client/reboot_online.js',
-    '/src/shared/game.js',
-    '/src/shared/reboot_game.js',
+    '/src/shared/game.js?v=combat-meter2',
+    '/src/shared/reboot_game.js?v=combat-meter2',
     '/src/shared/reboot_content.js',
     '/src/client/assets/generated/reboot-app-shell-backdrop.png',
     '/src/client/assets/generated/reboot-app-icon-192.png',
@@ -54,6 +56,14 @@ test('service worker keeps the installable mobile game shell available after fir
   ]) {
     assert.equal(sw.includes(marker), true, marker);
   }
+  assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v5';"), false);
+  assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v4';"), false);
+  assert.equal(sw.includes('/src/client/app.js?v=combat-meter1'), false);
+  assert.equal(sw.includes('/src/client/app.js?v=lobby-focus1'), false);
+  assert.equal(sw.includes('/src/client/reboot_actions.js?v=merge-reason1'), false);
+  assert.equal(sw.includes('/src/client/reboot_screens.js?v=lobby-focus1'), false);
+  assert.equal(sw.includes("\n  '/src/shared/game.js',"), false);
+  assert.equal(sw.includes("\n  '/src/shared/reboot_game.js',"), false);
 });
 
 test('every precached service worker URL points to a committed app shell file', async () => {
@@ -75,14 +85,23 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v4'",
+    "cacheName === 'projectauto-reboot-shell-v6'",
     "await cache.match('/index.html')",
-    "await cache.match('/src/client/app.js?v=lobby-focus1')",
-    "await cache.match('/src/client/reboot_screens.js?v=lobby-focus1')",
+    "await cache.match('/src/client/app.js?v=combat-meter2')",
+    "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
+    "await cache.match('/src/client/reboot_screens.js?v=combat-meter2')",
+    "await cache.match('/src/shared/game.js?v=combat-meter2')",
+    "await cache.match('/src/shared/reboot_game.js?v=combat-meter2')",
     "await cache.match('/src/client/reboot_action_ui.js?v=action-simplify1')",
     "await cache.match('/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1')",
     'await verifyInstallableShell(page);'
   ]) {
     assert.equal(qa.includes(marker), true, marker);
   }
+  assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v5'"), false);
+  assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v4'"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/app.js?v=combat-meter1')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/app.js?v=lobby-focus1')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/reboot_screens.js?v=lobby-focus1')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/reboot_actions.js?v=merge-reason1')"), false);
 });

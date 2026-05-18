@@ -1,8 +1,8 @@
-import { castLinkPulse, createGame, mergeRelays, serializeState, supplyRelay, tickGame } from '../shared/game.js';
+import { castLinkPulse, createGame, mergeRelays, serializeState, supplyRelay, tickGame } from '../shared/game.js?v=combat-meter2';
 import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
-import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=merge-reason1';
+import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=combat-meter2';
 import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-simplify1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest1';
 import { preloadCriticalRebootAssets } from './reboot_preload.js?v=shell-backdrop1';
@@ -22,7 +22,7 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=lobby-focus1';
+} from './reboot_screens.js?v=combat-meter2';
 import { createRebootOnlineClient } from './reboot_online.js';
 
 const qs = (selector) => document.querySelector(selector);
@@ -659,7 +659,7 @@ function updateMeters(current) {
   setMeterValue(
     dom.summonMeter,
     `${resources.summon}`,
-    `소환 에너지 ${resources.summon}`,
+    `전력 ${resources.summon}`,
     (resources.summon ?? 0) >= REBOOT_RULES.summon.cost ? 'ready' : 'charging'
   );
   setMeterValue(

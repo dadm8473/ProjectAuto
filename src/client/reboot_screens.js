@@ -1,4 +1,4 @@
-import { createGame } from '../shared/game.js';
+import { createGame } from '../shared/game.js?v=combat-meter2';
 import { SHOP } from '../shared/content.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 

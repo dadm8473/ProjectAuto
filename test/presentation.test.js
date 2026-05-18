@@ -112,11 +112,12 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
 
   assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
+    "from '../shared/game.js?v=combat-meter2'",
     "from '../shared/reboot_content.js?v=unit-roster1'",
-    "from './reboot_actions.js?v=merge-reason1'",
+    "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=action-simplify1'",
     "from './reboot_render.js?v=unit-roster1'",
-    "from './reboot_screens.js?v=lobby-focus1'",
+    "from './reboot_screens.js?v=combat-meter2'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -672,8 +673,10 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-focus1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter2"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=command-cooldown1"></script>'), false);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shell-backdrop1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=screen-lighting1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-copy1"></script>'), false);
@@ -748,7 +751,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=lobby-focus1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=combat-meter2'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=lobby-focus1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=shelf-price1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-item-status1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), false);
@@ -1523,8 +1527,12 @@ test('browser QA verifies first combat tap removes routine status copy', async (
     "await page.getByRole('button', { name: '로비로 돌아가기' }).click();",
     'async function assertFirstSummonTapFeedback(page)',
     "await page.getByRole('button', { name: '소환' }).click();",
-    "document.querySelector('#summonMeter .meter-value')?.textContent === '0'",
+    "meter?.querySelector('.meter-value')?.textContent === '0'",
+    "meter?.querySelector('.meter-label')?.textContent === '전력'",
+    "meter?.getAttribute('aria-label') === '전력 0'",
+    "assert.equal(await page.locator('#summonMeter .meter-label').textContent(), '전력');",
     "assert.equal(await page.locator('#summonMeter .meter-value').textContent(), '0');",
+    "assert.equal(await page.locator('#summonMeter').getAttribute('aria-label'), '전력 0');",
     "assert.equal(await page.locator('.status-line').isVisible(), false);",
     "assert.match(cooldown.text, /소환\\s+\\d+초/);",
     'assert.equal(cooldown.opacity >= 0.98, true',
@@ -4576,6 +4584,49 @@ test('combat resource HUD uses generated icons instead of text-only chips', asyn
   assert.equal(css.includes('.meters > span::before'), true);
 });
 
+test('combat summon resource is named 전력 so it is not confused with the summon command', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+  const actions = await readFile('src/client/reboot_actions.js', 'utf8');
+  const rebootGame = await readFile('src/shared/reboot_game.js', 'utf8');
+  const sharedGame = await readFile('src/shared/game.js', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const sw = await readFile('sw.js', 'utf8');
+
+  for (const marker of [
+    '<span id="summonMeter" data-meter-kind="summon" aria-label="전력 10"><span class="meter-label">전력</span><span class="meter-value">10</span></span>',
+    '`전력 ${resources.summon}`',
+    "reason: actions.summon ? '소환 가능' : '전력 부족'",
+    "return { ok: false, reason: '전력이 부족합니다.' };",
+    "from '../shared/game.js?v=combat-meter2'",
+    "from './reboot_actions.js?v=combat-meter2'",
+    "from './reboot_screens.js?v=combat-meter2'",
+    "from './reboot_game.js?v=combat-meter2'",
+    "from '../shared/game.js?v=combat-meter2'",
+    '/src/client/reboot_actions.js?v=combat-meter2',
+    '/src/client/reboot_screens.js?v=combat-meter2',
+    '/src/shared/game.js?v=combat-meter2',
+    '/src/shared/reboot_game.js?v=combat-meter2'
+  ]) {
+    assert.equal(`${html}\n${app}\n${actions}\n${rebootGame}\n${sharedGame}\n${screens}\n${sw}`.includes(marker), true, marker);
+  }
+
+  assert.equal(html.includes('<span class="meter-label">소환</span><span class="meter-value">10</span>'), false);
+  for (const forbidden of [
+    '소환 에너지',
+    "from './reboot_actions.js?v=merge-reason1'",
+    "from './reboot_screens.js?v=lobby-focus1'",
+    "from '../shared/game.js';",
+    "from './reboot_game.js';",
+    '/src/client/reboot_actions.js?v=merge-reason1',
+    '/src/client/reboot_screens.js?v=lobby-focus1',
+    "\n  '/src/shared/game.js',",
+    "\n  '/src/shared/reboot_game.js',"
+  ]) {
+    assert.equal(`${html}\n${app}\n${actions}\n${rebootGame}\n${sharedGame}\n${screens}\n${sw}`.includes(forbidden), false, forbidden);
+  }
+});
+
 test('combat status line uses generated game plates instead of plain web chips', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
@@ -4738,10 +4789,10 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    'id="summonMeter" data-meter-kind="summon" aria-label="소환 에너지 10"',
+    'id="summonMeter" data-meter-kind="summon" aria-label="전력 10"',
     'id="rescueMeter" data-meter-kind="rescue" aria-label="구원 충전 0%"',
     'id="dangerMeter" data-meter-kind="danger" aria-label="파트너 위험도 0"',
-    '<span class="meter-label">소환</span>',
+    '<span class="meter-label">전력</span>',
     '<span class="meter-label">구원</span>',
     '<span class="meter-label">위험</span>',
     '<span class="meter-value">10</span>',
@@ -4761,6 +4812,7 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
 
   for (const forbidden of [
     '>소환 10<',
+    '소환 에너지',
     '>구원 0%<',
     '>위험 0<',
     'dom.summonMeter.textContent = `소환 ${resources.summon}`',

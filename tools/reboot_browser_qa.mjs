@@ -89,15 +89,24 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v4');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v6');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/app.js?v=lobby-focus1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=lobby-focus1'))
+      '/src/client/app.js?v=combat-meter2': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=combat-meter2'))
         : false,
-      '/src/client/reboot_screens.js?v=lobby-focus1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=lobby-focus1'))
+      '/src/client/reboot_actions.js?v=combat-meter2': cache
+        ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
+        : false,
+      '/src/client/reboot_screens.js?v=combat-meter2': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=combat-meter2'))
+        : false,
+      '/src/shared/game.js?v=combat-meter2': cache
+        ? Boolean(await cache.match('/src/shared/game.js?v=combat-meter2'))
+        : false,
+      '/src/shared/reboot_game.js?v=combat-meter2': cache
+        ? Boolean(await cache.match('/src/shared/reboot_game.js?v=combat-meter2'))
         : false,
       '/src/client/reboot_action_ui.js?v=action-simplify1': cache
         ? Boolean(await cache.match('/src/client/reboot_action_ui.js?v=action-simplify1'))
@@ -118,7 +127,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v4', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v6', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1438,8 +1447,15 @@ async function assertInjectedSafeAreaKeepsCombatTouchable(page) {
 
 async function assertFirstSummonTapFeedback(page) {
   await page.getByRole('button', { name: '소환' }).click();
-  await page.waitForFunction(() => document.querySelector('#summonMeter .meter-value')?.textContent === '0');
+  await page.waitForFunction(() => {
+    const meter = document.querySelector('#summonMeter');
+    return meter?.querySelector('.meter-value')?.textContent === '0'
+      && meter?.querySelector('.meter-label')?.textContent === '전력'
+      && meter?.getAttribute('aria-label') === '전력 0';
+  });
+  assert.equal(await page.locator('#summonMeter .meter-label').textContent(), '전력');
   assert.equal(await page.locator('#summonMeter .meter-value').textContent(), '0');
+  assert.equal(await page.locator('#summonMeter').getAttribute('aria-label'), '전력 0');
   assert.equal(await page.locator('.status-line').isVisible(), false);
   const cooldown = await page.locator('#summonButton').evaluate((button) => {
     const span = button.querySelector('span');

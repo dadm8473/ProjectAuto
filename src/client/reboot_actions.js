@@ -7,7 +7,7 @@ export function buildRebootActionState(state, playerId = 'p1') {
       action: 'summon',
       enabled: Boolean(actions.summon),
       value: resources.summon,
-      reason: actions.summon ? '소환 가능' : '소환 에너지 부족'
+      reason: actions.summon ? '소환 가능' : '전력 부족'
     },
     merge: {
       label: '합성',

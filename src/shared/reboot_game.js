@@ -445,7 +445,7 @@ export function summonToy(game, { playerId = 'p1' } = {}) {
   const owner = player(game, playerId);
   const resources = game.resources[owner];
   if (resources.summon < REBOOT_RULES.summon.cost) {
-    return { ok: false, reason: '소환 에너지가 부족합니다.' };
+    return { ok: false, reason: '전력이 부족합니다.' };
   }
 
   resources.summon -= REBOOT_RULES.summon.cost;
