@@ -334,7 +334,7 @@ async function assertUnitFeatureOffer(page, label) {
     };
   });
   assert.match(geometry.backgroundImage, /reboot-training-banner/, `${label} feature lacks training banner: ${JSON.stringify(geometry)}`);
-  assert.match(geometry.pedestalBackground, /reboot-meta-showcase-stage/, `${label} feature lacks generated pedestal: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.pedestalBackground, 'none', `${label} feature still uses a pasted rectangular pedestal: ${JSON.stringify(geometry)}`);
   assert.match(geometry.ringBackground, /reboot-unit-activation-ring/, `${label} feature lacks generated unit pedestal ring: ${JSON.stringify(geometry)}`);
   assert.match(geometry.state, /^(ready|locked)$/, `${label} unknown feature state: ${JSON.stringify(geometry)}`);
   assert.equal(geometry.showcaseHeight >= 188, true, `${label} feature too short: ${JSON.stringify(geometry)}`);
@@ -586,10 +586,14 @@ async function assertShopFeatureOffer(page, label) {
     const action = control?.getBoundingClientRect();
     const style = getComputedStyle(node);
     const pedestalStyle = pedestalNode ? getComputedStyle(pedestalNode) : null;
+    const auraStyle = node.querySelector('.shop-feature-aura')
+      ? getComputedStyle(node.querySelector('.shop-feature-aura'))
+      : null;
     return {
       state: node.getAttribute('data-featured-state'),
       backgroundImage: style.backgroundImage,
       pedestalBackground: pedestalStyle?.backgroundImage ?? '',
+      auraBackground: auraStyle?.backgroundImage ?? '',
       showcaseTop: Math.round(rect.top),
       showcaseRight: Math.round(rect.right),
       showcaseBottom: Math.round(rect.bottom),
@@ -614,7 +618,8 @@ async function assertShopFeatureOffer(page, label) {
     };
   });
   assert.match(geometry.backgroundImage, /reboot-shop-banner/, `${label} feature lacks shop banner: ${JSON.stringify(geometry)}`);
-  assert.match(geometry.pedestalBackground, /reboot-meta-showcase-stage/, `${label} feature lacks generated pedestal: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.pedestalBackground, 'none', `${label} feature still uses a pasted rectangular pedestal: ${JSON.stringify(geometry)}`);
+  assert.match(geometry.auraBackground, /reboot-cosmetic-equip-aura/, `${label} feature lacks generated cosmetic aura: ${JSON.stringify(geometry)}`);
   assert.match(geometry.state, /^(ready|locked|owned|equipped)$/, `${label} unknown feature state: ${JSON.stringify(geometry)}`);
   assert.equal(geometry.showcaseHeight >= 196, true, `${label} feature too short: ${JSON.stringify(geometry)}`);
   const minPedestalWidth = label.includes('compact') ? 96 : 118;

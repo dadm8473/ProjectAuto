@@ -3117,7 +3117,7 @@ body[data-app-screen="season"] .app-screen::after {
   position: relative;
   min-height: clamp(142px, 37vw, 168px);
   isolation: isolate;
-  background-image: var(--meta-showcase-stage);
+  background-image: none;
   background-repeat: no-repeat;
   background-position: center;
   background-size: 116% 116%;
@@ -3233,7 +3233,7 @@ body[data-app-screen="season"] .app-screen::after {
   position: relative;
   min-height: clamp(148px, 39vw, 174px);
   isolation: isolate;
-  background-image: var(--meta-showcase-stage);
+  background-image: none;
   background-repeat: no-repeat;
   background-position: center;
   background-size: 116% 116%;

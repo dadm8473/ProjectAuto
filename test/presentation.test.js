@@ -4031,7 +4031,8 @@ test('unit training featured offer uses a generated stage with one dominant upgr
   }
 
   assert.equal(cssRuleBlock(css, '.unit-feature-showcase').includes('background-image: var(--training-banner);'), true);
-  assert.equal(cssRuleBlock(css, '.unit-feature-pedestal').includes('background-image: var(--meta-showcase-stage);'), true);
+  assert.equal(cssRuleBlock(css, '.unit-feature-pedestal').includes('background-image: none;'), true);
+  assert.equal(cssRuleBlock(css, '.unit-feature-pedestal').includes('var(--meta-showcase-stage)'), false);
   assert.equal(css.includes('--unit-activation-ring: url("/src/client/assets/generated/reboot-unit-activation-ring.png?v=unit-activation-ring1")'), true);
   assert.equal(cssRuleBlock(css, '.unit-feature-ring').includes('background-image: var(--unit-activation-ring);'), true);
 
@@ -4115,7 +4116,8 @@ test('shop featured offer uses a generated stage with one dominant purchase acti
   }
 
   assert.equal(cssRuleBlock(css, '.shop-feature-showcase').includes('background-image: var(--shop-banner);'), true);
-  assert.equal(cssRuleBlock(css, '.shop-feature-pedestal').includes('background-image: var(--meta-showcase-stage);'), true);
+  assert.equal(cssRuleBlock(css, '.shop-feature-pedestal').includes('background-image: none;'), true);
+  assert.equal(cssRuleBlock(css, '.shop-feature-pedestal').includes('var(--meta-showcase-stage)'), false);
 
   const focusBlock = cssRuleBlock(css, '.featured-shop-action:focus-visible::before');
   assert.equal(focusBlock.includes('background-image: var(--meta-action-buttons);'), true);
