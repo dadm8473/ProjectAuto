@@ -870,6 +870,52 @@ test('mini boss shows a generated health plate on the battlefield', () => {
   assert.ok(healthFill, 'expected compact boss health fill bar');
 });
 
+test('low health mini boss gains a generated execute flare on the track', () => {
+  const ctx = mockContext();
+  const enemies = image(1024, 256);
+  const vfx = image(1280, 256);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 112,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [
+        { enemyId: 'mini_boss', spriteKey: 'mini_boss', boardId: 'p1', progress: 0.78, hp: 30, maxHp: 100 }
+      ],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies,
+      vfx,
+      boardLabelPlates: image(780, 80),
+      ui: image(1536, 256),
+      board: image(1280, 256)
+    }
+  );
+
+  const bossIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === enemies);
+  const flareIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === vfx
+      && command.args[1] === 1024
+      && command.args[2] === 0
+      && command.args[3] === 256
+      && command.args[4] === 256
+  ));
+
+  assert.notEqual(bossIndex, -1, 'expected low health mini boss sprite');
+  assert.notEqual(flareIndex, -1, 'expected generated boss execute flare');
+  assert.equal(flareIndex < bossIndex, true, 'execute flare should sit behind the boss sprite');
+});
+
 test('random combat actions use generated reveal VFX without legacy action flashes', () => {
   const ctx = mockContext();
   drawRebootBattle(

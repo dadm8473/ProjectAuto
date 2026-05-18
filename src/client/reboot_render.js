@@ -813,6 +813,14 @@ function drawBossVitalPlate(ctx, assets, enemy, x, y, size, imageBackdrop = true
   return true;
 }
 
+function drawBossExecuteFlare(ctx, assets, enemy, x, y, size, now = 0) {
+  if (!isBossEnemy(enemy)) return false;
+  const ratio = bossHealthRatio(enemy);
+  if (ratio === null || ratio > 0.35) return false;
+  const pulse = 0.58 + Math.max(0, Math.sin(now * 7.2)) * 0.16;
+  return drawAtlasSprite(ctx, assets, 'vfx', 'boss_warning_flare', x, y, size * 1.62, pulse);
+}
+
 function drawHitBoltSprite(ctx, image, from, to, targetType, alpha = 1) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const dx = to.x - from.x;
@@ -1145,6 +1153,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false, options = {})
       drawBossAura(ctx, assets, x, y, state.now);
     }
     drawEnemyTrackTrail(ctx, assets, enemy, x, y, state.now);
+    drawBossExecuteFlare(ctx, assets, enemy, x, y, size, state.now);
     if (drawAtlasSprite(ctx, assets, 'enemies', enemy.spriteKey ?? enemy.enemyId, x, y, size)) {
       drawBossVitalPlate(ctx, assets, enemy, x, y, size, imageBackdrop);
       return;
