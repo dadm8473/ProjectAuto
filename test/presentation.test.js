@@ -167,11 +167,14 @@ test('battle markup exposes exactly three Korean combat actions and no BM button
 test('global button base never falls back to css web-button chrome', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const buttonBlock = cssRuleBlock(css, 'button');
+  const disabledButtonBlock = cssRuleBlock(css, 'button:disabled');
 
   assert.equal(buttonBlock.includes('linear-gradient'), false);
   assert.equal(buttonBlock.includes('border: 1px solid'), false);
   assert.equal(buttonBlock.includes('background: transparent;'), true);
   assert.equal(buttonBlock.includes('border: 0;'), true);
+  assert.equal(disabledButtonBlock.includes('opacity: 0.4;'), false);
+  assert.equal(disabledButtonBlock.includes('opacity: 1;'), true);
 });
 
 test('player-facing app branding is Korean and no longer exposes the repository name', async () => {
