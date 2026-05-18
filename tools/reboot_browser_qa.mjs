@@ -58,6 +58,46 @@ async function assertNoErrors(errors, label) {
   assert.deepEqual(errors, [], `${label} console/page errors`);
 }
 
+async function verifyInstallableShell(page) {
+  await page.goto(baseUrl, { waitUntil: 'load' });
+  const status = await page.evaluate(async () => {
+    if (!('serviceWorker' in navigator) || !('caches' in window)) return { supported: false };
+    const registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('service worker ready timeout')), 8000);
+      })
+    ]);
+    const cacheKeys = await caches.keys();
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v1');
+    const cache = cacheName ? await caches.open(cacheName) : null;
+    const cached = {
+      '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
+      '/src/client/app.js?v=shell-backdrop1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=shell-backdrop1'))
+        : false,
+      '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1'))
+        : false
+    };
+    return {
+      supported: true,
+      scope: registration.scope,
+      scriptURL: registration.active?.scriptURL ?? registration.installing?.scriptURL ?? '',
+      cacheName,
+      cached
+    };
+  });
+
+  assert.equal(status.supported, true, 'service worker and cache storage should be available');
+  assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
+  assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v1', `missing shell cache: ${JSON.stringify(status)}`);
+  for (const [url, hit] of Object.entries(status.cached)) {
+    assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
+  }
+}
+
 function parseScreenshotPng(bytes) {
   let offset = 8;
   const chunks = [];
@@ -1609,6 +1649,7 @@ async function main() {
         page.on('pageerror', (error) => errors.push(error.message));
       });
       const page = await context.newPage();
+      await verifyInstallableShell(page);
       await verifyCompactLobby(page);
       await verifyCompactMeta(page);
       await verifyCompactRewardBoards(page);

@@ -112,6 +112,13 @@ const playtestRecorder = createPlaytestRecorder({
 });
 if (playtestEnabled) globalThis.__rebootPlaytestSummary = () => playtestRecorder.summary();
 
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
+  navigator.serviceWorker.register('/sw.js').catch(() => {
+    // Install caching is optional; gameplay must continue if registration fails.
+  });
+}
+
 function loadProfile() {
   const base = createMetaProfile();
   try {
@@ -852,5 +859,6 @@ function bind() {
 renderHomeScreens();
 bind();
 setScreen('splash');
+registerServiceWorker();
 preloadCriticalRebootAssets().then(hideLoadingGate, hideLoadingGate);
 requestAnimationFrame(loop);
