@@ -587,7 +587,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=showcase-nameplate1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-board-layout1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), false);
@@ -1422,7 +1422,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=showcase-nameplate1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=meta-board-layout1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), false);
@@ -1786,7 +1786,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=showcase-nameplate1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=meta-board-layout1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -4571,6 +4571,59 @@ test('mission and season screens use generated stamp and reward-track boards', a
   assert.equal(css.includes('.meta-summary[data-summary-kind="season"]'), false);
 });
 
+test('mission and season first screens use distinct game-board compositions', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const missions = buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] });
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
+
+  assert.equal(missions.includes('data-board-layout="contract-stamps"'), true);
+  assert.equal(season.includes('data-board-layout="season-pass-road"'), true);
+  assert.equal(missions.includes('data-board-layout="mission-contracts"'), true);
+  assert.equal(season.includes('data-board-layout="season-pass-tiers"'), true);
+
+  const missionBoardBlock = cssRuleBlock(css, '.mission-stamp-board');
+  for (const marker of [
+    'grid-template-areas:',
+    '"copy command"',
+    '"stamps command"',
+    'min-height: clamp(170px, 45vw, 198px);'
+  ]) {
+    assert.equal(missionBoardBlock.includes(marker), true, marker);
+  }
+
+  const seasonBoardBlock = cssRuleBlockAfter(
+    css,
+    '.season-track-board',
+    css.indexOf(missionBoardBlock) + missionBoardBlock.length
+  );
+  for (const marker of [
+    'grid-template-areas:',
+    '"copy command"',
+    '"rail rail"',
+    'min-height: clamp(178px, 47vw, 208px);'
+  ]) {
+    assert.equal(seasonBoardBlock.includes(marker), true, marker);
+  }
+
+  const stampGridBlock = cssRuleBlock(css, '.mission-stamp-grid');
+  assert.equal(stampGridBlock.includes('grid-area: stamps;'), true);
+  assert.equal(stampGridBlock.includes('transform: rotate(-1.2deg);'), true);
+
+  const seasonRailBlock = cssRuleBlockAfter(
+    css,
+    '.season-track-rail',
+    css.indexOf(stampGridBlock) + stampGridBlock.length
+  );
+  assert.equal(seasonRailBlock.includes('grid-area: rail;'), true);
+  assert.equal(seasonRailBlock.includes('min-height: 56px;'), true);
+
+  const missionListBlock = cssRuleBlock(css, '.meta-progress-board[data-board-layout="mission-contracts"]');
+  assert.equal(missionListBlock.includes('grid-template-rows: repeat(3, minmax(0, 1fr));'), true);
+
+  const seasonListBlock = cssRuleBlock(css, '.meta-progress-board[data-board-layout="season-pass-tiers"]');
+  assert.equal(seasonListBlock.includes('grid-template-rows: repeat(4, minmax(0, 1fr));'), true);
+});
+
 test('mission and season top boards promote one generated reward claim command', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
@@ -4622,6 +4675,14 @@ test('mission and season top counters sit on generated reward plates', async () 
   assert.equal(captionBlock.includes('padding: 4px 12px 5px;'), true);
   assert.equal(captionBlock.includes('background-image: var(--meta-caption-plate);'), true);
   assert.equal(captionBlock.includes('background: rgba(2, 10, 12, 0.62);'), false);
+});
+
+test('mission contract board narrows its counter plate on compact phones', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const compactMissionCounterBlock = cssRuleBlock(css, '.mission-stamp-board .mission-board-copy strong');
+
+  assert.equal(compactMissionCounterBlock.includes('width: clamp(104px, 34vw, 150px);'), true);
+  assert.equal(compactMissionCounterBlock.includes('padding: 0 12px;'), true);
 });
 
 test('mission and season top copy sits on dedicated imagegen status plaques', async () => {

@@ -762,7 +762,7 @@ test('mission and season top boards keep large copy numeric while preserving ful
   const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
 
   assert.equal(
-    missions.includes('class="mission-stamp-board" data-board-kind="missions" aria-label="미션 보드 · 수령 가능 1개 · 완료 목표 보상 전환"'),
+    missions.includes('class="mission-stamp-board" data-board-kind="missions" data-board-layout="contract-stamps" aria-label="미션 보드 · 수령 가능 1개 · 완료 목표 보상 전환"'),
     true
   );
   assert.equal(missions.includes('<span>받을 보상</span>'), true);
@@ -773,7 +773,7 @@ test('mission and season top boards keep large copy numeric while preserving ful
   assert.equal(missions.includes('완료 목표 보상 전환</p>'), false);
 
   assert.equal(
-    season.includes('class="season-track-board" data-board-kind="season" aria-label="시즌 보드 · 시즌 경험치 80 · 대기 보상 없음"'),
+    season.includes('class="season-track-board" data-board-kind="season" data-board-layout="season-pass-road" aria-label="시즌 보드 · 시즌 경험치 80 · 대기 보상 없음"'),
     true
   );
   assert.equal(season.includes('<span>시즌 XP</span>'), true);

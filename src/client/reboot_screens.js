@@ -345,7 +345,7 @@ function buildMissionStampBoard(profile = {}, claimed = new Set()) {
   }).join('');
 
   return `
-    <section class="mission-stamp-board" data-board-kind="missions" aria-label="미션 보드 · ${boardAriaState} · 완료 목표 보상 전환" data-featured-mission="${featuredMission?.id ?? ''}" data-board-state="${boardState}">
+    <section class="mission-stamp-board" data-board-kind="missions" data-board-layout="contract-stamps" aria-label="미션 보드 · ${boardAriaState} · 완료 목표 보상 전환" data-featured-mission="${featuredMission?.id ?? ''}" data-board-state="${boardState}">
       <div class="mission-board-copy">
         <span>받을 보상</span>
         <strong>${claimable}</strong>
@@ -407,7 +407,7 @@ function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
   }).join('');
 
   return `
-    <section class="season-track-board" data-board-kind="season" aria-label="시즌 보드 · 시즌 경험치 ${xp} · ${rewardAriaState}" data-featured-tier="${featuredTier?.index ?? ''}" data-board-state="${boardState}">
+    <section class="season-track-board" data-board-kind="season" data-board-layout="season-pass-road" aria-label="시즌 보드 · 시즌 경험치 ${xp} · ${rewardAriaState}" data-featured-tier="${featuredTier?.index ?? ''}" data-board-state="${boardState}">
       <div class="season-board-copy">
         <span>시즌 XP</span>
         <strong>${xp}</strong>
@@ -786,7 +786,7 @@ export function buildMissionScreen(profile = {}) {
     </article>
   `;
   }).join('');
-  return `${board}<section class="meta-progress-board" data-progress-board="missions">${missions}</section>`;
+  return `${board}<section class="meta-progress-board" data-progress-board="missions" data-board-layout="mission-contracts">${missions}</section>`;
 }
 
 function seasonRewardLabel(grant = {}) {
@@ -832,7 +832,7 @@ export function buildSeasonScreen(profile = {}) {
     </article>
   `;
   }).join('');
-  return `${board}<section class="meta-progress-board" data-progress-board="season">${tiers}</section>`;
+  return `${board}<section class="meta-progress-board" data-progress-board="season" data-board-layout="season-pass-tiers">${tiers}</section>`;
 }
 
 export function buildRebootResultModel({ result, rewards = [], profile, seedName } = {}) {
