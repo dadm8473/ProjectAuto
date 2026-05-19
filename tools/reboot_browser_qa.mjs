@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v22');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v23');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/app.js?v=result-action-label2': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=result-action-label2'))
+      '/src/client/app.js?v=reward-detail1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=reward-detail1'))
         : false,
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
@@ -102,8 +102,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_render.js?v=opening-route1': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=opening-route1'))
         : false,
-      '/src/client/reboot_screens.js?v=result-action-label2': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=result-action-label2'))
+      '/src/client/reboot_screens.js?v=reward-detail1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=reward-detail1'))
         : false,
       '/src/shared/game.js?v=boss-vitality1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=boss-vitality1'))
@@ -130,7 +130,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v22', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v23', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1911,6 +1911,7 @@ async function verifyFastPlaythrough(page) {
   assert.equal(await page.locator('body').getAttribute('data-app-screen'), 'season');
   assert.equal(await page.locator('#rewardReveal').isVisible(), true);
   assert.match(await page.locator('#rewardReveal').textContent(), /미션 보상/);
+  assert.match(await page.locator('#rewardReveal').textContent(), /보석 \+20/);
   await assertRewardRevealGeneratedSurface(page);
   assert.match(await page.locator('#seasonList').textContent(), /수령/);
   assert.match(await page.locator('#missionsList .mission-card').first().textContent(), /받음/);

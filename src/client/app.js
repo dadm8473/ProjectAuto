@@ -22,7 +22,7 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=result-action-label2';
+} from './reboot_screens.js?v=reward-detail1';
 import { createRebootOnlineClient } from './reboot_online.js';
 
 const qs = (selector) => document.querySelector(selector);
@@ -478,11 +478,27 @@ function grantBundle(grants = []) {
   return { gems, unlocks: [...unlocks] };
 }
 
+function rewardDetailFromParts(gems = 0, hasCosmetic = false) {
+  const parts = [];
+  if (gems > 0) parts.push(`보석 +${gems}`);
+  if (hasCosmetic) parts.push('외형 해금');
+  return parts.join(' · ') || '보상 획득';
+}
+
+function rewardGrantDetail(grant = {}) { return rewardDetailFromParts(grant.gems ?? 0, Boolean(grant.cosmetic)); }
+
+function rewardBundleDetail(grants = []) {
+  const gems = grants.reduce((total, grant) => total + (grant.gems ?? 0), 0);
+  const hasCosmetic = grants.some((grant) => Boolean(grant.cosmetic));
+  return rewardDetailFromParts(gems, hasCosmetic);
+}
+
 function claimReadyMissionsFromResult() {
   const claimed = new Set(profile.claimedMissions ?? []);
   const ready = REBOOT_MISSIONS.filter((mission) => !claimed.has(mission.id) && missionProgress(profile, mission) >= mission.target);
   if (ready.length === 0) return false;
-  const bundle = grantBundle(ready.map((mission) => mission.reward));
+  const grants = ready.map((mission) => mission.reward);
+  const bundle = grantBundle(grants);
   profile = normalizeMetaProfile({
     ...profile,
     gems: profile.gems + bundle.gems,
@@ -492,7 +508,7 @@ function claimReadyMissionsFromResult() {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.missionsList, `[data-mission="${selectorValue(ready[0].id)}"]`, 'mission');
-  showRewardReveal('미션 보상', ready.length > 1 ? `보상 ${ready.length}개` : `${bundle.gems} 보석`, 'soft_currency');
+  showRewardReveal('미션 보상', rewardBundleDetail(grants), 'soft_currency');
   return true;
 }
 
@@ -502,7 +518,8 @@ function claimReadySeasonFromResult() {
     .map((tier, index) => ({ tier, index }))
     .filter(({ tier, index }) => profile.xp >= tier.xp && !claimed.has(index));
   if (ready.length === 0) return false;
-  const bundle = grantBundle(ready.map(({ tier }) => tier.grant));
+  const grants = ready.map(({ tier }) => tier.grant);
+  const bundle = grantBundle(grants);
   profile = normalizeMetaProfile({
     ...profile,
     gems: profile.gems + bundle.gems,
@@ -513,7 +530,7 @@ function claimReadySeasonFromResult() {
   renderHomeScreens();
   flashMetaClaim(dom.seasonList, `.season-card[data-pass-tier="${ready[0].index}"]`, 'season');
   const hasCosmetic = ready.some(({ tier }) => tier.grant.cosmetic);
-  showRewardReveal('시즌 보상', hasCosmetic ? '외형 해금' : `${bundle.gems} 보석`, hasCosmetic ? 'cosmetic_shard' : 'season_progress');
+  showRewardReveal('시즌 보상', rewardBundleDetail(grants), hasCosmetic ? 'cosmetic_shard' : 'season_progress');
   return true;
 }
 
@@ -530,7 +547,7 @@ function handleMissionClaim(event) {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.missionsList, `[data-mission="${selectorValue(mission.id)}"]`, 'mission');
-  showRewardReveal('미션 보상', `${mission.reward.gems} 보석`, 'soft_currency');
+  showRewardReveal('미션 보상', rewardGrantDetail(mission.reward), 'soft_currency');
   showToast(`${mission.title} 보상`, 'reward');
 }
 
@@ -548,7 +565,7 @@ function handlePassClaim(event) {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.seasonList, `.season-card[data-pass-tier="${index}"]`, 'season');
-  showRewardReveal('시즌 보상', tier.grant.cosmetic ? '외형 해금' : `${tier.grant.gems ?? 0} 보석`, tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress');
+  showRewardReveal('시즌 보상', rewardGrantDetail(tier.grant), tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress');
   showToast(`${index + 1}단계 보상`, 'reward');
 }
 

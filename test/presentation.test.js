@@ -117,7 +117,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=action-simplify1'",
     "from './reboot_render.js?v=opening-route1'",
-    "from './reboot_screens.js?v=result-action-label2'",
+    "from './reboot_screens.js?v=reward-detail1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -685,7 +685,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-action-label2"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-detail1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-action-label2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-action-label1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-xp1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-profile2"></script>'), false);
@@ -770,7 +771,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=result-action-label2'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=reward-detail1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=result-action-label2'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=lobby-profile1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=lobby-intel1'"), false);
@@ -3996,10 +3998,15 @@ test('profile rewards use a generated reveal panel instead of toast-only feedbac
     'dom.rewardReveal.hidden = false;',
     'clearTimeout(showRewardReveal.timer);',
     'function hideRewardReveal()',
+    'function rewardGrantDetail(grant = {})',
+    'function rewardBundleDetail(grants = [])',
+    'return rewardDetailFromParts(gems, hasCosmetic);',
     "showRewardReveal('외형 해금', item.name, 'unlock_capsule');",
     "showRewardReveal('강화 완료', `${unit.name} Lv.${currentLevel + 1}`, 'season_progress');",
-    "showRewardReveal('미션 보상', `${mission.reward.gems} 보석`, 'soft_currency');",
-    "showRewardReveal('시즌 보상', tier.grant.cosmetic ? '외형 해금' : `${tier.grant.gems ?? 0} 보석`, tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress');"
+    "showRewardReveal('미션 보상', rewardGrantDetail(mission.reward), 'soft_currency');",
+    "showRewardReveal('시즌 보상', rewardGrantDetail(tier.grant), tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress');",
+    "showRewardReveal('미션 보상', rewardBundleDetail(grants), 'soft_currency');",
+    "showRewardReveal('시즌 보상', rewardBundleDetail(grants), hasCosmetic ? 'cosmetic_shard' : 'season_progress');"
   ]) {
     assert.equal(`${html}\n${css}\n${app}`.includes(marker), true, marker);
   }
@@ -4708,11 +4715,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=boss-vitality1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=result-action-label2'",
+    "from './reboot_screens.js?v=reward-detail1'",
     "from './reboot_game.js?v=boss-vitality1'",
     "from '../shared/game.js?v=boss-vitality1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=result-action-label2',
+    '/src/client/reboot_screens.js?v=reward-detail1',
     '/src/shared/game.js?v=boss-vitality1',
     '/src/shared/reboot_game.js?v=boss-vitality1'
   ]) {
