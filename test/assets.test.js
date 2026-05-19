@@ -97,8 +97,8 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 70_000
   },
   {
-    path: 'src/client/assets/generated/reboot-shop-banner.png',
-    source: 'docs/design/generation/source/reboot/style-lock/20260514-shop-banner-imagegen.png',
+    path: 'src/client/assets/generated/reboot-shop-banner-v2.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260519-shop-banner-v2-imagegen.png',
     width: 430,
     height: 160,
     minRuntimeBytes: 70_000
@@ -1343,6 +1343,21 @@ test('app shell backdrop is generated mobile scene art, not a flat css gradient'
   assert.equal(center.mean > topEdge.mean + 18, true, `app shell center lacks generated light falloff: ${JSON.stringify({ center, topEdge })}`);
   assert.equal(center.brightRatio > 0.2, true, `app shell center is too flat or dark: ${JSON.stringify(center)}`);
   assert.equal(lowerDeck.mean > 22, true, `app shell lower deck is too empty: ${JSON.stringify(lowerDeck)}`);
+});
+
+test('shop banner v2 reads as a premium cosmetic display instead of dark silhouettes', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-shop-banner-v2.png'));
+  const pedestal = luminanceStats(image, { x: 20, y: 40, width: 154, height: 82 }, 72);
+  const capsuleShelf = luminanceStats(image, { x: 188, y: 22, width: 214, height: 82 }, 78);
+  const darkSilhouetteRatio = colorRatio(
+    image,
+    { x: 18, y: 20, width: 178, height: 104 },
+    (r, g, b) => Math.max(r, g, b) < 30
+  );
+
+  assert.equal(pedestal.brightRatio > 0.33, true, `shop banner pedestal is still too dim: ${JSON.stringify(pedestal)}`);
+  assert.equal(capsuleShelf.brightRatio > 0.36, true, `shop banner capsules are not readable: ${JSON.stringify(capsuleShelf)}`);
+  assert.equal(darkSilhouetteRatio < 0.16, true, `shop banner has too much silhouette-like darkness: ${darkSilhouetteRatio}`);
 });
 
 test('generated UI frames use alpha instead of baked black rectangles', async () => {

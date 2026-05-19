@@ -587,7 +587,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=feature-cta1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=profile-plate1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-xp2">'), false);
@@ -1419,7 +1420,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=feature-cta1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=profile-plate1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-xp2'), false);
@@ -4299,7 +4301,7 @@ test('shop screen uses the active generated showcase stage', async () => {
   for (const marker of [
     '--meta-showcase-stage: url("/src/client/assets/generated/reboot-meta-showcase-stage.png?v=showcase-stage")',
     'background-image: var(--meta-showcase-stage);',
-    '--shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png")',
+    '--shop-banner: url("/src/client/assets/generated/reboot-shop-banner-v2.png?v=shop-banner2")',
     '.meta-showcase[data-showcase-kind="shop"]',
     'background-image: var(--shop-banner);',
     'function buildMetaShowcase',
@@ -4313,6 +4315,7 @@ test('shop screen uses the active generated showcase stage', async () => {
   }
 
   assert.equal(css.includes('.meta-summary[data-summary-kind="shop"]'), false);
+  assert.equal(css.includes('--shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png")'), false);
 });
 
 test('shop showcase promotes the generated cosmetic icon above the dark banner art', async () => {

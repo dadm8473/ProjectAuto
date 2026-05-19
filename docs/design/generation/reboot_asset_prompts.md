@@ -899,6 +899,21 @@ Postprocess: remove #ff00ff chroma key with soft matte/despill, split the genera
 Acceptance: successful summon/merge/rescue feedback uses compact generated stamps instead of a large battlefield-covering banner, Korean result copy remains readable, and combat map visibility is preserved during frequent actions.
 ```
 
+## Runtime Prompt: Shop Banner V2
+
+```text
+Use case: stylized-concept
+Asset type: project-bound mobile game shop showcase banner background, final runtime crop is 430x160.
+Primary request: Create a polished Korean mobile game cosmetic shop showcase background for a vertical cooperative tower defense game. It should look like a premium toy-board sci-fi store display, not a web panel.
+Composition: wide 43:16 landscape composition. Central-left pedestal stays visually clear for a foreground item icon. Right side has colorful cosmetic capsules and reward bottles. Bottom has a subtle counter shelf. No text, no labels, no logos.
+Style: shipped mobile game UI scene art, glossy 2.5D toy-mech sci-fi store, teal glass, amber-gold trim, bright collectible capsules, crisp readable shapes at phone size.
+Avoid: black silhouette product placeholders, locked shadow tanks, pure black item tubes, large empty dark left panel, CSS-like gradients, words, letters, numbers, watermarks, casino/gacha imagery, copied game UI.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260519-shop-banner-v2-imagegen.png
+Runtime file: src/client/assets/generated/reboot-shop-banner-v2.png
+Postprocess: resize the generated 2055x765 source to 430x160 and normalize the runtime PNG to RGBA.
+Acceptance: the shop featured area reads as a premium cosmetic display even before Korean text is read, foreground shop cosmetic sprites remain clear over the pedestal, and the banner no longer contributes black silhouette shapes behind purchase items.
+```
+
 ## 후처리 기준
 
 필수:
