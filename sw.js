@@ -1,16 +1,16 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v27';
+const CACHE_NAME = 'projectauto-reboot-shell-v28';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
   '/src/client/styles.css?v=hero-squad2',
-  '/src/client/app.js?v=playtest-feedback1',
+  '/src/client/app.js?v=result-highlight1',
   '/src/client/reboot_actions.js?v=combat-meter2',
   '/src/client/reboot_action_ui.js?v=action-simplify1',
   '/src/client/reboot_playtest.js?v=playtest2',
   '/src/client/reboot_preload.js?v=shell-backdrop1',
   '/src/client/reboot_render.js?v=opening-route1',
-  '/src/client/reboot_screens.js?v=reward-detail1',
+  '/src/client/reboot_screens.js?v=result-highlight1',
   '/src/client/reboot_online.js',
   '/src/shared/game.js?v=boss-vitality1',
   '/src/shared/reboot_game.js?v=boss-vitality1',

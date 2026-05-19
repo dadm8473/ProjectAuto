@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v27');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v28');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
       '/src/client/styles.css?v=hero-squad2': cache
         ? Boolean(await cache.match('/src/client/styles.css?v=hero-squad2'))
         : false,
-      '/src/client/app.js?v=playtest-feedback1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=playtest-feedback1'))
+      '/src/client/app.js?v=result-highlight1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=result-highlight1'))
         : false,
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
@@ -108,8 +108,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_render.js?v=opening-route1': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=opening-route1'))
         : false,
-      '/src/client/reboot_screens.js?v=reward-detail1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=reward-detail1'))
+      '/src/client/reboot_screens.js?v=result-highlight1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=result-highlight1'))
         : false,
       '/src/shared/game.js?v=boss-vitality1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=boss-vitality1'))
@@ -139,7 +139,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v27', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v28', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -967,6 +967,18 @@ async function assertResultGeneratedCopySurfaces(page) {
     };
   }));
   assert.equal(highlightSurfaces.length >= 1, true, `result highlight density changed: ${JSON.stringify(highlightSurfaces)}`);
+  const reasonCopy = copySurfaces.find((surface) => surface.text === '파트너 구원 성공');
+  assert.equal(Boolean(reasonCopy), true, `result reason copy changed: ${JSON.stringify(copySurfaces)}`);
+  assert.equal(
+    highlightSurfaces.some((surface) => surface.text?.includes('결정적 구원')),
+    true,
+    `result highlight should name the memorable rescue moment separately: ${JSON.stringify(highlightSurfaces)}`
+  );
+  assert.equal(
+    highlightSurfaces.some((surface) => surface.text?.includes('파트너 구원 성공')),
+    false,
+    `result highlight repeats the reason copy: ${JSON.stringify(highlightSurfaces)}`
+  );
   for (const surface of highlightSurfaces) {
     assert.match(surface.backgroundImage, /reboot-result-detail-strips/, `result highlight lacks generated strip: ${JSON.stringify(surface)}`);
     assert.equal(surface.backgroundSize, '200% 100%', `result highlight strip sizing changed: ${JSON.stringify(surface)}`);

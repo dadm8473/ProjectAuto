@@ -259,10 +259,24 @@ test('result model preserves multiple run highlights for generated result strips
     model.highlights.map((highlight) => ({ label: highlight.label, medal: highlight.medal })),
     [
       { label: '약한 운 회복', medal: 'tactics' },
-      { label: '파트너 구원 성공', medal: 'rescue' }
+      { label: '결정적 구원', medal: 'rescue' }
     ]
   );
   assert.deepEqual(model.highlight, model.highlights[0]);
+});
+
+test('result model separates victory reason from memorable rescue highlight copy', () => {
+  const model = buildRebootResultModel({
+    result: {
+      status: 'won',
+      reason: 'partner_rescued',
+      highlights: ['partner_rescued']
+    }
+  });
+
+  assert.equal(model.reason.label, '파트너 구원 성공');
+  assert.equal(model.highlights[0].label, '결정적 구원');
+  assert.notEqual(model.highlights[0].label, model.reason.label);
 });
 
 test('operation title lookup exposes the active combat beat for the battle HUD', () => {

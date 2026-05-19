@@ -26,7 +26,7 @@ const GOAL_LABELS = {
 
 const HIGHLIGHT_LABELS = {
   bad_roll_recovered: { label: '약한 운 회복', medal: 'tactics' },
-  partner_rescued: { label: '파트너 구원 성공', medal: 'rescue' },
+  partner_rescued: { label: '결정적 구원', medal: 'rescue' },
   boss_final_hit: { label: '보스 막타 성공', medal: 'boss' },
   boss_slowed: { label: '보스 둔화 성공', medal: 'boss' },
   rescue_missed: { label: '구원 타이밍 실패', medal: 'rescue' },

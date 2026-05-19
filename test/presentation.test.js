@@ -117,7 +117,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=action-simplify1'",
     "from './reboot_render.js?v=opening-route1'",
-    "from './reboot_screens.js?v=reward-detail1'",
+    "from './reboot_screens.js?v=result-highlight1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -688,7 +688,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest-feedback1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-highlight1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest-feedback1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-detail1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-action-label2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-action-label1"></script>'), false);
@@ -775,7 +776,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=reward-detail1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=result-highlight1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=reward-detail1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label2'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=lobby-profile1'"), false);
@@ -2533,6 +2535,8 @@ test('browser QA covers generated result copy surfaces on short phones', async (
     'async function verifyCompactResult(page)',
     "await page.goto(withParam(baseUrl, 'qaFast', '1'), { waitUntil: 'load' });",
     'await assertResultGeneratedCopySurfaces(page);',
+    'result highlight should name the memorable rescue moment separately',
+    'result highlight repeats the reason copy',
     "await page.setViewportSize({ width: 320, height: 568 });",
     'await verifyCompactResult(page);'
   ]) {
@@ -4736,11 +4740,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=boss-vitality1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=reward-detail1'",
+    "from './reboot_screens.js?v=result-highlight1'",
     "from './reboot_game.js?v=boss-vitality1'",
     "from '../shared/game.js?v=boss-vitality1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=reward-detail1',
+    '/src/client/reboot_screens.js?v=result-highlight1',
     '/src/shared/game.js?v=boss-vitality1',
     '/src/shared/reboot_game.js?v=boss-vitality1'
   ]) {
