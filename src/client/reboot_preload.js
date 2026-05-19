@@ -14,6 +14,7 @@ export const CRITICAL_REBOOT_ASSETS = [
   '/src/client/assets/generated/reboot-lobby-launch-console.png?v=launch-console1',
   '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',
   '/src/client/assets/generated/reboot-launch-secondary.png?v=gold-cta-alpha1',
+  '/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3',
   '/src/client/assets/generated/reboot-screen-chrome.png',
   '/src/client/assets/generated/reboot-nav-icons.png',
   '/src/client/assets/generated/reboot-nav-button-glow.png?v=nav-selector1',

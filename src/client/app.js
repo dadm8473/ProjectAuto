@@ -6,7 +6,7 @@ import { buildRebootActionState, commandForRebootAction } from './reboot_actions
 import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-simplify1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
 import { preloadCriticalRebootAssets } from './reboot_preload.js?v=shell-backdrop1';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=opening-route1';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=enemy-atlas3';
 import {
   buildMetaNavAlerts,
   buildMissionScreen,

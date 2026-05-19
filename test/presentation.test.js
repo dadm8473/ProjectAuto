@@ -116,7 +116,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=action-simplify1'",
-    "from './reboot_render.js?v=opening-route1'",
+    "from './reboot_render.js?v=enemy-atlas3'",
     "from './reboot_screens.js?v=result-highlight1'",
     "from './reboot_online.js'"
   ]) {
@@ -220,7 +220,7 @@ test('reboot render uses only reboot atlases and manifest keys', async () => {
     'REBOOT_BACKDROP_MANIFEST',
     'reboot-battle-backdrop.png',
     'reboot-unit-atlas.png',
-    'reboot-enemy-atlas.png?v=enemy-atlas-v2',
+    'reboot-enemy-atlas-v3.png?v=enemy-atlas-v3',
     'openingThreatPreview: {',
     'reboot-opening-threat-preview.png?v=opening-threat-preview1',
     'reboot-ui-icons.png',
@@ -688,7 +688,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-highlight1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-highlight1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest-feedback1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-detail1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-action-label2"></script>'), false);
@@ -753,7 +754,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=opening-route1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=enemy-atlas3'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=opening-route1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=match-banner-cutin1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=action-surges1'"), false);
   assert.equal(app.includes("from './reboot_action_ui.js?v=action-focus2'"), false);
@@ -3460,7 +3462,7 @@ test('lobby operation card stages generated unit enemy and reward sprites over t
     '.lobby-preview-unit[data-sprite="spark_pin"]',
     '.lobby-preview-unit[data-sprite="slow_coil"]',
     '.lobby-preview-unit[data-sprite="rescue_coil"]',
-    'background-image: url("/src/client/assets/generated/reboot-enemy-atlas.png?v=enemy-atlas-v2");',
+    'background-image: url("/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3");',
     'background-size: 400% 100%;',
     '.lobby-preview-enemy[data-enemy-sprite="quick_noise"]',
     '.lobby-preview-enemy[data-enemy-sprite="heavy_noise"]',

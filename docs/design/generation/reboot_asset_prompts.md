@@ -152,7 +152,7 @@ Premium animated co-op toy-board.
 
 | Field | Value |
 | --- | --- |
-| File | `src/client/assets/generated/reboot-enemy-atlas.png` |
+| File | `src/client/assets/generated/reboot-enemy-atlas-v3.png` |
 | Final size | 1024x256 |
 | Grid | 4 columns x 1 row |
 | Cell size | 256x256 |
@@ -319,7 +319,7 @@ export const REBOOT_ATLAS_MANIFEST = {
     order: ['spark_pin', 'toktok_amp', 'slow_coil', 'burst_pin', 'rescue_coil', 'mirror_port', 'bloom_amp', 'nova_mast']
   },
   enemies: {
-    src: '/src/client/assets/generated/reboot-enemy-atlas.png',
+    src: '/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3',
     columns: 4,
     rows: 1,
     cell: { width: 256, height: 256 },
@@ -530,13 +530,13 @@ Export target: subject bbox 160-210px longest side, pivot x 128 y 176, foot cont
 ```text
 Use case: sprite-atlas
 Asset type: 4-cell transparent enemy atlas for ProjectAuto reboot.
-Primary request: Create 4 toy-like corruption enemy sprites in a single horizontal sprite atlas. Transparent background. Equal cell sizes. No text.
+Primary request: Create 4 toy-like corruption enemy sprites in a single horizontal sprite atlas. Transparent background. Equal cell sizes. No text. V3 direction: stronger crawler silhouettes, more creature-like threat posture, and less abstract crystal-icon reading on the battlefield.
 Output contract: final atlas 1024x256, 4 columns x 1 row, each cell exactly 256x256, straight alpha, no premultiplied alpha bleed.
 Subjects left to right:
-1. Noise Shard: small basic corruption fragment, coral core, graphite shell, simple triangular chunky silhouette.
-2. Quick Noise: fast enemy, small streamlined body, bright coral streak, lean silhouette.
-3. Heavy Noise: tank enemy, squat heavy body, thick armor shell, slow chunky silhouette.
-4. Mini Boss: larger corruption toy boss, crown-like broken signal core, coral danger glow, clearly larger than others.
+1. Noise Shard: small basic corruption crawler, coral crystal core, jagged graphite shell, short claw-like feet, simple readable triangular silhouette.
+2. Quick Noise: fast skittering corruption drone, low streamlined body, swept-back graphite fins, bright coral streak, lean forward-motion silhouette.
+3. Heavy Noise: tank enemy, squat armored crawler, thick graphite shell plates, large coral glass core, heavy planted feet.
+4. Mini Boss: larger corruption commander, crown-like broken signal core, layered graphite armor, coral danger glow, clearly larger and more threatening than others.
 Style lock tokens: three-quarter top-down 25-30 degree camera, top-left warm key light, lower-right soft fill, soft ellipse shadow, dark graphite 3-5px outline, 1-2px colored inner rim, corrupted rubber/glass toy fragment material, one primary coral glow per enemy.
 Style: premium mobile game toy-board enemy sprites, corrupted glass/rubber toy materials, three-quarter top-down 25-30 degree camera, strong silhouette, readable at 48px, not a UI icon card.
 Lighting: top-left warm key light, lower-right soft fill, subtle ellipse shadow, teal rim contamination.

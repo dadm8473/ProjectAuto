@@ -1,15 +1,15 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v28';
+const CACHE_NAME = 'projectauto-reboot-shell-v29';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
   '/src/client/styles.css?v=hero-squad2',
-  '/src/client/app.js?v=result-highlight1',
+  '/src/client/app.js?v=enemy-atlas3',
   '/src/client/reboot_actions.js?v=combat-meter2',
   '/src/client/reboot_action_ui.js?v=action-simplify1',
   '/src/client/reboot_playtest.js?v=playtest2',
   '/src/client/reboot_preload.js?v=shell-backdrop1',
-  '/src/client/reboot_render.js?v=opening-route1',
+  '/src/client/reboot_render.js?v=enemy-atlas3',
   '/src/client/reboot_screens.js?v=result-highlight1',
   '/src/client/reboot_online.js',
   '/src/shared/game.js?v=boss-vitality1',
@@ -40,6 +40,7 @@ const APP_SHELL_URLS = [
   '/src/client/assets/generated/reboot-nav-button-glow.png?v=nav-selector1',
   '/src/client/assets/generated/reboot-nav-alert-badges.png?v=nav-alerts',
   '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1',
+  '/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3',
   '/src/client/assets/generated/reboot-combat-hud-frame.png',
   '/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1',
   '/src/client/assets/generated/reboot-player-board-bridge.png?v=player-board-bridge1'

@@ -32,7 +32,7 @@ export const REBOOT_ATLAS_MANIFEST = {
     order: ['spark_pin', 'toktok_amp', 'slow_coil', 'burst_pin', 'rescue_coil', 'mirror_port', 'bloom_amp', 'nova_mast']
   },
   enemies: {
-    src: '/src/client/assets/generated/reboot-enemy-atlas.png?v=enemy-atlas-v2',
+    src: '/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3',
     columns: 4,
     rows: 1,
     cell: { width: 256, height: 256 },

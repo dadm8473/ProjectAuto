@@ -24,7 +24,7 @@ const GRID_ASSETS = [
 
 const REBOOT_GRID_ASSETS = [
   { path: 'src/client/assets/generated/reboot-unit-atlas.png', width: 2048, height: 256, columns: 8, rows: 1 },
-  { path: 'src/client/assets/generated/reboot-enemy-atlas.png', width: 1024, height: 256, columns: 4, rows: 1 },
+  { path: 'src/client/assets/generated/reboot-enemy-atlas-v3.png', width: 1024, height: 256, columns: 4, rows: 1 },
   { path: 'src/client/assets/generated/reboot-ui-icons.png', width: 1536, height: 256, columns: 6, rows: 1 },
   { path: 'src/client/assets/generated/reboot-reward-icons.png', width: 1024, height: 256, columns: 4, rows: 1 },
   { path: 'src/client/assets/generated/reboot-result-badges.png', width: 1024, height: 256, columns: 4, rows: 1 },
@@ -969,11 +969,11 @@ const IMAGEGEN_REBOOT_ATLASES = [
     minRuntimeBytes: 120_000
   },
   {
-    path: 'src/client/assets/generated/reboot-enemy-atlas.png',
-    source: 'docs/design/generation/source/reboot/style-lock/20260516-enemy-atlas-v2-chromakey-imagegen.png',
+    path: 'src/client/assets/generated/reboot-enemy-atlas-v3.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260519-enemy-atlas-v3-chromakey-imagegen.png',
     width: 1024,
     height: 256,
-    minRuntimeBytes: 70_000
+    minRuntimeBytes: 120_000
   },
   {
     path: 'src/client/assets/generated/reboot-ui-icons.png',
@@ -1484,6 +1484,33 @@ test('reboot runtime visual atlases are promoted from imagegen sources instead o
     assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
     assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
     assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+  }
+});
+
+test('reboot enemy atlas v3 uses readable transparent track creatures', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-enemy-atlas-v3.png'));
+  const source = await readFile('docs/design/generation/source/reboot/style-lock/20260519-enemy-atlas-v3-chromakey-imagegen.png');
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(image.width, 1024);
+  assert.equal(image.height, 256);
+
+  for (let cell = 0; cell < 4; cell += 1) {
+    const rect = { x: cell * 256, y: 0, width: 256, height: 256 };
+    const corners = [
+      alphaAt(image, rect.x + 1, 1),
+      alphaAt(image, rect.x + 254, 1),
+      alphaAt(image, rect.x + 1, 254),
+      alphaAt(image, rect.x + 254, 254)
+    ];
+    const bounds = alphaBounds(image, rect, 24);
+    const longest = Math.max(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY);
+    const centerX = (bounds.minX + bounds.maxX) / 2;
+    const greenFringeRatio = colorRatio(image, rect, (r, g, b) => g > 180 && r < 80 && b < 120);
+
+    assert.equal(corners.every((alpha) => alpha < 10), true, `enemy v3 cell ${cell} has opaque corners: ${corners.join(',')}`);
+    assert.equal(longest >= 130 && longest <= 224, true, `enemy v3 cell ${cell} has weak silhouette bounds: ${JSON.stringify(bounds)}`);
+    assert.equal(Math.abs(centerX - 128) <= 18, true, `enemy v3 cell ${cell} is not centered: ${JSON.stringify(bounds)}`);
+    assert.equal(greenFringeRatio < 0.002, true, `enemy v3 cell ${cell} keeps chroma-key green fringe: ${greenFringeRatio}`);
   }
 });
 

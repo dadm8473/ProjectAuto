@@ -2376,7 +2376,7 @@ body[data-app-screen="season"] .app-screen::after {
 .operation-intel-icon.reward-token[data-reward-icon="unlock_capsule"] { background-position: -72px 0; }
 
 .operation-intel-enemy {
-  background-image: url("/src/client/assets/generated/reboot-enemy-atlas.png?v=enemy-atlas-v2");
+  background-image: url("/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3");
   background-repeat: no-repeat;
   background-size: 400% 100%;
   filter: saturate(1.18) drop-shadow(0 5px 8px rgba(0, 0, 0, 0.5));
@@ -2443,7 +2443,7 @@ body[data-app-screen="season"] .app-screen::after {
 .lobby-preview-enemy {
   width: 46px;
   height: 46px;
-  background-image: url("/src/client/assets/generated/reboot-enemy-atlas.png?v=enemy-atlas-v2");
+  background-image: url("/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3");
   background-repeat: no-repeat;
   background-size: 400% 100%;
   filter: saturate(1.08) drop-shadow(0 9px 13px rgba(0, 0, 0, 0.56));
