@@ -89,7 +89,7 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v16');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v18');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
@@ -130,7 +130,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v16', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v18', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1055,6 +1055,8 @@ async function assertLobbyProfilePlate(page, label, expectedLevel) {
     const style = getComputedStyle(node);
     const emblem = node.querySelector('.lobby-profile-emblem');
     const emblemStyle = emblem ? getComputedStyle(emblem) : null;
+    const label = node.querySelector('.lobby-profile-label')?.getBoundingClientRect();
+    const level = node.querySelector('strong')?.getBoundingClientRect();
     const progress = node.querySelector('.lobby-profile-progress');
     const progressStyle = progress ? getComputedStyle(progress) : null;
     const progressBefore = progress ? getComputedStyle(progress, '::before') : null;
@@ -1074,6 +1076,7 @@ async function assertLobbyProfilePlate(page, label, expectedLevel) {
       emblemBackgroundImage: emblemStyle?.backgroundImage ?? '',
       progressBackgroundImage: progressStyle?.backgroundImage ?? '',
       progressBeforeBackgroundImage: progressBefore?.backgroundImage ?? '',
+      labelGap: label && level ? Math.round(level.top - label.bottom) : -1,
       operationTop: operation ? Math.round(operation.top) : 0,
       launchTop: launch ? Math.round(launch.top) : 0,
       buttonCount: node.querySelectorAll('button').length
@@ -1088,6 +1091,7 @@ async function assertLobbyProfilePlate(page, label, expectedLevel) {
   assert.equal(plate.progressBeforeBackgroundImage.includes('reboot-meta-progress-bars'), true, `${label} profile progress fill lost generated art: ${JSON.stringify(plate)}`);
   assert.equal(plate.width >= 132 && plate.width <= 178, true, `${label} profile plate width is not compact: ${JSON.stringify(plate)}`);
   assert.equal(plate.height >= 48 && plate.height <= 64, true, `${label} profile plate height is not compact: ${JSON.stringify(plate)}`);
+  assert.equal(plate.labelGap >= 2, true, `${label} profile label crowds level text: ${JSON.stringify(plate)}`);
   assert.equal(plate.left >= 8 && plate.right <= plate.viewportWidth - 8, true, `${label} profile plate leaves viewport: ${JSON.stringify(plate)}`);
   assert.equal(plate.bottom <= plate.operationTop - 10, true, `${label} profile plate crowds operation poster: ${JSON.stringify(plate)}`);
   assert.equal(plate.bottom <= plate.launchTop - 10, true, `${label} profile plate crowds launch controls: ${JSON.stringify(plate)}`);
