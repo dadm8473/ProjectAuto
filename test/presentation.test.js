@@ -587,7 +587,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=ready-reward-pulse1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-reward-chips1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), false);
@@ -1422,7 +1422,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=ready-reward-pulse1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-reward-chips1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), false);
@@ -1786,7 +1786,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=ready-reward-pulse1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=result-reward-chips1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2301,7 +2301,7 @@ test('result debrief stays usable on short portrait phones', async () => {
     '#resultTitle {\n    min-height: 52px;\n    font-size: 24px;',
     '.result-panel p {\n    line-height: 1.12;',
     '.result-highlights span {\n    min-height: 44px;',
-    '.result-reward {\n    min-height: 68px;\n    grid-template-columns: 64px minmax(0, 1fr) 48px;',
+    '.result-reward {\n    min-height: 68px;\n    grid-template-columns: 52px minmax(0, 1fr) 24px;\n    padding: 5px 22px 6px 28px;',
     '.result-reward::before {\n    left: -2px;\n    width: 78px;',
     '.result-reward::after {\n    right: 0;\n    width: 58px;',
     '.result-overlay .result-action-button {\n    min-height: 44px;'
@@ -2379,6 +2379,7 @@ test('result reward copy names the earned currency instead of a generic reward n
 
   for (const marker of [
     'function resultRewardText(reward)',
+    'function resultRewardKind(reward)',
     'function formatResultRewards(rewards)',
     "if (reward.type === 'soft') return `보석 +${reward.amount}`;",
     "if (reward.type === 'xp') return `경험치 +${reward.amount}`;",
@@ -2389,7 +2390,7 @@ test('result reward copy names the earned currency instead of a generic reward n
     'class="result-reward-icon"',
     'class="result-reward-value" aria-hidden="true"',
     'const rewardItems = rewards.length',
-    "rewards.map((reward) => `<span>${resultRewardText(reward)}</span>`).join('')",
+    'class="result-reward-chip" data-reward-kind="${resultRewardKind(reward)}"',
     'resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel)'
   ]) {
     assert.equal(`${index}\n${app}`.includes(marker), true, marker);
@@ -2410,7 +2411,8 @@ test('result reward uses a generated claim capsule instead of a text strip', asy
     'background-image: var(--result-reward-capsules);',
     'background-size: 300% 100%;',
     'display: flex;\n  flex-wrap: wrap;',
-    '.result-reward-value span',
+    '.result-reward-chip',
+    'background-image: var(--meta-command-ribbons);',
     'function resultRewardMarkup(rewards, icon, label)',
     'class="result-reward-label"',
     'class="result-reward-icon"',
@@ -2432,6 +2434,18 @@ test('result reward uses a generated claim capsule instead of a text strip', asy
   assert.equal(css.includes('.result-panel strong {\n  font-size: 30px;'), false);
   assert.equal(css.includes('#resultTitle {\n  display: grid;'), true);
   assert.equal(css.includes('font-size: clamp(16px, calc(var(--result-panel-width) * 0.049), 19px);'), true);
+
+  const chipBlock = cssRuleBlock(css, '.result-reward-chip');
+  for (const marker of [
+    'display: inline-grid;',
+    'min-height: 24px;',
+    'background-image: var(--meta-command-ribbons);',
+    'background-size: 400% 100%;',
+    'filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.42));'
+  ]) {
+    assert.equal(chipBlock.includes(marker), true, marker);
+  }
+  assert.equal(css.includes('.result-reward-chip[data-reward-kind="xp"]'), true);
 });
 
 test('result highlights use generated strip frames while reward uses a loot capsule', async () => {

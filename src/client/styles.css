@@ -5200,10 +5200,10 @@ body[data-app-screen="season"] .app-screen::after {
   position: relative;
   min-height: clamp(72px, calc(var(--result-panel-width) * 0.22), 88px);
   display: grid;
-  grid-template-columns: clamp(76px, calc(var(--result-panel-width) * 0.22), 92px) minmax(0, 1fr) clamp(56px, calc(var(--result-panel-width) * 0.16), 70px);
+  grid-template-columns: clamp(52px, calc(var(--result-panel-width) * 0.16), 64px) minmax(0, 1fr) clamp(24px, calc(var(--result-panel-width) * 0.075), 34px);
   align-items: center;
   gap: 4px;
-  padding: 6px clamp(52px, calc(var(--result-panel-width) * 0.16), 66px) 7px clamp(78px, calc(var(--result-panel-width) * 0.24), 96px);
+  padding: 6px clamp(22px, calc(var(--result-panel-width) * 0.07), 30px) 7px clamp(28px, calc(var(--result-panel-width) * 0.09), 38px);
   border: 0;
   border-radius: 0;
   overflow: visible;
@@ -5311,15 +5311,34 @@ body[data-app-screen="season"] .app-screen::after {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0 8px;
+  gap: 3px 6px;
   align-self: start;
   color: #fff4c2;
   font-size: clamp(16px, calc(var(--result-panel-width) * 0.049), 19px);
   line-height: 1.06;
 }
 
-.result-reward-value span {
+.result-reward-chip {
+  display: inline-grid;
+  min-height: 24px;
+  place-items: center;
+  padding: 2px 10px 4px;
+  color: #fff2b4;
+  background-image: var(--meta-command-ribbons);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 33.333% 0;
+  filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.42));
   white-space: nowrap;
+}
+
+.result-reward-chip[data-reward-kind="xp"] {
+  color: #bff8ff;
+  background-position: 0 0;
+}
+
+.result-reward-chip[data-reward-kind="generic"] {
+  background-position: 100% 0;
 }
 
 @media (max-height: 620px) {
@@ -5350,8 +5369,8 @@ body[data-app-screen="season"] .app-screen::after {
 
   .result-reward {
     min-height: 68px;
-    grid-template-columns: 64px minmax(0, 1fr) 48px;
-    padding: 5px 50px 6px 72px;
+    grid-template-columns: 52px minmax(0, 1fr) 24px;
+    padding: 5px 22px 6px 28px;
   }
 
   .result-reward::before {
@@ -5382,6 +5401,11 @@ body[data-app-screen="season"] .app-screen::after {
 
   .result-reward-value {
     font-size: 17px;
+  }
+
+  .result-reward-chip {
+    min-height: 22px;
+    padding: 2px 8px 3px;
   }
 
   .result-overlay .result-action-button {

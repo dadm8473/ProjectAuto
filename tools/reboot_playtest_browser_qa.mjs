@@ -63,6 +63,24 @@ async function main() {
     const rewardLabel = await page.locator('#resultReward').getAttribute('aria-label');
     assert.match(rewardLabel ?? '', /보석 \+24/, `result reward should show earned gems: ${rewardLabel}`);
     assert.match(rewardLabel ?? '', /경험치 \+60/, `result reward should show earned XP: ${rewardLabel}`);
+    const rewardChipGeometry = await page.locator('.result-reward-chip').evaluateAll((nodes) => nodes.map((node) => {
+      const rect = node.getBoundingClientRect();
+      const parent = node.parentElement?.getBoundingClientRect();
+      return {
+        text: node.textContent?.trim(),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        parentWidth: parent ? Math.round(parent.width) : 0,
+        insideParent: parent
+          ? rect.left >= parent.left && rect.right <= parent.right && rect.top >= parent.top && rect.bottom <= parent.bottom
+          : false
+      };
+    }));
+    assert.equal(rewardChipGeometry.length >= 2, true, `result reward should render separate generated chips: ${JSON.stringify(rewardChipGeometry)}`);
+    for (const chip of rewardChipGeometry) {
+      assert.equal(chip.parentWidth >= chip.width, true, `result reward chip overflows reward layout: ${JSON.stringify(rewardChipGeometry)}`);
+      assert.equal(chip.insideParent, true, `result reward chip escapes reward layout: ${JSON.stringify(rewardChipGeometry)}`);
+    }
     const summary = await page.evaluate(() => window.__rebootPlaytestSummary?.());
     assert.equal(summary.enabled, true);
     assert.equal(summary.earlyEngagement.passed, true);

@@ -351,16 +351,17 @@ function resultRewardText(reward) {
   return `보상 +${reward.amount}`;
 }
 
+function resultRewardKind(reward) { return reward.type === 'soft' ? 'soft' : reward.type === 'xp' ? 'xp' : 'generic'; }
+
 function formatResultRewards(rewards) {
   if (!rewards.length) return '보석 +0';
   return rewards.map(resultRewardText).join(' · ');
 }
 
 function resultRewardMarkup(rewards, icon, label) {
-  const rewardLabel = formatResultRewards(rewards);
   const rewardItems = rewards.length
-    ? rewards.map((reward) => `<span>${resultRewardText(reward)}</span>`).join('')
-    : '<span>보석 +0</span>';
+    ? rewards.map((reward) => `<span class="result-reward-chip" data-reward-kind="${resultRewardKind(reward)}">${resultRewardText(reward)}</span>`).join('')
+    : '<span class="result-reward-chip" data-reward-kind="soft">보석 +0</span>';
   return `<span class="result-reward-label" aria-hidden="true">${label}</span> <span class="result-reward-icon" data-reward-icon="${selectorValue(icon)}" aria-hidden="true"></span> <strong class="result-reward-value" aria-hidden="true">${rewardItems}</strong>`;
 }
 
