@@ -322,17 +322,22 @@ function renderHomeScreens() {
 
 function resultRewards(current) {
   if (!current.result) return [];
-  return [{ type: 'soft', amount: current.result.status === 'won' ? 24 : 8 }];
+  const won = current.result.status === 'won';
+  return [
+    { type: 'soft', amount: won ? 24 : 8 },
+    { type: 'xp', amount: won ? 60 : 20 }
+  ];
 }
 
 function settleResultRewards(current) {
   const rewards = resultRewards(current);
   if (!current.result || profile.processedRuns.includes(current.runId)) return rewards;
   const gemReward = rewards.reduce((sum, reward) => sum + (reward.type === 'soft' ? reward.amount : 0), 0);
+  const xpReward = rewards.reduce((sum, reward) => sum + (reward.type === 'xp' ? reward.amount : 0), 0);
   profile = normalizeMetaProfile({
     ...profile,
     gems: profile.gems + gemReward,
-    xp: profile.xp + (current.result.status === 'won' ? 60 : 20),
+    xp: profile.xp + xpReward,
     processedRuns: [...profile.processedRuns, current.runId]
   });
   saveProfile();
@@ -340,17 +345,23 @@ function settleResultRewards(current) {
   return rewards;
 }
 
+function resultRewardText(reward) {
+  if (reward.type === 'soft') return `보석 +${reward.amount}`;
+  if (reward.type === 'xp') return `경험치 +${reward.amount}`;
+  return `보상 +${reward.amount}`;
+}
+
 function formatResultRewards(rewards) {
   if (!rewards.length) return '보석 +0';
-  return rewards.map((reward) => {
-    if (reward.type === 'soft') return `보석 +${reward.amount}`;
-    return `보상 +${reward.amount}`;
-  }).join(' · ');
+  return rewards.map(resultRewardText).join(' · ');
 }
 
 function resultRewardMarkup(rewards, icon, label) {
   const rewardLabel = formatResultRewards(rewards);
-  return `<span class="result-reward-label" aria-hidden="true">${label}</span> <span class="result-reward-icon" data-reward-icon="${selectorValue(icon)}" aria-hidden="true"></span> <strong class="result-reward-value" aria-hidden="true">${rewardLabel}</strong>`;
+  const rewardItems = rewards.length
+    ? rewards.map((reward) => `<span>${resultRewardText(reward)}</span>`).join('')
+    : '<span>보석 +0</span>';
+  return `<span class="result-reward-label" aria-hidden="true">${label}</span> <span class="result-reward-icon" data-reward-icon="${selectorValue(icon)}" aria-hidden="true"></span> <strong class="result-reward-value" aria-hidden="true">${rewardItems}</strong>`;
 }
 
 function resultHighlightMarkup(model) {

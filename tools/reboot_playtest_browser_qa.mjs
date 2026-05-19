@@ -60,6 +60,9 @@ async function main() {
     }
 
     assert.equal(await page.locator('#resultTitle').isVisible(), true, 'playtest run should reach result');
+    const rewardLabel = await page.locator('#resultReward').getAttribute('aria-label');
+    assert.match(rewardLabel ?? '', /보석 \+24/, `result reward should show earned gems: ${rewardLabel}`);
+    assert.match(rewardLabel ?? '', /경험치 \+60/, `result reward should show earned XP: ${rewardLabel}`);
     const summary = await page.evaluate(() => window.__rebootPlaytestSummary?.());
     assert.equal(summary.enabled, true);
     assert.equal(summary.earlyEngagement.passed, true);

@@ -587,7 +587,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile8">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-xp2">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shell-backdrop1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-lighting1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=loading-gate1">'), false);
@@ -659,6 +659,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=command-cooldown1">'), false);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-xp1">'), false);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile8">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile7">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile6">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile5">'), false);
@@ -683,7 +685,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-profile2"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-xp1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-profile2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-profile1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-intel1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter2"></script>'), false);
@@ -1398,7 +1401,9 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=lobby-profile8'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-xp2'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-xp1'), false);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-profile8'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-profile7'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-profile6'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-profile5'), false);
@@ -2308,14 +2313,18 @@ test('result reward copy names the earned currency instead of a generic reward n
   const index = await readFile('index.html', 'utf8');
 
   for (const marker of [
+    'function resultRewardText(reward)',
     'function formatResultRewards(rewards)',
     "if (reward.type === 'soft') return `보석 +${reward.amount}`;",
+    "if (reward.type === 'xp') return `경험치 +${reward.amount}`;",
     'id="resultReward" class="result-reward" role="group"',
     "dom.resultReward.setAttribute('aria-label', `획득 ${formatResultRewards(model.rewards)}`);",
     'dom.resultReward.dataset.rewardTone = model.rewardTone;',
     'class="result-reward-label" aria-hidden="true"',
     'class="result-reward-icon"',
     'class="result-reward-value" aria-hidden="true"',
+    'const rewardItems = rewards.length',
+    "rewards.map((reward) => `<span>${resultRewardText(reward)}</span>`).join('')",
     'resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel)'
   ]) {
     assert.equal(`${index}\n${app}`.includes(marker), true, marker);
@@ -2335,7 +2344,8 @@ test('result reward uses a generated claim capsule instead of a text strip', asy
     '.result-reward-value',
     'background-image: var(--result-reward-capsules);',
     'background-size: 300% 100%;',
-    'display: block;\n  align-self: start;\n  color: #fff4c2;',
+    'display: flex;\n  flex-wrap: wrap;',
+    '.result-reward-value span',
     'function resultRewardMarkup(rewards, icon, label)',
     'class="result-reward-label"',
     'class="result-reward-icon"',
@@ -2356,7 +2366,7 @@ test('result reward uses a generated claim capsule instead of a text strip', asy
   assert.equal(rewardBlock.includes('background-image: var(--result-detail-strips);'), false);
   assert.equal(css.includes('.result-panel strong {\n  font-size: 30px;'), false);
   assert.equal(css.includes('#resultTitle {\n  display: grid;'), true);
-  assert.equal(css.includes('font-size: clamp(18px, calc(var(--result-panel-width) * 0.058), 23px);'), true);
+  assert.equal(css.includes('font-size: clamp(16px, calc(var(--result-panel-width) * 0.049), 19px);'), true);
 });
 
 test('result highlights use generated strip frames while reward uses a loot capsule', async () => {

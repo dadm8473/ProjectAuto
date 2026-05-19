@@ -5127,11 +5127,17 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .result-reward-value {
-  display: block;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 8px;
   align-self: start;
   color: #fff4c2;
-  font-size: clamp(18px, calc(var(--result-panel-width) * 0.058), 23px);
-  line-height: 1.02;
+  font-size: clamp(16px, calc(var(--result-panel-width) * 0.049), 19px);
+  line-height: 1.06;
+}
+
+.result-reward-value span {
   white-space: nowrap;
 }
 
