@@ -89,7 +89,7 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v9');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v10');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
@@ -130,7 +130,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v9', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v10', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -332,6 +332,72 @@ async function assertMetaCaptionPlates(page, selector, label, expectedCount = 1)
     assert.equal(caption.left >= 0 && caption.right <= caption.viewportWidth, true, `${label} caption leaves viewport: ${JSON.stringify(caption)}`);
     assert.equal(caption.top >= 0 && caption.bottom <= caption.viewportHeight, true, `${label} caption leaves vertical viewport: ${JSON.stringify(caption)}`);
   }
+}
+
+async function assertMetaStationHeader(page, screenSelector, label) {
+  const expectedStations = {
+    collection: { banner: /reboot-training-banner/, caption: '정비실', title: '유닛' },
+    shop: { banner: /reboot-shop-banner/, caption: '보급소', title: '상점' },
+    missions: { banner: /reboot-missions-banner/, caption: '작전판', title: '미션' },
+    season: { banner: /reboot-season-banner/, caption: '시즌실', title: '시즌' }
+  };
+  const screenKey = screenSelector.replace(/^#/, '').replace(/Screen$/, '').replace('List', '');
+  const expectedStation = expectedStations[screenKey] ?? expectedStations.collection;
+  const header = await page.locator(`${screenSelector} h1`).evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    const before = getComputedStyle(node, '::before');
+    const after = getComputedStyle(node, '::after');
+    const span = node.querySelector('span');
+    const spanRect = span?.getBoundingClientRect();
+    const spanStyle = span ? getComputedStyle(span) : null;
+    const strong = node.querySelector('strong');
+    const strongRect = strong?.getBoundingClientRect();
+    const back = node.parentElement?.querySelector('.screen-back');
+    const backRect = back?.getBoundingClientRect();
+    const afterRight = Number.parseFloat(after.right) || 0;
+    const afterWidth = Number.parseFloat(after.width) || 0;
+    return {
+      text: node.textContent?.trim(),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      left: Math.round(rect.left),
+      right: Math.round(rect.right),
+      iconLeft: Math.round(rect.right - afterRight - afterWidth),
+      scrollWidth: Math.round(node.scrollWidth),
+      clientWidth: Math.round(node.clientWidth),
+      captionText: span?.textContent?.trim(),
+      captionWidth: spanRect ? Math.round(spanRect.width) : 0,
+      captionHeight: spanRect ? Math.round(spanRect.height) : 0,
+      captionScrollWidth: span ? Math.round(span.scrollWidth) : 0,
+      captionClientWidth: span ? Math.round(span.clientWidth) : 0,
+      captionBackgroundImage: spanStyle?.backgroundImage ?? '',
+      strongText: strong?.textContent?.trim(),
+      strongWidth: strongRect ? Math.round(strongRect.width) : 0,
+      strongRight: strongRect ? Math.round(strongRect.right) : 0,
+      strongScrollWidth: strong ? Math.round(strong.scrollWidth) : 0,
+      strongClientWidth: strong ? Math.round(strong.clientWidth) : 0,
+      backLeft: backRect ? Math.round(backRect.left) : 0,
+      backRight: backRect ? Math.round(backRect.right) : 0,
+      backgroundImage: style.backgroundImage,
+      beforeBackgroundImage: before.backgroundImage
+    };
+  });
+  assert.equal(header.backgroundImage.includes('reboot-meta-title-plate'), true, `${label} station title lost generated plate: ${JSON.stringify(header)}`);
+  assert.match(header.beforeBackgroundImage, expectedStation.banner, `${label} station title uses wrong room banner: ${JSON.stringify(header)}`);
+  assert.equal(header.captionText, expectedStation.caption, `${label} station caption changed at runtime: ${JSON.stringify(header)}`);
+  assert.equal(header.strongText, expectedStation.title, `${label} station title changed at runtime: ${JSON.stringify(header)}`);
+  assert.equal(header.width <= 300, true, `${label} station title is still page-header sized: ${JSON.stringify(header)}`);
+  assert.equal(header.height <= 72, true, `${label} station title is too tall: ${JSON.stringify(header)}`);
+  assert.equal(header.left >= header.backRight + 6, true, `${label} station title overlaps back command: ${JSON.stringify(header)}`);
+  assert.equal(header.scrollWidth <= header.clientWidth + 1, true, `${label} station title text overflows: ${JSON.stringify(header)}`);
+  assert.equal(header.captionBackgroundImage.includes('reboot-meta-caption-plate'), true, `${label} station caption lost generated plate: ${JSON.stringify(header)}`);
+  assert.equal(header.captionWidth >= 38, true, `${label} station caption is clipped too tightly: ${JSON.stringify(header)}`);
+  assert.equal(header.captionHeight >= 20, true, `${label} station caption is too shallow: ${JSON.stringify(header)}`);
+  assert.equal(header.captionScrollWidth <= header.captionClientWidth + 1, true, `${label} station caption text overflows: ${JSON.stringify(header)}`);
+  assert.equal(header.strongWidth >= 38, true, `${label} station title strong label is clipped too tightly: ${JSON.stringify(header)}`);
+  assert.equal(header.strongRight <= header.iconLeft - 2, true, `${label} station icon overlaps title label: ${JSON.stringify(header)}`);
+  assert.equal(header.strongScrollWidth <= header.strongClientWidth + 1, true, `${label} station title strong text overflows: ${JSON.stringify(header)}`);
 }
 
 async function assertMetaShowcaseChips(page, selector, label, expectedCount) {
@@ -1598,6 +1664,7 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await page.getByRole('button', { name: '유닛' }).click();
   await assertActiveNavLabelPlate(page, '유닛', 'collection');
+  await assertMetaStationHeader(page, '#collectionScreen', 'collection');
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#collectionScreen .meta-showcase-copy > span:first-child', 'collection', 1);
   await assertMetaShowcaseChips(page, '#collectionScreen .meta-showcase-chip', 'collection', 2);
@@ -1610,6 +1677,7 @@ async function verifyShell(page, viewport) {
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
   await page.getByRole('button', { name: '상점' }).click();
   await assertActiveNavLabelPlate(page, '상점', 'shop');
+  await assertMetaStationHeader(page, '#shopScreen', 'shop');
   await page.locator('.shop-cosmetic').first().waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#shopScreen .meta-showcase-copy > span:first-child', 'shop', 1);
   await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'shop', 2);
@@ -1620,8 +1688,9 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#shopList .meta-showcase .sprite-token.shop-cosmetic').count(), 1);
   await assertGeneratedCardSurface(page, '#shopList .meta-shelf-grid .shop-card', 'shop shelf card', /reboot-meta-item-status-overlays/);
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
-  await page.getByRole('button', { name: '미션' }).click();
+  await page.getByRole('button', { name: '미션', exact: true }).click();
   await assertActiveNavLabelPlate(page, '미션', 'missions');
+  await assertMetaStationHeader(page, '#missionsScreen', 'missions');
   await page.locator('#missionsList .mission-stamp-board').waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#missionsScreen .mission-board-copy span, #missionsScreen .mission-board-copy p', 'missions', 2);
   await assertBannerOverlayClear(page, '#missionsScreen .mission-stamp-board', 'mission banner');
@@ -1631,8 +1700,9 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#missionsList .mission-card').count(), 3);
   await assertGeneratedCardSurface(page, '#missionsList .mission-card', 'mission row card', /reboot-meta-objective-rails/);
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
-  await page.getByRole('button', { name: '시즌' }).click();
+  await page.getByRole('button', { name: '시즌', exact: true }).click();
   await assertActiveNavLabelPlate(page, '시즌', 'season');
+  await assertMetaStationHeader(page, '#seasonScreen', 'season');
   await page.locator('#seasonList .season-track-board').waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#seasonScreen .season-board-copy span, #seasonScreen .season-board-copy p', 'season', 2);
   await assertBannerOverlayClear(page, '#seasonScreen .season-track-board', 'season banner');
@@ -1686,14 +1756,24 @@ async function verifyCompactMeta(page) {
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).waitFor({ state: 'visible' });
   await page.getByRole('button', { name: '유닛' }).click();
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
+  await assertMetaStationHeader(page, '#collectionScreen', 'compact collection');
   await assertMetaShowcaseChips(page, '#collectionScreen .meta-showcase-chip', 'compact collection', 2);
   await assertUnitFeatureOffer(page, 'compact ready collection');
   await assertFeaturedUnitUpgradeFlow(page, 'compact ready collection');
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
   await assertLobbyNextActionShop(page, 'compact shop-only priority');
+  await assertMetaStationHeader(page, '#shopScreen', 'compact shop');
   await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'compact shop', 2);
   await assertShopFeatureOffer(page, 'compact ready shop');
   await assertFeaturedShopPurchaseFlow(page, 'compact ready shop');
+  await page.getByRole('button', { name: '로비로 돌아가기' }).click();
+  await page.getByRole('button', { name: '미션', exact: true }).click();
+  await page.locator('#missionsList .mission-stamp-board').waitFor({ state: 'visible' });
+  await assertMetaStationHeader(page, '#missionsScreen', 'compact missions');
+  await page.getByRole('button', { name: '로비로 돌아가기' }).click();
+  await page.getByRole('button', { name: '시즌', exact: true }).click();
+  await page.locator('#seasonList .season-track-board').waitFor({ state: 'visible' });
+  await assertMetaStationHeader(page, '#seasonScreen', 'compact season');
 }
 
 async function verifyCompactRewardBoards(page) {

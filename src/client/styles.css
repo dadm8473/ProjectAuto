@@ -2722,32 +2722,92 @@ body[data-app-screen="season"] .app-screen::after {
 
 .hub-screen h1 {
   position: relative;
-  min-height: clamp(60px, 17.67vw, 76px);
-  display: flex;
+  --station-title-banner: none;
+  width: min(250px, calc(100% - 112px));
+  min-height: clamp(54px, 15.5vw, 66px);
+  display: grid;
+  grid-template-columns: minmax(44px, auto) minmax(42px, 1fr);
   align-items: center;
-  margin: 0 0 8px;
-  padding: 10px clamp(76px, 22vw, 92px) 10px clamp(78px, 22.33vw, 96px);
+  justify-self: end;
+  column-gap: 5px;
+  margin: 0 0 8px auto;
+  padding: 9px clamp(50px, 14.5vw, 62px) 9px clamp(16px, 4.8vw, 22px);
+  overflow: hidden;
+  isolation: isolate;
   background-image: var(--meta-title-plate);
   background-repeat: no-repeat;
   background-size: 100% 100%;
   color: var(--ink);
-  font-size: clamp(23px, 6.8vw, 30px);
   font-weight: 1000;
   line-height: 1;
   text-shadow: 0 3px 12px rgba(0, 0, 0, 0.72), 0 0 14px rgba(88, 215, 255, 0.24);
 }
 
+.hub-screen h1::before {
+  content: "";
+  position: absolute;
+  inset: 5px clamp(34px, 10.5vw, 44px) 5px clamp(38px, 11vw, 48px);
+  z-index: 0;
+  background-image: var(--station-title-banner);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  opacity: 0.36;
+  mix-blend-mode: screen;
+  filter: saturate(1.15) brightness(1.08);
+  pointer-events: none;
+}
+
+.hub-screen h1[data-station-kind="collection"] { --station-title-banner: var(--training-banner); }
+.hub-screen h1[data-station-kind="shop"] { --station-title-banner: var(--shop-banner); }
+.hub-screen h1[data-station-kind="missions"] { --station-title-banner: var(--missions-banner); }
+.hub-screen h1[data-station-kind="season"] { --station-title-banner: var(--season-banner); }
+
+.hub-screen h1 > span,
+.hub-screen h1 > strong {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.hub-screen h1 > span {
+  display: inline-grid;
+  place-items: center;
+  min-height: 22px;
+  padding: 3px 6px 4px;
+  color: #ffe58f;
+  font-size: 10px;
+  font-weight: 1000;
+  line-height: 1;
+  background-image: var(--meta-caption-plate);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.46));
+  white-space: nowrap;
+}
+
+.hub-screen h1 > strong {
+  overflow: hidden;
+  color: #fff8dc;
+  font-size: clamp(20px, 5.9vw, 25px);
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .hub-screen h1::after {
   content: "";
   position: absolute;
-  right: clamp(28px, 7.91vw, 34px);
+  right: clamp(14px, 4.8vw, 20px);
   top: 50%;
-  width: clamp(34px, 10vw, 42px);
-  height: clamp(34px, 10vw, 42px);
+  z-index: 1;
+  width: clamp(30px, 9.2vw, 38px);
+  height: clamp(30px, 9.2vw, 38px);
   transform: translateY(-50%) scale(0.92);
   background-image: var(--nav-icons);
   background-repeat: no-repeat;
-  background-size: calc(clamp(34px, 10vw, 42px) * 5) clamp(34px, 10vw, 42px);
+  background-size: calc(clamp(30px, 9.2vw, 38px) * 5) clamp(30px, 9.2vw, 38px);
   filter: saturate(1.08) brightness(1.08) drop-shadow(0 5px 12px rgba(0, 0, 0, 0.54));
   pointer-events: none;
 }

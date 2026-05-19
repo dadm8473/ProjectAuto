@@ -1,9 +1,9 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v9';
+const CACHE_NAME = 'projectauto-reboot-shell-v10';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/src/client/styles.css?v=lobby-intel1',
+  '/src/client/styles.css?v=meta-station1',
   '/src/client/app.js?v=lobby-intel1',
   '/src/client/reboot_actions.js?v=combat-meter2',
   '/src/client/reboot_action_ui.js?v=action-simplify1',

@@ -587,7 +587,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-intel1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-station1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shell-backdrop1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-lighting1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=loading-gate1">'), false);
@@ -659,6 +659,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=command-cooldown1">'), false);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-intel1">'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-brand1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=mission-track1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-showcase1"></script>'), false);
@@ -1385,7 +1386,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=lobby-intel1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=meta-station1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shell-backdrop1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=screen-lighting1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=loading-gate1'), false);
@@ -1918,20 +1919,28 @@ test('meta screen titles use generated header plates instead of browser default 
   for (const marker of [
     '--meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title")',
     '<button class="screen-back" data-open-screen="lobby" data-nav-icon="home" aria-label="로비로 돌아가기">홈</button>',
-    '<h1 data-title-icon="collection">유닛 강화</h1>',
-    '<h1 data-title-icon="shop">상점</h1>',
-    '<h1 data-title-icon="missions">미션</h1>',
-    '<h1 data-title-icon="season">시즌</h1>',
+    '<h1 data-title-icon="collection" data-station-kind="collection"><span>정비실</span><strong>유닛</strong></h1>',
+    '<h1 data-title-icon="shop" data-station-kind="shop"><span>보급소</span><strong>상점</strong></h1>',
+    '<h1 data-title-icon="missions" data-station-kind="missions"><span>작전판</span><strong>미션</strong></h1>',
+    '<h1 data-title-icon="season" data-station-kind="season"><span>시즌실</span><strong>시즌</strong></h1>',
     '.hub-screen h1',
     'background-image: var(--meta-title-plate);',
     'background-size: 100% 100%;',
+    '.hub-screen h1::before',
+    'background-image: var(--station-title-banner);',
+    '.hub-screen h1[data-station-kind="collection"] { --station-title-banner: var(--training-banner); }',
+    '.hub-screen h1[data-station-kind="shop"] { --station-title-banner: var(--shop-banner); }',
+    '.hub-screen h1[data-station-kind="missions"] { --station-title-banner: var(--missions-banner); }',
+    '.hub-screen h1[data-station-kind="season"] { --station-title-banner: var(--season-banner); }',
+    '.hub-screen h1 > span',
+    '.hub-screen h1 > strong',
     '.hub-screen h1::after',
     'background-image: var(--nav-icons);',
     '.hub-screen h1[data-title-icon="collection"]::after',
     '.hub-screen h1[data-title-icon="shop"]::after',
     '.hub-screen h1[data-title-icon="missions"]::after',
     '.hub-screen h1[data-title-icon="season"]::after',
-    'margin: 0 0 8px;',
+    'margin: 0 0 8px auto;',
     '.hub-screen .screen-back',
     'position: absolute;',
     '.hub-screen .screen-back::before',
@@ -1945,6 +1954,8 @@ test('meta screen titles use generated header plates instead of browser default 
   const titleBlock = css.slice(css.indexOf('.hub-screen h1'), css.indexOf('.screen-list'));
   assert.equal(titleBlock.includes('font-size: 2em'), false);
   assert.equal(titleBlock.includes('margin-block-start'), false);
+  assert.equal(titleBlock.includes('linear-gradient'), false);
+  assert.equal(html.includes('<h1 data-title-icon="collection">유닛 강화</h1>'), false);
   const hubBackBlock = cssRuleBlock(css, '.hub-screen .screen-back::before');
   assert.equal(hubBackBlock.includes('opacity: 0;'), false);
   const backGlowBlock = cssRuleBlock(css, '.hub-screen .screen-back::after');
