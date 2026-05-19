@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v39');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v40');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=p0-polish1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=p0-polish1'))
+      '/src/client/styles.css?v=cooldown-sweep1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=cooldown-sweep1'))
         : false,
-      '/src/client/app.js?v=p0-polish1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=p0-polish1'))
+      '/src/client/app.js?v=cooldown-sweep1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=cooldown-sweep1'))
         : false,
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
@@ -117,8 +117,8 @@ async function verifyInstallableShell(page) {
       '/src/shared/reboot_game.js?v=boss-vitality1': cache
         ? Boolean(await cache.match('/src/shared/reboot_game.js?v=boss-vitality1'))
         : false,
-      '/src/client/reboot_action_ui.js?v=action-simplify1': cache
-        ? Boolean(await cache.match('/src/client/reboot_action_ui.js?v=action-simplify1'))
+      '/src/client/reboot_action_ui.js?v=cooldown-sweep1': cache
+        ? Boolean(await cache.match('/src/client/reboot_action_ui.js?v=cooldown-sweep1'))
         : false,
       '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1'))
@@ -148,7 +148,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v39', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v40', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1680,10 +1680,16 @@ async function assertFirstSummonTapFeedback(page) {
     const textBox = span?.getBoundingClientRect();
     const style = getComputedStyle(button);
     const spanStyle = span ? getComputedStyle(span) : null;
+    const afterStyle = getComputedStyle(button, '::after');
     return {
       text: span?.textContent?.trim() ?? '',
       opacity: Number.parseFloat(style.opacity),
       filter: style.filter,
+      cooldown: button.dataset.cooldown,
+      cooldownPhase: button.dataset.cooldownPhase,
+      cooldownProgress: style.getPropertyValue('--cooldown-progress').trim(),
+      afterClipPath: afterStyle.clipPath,
+      afterBackgroundImage: afterStyle.backgroundImage,
       textFits: Boolean(textBox && textBox.width <= buttonBox.width - 56 && textBox.height <= buttonBox.height - 10),
       textNotClipped: Boolean(span && span.scrollWidth <= span.clientWidth && span.scrollHeight <= span.clientHeight),
       spanMaxWidth: spanStyle?.maxWidth ?? '',
@@ -1693,6 +1699,10 @@ async function assertFirstSummonTapFeedback(page) {
   assert.match(cooldown.text, /소환\s+\d+초/);
   assert.equal(cooldown.opacity >= 0.98, true, `cooldown command is too faded: ${JSON.stringify(cooldown)}`);
   assert.equal(cooldown.filter.includes('grayscale'), false, `cooldown command still reads disabled: ${JSON.stringify(cooldown)}`);
+  assert.equal(cooldown.cooldown, 'true', `cooldown sweep state is missing: ${JSON.stringify(cooldown)}`);
+  assert.match(cooldown.cooldownProgress, /^\d+%$/, `cooldown progress var missing: ${JSON.stringify(cooldown)}`);
+  assert.match(cooldown.afterBackgroundImage, /reboot-combat-cooldown-shutters/, `cooldown sweep lacks generated shutter art: ${JSON.stringify(cooldown)}`);
+  assert.notEqual(cooldown.afterClipPath, 'none', `cooldown shutter is not clipped into a sweep: ${JSON.stringify(cooldown)}`);
   assert.equal(cooldown.textFits, true, `cooldown text does not fit the generated command: ${JSON.stringify(cooldown)}`);
   assert.equal(cooldown.textNotClipped, true, `cooldown label is clipped: ${JSON.stringify(cooldown)}`);
   assert.equal(cooldown.spanOpacity >= 0.98, true, `cooldown label is faded: ${JSON.stringify(cooldown)}`);

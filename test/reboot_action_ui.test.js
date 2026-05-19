@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { buildRebootActionState } from '../src/client/reboot_actions.js';
-import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, isCriticalRebootAction } from '../src/client/reboot_action_ui.js';
+import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, buildSummonCooldownState, isCriticalRebootAction } from '../src/client/reboot_action_ui.js';
 
 function state(overrides = {}) {
   return {
@@ -225,6 +225,53 @@ test('combat command labels show summon cooldown as charging time on the button'
     summon: '소환',
     merge: '합성',
     rescue: '구원'
+  });
+});
+
+test('summon cooldown state exposes mobile button sweep progress', () => {
+  assert.deepEqual(buildSummonCooldownState({
+    current: {
+      ...state({ now: 4 }),
+      resources: { p1: { summon: 0, rescue: 0 } },
+      actionState: { p1: { summon: false, merge: false, rescue: false } }
+    },
+    localBoardId: 'p1',
+    enabled: false
+  }), {
+    active: true,
+    seconds: 4,
+    progress: 0.5,
+    phase: 'charging'
+  });
+
+  assert.deepEqual(buildSummonCooldownState({
+    current: {
+      ...state({ now: 17 }),
+      resources: { p1: { summon: 0, rescue: 0 } },
+      actionState: { p1: { summon: false, merge: false, rescue: false } }
+    },
+    localBoardId: 'p1',
+    enabled: false
+  }), {
+    active: true,
+    seconds: 3,
+    progress: 0.75,
+    phase: 'readying'
+  });
+
+  assert.deepEqual(buildSummonCooldownState({
+    current: {
+      ...state({ now: 24 }),
+      resources: { p1: { summon: 10, rescue: 0 } },
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    localBoardId: 'p1',
+    enabled: true
+  }), {
+    active: false,
+    seconds: 0,
+    progress: 1,
+    phase: 'ready'
   });
 });
 

@@ -3,7 +3,7 @@ import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=combat-meter2';
-import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, isCriticalRebootAction } from './reboot_action_ui.js?v=action-simplify1';
+import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, buildSummonCooldownState, isCriticalRebootAction } from './reboot_action_ui.js?v=cooldown-sweep1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
 import { preloadCriticalRebootAssets } from './reboot_preload.js?v=shell-backdrop1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=p0-polish1';
@@ -746,6 +746,9 @@ function updateButtons(current) {
       button.dataset.unlocked = String(cancel);
       button.dataset.focus = String(cancel);
       button.dataset.critical = 'false';
+      button.dataset.cooldown = 'false';
+      button.dataset.cooldownPhase = 'ready';
+      button.style.setProperty('--cooldown-progress', '100%');
       if (cancel) button.dataset.matchCancel = 'true';
       else delete button.dataset.matchCancel;
       button.title = cancel ? '매칭을 취소하고 로비로 돌아가기' : '파트너 입장 대기 중';
@@ -758,6 +761,7 @@ function updateButtons(current) {
     ['rescue', dom.rescueButton]
   ]) {
     const enabled = actions[key].enabled && !onlineWaiting;
+    const cooldownState = key === 'summon' ? buildSummonCooldownState({ current, localBoardId, enabled }) : { active: false, progress: 1, phase: 'ready' };
     const label = commandLabels[key];
     const ariaLabel = label === ACTION_LABELS[key]
       ? ACTION_LABELS[key]
@@ -771,6 +775,9 @@ function updateButtons(current) {
     button.dataset.unlocked = String(exposure[key]);
     button.dataset.focus = String(exposure.focus === key);
     button.dataset.critical = String(isCriticalRebootAction({ actionKey: key, current, localBoardId, enabled }));
+    button.dataset.cooldown = String(cooldownState.active);
+    button.dataset.cooldownPhase = cooldownState.phase;
+    button.style.setProperty('--cooldown-progress', `${Math.round(cooldownState.progress * 100)}%`);
     delete button.dataset.matchCancel;
     button.title = onlineWaiting ? '파트너 입장 대기 중' : actions[key].reason;
   }

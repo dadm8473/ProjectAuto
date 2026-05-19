@@ -22,11 +22,34 @@ function hasMergePotential(board) {
 }
 
 function summonCooldownLabel(current, localBoardId) {
+  const cooldown = buildSummonCooldownState({ current, localBoardId, enabled: false });
+  return cooldown.active ? `소환 ${cooldown.seconds}초` : '';
+}
+
+function clamp01(value) {
+  return Math.min(1, Math.max(0, value));
+}
+
+export function buildSummonCooldownState({ current, localBoardId, enabled = false } = {}) {
   const resources = current.resources?.[localBoardId] ?? { summon: 0 };
-  if ((resources.summon ?? 0) >= REBOOT_RULES.summon.cost) return '';
+  if (enabled || current.result || (resources.summon ?? 0) >= REBOOT_RULES.summon.cost) {
+    return { active: false, seconds: 0, progress: 1, phase: 'ready' };
+  }
   const nextGrant = REBOOT_RULES.summon.grants.find((grant) => grant.at > current.now);
-  if (!nextGrant) return '';
-  return `소환 ${Math.max(1, Math.ceil(nextGrant.at - current.now))}초`;
+  if (!nextGrant) return { active: false, seconds: 0, progress: 1, phase: 'ready' };
+  let previousGrant = null;
+  for (const grant of REBOOT_RULES.summon.grants) {
+    if (grant.at <= current.now) previousGrant = grant;
+  }
+  const startAt = previousGrant?.at ?? 0;
+  const duration = Math.max(0.001, nextGrant.at - startAt);
+  const progress = Number(clamp01((current.now - startAt) / duration).toFixed(2));
+  return {
+    active: true,
+    seconds: Math.max(1, Math.ceil(nextGrant.at - current.now)),
+    progress,
+    phase: progress >= 0.72 ? 'readying' : 'charging'
+  };
 }
 
 export function buildCombatActionExposure({ current, localBoardId, actions }) {

@@ -14,6 +14,10 @@ const localChromiumPaths = [
   '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
 ];
 
+async function canTap(locator) {
+  return await locator.isVisible() && await locator.isEnabled();
+}
+
 async function main() {
   const executablePath = process.env.PLAYWRIGHT_CHROMIUM_PATH
     ?? localChromiumPaths.find((candidate) => existsSync(candidate));
@@ -49,12 +53,15 @@ async function main() {
 
     const deadline = Date.now() + 12000;
     while (Date.now() < deadline && !(await page.locator('#resultTitle').isVisible())) {
-      if (await page.locator('#rescueButton').isEnabled()) {
-        await page.locator('#rescueButton').click();
-      } else if (await page.locator('#mergeButton').isEnabled()) {
-        await page.locator('#mergeButton').click();
-      } else if (await page.locator('#summonButton').isEnabled()) {
-        await page.locator('#summonButton').click();
+      const rescueButton = page.locator('#rescueButton');
+      const mergeButton = page.locator('#mergeButton');
+      const summonButton = page.locator('#summonButton');
+      if (await canTap(rescueButton)) {
+        await rescueButton.click();
+      } else if (await canTap(mergeButton)) {
+        await mergeButton.click();
+      } else if (await canTap(summonButton)) {
+        await summonButton.click();
       }
       await page.waitForTimeout(20);
     }

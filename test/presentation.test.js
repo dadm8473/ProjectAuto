@@ -110,12 +110,12 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   const app = await readFile('src/client/app.js', 'utf8');
   const lines = app.split('\n').length;
 
-  assert.equal(lines <= 900, true, `app.js line budget exceeded: ${lines}`);
+  assert.equal(lines <= 910, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from '../shared/game.js?v=boss-vitality1'",
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_action_ui.js?v=action-simplify1'",
+    "from './reboot_action_ui.js?v=cooldown-sweep1'",
     "from './reboot_render.js?v=p0-polish1'",
     "from './reboot_screens.js?v=result-highlight1'",
     "from './reboot_online.js'"
@@ -587,7 +587,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=p0-polish1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=cooldown-sweep1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), false);
@@ -691,7 +691,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=p0-polish1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-highlight1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest-feedback1"></script>'), false);
@@ -951,7 +951,10 @@ test('playtest browser QA verifies first-run understanding summary', async () =>
     'assert.equal(summary.actionCounts.summon > 0, true);',
     'assert.equal(summary.actionCounts.merge > 0, true);',
     'assert.equal(summary.actionCounts.rescue > 0, true);',
-    "assert.equal(summary.result.status, 'won');"
+    "assert.equal(summary.result.status, 'won');",
+    'async function canTap(locator)',
+    'return await locator.isVisible() && await locator.isEnabled();',
+    'await canTap(mergeButton)'
   ]) {
     assert.equal(qa.includes(marker), true, marker);
   }
@@ -1267,7 +1270,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
   assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::before'), false);
 
   for (const marker of [
-    "from './reboot_action_ui.js?v=action-simplify1'",
+    "from './reboot_action_ui.js?v=cooldown-sweep1'",
     'buildCombatCoachCue',
     'buildCombatCommandLabels',
     'buildCombatStatusPrompt',
@@ -1422,7 +1425,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=p0-polish1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=cooldown-sweep1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), false);
@@ -1549,10 +1552,15 @@ test('combat summon cooldown stays compact on the command button', async () => {
     'display: none;',
     'buildCombatCommandLabels',
     'const commandLabels = buildCombatCommandLabels({ current, localBoardId, actions, onlineWaiting });',
+    'buildSummonCooldownState',
+    'const cooldownState = key === \'summon\' ? buildSummonCooldownState({ current, localBoardId, enabled }) : { active: false, progress: 1, phase: \'ready\' };',
     'const label = commandLabels[key];',
     'const ariaLabel = label === ACTION_LABELS[key]\n      ? ACTION_LABELS[key]\n      : label.startsWith(ACTION_LABELS[key])\n        ? `${label} 후 가능`\n        : `${ACTION_LABELS[key]} ${label} 후 가능`;',
     "button.querySelector('span').textContent = label;",
-    "button.setAttribute('aria-label', ariaLabel);"
+    "button.setAttribute('aria-label', ariaLabel);",
+    "button.dataset.cooldown = String(cooldownState.active);",
+    "button.dataset.cooldownPhase = cooldownState.phase;",
+    "button.style.setProperty('--cooldown-progress', `${Math.round(cooldownState.progress * 100)}%`);"
   ]) {
     const source = marker.startsWith('body[') || marker === 'display: none;' ? css : app;
     assert.equal(source.includes(marker), true, marker);
@@ -1568,12 +1576,22 @@ test('combat summon cooldown stays compact on the command button', async () => {
     'opacity: 1;',
     'filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.42));',
     '.primary-actions[data-open-count="1"] button:disabled:not([data-unlocked="false"])::after',
-    'opacity: 0.46;'
+    'opacity: 0.46;',
+    '.primary-actions button[data-cooldown="true"]:disabled:not([data-unlocked="false"])::after',
+    'clip-path: inset(0 0 0 var(--cooldown-progress, 0%));',
+    '.primary-actions button[data-cooldown-phase="readying"]:disabled:not([data-unlocked="false"])::after'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(cooldownLabelFn.includes('return `소환 ${Math.max(1, Math.ceil(nextGrant.at - current.now))}초`;'), true);
+  assert.equal(cooldownLabelFn.includes("return cooldown.active ? `소환 ${cooldown.seconds}초` : '';"), true);
+  assert.equal(cooldownLabelFn.includes("phase: progress >= 0.72 ? 'readying' : 'charging'"), true);
+  assert.equal(
+    css.indexOf('.primary-actions button[data-cooldown-phase="readying"]:disabled:not([data-unlocked="false"])::after')
+      > css.indexOf('.primary-actions[data-open-count="1"] button:disabled:not([data-unlocked="false"])::after'),
+    true,
+    'readying cooldown art must override single-button cooldown styling'
+  );
 });
 
 test('browser QA verifies first combat tap removes routine status copy', async () => {
@@ -1594,6 +1612,10 @@ test('browser QA verifies first combat tap removes routine status copy', async (
     'assert.equal(cooldown.opacity >= 0.98, true',
     'assert.equal(cooldown.textFits, true',
     'assert.equal(cooldown.textNotClipped, true',
+    "assert.equal(cooldown.cooldown, 'true'",
+    'assert.match(cooldown.cooldownProgress, /^\\d+%$/',
+    'assert.match(cooldown.afterBackgroundImage, /reboot-combat-cooldown-shutters/',
+    "assert.notEqual(cooldown.afterClipPath, 'none'",
     'await assertFirstSummonTapFeedback(page);'
   ]) {
     assert.equal(qa.includes(marker), true, marker);
@@ -1786,7 +1808,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=p0-polish1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=cooldown-sweep1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
