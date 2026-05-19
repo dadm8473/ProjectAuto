@@ -3371,10 +3371,10 @@ body[data-app-screen="season"] .app-screen::after {
   z-index: 2;
   grid-column: 2;
   display: grid;
-  grid-template-columns: minmax(0, auto) minmax(84px, auto);
+  grid-template-columns: minmax(0, auto) minmax(112px, auto);
   align-items: center;
   justify-content: end;
-  gap: 7px;
+  gap: 8px;
   min-width: 0;
   filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.48));
 }
@@ -3387,9 +3387,9 @@ body[data-app-screen="season"] .app-screen::after {
 
 .featured-unit-action {
   position: relative;
-  min-width: 96px;
-  min-height: 46px;
-  padding: 0 14px 2px;
+  min-width: 112px;
+  min-height: 50px;
+  padding: 0 16px 2px;
   border-color: transparent;
   border-radius: 0;
   background: transparent;
@@ -3398,7 +3398,7 @@ body[data-app-screen="season"] .app-screen::after {
   background-size: 300% 100%;
   background-position: 0 0;
   color: #fff2b4;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 1000;
   line-height: 1;
   text-shadow: 0 2px 7px rgba(0, 0, 0, 0.72);
@@ -3500,10 +3500,10 @@ body[data-app-screen="season"] .app-screen::after {
   z-index: 2;
   grid-column: 2;
   display: grid;
-  grid-template-columns: minmax(0, auto) minmax(84px, auto);
+  grid-template-columns: minmax(0, auto) minmax(112px, auto);
   align-items: center;
   justify-content: end;
-  gap: 7px;
+  gap: 8px;
   min-width: 0;
   filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.48));
 }
@@ -3516,9 +3516,9 @@ body[data-app-screen="season"] .app-screen::after {
 
 .featured-shop-action {
   position: relative;
-  min-width: 96px;
-  min-height: 46px;
-  padding: 0 14px 2px;
+  min-width: 112px;
+  min-height: 50px;
+  padding: 0 16px 2px;
   border-color: transparent;
   border-radius: 0;
   background: transparent;
@@ -3527,7 +3527,7 @@ body[data-app-screen="season"] .app-screen::after {
   background-size: 300% 100%;
   background-position: 0 0;
   color: #fff2b4;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 1000;
   line-height: 1;
   text-shadow: 0 2px 7px rgba(0, 0, 0, 0.72);
@@ -3577,7 +3577,7 @@ body[data-app-screen="season"] .app-screen::after {
   }
 
   .unit-feature-command {
-    grid-template-columns: minmax(46px, auto) minmax(82px, auto);
+    grid-template-columns: minmax(44px, auto) minmax(96px, auto);
     gap: 4px;
   }
 
@@ -3589,10 +3589,10 @@ body[data-app-screen="season"] .app-screen::after {
   }
 
   .featured-unit-action {
-    min-width: 84px;
-    min-height: 44px;
-    padding: 0 9px 2px;
-    font-size: 12px;
+    min-width: 96px;
+    min-height: 48px;
+    padding: 0 10px 2px;
+    font-size: 13px;
   }
 
   .featured-unit-passive {
@@ -3616,7 +3616,7 @@ body[data-app-screen="season"] .app-screen::after {
   }
 
   .shop-feature-command {
-    grid-template-columns: minmax(46px, auto) minmax(82px, auto);
+    grid-template-columns: minmax(44px, auto) minmax(96px, auto);
     gap: 4px;
   }
 
@@ -3628,10 +3628,10 @@ body[data-app-screen="season"] .app-screen::after {
   }
 
   .featured-shop-action {
-    min-width: 84px;
-    min-height: 44px;
-    padding: 0 9px 2px;
-    font-size: 12px;
+    min-width: 96px;
+    min-height: 48px;
+    padding: 0 10px 2px;
+    font-size: 13px;
   }
 
   .featured-shop-passive {

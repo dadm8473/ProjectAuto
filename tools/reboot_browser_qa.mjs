@@ -89,7 +89,7 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v24');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v25');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
@@ -130,7 +130,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v24', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v25', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -491,11 +491,20 @@ async function assertUnitFeatureOffer(page, label) {
     true,
     `${label} featured unit escapes stage: ${JSON.stringify(geometry)}`
   );
-  assert.equal(
-    geometry.actionWidth >= 58 && geometry.actionHeight >= 30 && geometry.actionBottom <= geometry.showcaseBottom,
-    true,
-    `${label} feature action is not a usable command: ${JSON.stringify(geometry)}`
-  );
+  if (geometry.controlClass.includes('featured-unit-action')) {
+    const minActionWidth = label.includes('compact') ? 96 : 104;
+    assert.equal(
+      geometry.actionWidth >= minActionWidth && geometry.actionHeight >= 46 && geometry.actionBottom <= geometry.showcaseBottom,
+      true,
+      `${label} feature action is not a dominant mobile command: ${JSON.stringify(geometry)}`
+    );
+  } else {
+    assert.equal(
+      geometry.actionWidth >= 58 && geometry.actionHeight >= 30 && geometry.actionBottom <= geometry.showcaseBottom,
+      true,
+      `${label} passive feature state is not readable: ${JSON.stringify(geometry)}`
+    );
+  }
   assert.equal(
     geometry.actionRight <= geometry.showcaseRight && geometry.actionRight <= geometry.viewportWidth,
     true,
@@ -779,11 +788,20 @@ async function assertShopFeatureOffer(page, label) {
     true,
     `${label} featured cosmetic escapes stage: ${JSON.stringify(geometry)}`
   );
-  assert.equal(
-    geometry.actionWidth >= 58 && geometry.actionHeight >= 30 && geometry.actionBottom <= geometry.showcaseBottom,
-    true,
-    `${label} feature action is not a usable command: ${JSON.stringify(geometry)}`
-  );
+  if (geometry.controlClass.includes('featured-shop-action')) {
+    const minActionWidth = label.includes('compact') ? 96 : 104;
+    assert.equal(
+      geometry.actionWidth >= minActionWidth && geometry.actionHeight >= 46 && geometry.actionBottom <= geometry.showcaseBottom,
+      true,
+      `${label} feature action is not a dominant mobile command: ${JSON.stringify(geometry)}`
+    );
+  } else {
+    assert.equal(
+      geometry.actionWidth >= 58 && geometry.actionHeight >= 30 && geometry.actionBottom <= geometry.showcaseBottom,
+      true,
+      `${label} passive feature state is not readable: ${JSON.stringify(geometry)}`
+    );
+  }
   assert.equal(
     geometry.actionRight <= geometry.showcaseRight && geometry.actionRight <= geometry.viewportWidth,
     true,

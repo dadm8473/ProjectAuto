@@ -587,7 +587,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=profile-plate1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=feature-cta1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=profile-plate1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-xp2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shell-backdrop1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-lighting1">'), false);
@@ -1407,7 +1408,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=profile-plate1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=feature-cta1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=profile-plate1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-xp2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-xp1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-profile8'), false);
@@ -4238,7 +4240,11 @@ test('unit training featured offer uses a generated stage with one dominant upgr
     '.unit-feature-ring',
     '.featured-unit-action',
     '.unit-feature-showcase .unit-sprite',
-    '.unit-feature-showcase .unit-cost'
+    '.unit-feature-showcase .unit-cost',
+    'minmax(112px, auto)',
+    'min-width: 112px;',
+    'min-height: 50px;',
+    'font-size: 15px;'
   ]) {
     assert.equal(`${css}\n${screens}\n${collection}`.includes(marker), true, marker);
   }
@@ -4323,7 +4329,11 @@ test('shop featured offer uses a generated stage with one dominant purchase acti
     '.shop-feature-pedestal',
     '.featured-shop-action',
     '.shop-feature-showcase .shop-cosmetic',
-    '.shop-feature-showcase .shop-price'
+    '.shop-feature-showcase .shop-price',
+    'minmax(112px, auto)',
+    'min-width: 112px;',
+    'min-height: 50px;',
+    'font-size: 15px;'
   ]) {
     assert.equal(`${css}\n${screens}\n${shop}`.includes(marker), true, marker);
   }
