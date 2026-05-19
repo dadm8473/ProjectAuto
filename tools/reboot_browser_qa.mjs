@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v31');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v32');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=shop-banner2': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=shop-banner2'))
+      '/src/client/styles.css?v=shop-title1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=shop-title1'))
         : false,
       '/src/client/app.js?v=loot-offset1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=loot-offset1'))
@@ -145,7 +145,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v31', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v32', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -352,7 +352,7 @@ async function assertMetaCaptionPlates(page, selector, label, expectedCount = 1)
 async function assertMetaStationHeader(page, screenSelector, label) {
   const expectedStations = {
     collection: { banner: /reboot-training-banner/, caption: '정비실', title: '유닛' },
-    shop: { banner: /reboot-shop-banner/, caption: '보급소', title: '상점' },
+    shop: { banner: null, caption: '보급소', title: '상점' },
     missions: { banner: /reboot-missions-banner/, caption: '작전판', title: '미션' },
     season: { banner: /reboot-season-banner/, caption: '시즌실', title: '시즌' }
   };
@@ -399,7 +399,11 @@ async function assertMetaStationHeader(page, screenSelector, label) {
     };
   });
   assert.equal(header.backgroundImage.includes('reboot-meta-title-plate'), true, `${label} station title lost generated plate: ${JSON.stringify(header)}`);
-  assert.match(header.beforeBackgroundImage, expectedStation.banner, `${label} station title uses wrong room banner: ${JSON.stringify(header)}`);
+  if (expectedStation.banner) {
+    assert.match(header.beforeBackgroundImage, expectedStation.banner, `${label} station title uses wrong room banner: ${JSON.stringify(header)}`);
+  } else {
+    assert.equal(header.beforeBackgroundImage, 'none', `${label} station title should keep the premium shop banner out of the compact title plate: ${JSON.stringify(header)}`);
+  }
   assert.equal(header.captionText, expectedStation.caption, `${label} station caption changed at runtime: ${JSON.stringify(header)}`);
   assert.equal(header.strongText, expectedStation.title, `${label} station title changed at runtime: ${JSON.stringify(header)}`);
   assert.equal(header.width <= 300, true, `${label} station title is still page-header sized: ${JSON.stringify(header)}`);

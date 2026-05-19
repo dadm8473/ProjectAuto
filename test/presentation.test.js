@@ -587,7 +587,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=feature-cta1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=profile-plate1">'), false);
@@ -1420,7 +1421,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=feature-cta1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=profile-plate1'), false);
@@ -1977,7 +1979,6 @@ test('meta screen titles use generated header plates instead of browser default 
     '.hub-screen h1::before',
     'background-image: var(--station-title-banner);',
     '.hub-screen h1[data-station-kind="collection"] { --station-title-banner: var(--training-banner); }',
-    '.hub-screen h1[data-station-kind="shop"] { --station-title-banner: var(--shop-banner); }',
     '.hub-screen h1[data-station-kind="missions"] { --station-title-banner: var(--missions-banner); }',
     '.hub-screen h1[data-station-kind="season"] { --station-title-banner: var(--season-banner); }',
     '.hub-screen h1 > span',
@@ -2003,6 +2004,7 @@ test('meta screen titles use generated header plates instead of browser default 
   assert.equal(titleBlock.includes('font-size: 2em'), false);
   assert.equal(titleBlock.includes('margin-block-start'), false);
   assert.equal(titleBlock.includes('linear-gradient'), false);
+  assert.equal(titleBlock.includes('.hub-screen h1[data-station-kind="shop"] { --station-title-banner: var(--shop-banner); }'), false);
   assert.equal(html.includes('<h1 data-title-icon="collection">유닛 강화</h1>'), false);
   const hubBackBlock = cssRuleBlock(css, '.hub-screen .screen-back::before');
   assert.equal(hubBackBlock.includes('opacity: 0;'), false);

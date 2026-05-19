@@ -2852,7 +2852,6 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .hub-screen h1[data-station-kind="collection"] { --station-title-banner: var(--training-banner); }
-.hub-screen h1[data-station-kind="shop"] { --station-title-banner: var(--shop-banner); }
 .hub-screen h1[data-station-kind="missions"] { --station-title-banner: var(--missions-banner); }
 .hub-screen h1[data-station-kind="season"] { --station-title-banner: var(--season-banner); }
 
