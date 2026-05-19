@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v21');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v22');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/app.js?v=result-action-label1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=result-action-label1'))
+      '/src/client/app.js?v=result-action-label2': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=result-action-label2'))
         : false,
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
@@ -102,8 +102,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_render.js?v=opening-route1': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=opening-route1'))
         : false,
-      '/src/client/reboot_screens.js?v=result-action-label1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=result-action-label1'))
+      '/src/client/reboot_screens.js?v=result-action-label2': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=result-action-label2'))
         : false,
       '/src/shared/game.js?v=boss-vitality1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=boss-vitality1'))
@@ -130,7 +130,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v21', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v22', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1893,7 +1893,7 @@ async function verifyFastPlaythrough(page) {
   assert.equal(await page.locator('#resultTitle').textContent(), '승리');
   assert.equal(await page.locator('#resultOverlay').getAttribute('data-result-status'), 'won');
   assert.equal(await page.locator('#resultOverlay').getAttribute('data-result-cta'), 'claim');
-  assert.equal(await page.locator('#resultRetryButton span').textContent(), '미션 수령');
+  assert.equal(await page.locator('#resultRetryButton span').textContent(), '미션 받기');
   assert.equal(await page.locator('#resultRetryButton').getAttribute('aria-label'), '받을 미션 보상 수령');
   assert.equal(await page.locator('#resultRetryButton').getAttribute('data-result-open'), 'claim-missions');
   assert.equal(await page.locator('#resultLobbyButton span').textContent(), '다음 작전');

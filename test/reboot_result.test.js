@@ -65,7 +65,7 @@ test('result model promotes ready profile rewards and growth as the primary resu
   });
 
   assert.equal(missionModel.primaryAction.action, 'claim-missions');
-  assert.equal(missionModel.primaryAction.label, '미션 수령');
+  assert.equal(missionModel.primaryAction.label, '미션 받기');
   assert.equal(missionModel.primaryAction.title, '받을 미션 보상');
   assert.equal(missionModel.primaryAction.ariaLabel, '받을 미션 보상 수령');
   assert.deepEqual(missionModel.secondaryAction, {
@@ -88,7 +88,7 @@ test('result model promotes ready profile rewards and growth as the primary resu
   });
 
   assert.equal(seasonModel.primaryAction.action, 'claim-season');
-  assert.equal(seasonModel.primaryAction.label, '시즌 수령');
+  assert.equal(seasonModel.primaryAction.label, '시즌 받기');
   assert.equal(seasonModel.primaryAction.title, '시즌 보상 도착');
   assert.equal(seasonModel.primaryAction.ariaLabel, '시즌 보상 도착 수령');
   assert.equal(seasonModel.secondaryAction.action, 'retry');
@@ -106,8 +106,27 @@ test('result model promotes ready profile rewards and growth as the primary resu
   });
 
   assert.equal(trainingModel.primaryAction.action, 'collection');
-  assert.equal(trainingModel.primaryAction.label, '강화');
+  assert.equal(trainingModel.primaryAction.label, '유닛 강화');
+  assert.equal(trainingModel.primaryAction.ariaLabel, '유닛 강화 가능 열기');
   assert.equal(trainingModel.secondaryAction.action, 'retry');
+
+  const shopModel = buildRebootResultModel({
+    result: { status: 'won', reason: 'partner_rescued' },
+    seedName: 'tutorial_success',
+    profile: {
+      gems: 200,
+      xp: 0,
+      processedRuns: ['run-1'],
+      claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic'],
+      claimedPassTiers: [0, 1, 2, 3],
+      unitLevels: { spark_pin: 20 }
+    }
+  });
+
+  assert.equal(shopModel.primaryAction.action, 'shop');
+  assert.equal(shopModel.primaryAction.label, '외형 해금');
+  assert.equal(shopModel.primaryAction.ariaLabel, '외형 해금 가능 열기');
+  assert.equal(shopModel.secondaryAction.action, 'retry');
 });
 
 test('lobby next action maps each priority to a generated beacon key', () => {

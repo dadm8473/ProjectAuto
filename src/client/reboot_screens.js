@@ -855,7 +855,7 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
     if (!won || !nextAction || nextAction.screen === 'battle') return null;
     if (nextAction.screen === 'missions') {
       return {
-        label: '미션 수령',
+        label: '미션 받기',
         action: 'claim-missions',
         screen: 'missions',
         title: nextAction.title,
@@ -864,14 +864,24 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
     }
     if (nextAction.screen === 'season') {
       return {
-        label: '시즌 수령',
+        label: '시즌 받기',
         action: 'claim-season',
         screen: 'season',
         title: nextAction.title,
         ariaLabel: `${nextAction.title} 수령`
       };
     }
-    return { label: nextAction.cta, action: nextAction.screen, screen: nextAction.screen, title: nextAction.title };
+    const resultLabels = {
+      collection: '유닛 강화',
+      shop: '외형 해금'
+    };
+    return {
+      label: resultLabels[nextAction.screen] ?? nextAction.cta,
+      action: nextAction.screen,
+      screen: nextAction.screen,
+      title: nextAction.title,
+      ariaLabel: `${nextAction.title} 열기`
+    };
   })();
   const primaryAction = profileAction ?? nextOperationAction ?? retryAction;
   const secondaryAction = profileAction ? (nextOperationAction ?? homeAction) : homeAction;
