@@ -687,6 +687,14 @@ const IMAGEGEN_REBOOT_META_CAPTION_PLATE = {
   minRuntimeBytes: 32_000
 };
 
+const IMAGEGEN_REBOOT_META_SHOWCASE_COPY_PLATES = {
+  path: 'src/client/assets/generated/reboot-meta-showcase-copy-plates.png',
+  source: 'docs/design/generation/source/reboot/style-lock/20260519-meta-showcase-copy-plates-chromakey-imagegen.png',
+  width: 860,
+  height: 160,
+  minRuntimeBytes: 52_000
+};
+
 const IMAGEGEN_REBOOT_RESULT_AURAS = {
   path: 'src/client/assets/generated/reboot-result-outcome-auras.png',
   source: 'docs/design/generation/source/reboot/style-lock/20260516-result-outcome-auras-chromakey-imagegen.png',
@@ -1858,6 +1866,38 @@ test('meta caption plate is promoted from imagegen source art', async () => {
   assert.equal(alphaAt(image, image.width - 2, 1) < 10, true, 'meta caption plate has an opaque top-right corner');
   assert.equal(alphaAt(image, 1, image.height - 2) < 10, true, 'meta caption plate has an opaque bottom-left corner');
   assert.equal(alphaAt(image, image.width - 2, image.height - 2) < 10, true, 'meta caption plate has an opaque bottom-right corner');
+});
+
+test('meta showcase copy plates are generated nameplates, not flat text mats', async () => {
+  const asset = IMAGEGEN_REBOOT_META_SHOWCASE_COPY_PLATES;
+  const source = await readFile(asset.source);
+  const runtime = await readFile(asset.path);
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+  assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+  assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+  assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+  assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+  const image = parsePng(runtime);
+  const cellWidth = asset.width / 2;
+  for (let cell = 0; cell < 2; cell += 1) {
+    const x0 = cell * cellWidth;
+    const corners = [
+      alphaAt(image, x0 + 2, 2),
+      alphaAt(image, x0 + cellWidth - 3, 2),
+      alphaAt(image, x0 + 2, image.height - 3),
+      alphaAt(image, x0 + cellWidth - 3, image.height - 3)
+    ];
+    const bounds = alphaBounds(image, { x: x0, y: 0, width: cellWidth, height: image.height }, 28);
+    const centerCoverage = alphaCoverage(image, { x: x0 + 48, y: 34, width: cellWidth - 96, height: 92 }, 40);
+    assert.equal(corners.every((alpha) => alpha < 14), true, `showcase copy plate cell ${cell} has opaque corners: ${corners.join(',')}`);
+    assert.equal(bounds.count > 28_000, true, `showcase copy plate cell ${cell} has no readable generated frame: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minX >= 10, true, `showcase copy plate cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 11, true, `showcase copy plate cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(centerCoverage > 0.3, true, `showcase copy plate cell ${cell} has too little center backing: ${centerCoverage}`);
+    assert.equal(centerCoverage < 0.995, true, `showcase copy plate cell ${cell} became a flat opaque web card: ${centerCoverage}`);
+  }
 });
 
 test('meta item status overlays are transparent generated shelf objects', async () => {

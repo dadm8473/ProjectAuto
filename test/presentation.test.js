@@ -587,7 +587,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=showcase-nameplate1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=feature-cta1">'), false);
@@ -1421,7 +1422,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=showcase-nameplate1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=feature-cta1'), false);
@@ -1768,6 +1770,44 @@ test('meta showcase stat chips use generated caption plates instead of css pills
     'backdrop-filter'
   ]) {
     assert.equal(chipBlock.includes(forbidden), false, forbidden);
+  }
+});
+
+test('meta showcase copy sits on generated nameplates instead of floating over art', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const html = await readFile('index.html', 'utf8');
+
+  for (const marker of [
+    '--meta-showcase-copy-plates: url("/src/client/assets/generated/reboot-meta-showcase-copy-plates.png?v=showcase-nameplate1")',
+    '.meta-showcase-copy::before',
+    'background-image: var(--meta-showcase-copy-plates);',
+    'background-size: 200% 100%;',
+    '.meta-showcase[data-showcase-kind="collection"] .meta-showcase-copy::before { background-position: 0 0; }',
+    '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
+    '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
+    'z-index: 1;',
+    '<link rel="stylesheet" href="/src/client/styles.css?v=showcase-nameplate1">'
+  ]) {
+    assert.equal(`${css}\n${html}`.includes(marker), true, marker);
+  }
+
+  const copyBlockStart = css.indexOf('.meta-showcase-copy {\n  position: relative;');
+  assert.notEqual(copyBlockStart, -1, 'base meta showcase copy block is missing');
+  const copyBlock = css.slice(copyBlockStart, css.indexOf('\n}', copyBlockStart) + 2);
+  for (const marker of [
+    'position: relative;',
+    'isolation: isolate;',
+    'padding:'
+  ]) {
+    assert.equal(copyBlock.includes(marker), true, marker);
+  }
+  for (const forbidden of [
+    'background: rgba(',
+    'linear-gradient',
+    'backdrop-filter',
+    'border:'
+  ]) {
+    assert.equal(copyBlock.includes(forbidden), false, forbidden);
   }
 });
 

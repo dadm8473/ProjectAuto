@@ -914,6 +914,24 @@ Postprocess: resize the generated 2055x765 source to 430x160 and normalize the r
 Acceptance: the shop featured area reads as a premium cosmetic display even before Korean text is read, foreground shop cosmetic sprites remain clear over the pedestal, and the banner no longer contributes black silhouette shapes behind purchase items.
 ```
 
+## Runtime Prompt: Meta Showcase Copy Plates
+
+```text
+Use case: stylized-concept
+Asset type: project-bound transparent-background UI atlas source for a portrait Korean mobile co-op tower-defense game.
+Primary request: Create one wide horizontal 2-cell atlas of premium in-game showcase nameplates for ProjectAuto. The final asset will sit behind Korean title/detail text on the Unit Upgrade and Shop featured showcase panels.
+Canvas/layout: one single wide image, exactly two side-by-side cells of equal width. Left cell is the Unit Upgrade nameplate. Right cell is the Shop cosmetic nameplate. Each cell must contain a compact ornate sci-fi toy-board UI nameplate frame with generous empty readable center space for text overlay.
+Style: high-end Korean mobile game UI, collectible toy-board defense, dark brushed metal, cyan glass tubes, teal glow, amber bolts, small gold trim, beveled embossed frame, premium but not noisy. Strong silhouette at phone size.
+Left cell treatment: training/lab identity, teal-cyan signal energy, clean engineering frame, subtle blue crystal accents.
+Right cell treatment: premium shop identity, warmer gold/teal trim, small display-case jewels, cosmetic showcase feel.
+Transparency processing background: perfectly flat solid #ff00ff chroma-key background behind all subjects. The background must be one uniform color with no shadows, gradients, texture, reflections, floor plane, or lighting variation. Keep the two nameplates fully separated from the background with crisp edges and generous padding. Do not use #ff00ff anywhere in the nameplates.
+Avoid: no text, no numbers, no letters, no logos, no watermark, no character art, no product icons, no full opaque rectangles, no web card look, no CSS gradient look.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260519-meta-showcase-copy-plates-chromakey-imagegen.png
+Runtime file: src/client/assets/generated/reboot-meta-showcase-copy-plates.png
+Postprocess: remove #ff00ff chroma key with soft matte/despill, split source into two cells, trim each cell to alpha bounds, fit each cell into a transparent 430x160 runtime slot, then composite an 860x160 atlas.
+Acceptance: featured unit/shop title copy sits on generated game nameplates instead of floating directly on banner art; the two cells keep transparent corners, distinct training/shop identity, and a readable center plate at phone scale.
+```
+
 ## 후처리 기준
 
 필수:
