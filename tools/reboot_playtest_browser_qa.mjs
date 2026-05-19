@@ -70,6 +70,8 @@ async function main() {
     assert.equal(summary.earlyEngagement.partnerJoinedWithin30s, true);
     assert.equal(summary.earlyEngagement.threatSeenWithin30s, true);
     assert.equal(summary.earlyEngagement.rewardFeedbackWithin30s, true);
+    assert.equal(summary.earlyEngagement.feedbackVarietyWithin30s, true);
+    assert.deepEqual(summary.earlyEngagement.feedbackTypesWithin30s, ['threat', 'partner', 'hit', 'reward']);
     assert.equal(summary.completedCoreLoopWithin120s, true);
     assert.equal(summary.actionCounts.summon > 0, true);
     assert.equal(summary.actionCounts.merge > 0, true);

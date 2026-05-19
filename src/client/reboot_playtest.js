@@ -8,6 +8,8 @@ const EMPTY_EARLY_ENGAGEMENT = {
   partnerJoinedWithin30s: false,
   threatSeenWithin30s: false,
   rewardFeedbackWithin30s: false,
+  feedbackVarietyWithin30s: false,
+  feedbackTypesWithin30s: [],
   passed: false,
   moments: {
     firstAction: null,
@@ -37,6 +39,22 @@ function safeSeconds(value, fallbackMs) {
 
 function uniq(values) {
   return [...new Set(values)];
+}
+
+function feedbackTypes(events) {
+  const bySignal = new Map([
+    ['threatSeen', 'threat'],
+    ['partnerJoined', 'partner'],
+    ['hitFeedback', 'hit'],
+    ['rewardFeedback', 'reward']
+  ]);
+  return [...bySignal.entries()]
+    .filter(([signal]) => events.some((event) => (
+      event.type === 'signal'
+      && event.signal === signal
+      && event.atSeconds <= EARLY_SIGNAL_SECONDS
+    )))
+    .map(([, type]) => type);
 }
 
 function finiteSeconds(value, fallbackMs) {
@@ -87,9 +105,12 @@ export function createPlaytestRecorder({
       threatSeenWithin30s: moments.threatSeen !== null && moments.threatSeen <= EARLY_SIGNAL_SECONDS,
       rewardFeedbackWithin30s: moments.rewardFeedback !== null && moments.rewardFeedback <= EARLY_SIGNAL_SECONDS
     };
+    const feedbackTypesWithin30s = feedbackTypes(events);
 
     return {
       ...checks,
+      feedbackVarietyWithin30s: feedbackTypesWithin30s.length >= 3,
+      feedbackTypesWithin30s,
       passed: Object.values(checks).every(Boolean),
       moments
     };
@@ -169,6 +190,10 @@ export function createPlaytestRecorder({
         && Number(event.at) <= EARLY_SIGNAL_SECONDS
       ));
       if (partnerEvent) recordSignal('partnerJoined', partnerEvent.at, { action: partnerEvent.action ?? '' });
+      const hitEffect = (state.effects ?? []).find((effect) => effect.type === 'hit');
+      if (atSeconds <= EARLY_SIGNAL_SECONDS && hitEffect) {
+        recordSignal('hitFeedback', atSeconds, { targetType: hitEffect.targetType ?? '' });
+      }
       const rewardEffect = (state.effects ?? []).find((effect) => (
         effect.type === 'death_burst'
         && ((effect.rewardCharge ?? 0) > 0 || (effect.rewardLink ?? 0) > 0)

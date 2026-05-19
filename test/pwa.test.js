@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v25';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v26';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -42,8 +42,9 @@ test('service worker keeps the installable mobile game shell available after fir
     "caches.match('/index.html')",
     '/manifest.webmanifest',
     '/src/client/styles.css?v=feature-cta1',
-    '/src/client/app.js?v=reward-detail1',
+    '/src/client/app.js?v=playtest-feedback1',
     '/src/client/reboot_actions.js?v=combat-meter2',
+    '/src/client/reboot_playtest.js?v=playtest2',
     '/src/client/reboot_render.js?v=opening-route1',
     '/src/client/reboot_screens.js?v=reward-detail1',
     '/src/client/reboot_action_ui.js?v=action-simplify1',
@@ -57,6 +58,7 @@ test('service worker keeps the installable mobile game shell available after fir
   ]) {
     assert.equal(sw.includes(marker), true, marker);
   }
+  assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v25';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v24';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v23';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v22';"), false);
@@ -78,6 +80,8 @@ test('service worker keeps the installable mobile game shell available after fir
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v4';"), false);
   assert.equal(sw.includes('/src/client/styles.css?v=profile-plate1'), false);
   assert.equal(sw.includes('/src/client/styles.css?v=result-xp2'), false);
+  assert.equal(sw.includes('/src/client/app.js?v=reward-detail1'), false);
+  assert.equal(sw.includes('/src/client/reboot_playtest.js?v=playtest1'), false);
   assert.equal(sw.includes('/src/client/app.js?v=result-action-label2'), false);
   assert.equal(sw.includes('/src/client/app.js?v=result-action-label1'), false);
   assert.equal(sw.includes('/src/client/app.js?v=result-xp1'), false);
@@ -124,10 +128,11 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v25'",
+    "cacheName === 'projectauto-reboot-shell-v26'",
     "await cache.match('/index.html')",
-    "await cache.match('/src/client/app.js?v=reward-detail1')",
+    "await cache.match('/src/client/app.js?v=playtest-feedback1')",
     "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
+    "await cache.match('/src/client/reboot_playtest.js?v=playtest2')",
     "await cache.match('/src/client/reboot_render.js?v=opening-route1')",
     "await cache.match('/src/client/reboot_screens.js?v=reward-detail1')",
     "await cache.match('/src/shared/game.js?v=boss-vitality1')",
@@ -138,6 +143,7 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   ]) {
     assert.equal(qa.includes(marker), true, marker);
   }
+  assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v25'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v24'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v23'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v22'"), false);

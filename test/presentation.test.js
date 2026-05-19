@@ -687,7 +687,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-detail1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest-feedback1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-detail1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-action-label2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-action-label1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-xp1"></script>'), false);
@@ -903,7 +904,7 @@ test('playtest mode records first-run understanding without adding visible UI', 
   const app = await readFile('src/client/app.js', 'utf8');
 
   for (const marker of [
-    "import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest1';",
+    "import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';",
     "const playtestEnabled = query.get('playtest') === '1';",
     'const playtestRecorder = createPlaytestRecorder({',
     'enabled: playtestEnabled,',
@@ -919,6 +920,7 @@ test('playtest mode records first-run understanding without adding visible UI', 
   ]) {
     assert.equal(app.includes(marker), true, marker);
   }
+  assert.equal(app.includes("import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest1';"), false);
 
   const visibleMarkup = html.slice(html.indexOf('<body'), html.indexOf('<script'));
   assert.equal(visibleMarkup.includes('playtest'), false, 'playtest mode must not add visible markup');
@@ -934,6 +936,8 @@ test('playtest browser QA verifies first-run understanding summary', async () =>
     'assert.equal(summary.completedCoreLoopWithin120s, true);',
     'assert.equal(summary.earlyEngagement.passed, true);',
     'assert.equal(summary.earlyEngagement.rewardFeedbackWithin30s, true);',
+    'assert.equal(summary.earlyEngagement.feedbackVarietyWithin30s, true);',
+    "assert.deepEqual(summary.earlyEngagement.feedbackTypesWithin30s, ['threat', 'partner', 'hit', 'reward']);",
     'assert.equal(summary.actionCounts.summon > 0, true);',
     'assert.equal(summary.actionCounts.merge > 0, true);',
     'assert.equal(summary.actionCounts.rescue > 0, true);',

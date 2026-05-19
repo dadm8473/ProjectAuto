@@ -26,6 +26,8 @@ test('disabled playtest recorder keeps normal sessions invisible', () => {
       partnerJoinedWithin30s: false,
       threatSeenWithin30s: false,
       rewardFeedbackWithin30s: false,
+      feedbackVarietyWithin30s: false,
+      feedbackTypesWithin30s: [],
       passed: false,
       moments: {
         firstAction: null,
@@ -74,6 +76,8 @@ test('playtest recorder summarizes whether the first 120 seconds taught the core
     partnerJoinedWithin30s: false,
     threatSeenWithin30s: false,
     rewardFeedbackWithin30s: false,
+    feedbackVarietyWithin30s: false,
+    feedbackTypesWithin30s: [],
     passed: false,
     moments: {
       firstAction: 5.2,
@@ -138,7 +142,7 @@ test('playtest recorder proves the first 30 seconds create action co-op threat a
     now: 13.2,
     enemies: [],
     events: [],
-    effects: [{ type: 'death_burst', rewardCharge: 1, rewardLink: 1 }]
+    effects: [{ type: 'hit' }, { type: 'death_burst', rewardCharge: 1, rewardLink: 1 }]
   });
 
   assert.deepEqual(recorder.summary().earlyEngagement, {
@@ -146,6 +150,8 @@ test('playtest recorder proves the first 30 seconds create action co-op threat a
     partnerJoinedWithin30s: true,
     threatSeenWithin30s: true,
     rewardFeedbackWithin30s: true,
+    feedbackVarietyWithin30s: true,
+    feedbackTypesWithin30s: ['threat', 'partner', 'hit', 'reward'],
     passed: true,
     moments: {
       firstAction: 5.2,
@@ -176,6 +182,8 @@ test('playtest recorder rejects late first-30-second engagement signals', () => 
     partnerJoinedWithin30s: false,
     threatSeenWithin30s: false,
     rewardFeedbackWithin30s: false,
+    feedbackVarietyWithin30s: false,
+    feedbackTypesWithin30s: [],
     passed: false,
     moments: {
       firstAction: 11.2,
