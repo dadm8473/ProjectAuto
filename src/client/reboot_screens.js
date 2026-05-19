@@ -855,7 +855,7 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
     if (!won || !nextAction || nextAction.screen === 'battle') return null;
     if (nextAction.screen === 'missions') {
       return {
-        label: '보상 수령',
+        label: '미션 수령',
         action: 'claim-missions',
         screen: 'missions',
         title: nextAction.title,
@@ -864,7 +864,7 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
     }
     if (nextAction.screen === 'season') {
       return {
-        label: '보상 수령',
+        label: '시즌 수령',
         action: 'claim-season',
         screen: 'season',
         title: nextAction.title,

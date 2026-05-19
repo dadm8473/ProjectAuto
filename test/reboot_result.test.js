@@ -65,7 +65,7 @@ test('result model promotes ready profile rewards and growth as the primary resu
   });
 
   assert.equal(missionModel.primaryAction.action, 'claim-missions');
-  assert.equal(missionModel.primaryAction.label, '보상 수령');
+  assert.equal(missionModel.primaryAction.label, '미션 수령');
   assert.equal(missionModel.primaryAction.title, '받을 미션 보상');
   assert.equal(missionModel.primaryAction.ariaLabel, '받을 미션 보상 수령');
   assert.deepEqual(missionModel.secondaryAction, {
@@ -88,7 +88,7 @@ test('result model promotes ready profile rewards and growth as the primary resu
   });
 
   assert.equal(seasonModel.primaryAction.action, 'claim-season');
-  assert.equal(seasonModel.primaryAction.label, '보상 수령');
+  assert.equal(seasonModel.primaryAction.label, '시즌 수령');
   assert.equal(seasonModel.primaryAction.title, '시즌 보상 도착');
   assert.equal(seasonModel.primaryAction.ariaLabel, '시즌 보상 도착 수령');
   assert.equal(seasonModel.secondaryAction.action, 'retry');
