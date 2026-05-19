@@ -89,7 +89,7 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v23');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v24');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
@@ -130,7 +130,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v23', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v24', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1071,6 +1071,7 @@ async function assertLobbyProfilePlate(page, label, expectedLevel) {
       right: Math.round(rect.right),
       top: Math.round(rect.top),
       bottom: Math.round(rect.bottom),
+      labelInsetTop: label ? Math.round(label.top - rect.top) : -1,
       viewportWidth: window.innerWidth,
       backgroundImage: style.backgroundImage,
       emblemBackgroundImage: emblemStyle?.backgroundImage ?? '',
@@ -1090,7 +1091,8 @@ async function assertLobbyProfilePlate(page, label, expectedLevel) {
   assert.equal(plate.progressBackgroundImage.includes('reboot-meta-progress-bars'), true, `${label} profile progress lost generated track: ${JSON.stringify(plate)}`);
   assert.equal(plate.progressBeforeBackgroundImage.includes('reboot-meta-progress-bars'), true, `${label} profile progress fill lost generated art: ${JSON.stringify(plate)}`);
   assert.equal(plate.width >= 132 && plate.width <= 178, true, `${label} profile plate width is not compact: ${JSON.stringify(plate)}`);
-  assert.equal(plate.height >= 48 && plate.height <= 64, true, `${label} profile plate height is not compact: ${JSON.stringify(plate)}`);
+  assert.equal(plate.height >= 58 && plate.height <= 72, true, `${label} profile plate height is not compact: ${JSON.stringify(plate)}`);
+  assert.equal(plate.labelInsetTop >= 15, true, `${label} profile label floats on the plaque rim: ${JSON.stringify(plate)}`);
   assert.equal(plate.labelGap >= 2, true, `${label} profile label crowds level text: ${JSON.stringify(plate)}`);
   assert.equal(plate.left >= 8 && plate.right <= plate.viewportWidth - 8, true, `${label} profile plate leaves viewport: ${JSON.stringify(plate)}`);
   assert.equal(plate.bottom <= plate.operationTop - 10, true, `${label} profile plate crowds operation poster: ${JSON.stringify(plate)}`);

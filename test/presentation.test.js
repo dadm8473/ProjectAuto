@@ -587,7 +587,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-xp2">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=profile-plate1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-xp2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shell-backdrop1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-lighting1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=loading-gate1">'), false);
@@ -1406,7 +1407,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=result-xp2'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=profile-plate1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-xp2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-xp1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-profile8'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-profile7'), false);
@@ -3604,8 +3606,9 @@ test('lobby commander rank uses generated game plates without adding a profile m
     '.lobby-profile-plate',
     '.lobby-screen > #lobbyContent',
     'Keep absolute lobby account chrome anchored to the full app screen.',
+    'min-height: clamp(62px, 16vw, 70px);',
     'row-gap: 2px;',
-    'padding: 10px 13px 6px 10px;',
+    'padding: 16px 13px 6px 10px;',
     'background-image: var(--meta-status-plaques);',
     '.lobby-profile-emblem',
     'background-image: var(--result-medals);',
