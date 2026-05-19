@@ -684,6 +684,53 @@ function drawOpeningRouteBeacons(ctx, state, assets = {}, options = {}, imageBac
   return true;
 }
 
+function hasBoardUnit(state = {}) {
+  return Object.values(state.boards ?? {}).some((board) => (
+    (board?.units ?? []).some(Boolean)
+  ));
+}
+
+function drawActiveLanePressure(ctx, state, assets = {}, options = {}, imageBackdrop = true) {
+  const now = Number(state.now) || 0;
+  if (options.onlineWaiting || options.matchmakingBannerVisible) return false;
+  if (!hasFirstPlayerAction(state) || !hasBoardUnit(state)) return false;
+  if ((state.enemies?.length ?? 0) <= 0) return false;
+
+  const image = assets?.enemyTrackTrails;
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+
+  const cellWidth = image.naturalWidth / 4;
+  const pressureMarks = [
+    { progress: 0.2, lane: 0.18, cell: 1, width: 80, height: 32, phase: 0 },
+    { progress: 0.44, lane: -0.12, cell: 2, width: 72, height: 30, phase: 1.35 },
+    { progress: 0.71, lane: 0.1, cell: 1, width: 86, height: 34, phase: 2.4 }
+  ];
+
+  pressureMarks.forEach((mark, index) => {
+    const drift = Math.sin(now * 2.1 + mark.phase) * 0.006;
+    const point = trackPointFromProgress(mark.progress + drift, mark.lane, imageBackdrop);
+    const pulse = Math.max(0, Math.sin(now * 5.2 - index * 0.88));
+    const alpha = Math.min(0.56, 0.34 + pulse * 0.16);
+    const lift = Math.cos(now * 3.6 + index) * 2;
+    ctx.save();
+    ctx.globalAlpha *= alpha;
+    ctx.drawImage(
+      image,
+      mark.cell * cellWidth,
+      0,
+      cellWidth,
+      image.naturalHeight,
+      point.x - mark.width / 2,
+      point.y + 7 + lift,
+      mark.width,
+      mark.height
+    );
+    ctx.restore();
+  });
+
+  return true;
+}
+
 function isSignalCoreCritical(state = {}) {
   const danger = Math.max(...Object.values(state.boards ?? {}).map((board) => board?.danger ?? 0), 0);
   const bossThreat = (state.enemies ?? []).some((enemy) => enemy.enemyId === 'mini_boss' || enemy.spriteKey === 'mini_boss');
@@ -1168,6 +1215,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false, options = {})
   drawEnemySpawnGate(ctx, assets.enemySpawnGates, enemies, state.now, imageBackdrop);
   drawOpeningThreatPreview(ctx, state, assets, options, imageBackdrop);
   drawOpeningRouteBeacons(ctx, state, assets, options, imageBackdrop);
+  drawActiveLanePressure(ctx, state, assets, options, imageBackdrop);
   drawSignalCoreGate(ctx, assets.signalCoreGates, state, imageBackdrop);
   enemies.forEach((enemy, index) => {
     const { x, y } = enemyScreenPoint(state, index, enemy, imageBackdrop);

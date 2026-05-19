@@ -505,6 +505,55 @@ test('opening combat paints generated route beacons along the enemy path before 
   assert.equal(routeBeacons.length >= 3, true, 'expected generated route beacons to show the incoming path before the first summon');
 });
 
+test('active early combat keeps generated pressure marks on the lane before enemy sprites', () => {
+  const ctx = mockContext();
+  const enemyTrackTrails = image(1024, 128);
+  const enemies = image(1024, 256);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 6.2,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [{ spriteKey: 'burst_pin' }] }
+      },
+      enemies: [
+        { enemyId: 'noise_shard', spriteKey: 'noise_shard', boardId: 'p1', progress: 0.22 },
+        { enemyId: 'quick_noise', spriteKey: 'quick_noise', boardId: 'p2', progress: 0.38 }
+      ],
+      events: [{ type: 'summon', at: 0.62, playerId: 'p1' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies,
+      board: image(1280, 256),
+      enemyTrackTrails,
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const firstEnemyIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage' && command.args[0] === enemies
+  ));
+  const preEnemyPressureMarks = ctx.commands.slice(0, firstEnemyIndex).filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === enemyTrackTrails
+      && command.args[7] >= 64
+      && command.args[8] >= 26
+  ));
+
+  assert.notEqual(firstEnemyIndex, -1, 'expected enemy sprites to render');
+  assert.equal(
+    preEnemyPressureMarks.length >= 3,
+    true,
+    'active combat should paint multiple generated pressure marks before enemies so the board does not read empty'
+  );
+});
+
 test('early combat lulls keep a generated incoming-wave object on the track', () => {
   const ctx = mockContext();
   const enemies = image(1024, 256);
