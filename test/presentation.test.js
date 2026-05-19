@@ -587,7 +587,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=feature-cta1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=feature-cta1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=profile-plate1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-xp2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shell-backdrop1">'), false);
@@ -1412,7 +1413,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=feature-cta1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=feature-cta1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=profile-plate1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-xp2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-xp1'), false);
@@ -3327,7 +3329,7 @@ test('splash and lobby use generated hero squad art instead of empty landing spa
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '--hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png")',
+    '--hero-squad: url("/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2")',
     '.splash-screen::before',
     '.lobby-screen::before',
     'background-image: var(--hero-squad)',
@@ -3338,6 +3340,8 @@ test('splash and lobby use generated hero squad art instead of empty landing spa
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
+
+  assert.equal(css.includes('--hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png")'), false);
 });
 
 test('lobby operation card uses a dedicated generated mission poster', async () => {

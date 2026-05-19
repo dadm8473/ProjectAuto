@@ -8,7 +8,7 @@ test('critical reboot preload list starts with generated game identity and first
   const required = [
     '/src/client/assets/generated/reboot-app-icon-192.png',
     '/src/client/assets/generated/reboot-title-emblem.png',
-    '/src/client/assets/generated/reboot-hero-squad.png',
+    '/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2',
     '/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title',
     '/src/client/assets/generated/reboot-lobby-backdrop.png',
     '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',

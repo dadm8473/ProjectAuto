@@ -272,7 +272,7 @@ Premium animated co-op toy-board.
 
 | Field | Value |
 | --- | --- |
-| File | `src/client/assets/generated/reboot-hero-squad.png` |
+| File | `src/client/assets/generated/reboot-hero-squad-v2.png` |
 | Final size | 640x512 |
 | Runtime use | splash and lobby mid-screen hero art |
 | Subject bbox | 520-620px wide, 320-430px tall |

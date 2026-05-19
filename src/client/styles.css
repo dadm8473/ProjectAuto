@@ -41,7 +41,7 @@
   --nav-alert-badges: url("/src/client/assets/generated/reboot-nav-alert-badges.png?v=nav-alerts");
   --nav-button-glow-size: clamp(62px, 18vw, 76px);
   --title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png");
-  --hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png");
+  --hero-squad: url("/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2");
   --splash-title-plate: url("/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title");
   --loading-gate-plate: var(--splash-title-plate);
   --loading-gate-emblem: var(--title-emblem);

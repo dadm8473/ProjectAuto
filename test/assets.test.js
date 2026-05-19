@@ -52,8 +52,8 @@ const IMAGEGEN_REBOOT_OVERLAYS = [
     minRuntimeBytes: 30_000
   },
   {
-    path: 'src/client/assets/generated/reboot-hero-squad.png',
-    source: 'docs/design/generation/source/reboot/style-lock/20260513-hero-squad-imagegen.png',
+    path: 'src/client/assets/generated/reboot-hero-squad-v2.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260519-hero-squad-v2-imagegen.png',
     width: 640,
     height: 512,
     minRuntimeBytes: 80_000
@@ -1498,6 +1498,23 @@ test('reboot runtime overlay art is promoted from imagegen sources', async () =>
     assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
     assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
   }
+});
+
+test('reboot hero squad v2 is a transparent collectible character overlay', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-hero-squad-v2.png'));
+  const corners = [
+    alphaAt(image, 2, 2),
+    alphaAt(image, image.width - 3, 2),
+    alphaAt(image, 2, image.height - 3),
+    alphaAt(image, image.width - 3, image.height - 3)
+  ];
+  const bounds = alphaBounds(image, { x: 0, y: 0, width: image.width, height: image.height }, 24);
+  const greenFringeRatio = colorRatio(image, { x: 0, y: 0, width: image.width, height: image.height }, (r, g, b) => g > 190 && r < 80 && b < 80);
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, `hero squad v2 has opaque corners: ${corners.join(',')}`);
+  assert.equal(bounds.maxX - bounds.minX >= 520, true, `hero squad v2 is too narrow: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxY - bounds.minY >= 320, true, `hero squad v2 is too short: ${JSON.stringify(bounds)}`);
+  assert.equal(greenFringeRatio < 0.001, true, `hero squad v2 keeps chroma-key green fringe: ${greenFringeRatio}`);
 });
 
 test('reboot lobby UI scene art is promoted from imagegen sources', async () => {
