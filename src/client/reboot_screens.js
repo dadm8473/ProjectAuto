@@ -572,11 +572,36 @@ function lobbyToyPreviewMarkup() {
       </div>`;
 }
 
+function lobbyProfileModel(profile = {}) {
+  const xp = Number.isFinite(profile.xp) ? Math.max(0, Math.floor(profile.xp)) : 0;
+  const completedRuns = Array.isArray(profile.processedRuns) ? profile.processedRuns.length : 0;
+  const profileScore = xp + completedRuns * 60;
+  const level = Math.min(99, Math.floor(profileScore / 100) + 1);
+  const progress = level === 99 ? 100 : profileScore % 100;
+  const medal = level >= 6 ? 'boss' : level >= 3 ? 'tactics' : 'rescue';
+  return { level, progress, medal };
+}
+
+function buildLobbyProfilePlate(profile = {}) {
+  const profileRank = lobbyProfileModel(profile);
+  const profileAriaLabel = profileRank.level === 99
+    ? `지휘관 랭크 Lv.${profileRank.level}, 최고 랭크 도달`
+    : `지휘관 랭크 Lv.${profileRank.level}, 다음 랭크 ${profileRank.progress}/100`;
+  return `
+    <section class="lobby-profile-plate" aria-label="${profileAriaLabel}">
+      <span class="lobby-profile-emblem" data-rank-medal="${profileRank.medal}" aria-hidden="true"></span>
+      <span class="lobby-profile-label">지휘관</span>
+      <strong>Lv.${profileRank.level}</strong>
+      <span class="lobby-profile-progress" data-progress-kind="season" style="--profile-progress:${profileRank.progress}%" aria-hidden="true"></span>
+    </section>`;
+}
+
 export function buildRebootLobby(model = {}) {
   const gems = model.gems ?? 0;
   const nextAction = nextLobbyAction(model);
   const operation = nextLobbyOperation(model);
   return `
+    ${buildLobbyProfilePlate(model)}
     <section class="operation-card" data-operation-poster="${operation.poster}">
       <img class="operation-poster-frame" src="/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1" alt="" aria-hidden="true">
       ${lobbyToyPreviewMarkup()}

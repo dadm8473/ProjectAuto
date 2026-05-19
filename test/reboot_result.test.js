@@ -991,6 +991,53 @@ test('lobby currency strip uses an icon numeric chip with accessible economy mea
   assert.equal(lobby.includes('<p>외형만 해금</p>'), false);
 });
 
+test('lobby profile plate exposes commander rank without adding another command', () => {
+  const lobby = buildRebootLobby({
+    gems: 24,
+    xp: 80,
+    processedRuns: ['run-1'],
+    claimedMissions: ['first-run'],
+    claimedPassTiers: [0]
+  });
+
+  assert.equal(lobby.includes('class="lobby-profile-plate" aria-label="지휘관 랭크 Lv.2, 다음 랭크 40/100"'), true);
+  assert.equal(lobby.includes('class="lobby-profile-emblem" data-rank-medal="rescue"'), true);
+  assert.equal(lobby.includes('<span class="lobby-profile-label">지휘관</span>'), true);
+  assert.equal(lobby.includes('<strong>Lv.2</strong>'), true);
+  assert.equal(lobby.includes('class="lobby-profile-progress" data-progress-kind="season" style="--profile-progress:40%"'), true);
+  assert.equal(lobby.includes('data-lobby-open="profile"'), false);
+  assert.equal(lobby.includes('class="lobby-card profile-hook"'), false);
+});
+
+test('lobby profile rank plate exposes higher medals and caps max rank progress', () => {
+  const tacticsLobby = buildRebootLobby({
+    xp: 300,
+    processedRuns: ['run-1', 'run-2', 'run-3']
+  });
+
+  assert.equal(tacticsLobby.includes('aria-label="지휘관 랭크 Lv.5, 다음 랭크 80/100"'), true);
+  assert.equal(tacticsLobby.includes('class="lobby-profile-emblem" data-rank-medal="tactics"'), true);
+  assert.equal(tacticsLobby.includes('style="--profile-progress:80%"'), true);
+
+  const bossLobby = buildRebootLobby({
+    xp: 500,
+    processedRuns: ['run-1', 'run-2', 'run-3', 'run-4', 'run-5']
+  });
+
+  assert.equal(bossLobby.includes('aria-label="지휘관 랭크 Lv.9, 다음 랭크 0/100"'), true);
+  assert.equal(bossLobby.includes('class="lobby-profile-emblem" data-rank-medal="boss"'), true);
+  assert.equal(bossLobby.includes('style="--profile-progress:0%"'), true);
+
+  const cappedLobby = buildRebootLobby({
+    xp: 10000,
+    processedRuns: []
+  });
+
+  assert.equal(cappedLobby.includes('aria-label="지휘관 랭크 Lv.99, 최고 랭크 도달"'), true);
+  assert.equal(cappedLobby.includes('<strong>Lv.99</strong>'), true);
+  assert.equal(cappedLobby.includes('style="--profile-progress:100%"'), true);
+});
+
 test('lobby next action uses compact game-state chips while preserving meaning for assistive tech', () => {
   const missionLobby = buildRebootLobby({
     gems: 24,

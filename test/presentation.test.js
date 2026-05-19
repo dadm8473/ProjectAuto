@@ -117,7 +117,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=action-simplify1'",
     "from './reboot_render.js?v=opening-route1'",
-    "from './reboot_screens.js?v=lobby-intel1'",
+    "from './reboot_screens.js?v=lobby-profile2'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -587,7 +587,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-station1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile6">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shell-backdrop1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-lighting1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=loading-gate1">'), false);
@@ -659,6 +659,12 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=critical-action-rings1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reboot-action-ready1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=command-cooldown1">'), false);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile5">'), false);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile4">'), false);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile3">'), false);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile2">'), false);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile1">'), false);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-station1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-intel1">'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-brand1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=mission-track1"></script>'), false);
@@ -675,7 +681,9 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-intel1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-profile2"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-profile1"></script>'), false);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-intel1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=command-cooldown1"></script>'), false);
@@ -755,7 +763,9 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=lobby-intel1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=lobby-profile2'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=lobby-profile1'"), false);
+  assert.equal(app.includes("from './reboot_screens.js?v=lobby-intel1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=boss-vitality1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=lobby-focus1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=shelf-price1'"), false);
@@ -1386,7 +1396,13 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=meta-station1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-profile6'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-profile5'), false);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-profile4'), false);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-profile3'), false);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-profile2'), false);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-profile1'), false);
+  assert.equal(html.includes('/src/client/styles.css?v=meta-station1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shell-backdrop1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=screen-lighting1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=loading-gate1'), false);
@@ -3552,6 +3568,46 @@ test('lobby reward and next hooks use generated intel strips instead of web card
   }
 });
 
+test('lobby commander rank uses generated game plates without adding a profile menu', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+	for (const marker of [
+	  'function lobbyProfileModel',
+	  'function buildLobbyProfilePlate',
+	  'const profileAriaLabel = profileRank.level === 99',
+	  '? `지휘관 랭크 Lv.${profileRank.level}, 최고 랭크 도달`',
+	  ': `지휘관 랭크 Lv.${profileRank.level}, 다음 랭크 ${profileRank.progress}/100`;',
+	  'class="lobby-profile-plate" aria-label="${profileAriaLabel}"',
+	  'class="lobby-profile-emblem" data-rank-medal="${profileRank.medal}"',
+    'class="lobby-profile-label"',
+    'class="lobby-profile-progress" data-progress-kind="season" style="--profile-progress:${profileRank.progress}%"',
+    '.lobby-profile-plate',
+    '.lobby-screen > #lobbyContent',
+    'Keep absolute lobby account chrome anchored to the full app screen.',
+    'background-image: var(--meta-status-plaques);',
+    '.lobby-profile-emblem',
+    'background-image: var(--result-medals);',
+    '.lobby-profile-progress',
+    'background-image: var(--meta-progress-bars);',
+    '.lobby-profile-progress[data-progress-kind="season"]',
+    '.lobby-profile-progress::before',
+    '.lobby-profile-progress[data-progress-kind="season"]::before',
+    'clip-path: inset(0 calc(100% - var(--profile-progress)) 0 0);'
+  ]) {
+    assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
+  }
+
+  for (const forbidden of [
+    'data-lobby-open="profile"',
+    'class="lobby-card profile-hook"',
+    'class="screen-card profile-hook"',
+    '.lobby-profile-plate {\n  background:'
+  ]) {
+    assert.equal(`${css}\n${screens}`.includes(forbidden), false, forbidden);
+  }
+});
+
 test('battle-ready lobby omits redundant next-action strip to keep the first screen focused', async () => {
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
@@ -4631,11 +4687,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=boss-vitality1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=lobby-intel1'",
+    "from './reboot_screens.js?v=lobby-profile2'",
     "from './reboot_game.js?v=boss-vitality1'",
     "from '../shared/game.js?v=boss-vitality1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=lobby-intel1',
+    '/src/client/reboot_screens.js?v=lobby-profile2',
     '/src/shared/game.js?v=boss-vitality1',
     '/src/shared/reboot_game.js?v=boss-vitality1'
   ]) {

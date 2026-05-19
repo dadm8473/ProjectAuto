@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v10');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v16');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/app.js?v=lobby-intel1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=lobby-intel1'))
+      '/src/client/app.js?v=lobby-profile2': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=lobby-profile2'))
         : false,
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
@@ -102,8 +102,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_render.js?v=opening-route1': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=opening-route1'))
         : false,
-      '/src/client/reboot_screens.js?v=lobby-intel1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=lobby-intel1'))
+      '/src/client/reboot_screens.js?v=lobby-profile2': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=lobby-profile2'))
         : false,
       '/src/shared/game.js?v=boss-vitality1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=boss-vitality1'))
@@ -130,7 +130,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v10', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v16', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1049,6 +1049,51 @@ async function assertOperationIntelClearsPreviewSprites(page) {
   );
 }
 
+async function assertLobbyProfilePlate(page, label, expectedLevel) {
+  const plate = await page.locator('#lobbyScreen .lobby-profile-plate').evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    const emblem = node.querySelector('.lobby-profile-emblem');
+    const emblemStyle = emblem ? getComputedStyle(emblem) : null;
+    const progress = node.querySelector('.lobby-profile-progress');
+    const progressStyle = progress ? getComputedStyle(progress) : null;
+    const progressBefore = progress ? getComputedStyle(progress, '::before') : null;
+    const operation = document.querySelector('#lobbyScreen .operation-card')?.getBoundingClientRect();
+    const launch = document.querySelector('#lobbyScreen .launch-command-console')?.getBoundingClientRect();
+    return {
+      text: node.textContent?.replace(/\s+/g, ' ').trim() ?? '',
+      ariaLabel: node.getAttribute('aria-label'),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      left: Math.round(rect.left),
+      right: Math.round(rect.right),
+      top: Math.round(rect.top),
+      bottom: Math.round(rect.bottom),
+      viewportWidth: window.innerWidth,
+      backgroundImage: style.backgroundImage,
+      emblemBackgroundImage: emblemStyle?.backgroundImage ?? '',
+      progressBackgroundImage: progressStyle?.backgroundImage ?? '',
+      progressBeforeBackgroundImage: progressBefore?.backgroundImage ?? '',
+      operationTop: operation ? Math.round(operation.top) : 0,
+      launchTop: launch ? Math.round(launch.top) : 0,
+      buttonCount: node.querySelectorAll('button').length
+    };
+  });
+  const escapedLevel = expectedLevel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  assert.match(plate.ariaLabel ?? '', new RegExp(`지휘관 랭크 ${escapedLevel},`), `${label} profile rank aria changed: ${JSON.stringify(plate)}`);
+  assert.match(plate.text, new RegExp(`지휘관 ${escapedLevel}$`), `${label} profile rank text changed: ${JSON.stringify(plate)}`);
+  assert.equal(plate.backgroundImage.includes('reboot-meta-status-plaques'), true, `${label} profile plate lost generated plaque: ${JSON.stringify(plate)}`);
+  assert.equal(plate.emblemBackgroundImage.includes('reboot-result-medals'), true, `${label} profile emblem lost generated medal: ${JSON.stringify(plate)}`);
+  assert.equal(plate.progressBackgroundImage.includes('reboot-meta-progress-bars'), true, `${label} profile progress lost generated track: ${JSON.stringify(plate)}`);
+  assert.equal(plate.progressBeforeBackgroundImage.includes('reboot-meta-progress-bars'), true, `${label} profile progress fill lost generated art: ${JSON.stringify(plate)}`);
+  assert.equal(plate.width >= 132 && plate.width <= 178, true, `${label} profile plate width is not compact: ${JSON.stringify(plate)}`);
+  assert.equal(plate.height >= 48 && plate.height <= 64, true, `${label} profile plate height is not compact: ${JSON.stringify(plate)}`);
+  assert.equal(plate.left >= 8 && plate.right <= plate.viewportWidth - 8, true, `${label} profile plate leaves viewport: ${JSON.stringify(plate)}`);
+  assert.equal(plate.bottom <= plate.operationTop - 10, true, `${label} profile plate crowds operation poster: ${JSON.stringify(plate)}`);
+  assert.equal(plate.bottom <= plate.launchTop - 10, true, `${label} profile plate crowds launch controls: ${JSON.stringify(plate)}`);
+  assert.equal(plate.buttonCount, 0, `${label} profile plate should not add another lobby command: ${JSON.stringify(plate)}`);
+}
+
 async function assertBattleReadyLobbyStaysFocused(page) {
   const surface = await page.evaluate(() => ({
     nextHookCount: document.querySelectorAll('#lobbyScreen .next-hook').length,
@@ -1657,6 +1702,7 @@ async function verifyShell(page, viewport) {
 
   await page.getByRole('button', { name: '시작' }).click();
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).waitFor({ state: 'visible' });
+  await assertLobbyProfilePlate(page, 'lobby', 'Lv.1');
   await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'lobby operation copy', 2);
   await assertOperationCopyClearsProgressRail(page);
   await assertOperationIntelClearsPreviewSprites(page);
@@ -1737,6 +1783,7 @@ async function verifyCompactLobby(page) {
   assert.equal(await page.locator('audio, video').count(), 0);
   await page.getByRole('button', { name: '시작' }).click();
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).waitFor({ state: 'visible' });
+  await assertLobbyProfilePlate(page, 'compact lobby', 'Lv.1');
   await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'compact lobby operation copy', 2);
   await assertOperationCopyClearsProgressRail(page);
   await assertOperationIntelClearsPreviewSprites(page);
