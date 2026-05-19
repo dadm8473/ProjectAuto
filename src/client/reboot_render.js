@@ -1363,10 +1363,10 @@ function drawRewardPickups(ctx, assets, effect, point, boss, alpha) {
   const pickupIndex = boss ? 2 : effect.rewardLink > 1 ? 1 : 0;
   const pickupAlpha = Math.min(0.98, alpha * 1.36);
   const rise = (1 - alpha) * (boss ? 34 : 22);
-  const w = boss ? 140 : 106;
-  const h = boss ? 74 : 56;
-  const cx = point.x + (boss ? 30 : 16);
-  const cy = point.y - (boss ? 54 : 40) - rise;
+  const w = boss ? 124 : 82;
+  const h = boss ? 66 : 44;
+  const cx = point.x + (boss ? 56 : 44);
+  const cy = point.y - (boss ? 68 : 52) - rise;
   return drawRewardPickupSprite(ctx, assets.rewardPickups, pickupIndex, cx, cy, w, h, pickupAlpha);
 }
 

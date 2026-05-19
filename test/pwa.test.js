@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v29';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v30';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -42,10 +42,10 @@ test('service worker keeps the installable mobile game shell available after fir
     "caches.match('/index.html')",
     '/manifest.webmanifest',
     '/src/client/styles.css?v=hero-squad2',
-    '/src/client/app.js?v=enemy-atlas3',
+    '/src/client/app.js?v=loot-offset1',
     '/src/client/reboot_actions.js?v=combat-meter2',
     '/src/client/reboot_playtest.js?v=playtest2',
-    '/src/client/reboot_render.js?v=enemy-atlas3',
+    '/src/client/reboot_render.js?v=loot-offset1',
     '/src/client/reboot_screens.js?v=result-highlight1',
     '/src/client/reboot_action_ui.js?v=action-simplify1',
     '/src/client/reboot_online.js',
@@ -60,6 +60,7 @@ test('service worker keeps the installable mobile game shell available after fir
   ]) {
     assert.equal(sw.includes(marker), true, marker);
   }
+  assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v29';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v28';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v27';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v26';"), false);
@@ -135,13 +136,13 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v29'",
+    "cacheName === 'projectauto-reboot-shell-v30'",
     "await cache.match('/index.html')",
     "await cache.match('/src/client/styles.css?v=hero-squad2')",
-    "await cache.match('/src/client/app.js?v=enemy-atlas3')",
+    "await cache.match('/src/client/app.js?v=loot-offset1')",
     "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
     "await cache.match('/src/client/reboot_playtest.js?v=playtest2')",
-    "await cache.match('/src/client/reboot_render.js?v=enemy-atlas3')",
+    "await cache.match('/src/client/reboot_render.js?v=loot-offset1')",
     "await cache.match('/src/client/reboot_screens.js?v=result-highlight1')",
     "await cache.match('/src/shared/game.js?v=boss-vitality1')",
     "await cache.match('/src/shared/reboot_game.js?v=boss-vitality1')",

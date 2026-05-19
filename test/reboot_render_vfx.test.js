@@ -1201,6 +1201,57 @@ test('boss death burst gets a generated battlefield finale behind the kill burst
   assert.equal(finaleIndex < killBurstIndex, true, 'battlefield finale should frame the boss kill burst from behind');
 });
 
+test('death reward pickup stays offset from the enemy death core', () => {
+  const ctx = mockContext();
+  const killBurst = image(256, 256);
+  const rewardPickups = image(768, 128);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 28.4,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 12, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: [
+        {
+          type: 'death_burst',
+          targetType: 'noise_shard',
+          targetProgress: 0.32,
+          targetLane: 0,
+          rewardCharge: 10,
+          rewardLink: 0,
+          ttl: 0.74
+        }
+      ]
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      killBurst,
+      rewardPickups,
+      rewards: image(1024, 256)
+    }
+  );
+
+  const killDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === killBurst);
+  const pickupDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === rewardPickups);
+  const killCenterX = killDraw.args[5] + killDraw.args[7] / 2;
+  const killCenterY = killDraw.args[6] + killDraw.args[8] / 2;
+  const pickupCenterX = pickupDraw.args[5] + pickupDraw.args[7] / 2;
+  const pickupBottom = pickupDraw.args[6] + pickupDraw.args[8];
+
+  assert.ok(killDraw, 'expected the enemy death burst to draw');
+  assert.ok(pickupDraw, 'expected the generated reward pickup burst to draw');
+  assert.equal(pickupCenterX >= killCenterX + 34, true, 'reward pickup should read as loot popping out, not cover the death core');
+  assert.equal(pickupBottom <= killCenterY - 16, true, 'reward pickup should stay above the defeated enemy silhouette');
+});
+
 test('player board uses a generated landing tray beneath summoned units', () => {
   const ctx = mockContext();
   drawRebootBattle(

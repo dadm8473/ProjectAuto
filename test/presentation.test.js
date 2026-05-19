@@ -116,7 +116,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=action-simplify1'",
-    "from './reboot_render.js?v=enemy-atlas3'",
+    "from './reboot_render.js?v=loot-offset1'",
     "from './reboot_screens.js?v=result-highlight1'",
     "from './reboot_online.js'"
   ]) {
@@ -688,7 +688,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=loot-offset1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-highlight1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest-feedback1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-detail1"></script>'), false);
@@ -754,7 +755,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=enemy-atlas3'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=loot-offset1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=enemy-atlas3'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=opening-route1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=match-banner-cutin1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=action-surges1'"), false);
