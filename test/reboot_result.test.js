@@ -1083,7 +1083,9 @@ test('lobby next action uses compact game-state chips while preserving meaning f
   assert.equal(missionLobby.includes('class="lobby-intel-strip next-hook"'), true);
   assert.equal(missionLobby.includes('aria-label="미션 보상: 받을 미션 보상. 완료 목표 수령"'), true);
   assert.equal(missionLobby.includes('class="lobby-next-state" aria-label="미션 보상">수령</span>'), true);
-  assert.equal(missionLobby.includes('data-lobby-open="missions" aria-label="미션 보상 수령"'), true);
+  assert.equal(missionLobby.includes('class="lobby-next-title">받을 미션 보상</strong>'), true);
+  assert.equal(missionLobby.includes('class="lobby-next-action" data-lobby-open="missions" aria-label="미션 보상 수령"'), true);
+  assert.equal(missionLobby.includes('<span class="lobby-next-action-label">수령</span>'), true);
   assert.equal(missionLobby.includes('>보상 보기<'), false);
   assert.equal(missionLobby.includes('<span>미션 보상</span>'), false);
 
@@ -1095,9 +1097,9 @@ test('lobby next action uses compact game-state chips while preserving meaning f
     claimedPassTiers: []
   });
 
-  assert.equal(seasonLobby.includes('data-lobby-open="season" aria-label="시즌 보상 수령"'), true);
+  assert.equal(seasonLobby.includes('class="lobby-next-action" data-lobby-open="season" aria-label="시즌 보상 수령"'), true);
   assert.equal(seasonLobby.includes('class="lobby-next-state" aria-label="시즌 보상">보상</span>'), true);
-  assert.equal(seasonLobby.includes('>수령<'), true);
+  assert.equal(seasonLobby.includes('<span class="lobby-next-action-label">수령</span>'), true);
   assert.equal(seasonLobby.includes('>열기<'), false);
 
   const battleLobby = buildRebootLobby({

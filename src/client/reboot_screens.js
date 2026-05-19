@@ -461,7 +461,7 @@ export function postRewardRoute(profile = {}, fallbackScreen = 'lobby') {
 }
 
 function buildLobbyNextActionControl(nextAction) {
-  return `<button type="button" data-lobby-open="${nextAction.screen}" aria-label="${nextAction.label} ${nextAction.cta}">${nextAction.cta}</button>`;
+  return `<button type="button" class="lobby-next-action" data-lobby-open="${nextAction.screen}" aria-label="${nextAction.label} ${nextAction.cta}"><span class="lobby-next-action-label">${nextAction.cta}</span></button>`;
 }
 
 function buildLobbyNextActionStrip(nextAction) {
@@ -475,7 +475,7 @@ function buildLobbyNextActionStrip(nextAction) {
       <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-next.png?v=intel-strips-alpha1" alt="" aria-hidden="true">
       <span class="lobby-next-beacon" data-next-beacon="${nextAction.beacon}" aria-hidden="true"></span>
       <span class="lobby-next-state" aria-label="${nextAction.label}">${nextAction.status}</span>
-      <strong>${nextAction.title}</strong>
+      <strong class="lobby-next-title">${nextAction.title}</strong>
       <p>${nextAction.detail}</p>
       ${buildLobbyNextActionControl(nextAction)}
     </section>`;

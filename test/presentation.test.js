@@ -587,7 +587,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-board-layout1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-next-title1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), false);
@@ -1422,7 +1422,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=meta-board-layout1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-next-title1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), false);
@@ -1786,7 +1786,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=meta-board-layout1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=lobby-next-title1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -3589,6 +3589,9 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     'class="lobby-intel-frame"',
     'class="lobby-next-beacon"',
     'class="lobby-next-state" aria-label="${nextAction.label}"',
+    'class="lobby-next-title"',
+    'class="lobby-next-action"',
+    'class="lobby-next-action-label"',
     'data-next-beacon="${nextAction.beacon}"',
     "nextAction.screen === 'battle'",
     '/src/client/assets/generated/reboot-lobby-intel-gems.png?v=intel-strips-alpha1',
@@ -3605,6 +3608,9 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     'background-image: var(--meta-mini-badges);',
     '.lobby-intel-strip > span,\n.lobby-intel-strip > strong,\n.lobby-intel-strip > p,\n.lobby-intel-strip > button',
     '.next-hook > .lobby-next-state',
+    '.next-hook > .lobby-next-title',
+    '.next-hook > .lobby-next-action',
+    '.lobby-next-action-label',
     '.reward-hook .lobby-intel-frame',
     '.reward-hook .lobby-currency-icon',
     '.reward-hook .lobby-currency-value',
@@ -3622,7 +3628,7 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
   }
 
-  assert.equal(css.includes('min-height: 32px;'), false);
+  assert.equal(cssRuleBlock(css, '.lobby-intel-strip').includes('min-height: 32px;'), false);
 
   const currencyIconBlock = cssRuleBlock(css, '.reward-hook .lobby-currency-icon');
   assert.equal(currencyIconBlock.includes('display: block;'), true);
@@ -3648,6 +3654,31 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     '보상을 모아 유닛과 외형을 여세요'
   ]) {
     assert.equal(`${css}\n${screens}`.includes(forbidden), false, forbidden);
+  }
+});
+
+test('lobby next action title and CTA use generated game plates instead of plain text', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  const titleBlock = cssRuleBlock(css, '.next-hook > .lobby-next-title');
+  for (const marker of [
+    'display: inline-grid;',
+    'background-image: var(--meta-command-ribbons);',
+    'background-size: 400% 100%;',
+    'background-position: 100% 0;',
+    'text-overflow: ellipsis;'
+  ]) {
+    assert.equal(titleBlock.includes(marker), true, marker);
+  }
+
+  const actionBlock = cssRuleBlock(css, '.next-hook > .lobby-next-action');
+  for (const marker of [
+    'display: inline-grid;',
+    'place-items: center;',
+    'min-width: 82px;',
+    'min-height: 46px;'
+  ]) {
+    assert.equal(actionBlock.includes(marker), true, marker);
   }
 });
 

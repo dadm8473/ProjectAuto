@@ -2681,6 +2681,27 @@ body[data-app-screen="season"] .app-screen::after {
   text-shadow: 0 3px 10px rgba(0, 0, 0, 0.68);
 }
 
+.next-hook > .lobby-next-title {
+  display: inline-grid;
+  place-items: center;
+  justify-self: start;
+  width: min(100%, 168px);
+  min-height: 32px;
+  padding: 3px 14px 5px;
+  overflow: hidden;
+  color: #fff6d7;
+  font-size: clamp(15px, 4.4vw, 18px);
+  font-weight: 1000;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background-image: var(--meta-command-ribbons);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 100% 0;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.48));
+}
+
 .lobby-intel-strip > p {
   margin: 0;
   overflow: hidden;
@@ -2704,6 +2725,18 @@ body[data-app-screen="season"] .app-screen::after {
   padding: 0 10px;
   transform: translateY(-50%);
   font-size: 12px;
+}
+
+.next-hook > .lobby-next-action {
+  display: inline-grid;
+  place-items: center;
+  min-width: 82px;
+  min-height: 46px;
+}
+
+.lobby-next-action-label {
+  position: relative;
+  z-index: 1;
 }
 
 .lobby-intel-strip > .lobby-next-beacon {
