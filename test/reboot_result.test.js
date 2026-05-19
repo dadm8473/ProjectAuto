@@ -753,6 +753,25 @@ test('season board uses a passive generated command when no reward is ready', ()
   assert.equal(season.includes('class="featured-objective-action"'), false);
 });
 
+test('season reward track marks the current target tier', () => {
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
+  const readySeason = buildSeasonScreen({ xp: 80, claimedPassTiers: [] });
+
+  assert.equal(season.includes('data-pass-tier="1" data-season-current="true" aria-current="step"'), true);
+  assert.equal(season.includes('aria-label="2단계 80/160 · 현재 목표"'), true);
+  assert.equal((season.match(/data-season-current="true"/g) ?? []).length, 1);
+  assert.equal(season.includes('data-season-current="false"'), false);
+  assert.equal(readySeason.includes('data-pass-tier="0" data-season-current="true" aria-current="step"'), true);
+});
+
+test('season reward track does not mark a current target after every tier is claimed', () => {
+  const season = buildSeasonScreen({ xp: 999, claimedPassTiers: [0, 1, 2, 3] });
+
+  assert.equal(season.includes('data-season-current="true"'), false);
+  assert.equal(season.includes('aria-current="step"'), false);
+  assert.equal(season.includes('현재 목표'), false);
+});
+
 test('mission and season top boards keep large copy numeric while preserving full accessible meaning', () => {
   const missions = buildMissionScreen({
     processedRuns: ['run-1'],

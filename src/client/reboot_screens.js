@@ -397,10 +397,15 @@ function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
     return { tier, index, state };
   });
   const featuredTier = tierStates.find(({ state }) => state === 'ready');
+  const currentTier = tierStates.find(({ state }) => state !== 'claimed');
+  const currentIndex = currentTier?.index ?? -1;
   const boardState = featuredTier ? 'ready' : 'locked';
   const nodes = tierStates.map(({ tier, index, state }) => {
+    const current = index === currentIndex;
+    const currentAttrs = current ? ' data-season-current="true" aria-current="step"' : '';
+    const currentLabel = current ? ' · 현재 목표' : '';
     return `
-      <span class="season-track-node" data-season-state="${state}" data-pass-tier="${index}" aria-label="${index + 1}단계 ${Math.min(xp, tier.xp)}/${tier.xp}">
+      <span class="season-track-node" data-season-state="${state}" data-pass-tier="${index}"${currentAttrs} aria-label="${index + 1}단계 ${Math.min(xp, tier.xp)}/${tier.xp}${currentLabel}">
         <span class="reward-token season-reward-token" data-reward-icon="${rewardIconForGrant(tier.grant, 'season')}" aria-hidden="true"></span>
       </span>
     `;

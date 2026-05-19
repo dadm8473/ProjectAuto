@@ -117,7 +117,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=cooldown-sweep1'",
     "from './reboot_render.js?v=p0-polish1'",
-    "from './reboot_screens.js?v=result-highlight1'",
+    "from './reboot_screens.js?v=season-current1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -587,7 +587,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=cooldown-sweep1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), false);
@@ -691,7 +691,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-highlight1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest-feedback1"></script>'), false);
@@ -783,7 +784,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=result-highlight1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=reward-detail1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label2'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label1'"), false);
@@ -1425,7 +1426,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=cooldown-sweep1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=season-current1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), false);
@@ -1808,7 +1809,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=cooldown-sweep1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -4643,8 +4644,14 @@ test('mission and season screens use generated stamp and reward-track boards', a
     'class="season-track-board"',
     'class="season-track-rail"',
     'class="season-track-node"',
+    'data-season-current="true" aria-current="step"',
+    '현재 목표',
     '.mission-stamp-board',
     '.season-track-board',
+    '.season-track-node[data-season-current="true"]',
+    '.season-track-node[data-season-current="true"]:not([data-season-state="locked"])',
+    'inset: -10px -6px;',
+    'background-image: var(--meta-objective-status-stamps);',
     '.mission-stamp-slot .reward-token',
     'background-size: 136px 34px;',
     '.mission-stamp-slot .reward-token[data-reward-icon="cosmetic_shard"]',
@@ -4972,11 +4979,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=boss-vitality1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=result-highlight1'",
+    "from './reboot_screens.js?v=season-current1'",
     "from './reboot_game.js?v=boss-vitality1'",
     "from '../shared/game.js?v=boss-vitality1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=result-highlight1',
+    '/src/client/reboot_screens.js?v=season-current1',
     '/src/shared/game.js?v=boss-vitality1',
     '/src/shared/reboot_game.js?v=boss-vitality1'
   ]) {

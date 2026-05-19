@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v40');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v41');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=cooldown-sweep1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=cooldown-sweep1'))
+      '/src/client/styles.css?v=season-current1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=season-current1'))
         : false,
-      '/src/client/app.js?v=cooldown-sweep1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=cooldown-sweep1'))
+      '/src/client/app.js?v=season-current1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=season-current1'))
         : false,
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
@@ -108,8 +108,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_render.js?v=p0-polish1': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=p0-polish1'))
         : false,
-      '/src/client/reboot_screens.js?v=result-highlight1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=result-highlight1'))
+      '/src/client/reboot_screens.js?v=season-current1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=season-current1'))
         : false,
       '/src/shared/game.js?v=boss-vitality1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=boss-vitality1'))
@@ -148,7 +148,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v40', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v41', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1823,6 +1823,20 @@ async function verifyShell(page, viewport) {
   await assertObjectiveBoardCommand(page, '#seasonList .season-track-board', 'season locked board', 'locked');
   await assertMetaListReachesDock(page, '#seasonList', 'season');
   assert.equal(await page.locator('#seasonList .season-track-node').count(), 4);
+  assert.equal(await page.locator('#seasonList .season-track-node[data-season-current="true"]').count(), 1);
+  const currentSeasonMarker = await page.locator('#seasonList .season-track-node[data-season-current="true"]').evaluate((node) => {
+    const after = getComputedStyle(node, '::after');
+    return {
+      ariaCurrent: node.getAttribute('aria-current'),
+      label: node.getAttribute('aria-label'),
+      afterBackgroundImage: after.backgroundImage,
+      afterOpacity: Number.parseFloat(after.opacity)
+    };
+  });
+  assert.equal(currentSeasonMarker.ariaCurrent, 'step', `season current marker lacks step semantics: ${JSON.stringify(currentSeasonMarker)}`);
+  assert.match(currentSeasonMarker.label ?? '', /현재 목표/, `season current marker label is unclear: ${JSON.stringify(currentSeasonMarker)}`);
+  assert.match(currentSeasonMarker.afterBackgroundImage, /reboot-meta-objective-status-stamps/, `season current marker lacks generated stamp art: ${JSON.stringify(currentSeasonMarker)}`);
+  assert.equal(currentSeasonMarker.afterOpacity > 0.3, true, `season current marker art is too faint: ${JSON.stringify(currentSeasonMarker)}`);
   assert.equal(await page.locator('#seasonList .season-card').count(), 4);
   await assertGeneratedCardSurface(page, '#seasonList .season-card', 'season row card', /reboot-meta-objective-rails/);
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
