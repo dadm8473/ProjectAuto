@@ -1016,9 +1016,11 @@ test('lobby currency strip uses an icon numeric chip with accessible economy mea
   const lobby = buildRebootLobby({ gems: 240 });
 
   assert.equal(lobby.includes('class="lobby-intel-strip reward-hook" aria-label="보유 보석 240, 외형 해금 전용 재화"'), true);
+  assert.equal(lobby.includes('class="lobby-currency-capsule" aria-hidden="true"'), true);
   assert.equal(lobby.includes('class="lobby-currency-icon" data-reward-icon="soft_currency"'), true);
   assert.equal(lobby.includes('<strong class="lobby-currency-value">240</strong>'), true);
   assert.equal(lobby.includes('<span class="lobby-currency-label">보석</span>'), true);
+  assert.equal(lobby.includes('</strong><span class="lobby-currency-label">보석</span></span>'), true);
   assert.equal(lobby.includes('<span>보유 보석</span>'), false);
   assert.equal(lobby.includes('젬'), false);
   assert.equal(lobby.includes('<p>외형만 해금</p>'), false);

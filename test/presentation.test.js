@@ -587,7 +587,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-next-title1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-currency-capsule1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), false);
@@ -1422,7 +1422,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=lobby-next-title1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-currency-capsule1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), false);
@@ -1786,7 +1786,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=lobby-next-title1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=lobby-currency-capsule1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -3581,6 +3581,7 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     '--lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next")',
     'class="lobby-intel-strip reward-hook"',
     'aria-label="보유 보석 ${gems}, 외형 해금 전용 재화"',
+    'class="lobby-currency-capsule" aria-hidden="true"',
     'class="lobby-currency-icon" data-reward-icon="soft_currency"',
     'class="lobby-currency-value"',
     'class="lobby-currency-label"',
@@ -3612,10 +3613,11 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     '.next-hook > .lobby-next-action',
     '.lobby-next-action-label',
     '.reward-hook .lobby-intel-frame',
+    '.reward-hook .lobby-currency-capsule',
     '.reward-hook .lobby-currency-icon',
     '.reward-hook .lobby-currency-value',
     '.reward-hook .lobby-currency-label',
-    'font-size: clamp(15px, 4.1vw, 18px);',
+    'font-size: clamp(13px, 3.72vw, 16px);',
     'color: #ffe58f;',
     'text-shadow: 0 2px 7px rgba(0, 0, 0, 0.78);',
     '.next-hook .lobby-intel-frame',
@@ -3633,6 +3635,18 @@ test('lobby reward and next hooks use generated intel strips instead of web card
   const currencyIconBlock = cssRuleBlock(css, '.reward-hook .lobby-currency-icon');
   assert.equal(currencyIconBlock.includes('display: block;'), true);
   assert.equal(currencyIconBlock.includes('background-image: url("/src/client/assets/generated/reboot-reward-icons.png");'), true);
+
+  const currencyCapsuleBlock = cssRuleBlock(css, '.reward-hook .lobby-currency-capsule');
+  for (const marker of [
+    'display: inline-grid;',
+    'grid-template-columns: clamp(32px, 9.3vw, 40px) auto auto;',
+    'background-image: var(--result-reward-capsules);',
+    'background-size: 300% 100%;',
+    'background-position: 50% 0;',
+    'filter: saturate(1.1) drop-shadow(0 10px 15px rgba(0, 0, 0, 0.5));'
+  ]) {
+    assert.equal(currencyCapsuleBlock.includes(marker), true, marker);
+  }
 
   for (const forbidden of [
     'class="lobby-card reward-hook"',

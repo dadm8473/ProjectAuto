@@ -615,9 +615,7 @@ export function buildRebootLobby(model = {}) {
     </section>
     <section class="lobby-intel-strip reward-hook" aria-label="보유 보석 ${gems}, 외형 해금 전용 재화">
       <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-gems.png?v=intel-strips-alpha1" alt="" aria-hidden="true">
-      <span class="lobby-currency-icon" data-reward-icon="soft_currency" aria-hidden="true"></span>
-      <strong class="lobby-currency-value">${gems}</strong>
-      <span class="lobby-currency-label">보석</span>
+      <span class="lobby-currency-capsule" aria-hidden="true"><span class="lobby-currency-icon" data-reward-icon="soft_currency"></span><strong class="lobby-currency-value">${gems}</strong><span class="lobby-currency-label">보석</span></span>
     </section>
     ${buildLobbyNextActionStrip(nextAction)}
   `;
