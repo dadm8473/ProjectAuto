@@ -587,7 +587,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-currency-capsule1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=ready-reward-pulse1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), false);
@@ -1422,7 +1422,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=lobby-currency-capsule1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=ready-reward-pulse1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), false);
@@ -1786,7 +1786,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=lobby-currency-capsule1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=ready-reward-pulse1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -4802,6 +4802,38 @@ test('mission and season rows show generated reward tokens', async () => {
   ]) {
     assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
   }
+});
+
+test('ready mission and season rewards pulse with generated claim burst art', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  const readyTokenBlock = cssRuleBlock(css, '.meta-progress-board [data-objective-state="ready"] .reward-token');
+  for (const marker of [
+    'position: relative;',
+    'z-index: 2;',
+    'animation: objectiveReadyTokenPulse 1.7s ease-in-out infinite;',
+    'filter: saturate(1.24) brightness(1.12) drop-shadow(0 10px 18px rgba(244, 201, 93, 0.38));'
+  ]) {
+    assert.equal(readyTokenBlock.includes(marker), true, marker);
+  }
+
+  const readyBurstBlock = cssRuleBlock(css, '.meta-progress-board [data-objective-state="ready"] .reward-token::after');
+  for (const marker of [
+    'background-image: var(--meta-claim-bursts);',
+    'background-size: 400% 100%;',
+    'mix-blend-mode: screen;',
+    'animation: objectiveReadyClaimGlow 1.7s ease-in-out infinite;'
+  ]) {
+    assert.equal(readyBurstBlock.includes(marker), true, marker);
+  }
+
+  const missionBurstBlock = cssRuleBlock(css, '.meta-progress-board .mission-card[data-objective-state="ready"] .reward-token::after');
+  const seasonBurstBlock = cssRuleBlock(css, '.meta-progress-board .season-card[data-objective-state="ready"] .reward-token::after');
+  assert.equal(missionBurstBlock.includes('background-position: 66.666% 0;'), true);
+  assert.equal(seasonBurstBlock.includes('background-position: 100% 0;'), true);
+  assert.equal(css.includes('.meta-progress-board [data-objective-state="ready"] .reward-token,\n  .meta-progress-board [data-objective-state="ready"] .reward-token::after'), true);
+  assert.equal(css.includes('@keyframes objectiveReadyTokenPulse'), true);
+  assert.equal(css.includes('@keyframes objectiveReadyClaimGlow'), true);
 });
 
 test('mission and season rows use generated objective status stamps instead of text-heavy list actions', async () => {

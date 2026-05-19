@@ -4627,11 +4627,59 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .meta-progress-board .reward-token {
+  position: relative;
   width: clamp(46px, 14vw, 58px);
   height: clamp(46px, 14vw, 58px);
   justify-self: center;
   background-size: 400% 100%;
   filter: drop-shadow(0 9px 14px rgba(0, 0, 0, 0.58));
+}
+
+.meta-progress-board [data-objective-state="ready"] .reward-token {
+  position: relative;
+  z-index: 2;
+  animation: objectiveReadyTokenPulse 1.7s ease-in-out infinite;
+  filter: saturate(1.24) brightness(1.12) drop-shadow(0 10px 18px rgba(244, 201, 93, 0.38));
+}
+
+.meta-progress-board [data-objective-state="ready"] .reward-token::after {
+  content: "";
+  position: absolute;
+  inset: -22%;
+  pointer-events: none;
+  background-image: var(--meta-claim-bursts);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 66.666% 0;
+  opacity: 0.66;
+  mix-blend-mode: screen;
+  filter: saturate(1.2);
+  animation: objectiveReadyClaimGlow 1.7s ease-in-out infinite;
+}
+
+.meta-progress-board .mission-card[data-objective-state="ready"] .reward-token::after {
+  background-position: 66.666% 0;
+}
+
+.meta-progress-board .season-card[data-objective-state="ready"] .reward-token::after {
+  background-position: 100% 0;
+}
+
+@keyframes objectiveReadyTokenPulse {
+  0%, 100% { transform: scale(1); }
+  52% { transform: scale(1.07); }
+}
+
+@keyframes objectiveReadyClaimGlow {
+  0%, 100% { opacity: 0.42; transform: scale(0.9); }
+  50% { opacity: 0.86; transform: scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meta-progress-board [data-objective-state="ready"] .reward-token,
+  .meta-progress-board [data-objective-state="ready"] .reward-token::after {
+    animation: none;
+  }
 }
 
 .meta-progress-board .reward-token[data-reward-icon="soft_currency"] { background-position: 0 0; }
