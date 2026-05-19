@@ -130,38 +130,42 @@ const LOBBY_OPERATION_SEQUENCE = [
     title: '첫 구원 작전',
     hudTitle: '첫 구원',
     detail: '파트너 구원 · 보스 저지',
-    cta: '첫 구원 작전 시작',
-    poster: 'first'
+    cta: '출격',
+    poster: 'first',
+    threatLabel: '보스 저지'
   },
   {
     seedName: 'lucky_clutch',
     title: '보스 막타 작전',
     hudTitle: '보스 막타',
     detail: '막판 소환 · 결정타',
-    cta: '보스 막타 작전 시작',
-    poster: 'boss'
+    cta: '출격',
+    poster: 'boss',
+    threatLabel: '보스 막타'
   },
   {
     seedName: 'bad_recoverable',
     title: '역전 구원 작전',
     hudTitle: '역전 구원',
     detail: '나쁜 운 회복 · 구원',
-    cta: '역전 구원 작전 시작',
-    poster: 'recovery'
+    cta: '출격',
+    poster: 'recovery',
+    threatLabel: '역전 구원'
   },
   {
     seedName: 'boss_clutch',
     title: '보스 대응 작전',
     hudTitle: '보스 대응',
     detail: '소환/합성 선택',
-    cta: '보스 대응 작전 시작',
-    poster: 'response'
+    cta: '출격',
+    poster: 'response',
+    threatLabel: '보스 대응'
   }
 ];
 
 export function operationForSeedName(seedName) {
   return LOBBY_OPERATION_SEQUENCE.find((operation) => operation.seedName === seedName)
-    ?? { seedName: 'unknown', title: '신호릴레이', hudTitle: '신호릴레이', detail: '협동 타워디펜스', cta: '작전 시작', poster: 'first' };
+    ?? { seedName: 'unknown', title: '신호릴레이', hudTitle: '신호릴레이', detail: '협동 타워디펜스', cta: '출격', poster: 'first', threatLabel: '협동 방어' };
 }
 
 export function missionProgress(profile, mission) {
@@ -435,8 +439,10 @@ export function nextLobbyAction(profile = {}) {
 export function nextLobbyOperation(profile = {}) {
   const completedRuns = Array.isArray(profile.processedRuns) ? profile.processedRuns.length : 0;
   const index = Math.min(completedRuns, LOBBY_OPERATION_SEQUENCE.length - 1);
+  const operation = LOBBY_OPERATION_SEQUENCE[index];
   return {
-    ...LOBBY_OPERATION_SEQUENCE[index],
+    ...operation,
+    launchAriaLabel: `${operation.title} ${operation.cta}`,
     step: index + 1,
     total: LOBBY_OPERATION_SEQUENCE.length
   };
@@ -530,6 +536,30 @@ function operationProgressMarkup(operation) {
       </span>`;
 }
 
+function operationIntelMarkup(operation) {
+  const rewardIcon = operation.rewardIcon ?? 'unlock_capsule';
+  const rewardLabel = operation.rewardLabel ?? '전리품 캡슐';
+  const rewardShort = operation.rewardShort ?? '전리품';
+  const threatSprite = operation.threatSprite ?? 'heavy_noise';
+  const threatLabel = operation.threatLabel ?? '보스 위협';
+  const threatShort = operation.threatShort ?? '위협';
+  return `
+      <div class="operation-intel-board" aria-label="작전 정보: 보상 ${rewardLabel}, 위협 ${threatLabel}, 진행 ${operation.step}/${operation.total}">
+        <span class="operation-intel-chip" data-operation-intel="reward">
+          <span class="operation-intel-icon reward-token" data-reward-icon="${rewardIcon}" aria-hidden="true"></span>
+          <b>${rewardShort}</b>
+        </span>
+        <span class="operation-intel-chip" data-operation-intel="threat">
+          <span class="operation-intel-icon operation-intel-enemy" data-enemy-sprite="${threatSprite}" aria-hidden="true"></span>
+          <b>${threatShort}</b>
+        </span>
+        <span class="operation-intel-chip" data-operation-intel="progress">
+          <span class="operation-intel-icon operation-intel-step" aria-hidden="true"></span>
+          <b>${operation.step}/${operation.total}</b>
+        </span>
+      </div>`;
+}
+
 function lobbyToyPreviewMarkup() {
   return `
       <div class="lobby-toy-preview" aria-hidden="true">
@@ -551,8 +581,9 @@ export function buildRebootLobby(model = {}) {
       <img class="operation-poster-frame" src="/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1" alt="" aria-hidden="true">
       ${lobbyToyPreviewMarkup()}
       ${operationProgressMarkup(operation)}
+      ${operationIntelMarkup(operation)}
       <div class="operation-copy">
-        <span>협동 작전</span>
+        <span>작전 ${operation.step}</span>
         <strong>${operation.title}</strong>
         <p>${operation.detail}</p>
       </div>

@@ -22,7 +22,7 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=boss-vitality1';
+} from './reboot_screens.js?v=lobby-intel1';
 import { createRebootOnlineClient } from './reboot_online.js';
 
 const qs = (selector) => document.querySelector(selector);
@@ -311,7 +311,7 @@ function renderHomeScreens() {
   dom.lobbyContent.innerHTML = buildRebootLobby(profile);
   const launchOperation = nextLobbyOperation(profile);
   dom.launchBotLabel.textContent = launchOperation.cta;
-  dom.launchBotButton.setAttribute('aria-label', launchOperation.cta);
+  dom.launchBotButton.setAttribute('aria-label', launchOperation.launchAriaLabel);
   dom.collectionList.innerHTML = buildRebootCollection(profile);
   dom.shopList.innerHTML = buildRebootShop(profile);
   dom.missionsList.innerHTML = buildMissionScreen(profile);

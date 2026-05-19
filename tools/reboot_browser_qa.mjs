@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v8');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v9');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/app.js?v=opening-route1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=opening-route1'))
+      '/src/client/app.js?v=lobby-intel1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=lobby-intel1'))
         : false,
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
@@ -102,8 +102,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_render.js?v=opening-route1': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=opening-route1'))
         : false,
-      '/src/client/reboot_screens.js?v=boss-vitality1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=boss-vitality1'))
+      '/src/client/reboot_screens.js?v=lobby-intel1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=lobby-intel1'))
         : false,
       '/src/shared/game.js?v=boss-vitality1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=boss-vitality1'))
@@ -130,7 +130,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v8', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v9', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -938,6 +938,51 @@ async function assertOperationCopyClearsProgressRail(page) {
   );
 }
 
+async function assertOperationIntelClearsPreviewSprites(page) {
+  const geometry = await page.evaluate(() => {
+    const intel = document.querySelector('#lobbyScreen .operation-intel-board');
+    const sprites = [...document.querySelectorAll('#lobbyScreen .lobby-preview-enemy')];
+    if (!intel || !sprites.length) {
+      return { missing: true };
+    }
+    const intelRect = intel.getBoundingClientRect();
+    const spriteRects = sprites.map((node) => {
+      const rect = node.getBoundingClientRect();
+      const id = node.getAttribute('data-enemy-sprite');
+      const overlaps = !(
+        rect.left >= intelRect.right + 2
+        || rect.right <= intelRect.left - 2
+        || rect.top >= intelRect.bottom + 2
+        || rect.bottom <= intelRect.top - 2
+      );
+      return {
+        id,
+        left: Math.round(rect.left),
+        right: Math.round(rect.right),
+        top: Math.round(rect.top),
+        bottom: Math.round(rect.bottom),
+        overlaps
+      };
+    });
+    return {
+      viewportWidth: window.innerWidth,
+      intel: {
+        left: Math.round(intelRect.left),
+        right: Math.round(intelRect.right),
+        top: Math.round(intelRect.top),
+        bottom: Math.round(intelRect.bottom)
+      },
+      spriteRects
+    };
+  });
+  assert.equal(geometry.missing, undefined, `operation intel/preview geometry unavailable: ${JSON.stringify(geometry)}`);
+  assert.deepEqual(
+    geometry.spriteRects.filter((rect) => rect.overlaps),
+    [],
+    `operation intel overlaps generated preview enemies on compact lobby: ${JSON.stringify(geometry)}`
+  );
+}
+
 async function assertBattleReadyLobbyStaysFocused(page) {
   const surface = await page.evaluate(() => ({
     nextHookCount: document.querySelectorAll('#lobbyScreen .next-hook').length,
@@ -1545,9 +1590,10 @@ async function verifyShell(page, viewport) {
   await assertSplashCtaClearsBottomDeck(page);
 
   await page.getByRole('button', { name: '시작' }).click();
-  await page.getByRole('button', { name: '첫 구원 작전 시작' }).waitFor({ state: 'visible' });
+  await page.getByRole('button', { name: '첫 구원 작전 출격' }).waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'lobby operation copy', 2);
   await assertOperationCopyClearsProgressRail(page);
+  await assertOperationIntelClearsPreviewSprites(page);
   await assertBattleReadyLobbyStaysFocused(page);
   assert.equal(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await page.getByRole('button', { name: '유닛' }).click();
@@ -1597,7 +1643,7 @@ async function verifyShell(page, viewport) {
   await assertGeneratedCardSurface(page, '#seasonList .season-card', 'season row card', /reboot-meta-objective-rails/);
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
 
-  await page.getByRole('button', { name: '첫 구원 작전 시작' }).click();
+  await page.getByRole('button', { name: '첫 구원 작전 출격' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });
   assert.equal(await page.locator('.action-panel button').count(), 3);
   assert.equal(await page.locator('#shopButton, #passButton, #adButton, #paidReviveButton').count(), 0);
@@ -1620,9 +1666,10 @@ async function verifyCompactLobby(page) {
   await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
   assert.equal(await page.locator('audio, video').count(), 0);
   await page.getByRole('button', { name: '시작' }).click();
-  await page.getByRole('button', { name: '첫 구원 작전 시작' }).waitFor({ state: 'visible' });
+  await page.getByRole('button', { name: '첫 구원 작전 출격' }).waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'compact lobby operation copy', 2);
   await assertOperationCopyClearsProgressRail(page);
+  await assertOperationIntelClearsPreviewSprites(page);
   await assertBattleReadyLobbyStaysFocused(page);
 }
 
@@ -1636,7 +1683,7 @@ async function verifyCompactMeta(page) {
   await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
   assert.equal(await page.locator('audio, video').count(), 0);
   await page.getByRole('button', { name: '시작' }).click();
-  await page.getByRole('button', { name: '첫 구원 작전 시작' }).waitFor({ state: 'visible' });
+  await page.getByRole('button', { name: '첫 구원 작전 출격' }).waitFor({ state: 'visible' });
   await page.getByRole('button', { name: '유닛' }).click();
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
   await assertMetaShowcaseChips(page, '#collectionScreen .meta-showcase-chip', 'compact collection', 2);
@@ -1677,7 +1724,7 @@ async function verifyCompactRewardBoards(page) {
 async function verifyFastPlaythrough(page) {
   await page.goto(withParam(baseUrl, 'qaFast', '1'), { waitUntil: 'load' });
   await page.getByRole('button', { name: '시작' }).click();
-  await page.getByRole('button', { name: '첫 구원 작전 시작' }).click();
+  await page.getByRole('button', { name: '첫 구원 작전 출격' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });
 
   const events = [];
@@ -1742,7 +1789,7 @@ async function verifyCompactResult(page) {
   await page.setViewportSize({ width: 320, height: 568 });
   await page.goto(withParam(baseUrl, 'qaFast', '1'), { waitUntil: 'load' });
   await page.getByRole('button', { name: '시작' }).click();
-  await page.getByRole('button', { name: '첫 구원 작전 시작' }).click();
+  await page.getByRole('button', { name: '첫 구원 작전 출격' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });
 
   const deadline = Date.now() + 12000;

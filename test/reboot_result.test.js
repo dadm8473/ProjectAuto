@@ -134,13 +134,15 @@ test('lobby operation advances through authored combat beats after runs', () => 
       seedName: first.seedName,
       title: first.title,
       detail: first.detail,
-      cta: first.cta
+      cta: first.cta,
+      launchAriaLabel: first.launchAriaLabel
     },
     {
       seedName: 'tutorial_success',
       title: '첫 구원 작전',
       detail: '파트너 구원 · 보스 저지',
-      cta: '첫 구원 작전 시작'
+      cta: '출격',
+      launchAriaLabel: '첫 구원 작전 출격'
     }
   );
   assert.equal(boss.seedName, 'lucky_clutch');
@@ -954,6 +956,27 @@ test('lobby operation card shows the next authored combat beat', () => {
   assert.equal(lobby.includes('class="operation-progress" aria-label="작전 진행 2/4"'), true);
   assert.equal((lobby.match(/class="operation-progress-node"/g) ?? []).length, 4);
   assert.equal(lobby.includes('data-operation-node="active"'), true);
+});
+
+test('lobby operation card presents reward threat and progress as compact game intel chips', () => {
+  const lobby = buildRebootLobby({
+    processedRuns: ['run-1'],
+    claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic'],
+    claimedPassTiers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    unlocks: ['mythic-aura', 'founder-board', 'merge-effect', 'rescue-effect', 'profile-frame'],
+    unitLevels: { spark_pin: 20 },
+    gems: 0
+  });
+
+  assert.equal(lobby.includes('class="operation-intel-board" aria-label="작전 정보: 보상 전리품 캡슐, 위협 보스 막타, 진행 2/4"'), true);
+  assert.equal(lobby.includes('class="operation-intel-chip" data-operation-intel="reward"'), true);
+  assert.equal(lobby.includes('class="operation-intel-icon reward-token" data-reward-icon="unlock_capsule"'), true);
+  assert.equal(lobby.includes('class="operation-intel-chip" data-operation-intel="threat"'), true);
+  assert.equal(lobby.includes('class="operation-intel-icon operation-intel-enemy" data-enemy-sprite="heavy_noise"'), true);
+  assert.equal(lobby.includes('class="operation-intel-chip" data-operation-intel="progress"'), true);
+  assert.equal(lobby.includes('<b>2/4</b>'), true);
+  assert.equal(lobby.includes('<span>협동 작전</span>'), false);
+  assert.equal(lobby.includes('<span>작전 2</span>'), true);
 });
 
 test('lobby currency strip uses an icon numeric chip with accessible economy meaning', () => {

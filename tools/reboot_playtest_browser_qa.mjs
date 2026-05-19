@@ -44,7 +44,7 @@ async function main() {
     await page.goto(`${baseUrl}${playtestPath}`, { waitUntil: 'load' });
     await page.locator('#loadingGate').waitFor({ state: 'hidden' });
     await page.getByRole('button', { name: '시작' }).click();
-    await page.getByRole('button', { name: '첫 구원 작전 시작' }).click();
+    await page.getByRole('button', { name: '첫 구원 작전 출격' }).click();
     await page.locator('#summonButton').waitFor({ state: 'visible' });
 
     const deadline = Date.now() + 12000;

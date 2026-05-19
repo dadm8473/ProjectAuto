@@ -2229,6 +2229,77 @@ body[data-app-screen="season"] .app-screen::after {
   opacity: 1;
 }
 
+.operation-intel-board {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  z-index: 4;
+  display: flex;
+  max-width: calc(100% - 24px);
+  gap: 4px;
+  align-items: center;
+  pointer-events: none;
+}
+
+.operation-intel-chip {
+  display: inline-grid;
+  grid-template-columns: 24px auto;
+  align-items: center;
+  min-width: 54px;
+  min-height: 31px;
+  padding: 3px 8px 3px 5px;
+  background-image: var(--meta-caption-plate);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.46));
+}
+
+.operation-intel-chip b {
+  color: #fff4cf;
+  font-size: 10px;
+  line-height: 1;
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.76);
+  white-space: nowrap;
+}
+
+.operation-intel-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  justify-self: center;
+}
+
+.operation-intel-icon.reward-token {
+  width: 24px;
+  height: 24px;
+  background-size: 96px 24px;
+  filter: saturate(1.15) drop-shadow(0 4px 7px rgba(0, 0, 0, 0.5));
+}
+
+.operation-intel-icon.reward-token[data-reward-icon="soft_currency"] { background-position: 0 0; }
+.operation-intel-icon.reward-token[data-reward-icon="cosmetic_shard"] { background-position: -24px 0; }
+.operation-intel-icon.reward-token[data-reward-icon="season_progress"] { background-position: -48px 0; }
+.operation-intel-icon.reward-token[data-reward-icon="unlock_capsule"] { background-position: -72px 0; }
+
+.operation-intel-enemy {
+  background-image: url("/src/client/assets/generated/reboot-enemy-atlas.png?v=enemy-atlas-v2");
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  filter: saturate(1.18) drop-shadow(0 5px 8px rgba(0, 0, 0, 0.5));
+}
+
+.operation-intel-enemy[data-enemy-sprite="quick_noise"] { background-position: 33.333% 0; }
+.operation-intel-enemy[data-enemy-sprite="heavy_noise"] { background-position: 66.666% 0; }
+
+.operation-intel-step {
+  background-image: var(--meta-mini-badges);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  background-position: 0 0;
+  filter: saturate(1.1) brightness(1.1) drop-shadow(0 4px 7px rgba(88, 215, 255, 0.28));
+}
+
 .lobby-toy-preview {
   position: absolute;
   inset: 8px 8px 10px 44%;
@@ -2286,8 +2357,8 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .lobby-preview-enemy[data-enemy-sprite="quick_noise"] {
-  left: 8px;
-  top: 18px;
+  left: 0;
+  top: 38px;
   background-position: 33.333% 0;
   transform: scale(0.72) rotate(-5deg);
 }

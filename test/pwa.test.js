@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v8';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v9';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -41,11 +41,11 @@ test('service worker keeps the installable mobile game shell available after fir
     'event.request.mode === \'navigate\'',
     "caches.match('/index.html')",
     '/manifest.webmanifest',
-    '/src/client/styles.css?v=command-cooldown1',
-    '/src/client/app.js?v=opening-route1',
+    '/src/client/styles.css?v=lobby-intel1',
+    '/src/client/app.js?v=lobby-intel1',
     '/src/client/reboot_actions.js?v=combat-meter2',
     '/src/client/reboot_render.js?v=opening-route1',
-    '/src/client/reboot_screens.js?v=boss-vitality1',
+    '/src/client/reboot_screens.js?v=lobby-intel1',
     '/src/client/reboot_action_ui.js?v=action-simplify1',
     '/src/client/reboot_online.js',
     '/src/shared/game.js?v=boss-vitality1',
@@ -64,6 +64,7 @@ test('service worker keeps the installable mobile game shell available after fir
   assert.equal(sw.includes('/src/client/app.js?v=lobby-focus1'), false);
   assert.equal(sw.includes('/src/client/reboot_actions.js?v=merge-reason1'), false);
   assert.equal(sw.includes('/src/client/reboot_screens.js?v=lobby-focus1'), false);
+  assert.equal(sw.includes('/src/client/reboot_screens.js?v=boss-vitality1'), false);
   assert.equal(sw.includes("\n  '/src/shared/game.js',"), false);
   assert.equal(sw.includes("\n  '/src/shared/reboot_game.js',"), false);
 });
@@ -87,12 +88,12 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v8'",
+    "cacheName === 'projectauto-reboot-shell-v9'",
     "await cache.match('/index.html')",
-    "await cache.match('/src/client/app.js?v=opening-route1')",
+    "await cache.match('/src/client/app.js?v=lobby-intel1')",
     "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
     "await cache.match('/src/client/reboot_render.js?v=opening-route1')",
-    "await cache.match('/src/client/reboot_screens.js?v=boss-vitality1')",
+    "await cache.match('/src/client/reboot_screens.js?v=lobby-intel1')",
     "await cache.match('/src/shared/game.js?v=boss-vitality1')",
     "await cache.match('/src/shared/reboot_game.js?v=boss-vitality1')",
     "await cache.match('/src/client/reboot_action_ui.js?v=action-simplify1')",
@@ -107,5 +108,6 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   assert.equal(qa.includes("await cache.match('/src/client/app.js?v=combat-meter1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/app.js?v=lobby-focus1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_screens.js?v=lobby-focus1')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/reboot_screens.js?v=boss-vitality1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_actions.js?v=merge-reason1')"), false);
 });
