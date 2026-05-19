@@ -462,6 +462,49 @@ test('opening threat preview remains after first summon until enemies serialize'
   assert.deepEqual(looseEnemyDraws, [], 'opening preview should still avoid loose enemy atlas icons');
 });
 
+test('opening combat paints generated route beacons along the enemy path before first summon', () => {
+  const ctx = mockContext();
+  const enemyTrackTrails = image(1024, 128);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 1.8,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard', progress: 0.14, lane: 0.25 }],
+      events: [],
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      enemies: image(1024, 256),
+      enemyTrackTrails,
+      firstSummonBeacon: image(512, 512),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const routeBeacons = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === enemyTrackTrails
+      && command.args[1] === 256
+      && command.args[2] === 0
+      && command.args[3] === 256
+      && command.args[4] === 128
+      && command.args[7] >= 62
+      && command.args[7] <= 88
+      && command.args[8] >= 22
+      && command.args[8] <= 36
+  ));
+
+  assert.equal(routeBeacons.length >= 3, true, 'expected generated route beacons to show the incoming path before the first summon');
+});
+
 test('early combat lulls keep a generated incoming-wave object on the track', () => {
   const ctx = mockContext();
   const enemies = image(1024, 256);
@@ -1546,11 +1589,11 @@ test('first summon landing beacon keeps the target socket alive through the coac
       && command.args[5] <= 28
       && command.args[6] >= 432
       && command.args[6] <= 452
-      && command.args[7] >= 86
-      && command.args[8] >= 86
+      && command.args[7] >= 108
+      && command.args[8] >= 108
   ));
 
-  assert.ok(beaconDraw, 'expected a persistent generated landing beacon on the first summon socket');
+  assert.ok(beaconDraw, 'expected a prominent generated landing beacon on the first summon socket');
 });
 
 test('first summon landing beacon clears after the first player action', () => {
@@ -2569,8 +2612,10 @@ test('online waiting hides opening combat cutins and threat previews so matchmak
   assert.deepEqual(threatPreviewDraws, []);
 });
 
-test('matchmaking event banner hides the operation start cutin so ready copy stays readable', () => {
+test('matchmaking event banner hides playable first-summon guidance so ready copy stays readable', () => {
   const ctx = mockContext();
+  const firstCommandSpotlight = image(256, 128);
+  const firstSummonBeacon = image(512, 512);
   drawRebootBattle(
     ctx,
     {
@@ -2581,12 +2626,15 @@ test('matchmaking event banner hides the operation start cutin so ready copy sta
       },
       enemies: [],
       events: [],
-      effects: []
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
     },
     { width: 390, height: 620 },
     {
       backdrop: image(390, 620),
       board: image(1280, 256),
+      firstCommandSpotlight,
+      firstSummonBeacon,
       openingThreatPreview: image(512, 256),
       startCutin: image(390, 112)
     },
@@ -2603,9 +2651,17 @@ test('matchmaking event banner hides the operation start cutin so ready copy sta
       && command.args[0].naturalWidth === 512
       && command.args[0].naturalHeight === 256
   ));
+  const firstCommandDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === firstCommandSpotlight
+  ));
+  const firstBeaconDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === firstSummonBeacon
+  ));
 
   assert.deepEqual(startCutinDraws, []);
   assert.deepEqual(threatPreviewDraws, []);
+  assert.deepEqual(firstCommandDraws, []);
+  assert.deepEqual(firstBeaconDraws, []);
 });
 
 test('equipped cosmetics render as a visual-only player board signature', () => {

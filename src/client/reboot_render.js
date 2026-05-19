@@ -662,6 +662,28 @@ function drawOpeningThreatPreview(ctx, state, assets = {}, options = {}, imageBa
   return true;
 }
 
+function drawOpeningRouteBeacons(ctx, state, assets = {}, options = {}, imageBackdrop = true) {
+  const now = Number(state.now) || 0;
+  if (options.onlineWaiting || options.matchmakingBannerVisible) return false;
+  if (hasFirstPlayerAction(state) || now < 1.2 || now > 10.8) return false;
+  const image = assets?.enemyTrackTrails;
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+
+  const cellWidth = image.naturalWidth / 4;
+  const route = [0.17, 0.44, 0.73];
+  route.forEach((progress, index) => {
+    const point = trackPointFromProgress(progress + Math.sin(now * 2.4 + index) * 0.004, 0, imageBackdrop);
+    const alpha = Math.min(0.54, 0.26 + Math.max(0, Math.sin(now * 4.4 - index * 0.72)) * 0.2);
+    const width = index === 2 ? 84 : 74;
+    const height = index === 2 ? 34 : 30;
+    ctx.save();
+    ctx.globalAlpha *= alpha;
+    ctx.drawImage(image, cellWidth, 0, cellWidth, image.naturalHeight, point.x - width / 2, point.y + 7, width, height);
+    ctx.restore();
+  });
+  return true;
+}
+
 function isSignalCoreCritical(state = {}) {
   const danger = Math.max(...Object.values(state.boards ?? {}).map((board) => board?.danger ?? 0), 0);
   const bossThreat = (state.enemies ?? []).some((enemy) => enemy.enemyId === 'mini_boss' || enemy.spriteKey === 'mini_boss');
@@ -1145,6 +1167,7 @@ function drawTrack(ctx, state, assets = {}, imageBackdrop = false, options = {})
   const enemies = state.enemies.slice(0, 8);
   drawEnemySpawnGate(ctx, assets.enemySpawnGates, enemies, state.now, imageBackdrop);
   drawOpeningThreatPreview(ctx, state, assets, options, imageBackdrop);
+  drawOpeningRouteBeacons(ctx, state, assets, options, imageBackdrop);
   drawSignalCoreGate(ctx, assets.signalCoreGates, state, imageBackdrop);
   enemies.forEach((enemy, index) => {
     const { x, y } = enemyScreenPoint(state, index, enemy, imageBackdrop);
@@ -1483,8 +1506,8 @@ function drawFirstSummonLandingBeacon(ctx, state, assets = {}, localBoardId = 'p
 
   const point = boardSlotPoint(selfId, 0, selfId);
   const pulse = 1 + Math.max(0, Math.sin(state.now * 4.2)) * 0.08;
-  const size = 94 * pulse;
-  return drawImageCover(ctx, image, point.x - size / 2, point.y - size / 2, size, size, 0.74);
+  const size = 112 * pulse;
+  return drawImageCover(ctx, image, point.x - size / 2, point.y - size / 2, size, size, 0.84);
 }
 
 function drawFirstSummonRewardSpotlight(ctx, state, assets = {}, localBoardId = 'p1') {
@@ -1671,8 +1694,8 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
   drawPlayerBoardBridge(ctx, assets, layout);
   drawBoard(ctx, state.boards[localBoardId], 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
-  if (!options.onlineWaiting) drawPreSummonSocketCue(ctx, state, assets, localBoardId);
-  if (!options.onlineWaiting) drawFirstSummonLandingBeacon(ctx, state, assets, localBoardId);
+  if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawPreSummonSocketCue(ctx, state, assets, localBoardId);
+  if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawFirstSummonLandingBeacon(ctx, state, assets, localBoardId);
   drawFirstSummonIgnition(ctx, state, assets, localBoardId);
   drawFirstSummonRewardSpotlight(ctx, state, assets, localBoardId);
   drawCombatActionSurges(ctx, state, assets, layout, localBoardId);

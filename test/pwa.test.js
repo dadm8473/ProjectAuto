@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v7';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v8';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -42,9 +42,9 @@ test('service worker keeps the installable mobile game shell available after fir
     "caches.match('/index.html')",
     '/manifest.webmanifest',
     '/src/client/styles.css?v=command-cooldown1',
-    '/src/client/app.js?v=boss-vitality1',
+    '/src/client/app.js?v=opening-route1',
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_render.js?v=boss-vitality1',
+    '/src/client/reboot_render.js?v=opening-route1',
     '/src/client/reboot_screens.js?v=boss-vitality1',
     '/src/client/reboot_action_ui.js?v=action-simplify1',
     '/src/client/reboot_online.js',
@@ -87,11 +87,11 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v7'",
+    "cacheName === 'projectauto-reboot-shell-v8'",
     "await cache.match('/index.html')",
-    "await cache.match('/src/client/app.js?v=boss-vitality1')",
+    "await cache.match('/src/client/app.js?v=opening-route1')",
     "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
-    "await cache.match('/src/client/reboot_render.js?v=boss-vitality1')",
+    "await cache.match('/src/client/reboot_render.js?v=opening-route1')",
     "await cache.match('/src/client/reboot_screens.js?v=boss-vitality1')",
     "await cache.match('/src/shared/game.js?v=boss-vitality1')",
     "await cache.match('/src/shared/reboot_game.js?v=boss-vitality1')",
