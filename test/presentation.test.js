@@ -116,7 +116,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=action-simplify1'",
-    "from './reboot_render.js?v=loot-offset1'",
+    "from './reboot_render.js?v=p0-polish1'",
     "from './reboot_screens.js?v=result-highlight1'",
     "from './reboot_online.js'"
   ]) {
@@ -587,7 +587,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-reward-chips1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=p0-polish1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), false);
@@ -691,7 +691,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reboot-action-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=loot-offset1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=p0-polish1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-highlight1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest-feedback1"></script>'), false);
@@ -758,7 +758,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=loot-offset1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=p0-polish1'"), true);
   assert.equal(app.includes("from './reboot_render.js?v=enemy-atlas3'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=opening-route1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=match-banner-cutin1'"), false);
@@ -1422,7 +1422,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=result-reward-chips1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=p0-polish1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), false);
@@ -1786,7 +1786,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=result-reward-chips1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=p0-polish1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2301,7 +2301,7 @@ test('result debrief stays usable on short portrait phones', async () => {
     '#resultTitle {\n    min-height: 52px;\n    font-size: 24px;',
     '.result-panel p {\n    line-height: 1.12;',
     '.result-highlights span {\n    min-height: 44px;',
-    '.result-reward {\n    min-height: 68px;\n    grid-template-columns: 52px minmax(0, 1fr) 24px;\n    padding: 5px 22px 6px 28px;',
+    '.result-reward {\n    min-height: 68px;\n    grid-template-columns: 42px minmax(0, 1fr);\n    padding: 5px 10px 6px;',
     '.result-reward::before {\n    left: -2px;\n    width: 78px;',
     '.result-reward::after {\n    right: 0;\n    width: 58px;',
     '.result-overlay .result-action-button {\n    min-height: 44px;'
@@ -2334,12 +2334,13 @@ test('result actions use dedicated generated button frames', async () => {
     'background-image: var(--result-action-buttons);',
     'background: transparent;',
     'background-size: 200% 100%;',
+    'grid-template-columns: 1fr 0.85fr;',
     'display: grid;',
     'place-items: center;',
     'padding: 0 8px;',
     'line-height: 1;',
     '.result-overlay .result-action-primary { background-position: 0 0; }',
-    '.result-overlay .result-action-secondary { background-position: 100% 0; }',
+    '.result-overlay .result-action-secondary {\n  background-position: 100% 0;\n  filter: saturate(1.12) brightness(1.08)',
     '.result-overlay .result-action-button::before {\n  background-image: none;',
     '.result-action-button > span',
     'min-height: 48px;'
@@ -3008,6 +3009,8 @@ test('combat starts with a generated operation cutin instead of a silent canvas 
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
   for (const marker of [
+    'const OPERATION_START_CUTIN_END = 0.6;',
+    'const OPERATION_START_CUTIN_FADE = 0.16;',
     'operationStart',
     "src: '/src/client/assets/generated/reboot-combat-start-cutin.png?v=combat-start'",
     'const startCutin = new Image();',
@@ -3017,6 +3020,9 @@ test('combat starts with a generated operation cutin instead of a silent canvas 
     'if (state.now >= OPERATION_START_CUTIN_END) return false;',
     'OPERATION_START_CUTIN_END - state.now',
     'drawImageCover(ctx, image, 0, 180, 390, 86',
+    'const alpha = Math.min(introIn, introOut) * 0.82;',
+    "ctx.strokeStyle = 'rgba(2, 6, 7, 0.78)';",
+    "ctx.strokeText?.('작전 시작'",
     "ctx.fillText('작전 시작'",
     'drawCombatStartCutin(ctx, state, assets)'
   ]) {
@@ -3337,7 +3343,7 @@ test('lobby launch actions use dedicated generated button frames', async () => {
     'data-launch-action="bot"',
     'data-launch-action="online"',
     '--lobby-launch-bay: url("/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1")',
-    '--lobby-online-button-height: 46px;',
+    '--lobby-online-button-height: 42px;',
     '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',
     '/src/client/assets/generated/reboot-launch-secondary.png?v=gold-cta-alpha1',
     'class="launch-button-frame"',
@@ -3350,6 +3356,9 @@ test('lobby launch actions use dedicated generated button frames', async () => {
     'min-height: var(--lobby-online-button-height);',
     'grid-column: 2;',
     'border-radius: 999px;',
+    '.launch-command-console > .play-button::after',
+    'content: "추천";',
+    'background-image: var(--meta-caption-plate);',
     '.screen-overlay .play-button,\n.screen-overlay .match-button {\n  background: transparent;',
     '.screen-overlay .play-button::before,\n.screen-overlay .match-button::before {\n  background-image: none;',
     '.screen-overlay .launch-command-console > .play-button,\n.screen-overlay .launch-command-console > .match-button',
@@ -3372,7 +3381,7 @@ test('lobby launch actions sit inside one generated command console', async () =
     '<button id="launchBotButton" class="play-button" data-launch-action="bot" aria-label="첫 구원 작전 출격">',
     '<button id="launchOnlineButton" class="match-button" data-launch-action="online" aria-label="온라인 협동 매칭">',
     '.launch-command-console {',
-    'grid-template-columns: minmax(0, 1fr) clamp(82px, 24vw, 104px);',
+    'grid-template-columns: minmax(0, 1fr) clamp(64px, 18vw, 78px);',
     'background-image: var(--lobby-launch-bay);',
     'background-size: 100% 100%;',
     'min-height: clamp(96px, 25vw, 112px);',

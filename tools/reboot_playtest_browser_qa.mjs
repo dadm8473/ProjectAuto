@@ -68,6 +68,8 @@ async function main() {
       const parent = node.parentElement?.getBoundingClientRect();
       return {
         text: node.textContent?.trim(),
+        left: Math.round(rect.left),
+        top: Math.round(rect.top),
         width: Math.round(rect.width),
         height: Math.round(rect.height),
         parentWidth: parent ? Math.round(parent.width) : 0,
@@ -81,6 +83,11 @@ async function main() {
       assert.equal(chip.parentWidth >= chip.width, true, `result reward chip overflows reward layout: ${JSON.stringify(rewardChipGeometry)}`);
       assert.equal(chip.insideParent, true, `result reward chip escapes reward layout: ${JSON.stringify(rewardChipGeometry)}`);
     }
+    assert.equal(
+      Math.abs(rewardChipGeometry[0].top - rewardChipGeometry[1].top) <= 3,
+      true,
+      `result reward chips should read as one horizontal loot row: ${JSON.stringify(rewardChipGeometry)}`
+    );
     const summary = await page.evaluate(() => window.__rebootPlaytestSummary?.());
     assert.equal(summary.enabled, true);
     assert.equal(summary.earlyEngagement.passed, true);

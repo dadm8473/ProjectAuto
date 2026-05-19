@@ -1,7 +1,7 @@
 import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js';
 
-const OPERATION_START_CUTIN_END = 0.56;
-const OPERATION_START_CUTIN_FADE = 0.18;
+const OPERATION_START_CUTIN_END = 0.6;
+const OPERATION_START_CUTIN_FADE = 0.16;
 const OPENING_THREAT_PREVIEW_END = 3.6;
 const EARLY_LULL_THREAT_PREVIEW_END = 17.4;
 const FIRST_SUMMON_BEACON_END = 16;
@@ -1176,15 +1176,18 @@ function drawCombatStartCutin(ctx, state, assets = {}) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const introIn = Math.min(1, state.now / OPERATION_START_CUTIN_FADE);
   const introOut = Math.min(1, Math.max(0, OPERATION_START_CUTIN_END - state.now) / OPERATION_START_CUTIN_FADE);
-  const alpha = Math.min(introIn, introOut) * 0.68;
+  const alpha = Math.min(introIn, introOut) * 0.82;
   ctx.save();
   drawImageCover(ctx, image, 0, 180, 390, 86, alpha);
   drawAtlasSprite(ctx, assets, 'ui', 'summon_charge', 74, 226, 34, alpha);
   ctx.globalAlpha *= alpha;
   ctx.fillStyle = '#fff7dc';
+  ctx.strokeStyle = 'rgba(2, 6, 7, 0.78)';
+  ctx.lineWidth = 4;
   ctx.shadowColor = '#58d7ff';
-  ctx.shadowBlur = 15;
+  ctx.shadowBlur = 18;
   ctx.font = '900 18px system-ui';
+  ctx.strokeText?.('작전 시작', 116, 221);
   ctx.fillText('작전 시작', 116, 221);
   ctx.restore();
   return true;
