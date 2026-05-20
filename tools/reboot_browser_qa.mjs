@@ -89,15 +89,18 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v55');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v56');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=role-label1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=role-label1'))
+      '/src/client/styles.css?v=audio-safe1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=audio-safe1'))
         : false,
-      '/src/client/app.js?v=role-label1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=role-label1'))
+      '/src/client/app.js?v=audio-safe1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=audio-safe1'))
+        : false,
+      '/src/client/reboot_audio.js?v=audio-safe1': cache
+        ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
         : false,
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
@@ -154,7 +157,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v55', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v56', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }

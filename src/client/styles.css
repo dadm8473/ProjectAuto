@@ -491,6 +491,64 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   justify-content: space-between;
 }
 
+.sound-toggle {
+  position: absolute;
+  left: clamp(13px, 3.7vw, 16px);
+  top: calc(18px + var(--app-safe-area-top));
+  z-index: 2;
+  width: clamp(28px, 8.37vw, 34px);
+  height: clamp(28px, 8.37vw, 34px);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 45% 38%, rgba(96, 235, 255, 0.36), rgba(12, 42, 48, 0.72) 54%, rgba(3, 9, 10, 0.84));
+  box-shadow: inset 0 0 0 1px rgba(198, 242, 230, 0.2), 0 5px 10px rgba(0, 0, 0, 0.34);
+  opacity: 0.78;
+}
+
+.sound-toggle span,
+.sound-toggle span::before,
+.sound-toggle span::after {
+  position: absolute;
+  display: block;
+}
+
+.sound-toggle span {
+  inset: 8px 7px 8px 8px;
+}
+
+.sound-toggle span::before {
+  content: "";
+  left: 0;
+  top: 4px;
+  width: 7px;
+  height: 8px;
+  background: #9cefe5;
+  clip-path: polygon(0 25%, 42% 25%, 100% 0, 100% 100%, 42% 75%, 0 75%);
+  filter: drop-shadow(0 0 6px rgba(88, 225, 255, 0.45));
+}
+
+.sound-toggle span::after {
+  content: "";
+  right: 0;
+  top: 2px;
+  width: 8px;
+  height: 12px;
+  border: 2px solid rgba(156, 239, 229, 0.88);
+  border-left: 0;
+  border-radius: 0 12px 12px 0;
+}
+
+.sound-toggle[data-audio-enabled="true"] {
+  opacity: 1;
+  background: radial-gradient(circle at 45% 38%, rgba(255, 219, 112, 0.5), rgba(35, 86, 84, 0.82) 56%, rgba(6, 18, 20, 0.9));
+  box-shadow: inset 0 0 0 1px rgba(255, 239, 166, 0.38), 0 0 12px rgba(255, 206, 93, 0.32), 0 5px 10px rgba(0, 0, 0, 0.34);
+}
+
+.sound-toggle:disabled {
+  opacity: 0.34;
+}
+
 .brand strong,
 .brand span {
   display: block;

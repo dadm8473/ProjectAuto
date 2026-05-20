@@ -116,6 +116,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=role-label1'",
+    "from './reboot_audio.js?v=audio-safe1'",
     "from './reboot_hud.js?v=role-label1'",
     "from './reboot_render.js?v=role-label1'",
     "from './reboot_screens.js?v=role-label1'",
@@ -163,6 +164,33 @@ test('battle markup exposes exactly three Korean combat actions and no BM button
     '광고 부활'
   ]) {
     assert.equal(html.includes(forbidden), false, forbidden);
+  }
+});
+
+test('sound control is opt-in and does not add another combat command', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+  const audio = await readFile('src/client/reboot_audio.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  assert.equal(html.includes('id="soundToggle"'), true);
+  assert.equal(html.includes('aria-label="소리 켜기"'), true);
+  const primaryActions = html.slice(html.indexOf('<div class="primary-actions">'), html.indexOf('</div>', html.indexOf('<div class="primary-actions">')));
+  assert.equal((primaryActions.match(/<button /g) ?? []).length, 3);
+  assert.equal(primaryActions.includes('soundToggle'), false);
+  assert.equal((html.match(/id="soundToggle"/g) ?? []).length, 1);
+  for (const marker of [
+    'const rebootAudio = createRebootAudio({',
+    'mutedByQuery: muted',
+    'function updateSoundToggle()',
+    'rebootAudio.consume(current, { localBoardId, appScreen });',
+    'dom.soundToggle.addEventListener',
+    'rebootAudio.unlock();',
+    'projectauto.reboot.audio.enabled.v1',
+    '.sound-toggle',
+    '.sound-toggle[data-audio-enabled="true"]'
+  ]) {
+    assert.equal(`${app}\n${audio}\n${css}`.includes(marker), true, marker);
   }
 });
 
@@ -594,7 +622,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=role-label1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=audio-safe1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
@@ -701,7 +729,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=role-label1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=audio-safe1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-identity1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
@@ -1440,7 +1468,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=role-label1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=audio-safe1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
@@ -1825,7 +1853,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=role-label1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=audio-safe1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -4271,7 +4299,7 @@ test('successful combat actions use canvas action stamps instead of duplicate to
   for (const marker of [
     '--toast-callouts: url("/src/client/assets/generated/reboot-toast-callouts.png?v=toast-callouts")',
     'drawCombatMomentCallout',
-    'softFeedback(actionName)',
+    'rebootAudio.consume(current, { localBoardId, appScreen });',
     '.toast {\n  position: absolute;',
     'background-image: var(--toast-callouts);',
     'background-size: 200% 100%;',

@@ -4,6 +4,7 @@ import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=combat-meter2';
 import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildSummonCooldownState, isCriticalRebootAction } from './reboot_action_ui.js?v=role-label1';
+import { createRebootAudio } from './reboot_audio.js?v=audio-safe1';
 import { updateCombatHudMeters } from './reboot_hud.js?v=role-label1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
 import { preloadCriticalRebootAssets } from './reboot_preload.js?v=shell-backdrop1';
@@ -55,6 +56,7 @@ const dom = {
   statusLine: qs('.status-line'),
   timeMeter: qs('#timeMeter'),
   bossMeter: qs('#bossMeter'),
+  soundToggle: qs('#soundToggle'),
   gameTitle: qs('#gameTitle'),
   netStatus: qs('#netStatus'),
   summonButton: qs('#summonButton'),
@@ -84,6 +86,7 @@ const dom = {
 
 const ctx = dom.canvas.getContext('2d');
 const rebootAssets = createRebootAssetImages();
+const rebootAudio = createRebootAudio({ mutedByQuery: muted, reducedMotion: reduceMotion.matches });
 const PROFILE_STORAGE_KEY = 'projectauto.reboot.profile.v1';
 const TOAST_VISIBLE_MS = 1400;
 const REWARD_REVEAL_MS = qaFast ? 6000 : 1500;
@@ -262,9 +265,13 @@ function playScreenTransition(screen) {
   }, SCREEN_TRANSITION_MS);
 }
 
-function softFeedback(kind) {
-  if (muted) return;
-  navigator.vibrate?.(kind === 'rescue' ? [18, 24, 18] : [8]);
+function updateSoundToggle() {
+  if (!dom.soundToggle) return;
+  const enabled = rebootAudio.isEnabled();
+  dom.soundToggle.dataset.audioEnabled = String(enabled);
+  dom.soundToggle.disabled = muted;
+  dom.soundToggle.setAttribute('aria-label', enabled ? '소리 끄기' : '소리 켜기');
+  dom.soundToggle.title = muted ? '무음 모드' : enabled ? '소리 끄기' : '소리 켜기';
 }
 
 function setScreen(screen, options = {}) {
@@ -669,7 +676,6 @@ function command(actionName) {
     showToast(result.reason);
     return;
   }
-  softFeedback(actionName);
 }
 
 function updateButtons(current) {
@@ -812,6 +818,7 @@ function loop(now) {
   if (appScreen === 'battle' && !game.result && game.mode !== 'online') tickGame(game, dt);
   const current = state();
   const onlineWaiting = waitingForOnlinePartner(current);
+  rebootAudio.consume(current, { localBoardId, appScreen });
   playtestRecorder.recordCombatSnapshot(current);
   drawRebootBattle(ctx, current, { width: dom.canvas.width, height: dom.canvas.height }, rebootAssets, {
     equippedCosmetic: profile.equippedCosmetic,
@@ -827,6 +834,13 @@ function loop(now) {
 }
 
 function bind() {
+  dom.soundToggle.addEventListener('click', () => {
+    if (rebootAudio.setEnabled(!rebootAudio.isEnabled())) rebootAudio.unlock();
+    updateSoundToggle();
+  });
+  document.addEventListener('pointerdown', () => {
+    rebootAudio.unlock();
+  }, { passive: true });
   qs('#splashStartButton').addEventListener('click', () => setScreen('lobby'));
   qs('#launchBotButton').addEventListener('click', startBotRun);
   qs('#launchOnlineButton').addEventListener('click', startOnlineRun);
@@ -857,6 +871,7 @@ function bind() {
 
 renderHomeScreens();
 bind();
+updateSoundToggle();
 setScreen('splash');
 registerServiceWorker();
 preloadCriticalRebootAssets().then(hideLoadingGate, hideLoadingGate);
