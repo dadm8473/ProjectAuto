@@ -620,8 +620,9 @@ export function buildRebootLobby(model = {}) {
         <p>${operation.detail}</p>
       </div>
     </section>
-    <section class="lobby-intel-strip reward-hook" aria-label="보유 보석 ${gems}, 외형 해금 전용 재화">
+    <section class="lobby-intel-strip reward-hook coop-hook" aria-label="파트너 린 준비됨, 보유 보석 ${gems}, 외형 해금 전용 재화">
       <img class="lobby-intel-frame" src="/src/client/assets/generated/reboot-lobby-intel-gems.png?v=intel-strips-alpha1" alt="" aria-hidden="true">
+      <span class="lobby-partner-capsule" aria-hidden="true"><span class="lobby-partner-avatar" data-sprite="rescue_coil"></span><strong class="lobby-partner-name">린</strong><span class="lobby-partner-status">준비</span></span>
       <span class="lobby-currency-capsule" aria-hidden="true"><span class="lobby-currency-icon" data-reward-icon="soft_currency"></span><strong class="lobby-currency-value">${gems}</strong><span class="lobby-currency-label">보석</span></span>
     </section>
     ${buildLobbyNextActionStrip(nextAction)}

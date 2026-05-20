@@ -1049,15 +1049,20 @@ test('lobby operation card presents reward threat and progress as compact game i
   assert.equal(lobby.includes('<span>작전 2</span>'), true);
 });
 
-test('lobby currency strip uses an icon numeric chip with accessible economy meaning', () => {
+test('lobby briefing strip shows partner readiness and currency without adding commands', () => {
   const lobby = buildRebootLobby({ gems: 240 });
 
-  assert.equal(lobby.includes('class="lobby-intel-strip reward-hook" aria-label="보유 보석 240, 외형 해금 전용 재화"'), true);
+  assert.equal(lobby.includes('class="lobby-intel-strip reward-hook coop-hook" aria-label="파트너 린 준비됨, 보유 보석 240, 외형 해금 전용 재화"'), true);
+  assert.equal(lobby.includes('class="lobby-partner-capsule" aria-hidden="true"'), true);
+  assert.equal(lobby.includes('class="lobby-partner-avatar" data-sprite="rescue_coil"'), true);
+  assert.equal(lobby.includes('<strong class="lobby-partner-name">린</strong>'), true);
+  assert.equal(lobby.includes('<span class="lobby-partner-status">준비</span>'), true);
   assert.equal(lobby.includes('class="lobby-currency-capsule" aria-hidden="true"'), true);
   assert.equal(lobby.includes('class="lobby-currency-icon" data-reward-icon="soft_currency"'), true);
   assert.equal(lobby.includes('<strong class="lobby-currency-value">240</strong>'), true);
   assert.equal(lobby.includes('<span class="lobby-currency-label">보석</span>'), true);
   assert.equal(lobby.includes('</strong><span class="lobby-currency-label">보석</span></span>'), true);
+  assert.equal(lobby.includes('class="lobby-partner-action"'), false);
   assert.equal(lobby.includes('<span>보유 보석</span>'), false);
   assert.equal(lobby.includes('젬'), false);
   assert.equal(lobby.includes('<p>외형만 해금</p>'), false);

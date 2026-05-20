@@ -12,6 +12,7 @@ test('critical reboot preload list starts with generated game identity and first
     '/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title',
     '/src/client/assets/generated/reboot-lobby-backdrop.png',
     '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',
+    '/src/client/assets/generated/reboot-unit-atlas.png',
     '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1',
     '/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3',
     '/src/client/assets/generated/reboot-combat-hud-frame.png',

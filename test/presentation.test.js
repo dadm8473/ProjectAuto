@@ -591,7 +591,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=coop-briefing1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), false);
@@ -1433,7 +1434,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=coop-briefing1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), false);
@@ -1816,7 +1818,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=coop-briefing1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -3646,8 +3648,12 @@ test('lobby reward and next hooks use generated intel strips instead of web card
   for (const marker of [
     '--lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1")',
     '--lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next")',
-    'class="lobby-intel-strip reward-hook"',
-    'aria-label="보유 보석 ${gems}, 외형 해금 전용 재화"',
+    'class="lobby-intel-strip reward-hook coop-hook"',
+    'aria-label="파트너 린 준비됨, 보유 보석 ${gems}, 외형 해금 전용 재화"',
+    'class="lobby-partner-capsule" aria-hidden="true"',
+    'class="lobby-partner-avatar" data-sprite="rescue_coil"',
+    'class="lobby-partner-name"',
+    'class="lobby-partner-status"',
     'class="lobby-currency-capsule" aria-hidden="true"',
     'class="lobby-currency-icon" data-reward-icon="soft_currency"',
     'class="lobby-currency-value"',
@@ -3680,11 +3686,15 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     '.next-hook > .lobby-next-action',
     '.lobby-next-action-label',
     '.reward-hook .lobby-intel-frame',
+    '.reward-hook .lobby-partner-capsule',
+    '.reward-hook .lobby-partner-avatar',
+    '.reward-hook .lobby-partner-name',
+    '.reward-hook .lobby-partner-status',
     '.reward-hook .lobby-currency-capsule',
     '.reward-hook .lobby-currency-icon',
     '.reward-hook .lobby-currency-value',
     '.reward-hook .lobby-currency-label',
-    'font-size: clamp(13px, 3.72vw, 16px);',
+    'font-size: clamp(12px, 3.49vw, 15px);',
     'color: #ffe58f;',
     'text-shadow: 0 2px 7px rgba(0, 0, 0, 0.78);',
     '.next-hook .lobby-intel-frame',
@@ -3706,7 +3716,7 @@ test('lobby reward and next hooks use generated intel strips instead of web card
   const currencyCapsuleBlock = cssRuleBlock(css, '.reward-hook .lobby-currency-capsule');
   for (const marker of [
     'display: inline-grid;',
-    'grid-template-columns: clamp(32px, 9.3vw, 40px) auto auto;',
+    'grid-template-columns: clamp(30px, 8.84vw, 38px) auto auto;',
     'background-image: var(--result-reward-capsules);',
     'background-size: 300% 100%;',
     'background-position: 50% 0;',
@@ -3714,6 +3724,22 @@ test('lobby reward and next hooks use generated intel strips instead of web card
   ]) {
     assert.equal(currencyCapsuleBlock.includes(marker), true, marker);
   }
+
+  const partnerCapsuleBlock = cssRuleBlock(css, '.reward-hook .lobby-partner-capsule');
+  for (const marker of [
+    'display: inline-grid;',
+    'grid-template-columns: clamp(34px, 9.77vw, 42px) minmax(0, auto);',
+    'background-image: var(--result-reward-capsules);',
+    'background-position: 100% 0;',
+    'filter: saturate(1.08) drop-shadow(0 10px 15px rgba(0, 0, 0, 0.5));'
+  ]) {
+    assert.equal(partnerCapsuleBlock.includes(marker), true, marker);
+  }
+
+  const partnerAvatarBlock = cssRuleBlock(css, '.reward-hook .lobby-partner-avatar');
+  assert.equal(partnerAvatarBlock.includes('background-image: url("/src/client/assets/generated/reboot-unit-atlas.png");'), true);
+  assert.equal(partnerAvatarBlock.includes('background-size: calc(var(--lobby-partner-avatar-size) * 8) var(--lobby-partner-avatar-size);'), true);
+  assert.equal(cssRuleBlock(css, '.reward-hook .lobby-partner-avatar[data-sprite="rescue_coil"]').includes('background-position: calc(var(--lobby-partner-avatar-size) * -4) 0;'), true);
 
   for (const forbidden of [
     'class="lobby-card reward-hook"',
@@ -3726,6 +3752,7 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     '[data-next-beacon="battle"]',
     'background-image: var(--lobby-battle-ready-cue);',
     '<span>보유 보석</span>',
+    'class="lobby-partner-action"',
     '<p>외형만 해금</p>',
     '<span>${nextAction.label}</span>',
     '>보상 보기<',

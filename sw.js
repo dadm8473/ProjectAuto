@@ -1,9 +1,9 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v43';
+const CACHE_NAME = 'projectauto-reboot-shell-v45';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/src/client/styles.css?v=shop-purpose1',
+  '/src/client/styles.css?v=coop-briefing1',
   '/src/client/app.js?v=partner-identity1',
   '/src/client/reboot_actions.js?v=combat-meter2',
   '/src/client/reboot_action_ui.js?v=cooldown-sweep1',
@@ -37,6 +37,7 @@ const APP_SHELL_URLS = [
   '/src/client/assets/generated/reboot-lobby-launch-console.png?v=launch-console1',
   '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',
   '/src/client/assets/generated/reboot-launch-secondary.png?v=gold-cta-alpha1',
+  '/src/client/assets/generated/reboot-unit-atlas.png',
   '/src/client/assets/generated/reboot-screen-chrome.png',
   '/src/client/assets/generated/reboot-nav-icons.png',
   '/src/client/assets/generated/reboot-nav-button-glow.png?v=nav-selector1',

@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v43';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v45';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -41,7 +41,7 @@ test('service worker keeps the installable mobile game shell available after fir
     'event.request.mode === \'navigate\'',
     "caches.match('/index.html')",
     '/manifest.webmanifest',
-    '/src/client/styles.css?v=shop-purpose1',
+    '/src/client/styles.css?v=coop-briefing1',
     '/src/client/app.js?v=partner-identity1',
     '/src/client/reboot_actions.js?v=combat-meter2',
     '/src/client/reboot_playtest.js?v=playtest2',
@@ -55,6 +55,7 @@ test('service worker keeps the installable mobile game shell available after fir
     '/src/client/assets/generated/reboot-app-shell-backdrop.png',
     '/src/client/assets/generated/reboot-meta-showcase-copy-plates.png?v=showcase-nameplate1',
     '/src/client/assets/generated/reboot-shop-banner-v2.png?v=shop-banner2',
+    '/src/client/assets/generated/reboot-unit-atlas.png',
     '/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3',
     '/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2',
     '/src/client/assets/generated/reboot-app-icon-192.png',
@@ -144,9 +145,9 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v43'",
+    "cacheName === 'projectauto-reboot-shell-v45'",
     "await cache.match('/index.html')",
-    "await cache.match('/src/client/styles.css?v=shop-purpose1')",
+    "await cache.match('/src/client/styles.css?v=coop-briefing1')",
     "await cache.match('/src/client/app.js?v=partner-identity1')",
     "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
     "await cache.match('/src/client/reboot_playtest.js?v=playtest2')",
@@ -159,6 +160,7 @@ test('browser QA verifies the runtime service worker cache activation', async ()
     "await cache.match('/src/client/assets/generated/reboot-meta-showcase-copy-plates.png?v=showcase-nameplate1')",
     "await cache.match('/src/client/assets/generated/reboot-shop-banner-v2.png?v=shop-banner2')",
     "await cache.match('/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3')",
+    "await cache.match('/src/client/assets/generated/reboot-unit-atlas.png')",
     "await cache.match('/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2')",
     'await verifyInstallableShell(page);'
   ]) {

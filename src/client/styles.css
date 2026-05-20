@@ -2651,22 +2651,78 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .reward-hook {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   align-content: center;
-  justify-items: start;
+  justify-items: stretch;
+  column-gap: 8px;
+  padding: 10px 14px 10px 18px;
+}
+
+.reward-hook .lobby-partner-capsule {
+  display: inline-grid;
+  grid-template-columns: clamp(34px, 9.77vw, 42px) minmax(0, auto);
+  grid-template-rows: auto auto;
+  align-items: center;
+  justify-self: start;
   column-gap: 7px;
-  padding: 11px 104px 11px 70px;
+  min-width: clamp(126px, 36vw, 156px);
+  min-height: 52px;
+  padding: 5px 16px 6px 10px;
+  overflow: hidden;
+  background-image: var(--result-reward-capsules);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  filter: saturate(1.08) drop-shadow(0 10px 15px rgba(0, 0, 0, 0.5));
+}
+
+.reward-hook .lobby-partner-capsule > * {
+  position: relative;
+  z-index: 1;
+}
+
+.reward-hook .lobby-partner-avatar {
+  --lobby-partner-avatar-size: clamp(34px, 9.77vw, 42px);
+  grid-row: 1 / 3;
+  display: block;
+  width: var(--lobby-partner-avatar-size);
+  height: var(--lobby-partner-avatar-size);
+  background-image: url("/src/client/assets/generated/reboot-unit-atlas.png");
+  background-repeat: no-repeat;
+  background-size: calc(var(--lobby-partner-avatar-size) * 8) var(--lobby-partner-avatar-size);
+  filter: saturate(1.14) drop-shadow(0 7px 12px rgba(0, 0, 0, 0.58));
+}
+
+.reward-hook .lobby-partner-avatar[data-sprite="rescue_coil"] {
+  background-position: calc(var(--lobby-partner-avatar-size) * -4) 0;
+}
+
+.reward-hook .lobby-partner-name {
+  color: #fff7dc;
+  font-size: clamp(18px, 5.12vw, 22px);
+  font-weight: 1000;
+  line-height: 1;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.78), 0 0 12px rgba(142, 230, 210, 0.16);
+}
+
+.reward-hook .lobby-partner-status {
+  color: #8ee6d2;
+  font-size: clamp(10px, 3vw, 12px);
+  font-weight: 1000;
+  line-height: 1;
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.78);
 }
 
 .reward-hook .lobby-currency-capsule {
   display: inline-grid;
-  grid-template-columns: clamp(32px, 9.3vw, 40px) auto auto;
+  grid-template-columns: clamp(30px, 8.84vw, 38px) auto auto;
   align-items: center;
   column-gap: 6px;
-  min-width: clamp(142px, 41vw, 176px);
-  min-height: 50px;
-  padding: 5px 16px 6px 12px;
+  justify-self: end;
+  min-width: clamp(128px, 37vw, 160px);
+  min-height: 52px;
+  padding: 5px 15px 6px 11px;
   overflow: hidden;
   background-image: var(--result-reward-capsules);
   background-repeat: no-repeat;
@@ -2682,8 +2738,8 @@ body[data-app-screen="season"] .app-screen::after {
 
 .reward-hook .lobby-currency-icon {
   display: block;
-  width: clamp(32px, 9.3vw, 40px);
-  height: clamp(32px, 9.3vw, 40px);
+  width: clamp(30px, 8.84vw, 38px);
+  height: clamp(30px, 8.84vw, 38px);
   background-image: url("/src/client/assets/generated/reboot-reward-icons.png");
   background-repeat: no-repeat;
   background-size: 400% 100%;
@@ -2693,7 +2749,7 @@ body[data-app-screen="season"] .app-screen::after {
 
 .reward-hook .lobby-currency-value {
   color: #fff7dc;
-  font-size: clamp(24px, 6.98vw, 30px);
+  font-size: clamp(21px, 6.05vw, 27px);
   font-weight: 1000;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
@@ -2703,7 +2759,7 @@ body[data-app-screen="season"] .app-screen::after {
 .reward-hook .lobby-currency-label {
   align-self: center;
   color: #ffe58f;
-  font-size: clamp(13px, 3.72vw, 16px);
+  font-size: clamp(12px, 3.49vw, 15px);
   font-weight: 1000;
   text-shadow: 0 2px 7px rgba(0, 0, 0, 0.78);
 }

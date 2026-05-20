@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v43');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v45');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=shop-purpose1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=shop-purpose1'))
+      '/src/client/styles.css?v=coop-briefing1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=coop-briefing1'))
         : false,
       '/src/client/app.js?v=partner-identity1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=partner-identity1'))
@@ -132,6 +132,9 @@ async function verifyInstallableShell(page) {
       '/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3'))
         : false,
+      '/src/client/assets/generated/reboot-unit-atlas.png': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-unit-atlas.png'))
+        : false,
       '/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2'))
         : false
@@ -148,7 +151,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v43', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v45', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
