@@ -210,6 +210,8 @@ const CARD_STATE_BADGES = {
   owned: '<span class="card-state-badge" data-card-state="owned" aria-hidden="true"></span>',
   locked: '<span class="card-state-badge" data-card-state="locked" aria-hidden="true"></span>'
 };
+const SHOP_PURPOSE_LABEL = '외형 전용';
+const SHOP_NO_POWER_LABEL = '전투력 영향 없음';
 
 function cardStateBadge(state) {
   return CARD_STATE_BADGES[state] ?? CARD_STATE_BADGES.locked;
@@ -706,12 +708,12 @@ function buildShopFeaturedShowcase({ featuredItem, profile, unlocks, gems }) {
     label: '추천 외형',
     title: featuredItem.name,
     detail: featuredItem.description,
-    stats: [`보유 ${gems} 보석`, `가격 ${featuredItem.price?.gems ?? 0} 보석`],
+    stats: [SHOP_PURPOSE_LABEL, `보유 ${gems} 보석`, `가격 ${featuredItem.price?.gems ?? 0} 보석`],
     spriteClass: 'shop-cosmetic',
     spriteAttr: 'data-shop-cosmetic',
     spriteValue: featuredItem.id,
     extraClass: 'shop-feature-showcase',
-    attrs: ` data-featured-shop="${featuredItem.id}" data-featured-state="${featuredState}" aria-label="추천 외형 ${featuredItem.name} · ${featuredItem.description} · ${price} 보석 · ${stateLabel}"`,
+    attrs: ` data-featured-shop="${featuredItem.id}" data-featured-state="${featuredState}" data-shop-purpose="cosmetic-only" aria-label="추천 외형 ${featuredItem.name} · ${featuredItem.description} · ${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL} · ${price} 보석 · ${stateLabel}"`,
     previewExtra,
     previewClass: 'shop-feature-pedestal',
     action
@@ -741,12 +743,12 @@ export function buildRebootShop(profile = {}) {
           ? passiveCardState('보석 부족', 'locked', '부족')
           : `<button type="button" data-shop-buy="${item.id}" aria-label="${item.name} 해금">해금</button>`;
     return `
-    <article class="screen-card shop-card" data-item="${item.id}" data-owned="${owned}" data-equipped="${equipped}" data-tile-state="${tileState}" aria-label="${item.name} · ${item.description} · 해금 비용 ${price} 보석 · ${shopStateLabel}">
+    <article class="screen-card shop-card" data-item="${item.id}" data-shop-purpose="cosmetic-only" data-owned="${owned}" data-equipped="${equipped}" data-tile-state="${tileState}" aria-label="${item.name} · ${item.description} · ${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL} · 해금 비용 ${price} 보석 · ${shopStateLabel}">
       ${cardStateBadge(cardState)}
       <span class="cosmetic-equip-aura" data-cosmetic-effect="${item.id}" aria-hidden="true"></span>
       <span class="sprite-token shop-cosmetic" data-shop-cosmetic="${item.id}"></span>
       <div class="card-copy">
-        <span class="role-pill">외형</span>
+        <span class="role-pill">${SHOP_PURPOSE_LABEL}</span>
         <strong>${item.name}</strong>
         <p>${item.description}</p>
         <span class="shop-price" aria-label="해금 비용 ${price} 보석">${price}</span>

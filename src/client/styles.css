@@ -4592,7 +4592,24 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .meta-shelf-grid .shop-card .role-pill {
-  display: none;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 5;
+  min-width: 58px;
+  min-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px 2px 21px;
+  color: #fff0a8;
+  font-size: 10px;
+  background-image: var(--meta-command-ribbons);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 100% 0;
+  filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.46));
+  pointer-events: none;
 }
 
 .meta-shelf-grid .shop-card .card-copy p {

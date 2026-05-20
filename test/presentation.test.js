@@ -117,7 +117,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=cooldown-sweep1'",
     "from './reboot_render.js?v=p0-polish1'",
-    "from './reboot_screens.js?v=season-current1'",
+    "from './reboot_screens.js?v=shop-purpose1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -587,7 +587,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hero-squad2">'), false);
@@ -692,7 +693,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shop-purpose1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-highlight1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest-feedback1"></script>'), false);
@@ -784,7 +786,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=board-labels1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
+  assert.equal(app.includes("from './reboot_screens.js?v=shop-purpose1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=reward-detail1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label2'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label1'"), false);
@@ -1426,7 +1429,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
     assert.equal(css.includes(marker), true, marker);
   }
 
-  assert.equal(html.includes('/src/client/styles.css?v=season-current1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
+  assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hero-squad2'), false);
@@ -1809,7 +1813,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2170,7 +2174,16 @@ test('meta shelf cards use generated command ribbons for labels prices and state
     assert.equal(shopShelfPriceBlock.includes(marker), true, marker);
   }
 
-  assert.equal(cssRuleBlock(css, '.meta-shelf-grid .shop-card .role-pill').includes('display: none;'), true);
+  const shopRoleBlock = cssRuleBlock(css, '.meta-shelf-grid .shop-card .role-pill');
+  for (const marker of [
+    'display: inline-flex;',
+    'position: absolute;',
+    'right: 14px;',
+    'background-image: var(--meta-command-ribbons);',
+    'pointer-events: none;'
+  ]) {
+    assert.equal(shopRoleBlock.includes(marker), true, marker);
+  }
 });
 
 test('meta shelf tiles use generated status overlays instead of catalog cells', async () => {
@@ -4440,7 +4453,10 @@ test('shop screen uses the active generated showcase stage', async () => {
     'function buildMetaShowcase',
     'data-showcase-kind="shop"',
     '추천 외형',
-    'stats: [`보유 ${gems} 보석`, `가격 ${featuredItem.price?.gems ?? 0} 보석`]',
+    "stats: [SHOP_PURPOSE_LABEL, `보유 ${gems} 보석`, `가격 ${featuredItem.price?.gems ?? 0} 보석`]",
+    'data-shop-purpose="cosmetic-only"',
+    '전투력 영향 없음',
+    '<span class="role-pill">${SHOP_PURPOSE_LABEL}</span>',
     'class="meta-showcase-preview shop-feature-pedestal"',
     'class="sprite-token shop-cosmetic"'
   ]) {
@@ -4979,11 +4995,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=boss-vitality1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=season-current1'",
+    "from './reboot_screens.js?v=shop-purpose1'",
     "from './reboot_game.js?v=boss-vitality1'",
     "from '../shared/game.js?v=boss-vitality1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=season-current1',
+    '/src/client/reboot_screens.js?v=shop-purpose1',
     '/src/shared/game.js?v=boss-vitality1',
     '/src/shared/reboot_game.js?v=boss-vitality1'
   ]) {

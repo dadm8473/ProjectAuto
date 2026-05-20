@@ -448,6 +448,23 @@ test('equipped shop feature shows generated aura and passive equipped state', ()
   assert.equal(shop.includes('class="featured-shop-action"'), false);
 });
 
+test('shop surfaces clarify cosmetic purchases do not sell combat power', () => {
+  const shop = buildRebootShop({ gems: 90, unlocks: [] });
+
+  assert.equal((shop.match(/data-shop-purpose="cosmetic-only"/g) ?? []).length, 6);
+  assert.equal(shop.includes('<span class="meta-showcase-chip">외형 전용</span>'), true);
+  assert.equal((shop.match(/<span class="role-pill">외형 전용<\/span>/g) ?? []).length, 5);
+  assert.equal(shop.includes('<span class="role-pill">외형</span>'), false);
+  assert.equal(
+    shop.includes('aria-label="추천 외형 신화 오라 · 코어 릴레이 오라 · 외형 전용 · 전투력 영향 없음 · 90 보석 · 해금 가능"'),
+    true
+  );
+  assert.equal(
+    shop.includes('aria-label="신화 오라 · 코어 릴레이 오라 · 외형 전용 · 전투력 영향 없음 · 해금 비용 90 보석 · 해금 가능"'),
+    true
+  );
+});
+
 test('reboot collection renders unit upgrade state from profile XP and levels', () => {
   const collection = buildRebootCollection({ xp: 50, unitLevels: { spark_pin: 2 } });
 
@@ -577,6 +594,7 @@ test('collection and shop showcases split numeric state into compact game badges
   assert.equal(collection.includes('Lv.1 · 0/40 경험치'), false);
 
   assert.equal(shop.includes('class="meta-showcase-stats"'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip">외형 전용</span>'), true);
   assert.equal(shop.includes('<span class="meta-showcase-chip">보유 0 보석</span>'), true);
   assert.equal(shop.includes('<span class="meta-showcase-chip">가격 90 보석</span>'), true);
   assert.equal(shop.includes('0 보석 보유 · 90 보석'), false);
@@ -628,16 +646,16 @@ test('shop shelf cards expose compact prices and full accessible state', () => {
   });
 
   assert.equal(
-    shop.includes('aria-label="신화 오라 · 코어 릴레이 오라 · 해금 비용 90 보석 · 해금 가능"'),
+    shop.includes('aria-label="신화 오라 · 코어 릴레이 오라 · 외형 전용 · 전투력 영향 없음 · 해금 비용 90 보석 · 해금 가능"'),
     true
   );
   assert.equal(shop.includes('data-shop-buy="mythic-aura" aria-label="신화 오라 해금">해금<'), true);
   assert.equal(
-    shop.includes('aria-label="파운더 보드 · 협동 보드 스킨 · 해금 비용 140 보석 · 보석 부족"'),
+    shop.includes('aria-label="파운더 보드 · 협동 보드 스킨 · 외형 전용 · 전투력 영향 없음 · 해금 비용 140 보석 · 보석 부족"'),
     true
   );
   assert.equal(
-    shop.includes('aria-label="합성 플레어 · 합성 이펙트 · 해금 비용 55 보석 · 장착중"'),
+    shop.includes('aria-label="합성 플레어 · 합성 이펙트 · 외형 전용 · 전투력 영향 없음 · 해금 비용 55 보석 · 장착중"'),
     true
   );
 });
