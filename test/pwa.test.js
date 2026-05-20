@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v54';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v55';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -146,7 +146,7 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v54'",
+    "cacheName === 'projectauto-reboot-shell-v55'",
     "await cache.match('/index.html')",
     "await cache.match('/src/client/styles.css?v=role-label1')",
     "await cache.match('/src/client/app.js?v=role-label1')",
