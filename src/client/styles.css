@@ -681,7 +681,7 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   }
 
   #dangerMeter .meter-label {
-    max-width: 24px;
+    max-width: 30px;
     font-size: 6px;
   }
 

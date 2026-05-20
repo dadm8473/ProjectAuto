@@ -1,6 +1,6 @@
 import { REBOOT_RULES } from '../shared/reboot_content.js?v=unit-roster1';
-import { buildCombatStatusDisplay, buildCombatStatusPrompt, partnerDangerAriaLabel, partnerDangerMeterLabel } from './reboot_action_ui.js?v=danger-label3';
-import { operationForSeedName } from './reboot_screens.js?v=result-copy1';
+import { buildCombatStatusDisplay, buildCombatStatusPrompt, partnerDangerAriaLabel, partnerDangerMeterLabel } from './reboot_action_ui.js?v=role-label1';
+import { operationForSeedName } from './reboot_screens.js?v=role-label1';
 
 function setMeterValue(meter, value, label, state = 'idle', visibleLabel = '') {
   const labelNode = meter?.querySelector('.meter-label');

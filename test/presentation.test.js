@@ -115,10 +115,10 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from '../shared/game.js?v=partner-identity1'",
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_action_ui.js?v=danger-label3'",
-    "from './reboot_hud.js?v=combat-hud1'",
-    "from './reboot_render.js?v=partner-ready1'",
-    "from './reboot_screens.js?v=result-copy1'",
+    "from './reboot_action_ui.js?v=role-label1'",
+    "from './reboot_hud.js?v=role-label1'",
+    "from './reboot_render.js?v=role-label1'",
+    "from './reboot_screens.js?v=role-label1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -189,14 +189,14 @@ test('player-facing app branding is Korean and no longer exposes the repository 
     '<title>신호릴레이</title>',
     'aria-label="신호릴레이 협동 타워디펜스 전장"',
     '<strong>신호릴레이</strong>',
-    '<span id="netStatus">린 협동</span>'
+    '<span id="netStatus">동료 협동</span>'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }
 
   assert.equal(manifest.name, '신호릴레이');
   assert.equal(manifest.short_name, '신호릴레이');
-  assert.equal(app.includes("dom.netStatus.textContent = '린 협동';"), true);
+  assert.equal(app.includes("dom.netStatus.textContent = '동료 협동';"), true);
   assert.equal(html.includes('ProjectAuto'), false);
   assert.equal(JSON.stringify(manifest).includes('ProjectAuto'), false);
   assert.equal(server.includes('신호릴레이 실행 중'), true);
@@ -594,7 +594,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=coop-launch1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=role-label1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
@@ -701,8 +701,9 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=role-label1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-identity1"></script>'), false);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-highlight1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest-feedback1"></script>'), false);
@@ -769,7 +770,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=partner-ready1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=role-label1'"), true);
   assert.equal(app.includes("from './reboot_render.js?v=enemy-atlas3'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=opening-route1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=match-banner-cutin1'"), false);
@@ -795,7 +796,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=result-copy1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=role-label1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=reward-detail1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label2'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label1'"), false);
@@ -1283,7 +1284,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
   assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::before'), false);
 
   for (const marker of [
-    "from './reboot_action_ui.js?v=danger-label3'",
+    "from './reboot_action_ui.js?v=role-label1'",
     'buildCombatCoachCue',
     'buildCombatCommandLabels',
     'buildCombatStatusPrompt',
@@ -1439,7 +1440,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=coop-launch1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=role-label1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
@@ -1824,7 +1825,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=coop-launch1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=role-label1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2812,7 +2813,7 @@ test('combat renderer uses generated partner assist pings for bot co-op actions'
 
   for (const marker of [
     'function drawPartnerStandbySigil',
-    "ctx.fillText(`${partnerName} 준비`, 195, 102);",
+    "ctx.fillText('동료 준비', 195, 102);",
     'partnerAssistPings',
     "src: '/src/client/assets/generated/reboot-partner-assist-pings.png?v=partner-assist2'",
     'width: 640',
@@ -2855,7 +2856,7 @@ test('combat renderer draws partner assist ping without flattening the imagegen 
   assert.equal(dw / dh, sw / sh);
   assert.equal(dx, 52);
   assert.equal(dy > 130 && dy < 139, true);
-  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '린 지원'), true);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '동료 지원'), true);
   assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '스파크 핀 소환'), true);
 });
 
@@ -2873,7 +2874,7 @@ test('local player merge and rescue moments suppress the large partner assist pi
 
   assert.equal(ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === actionSurges), true);
   assert.equal(ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === partnerAssistPings), false);
-  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '린 지원'), false);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '동료 지원'), false);
 
   const p2State = stateWithPartnerAutoPing();
   p2State.events = [
@@ -2892,7 +2893,7 @@ test('local player merge and rescue moments suppress the large partner assist pi
 
   assert.equal(p2Ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === actionSurges), true);
   assert.equal(p2Ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === partnerAssistPings), false);
-  assert.equal(p2Ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '린 지원'), false);
+  assert.equal(p2Ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '동료 지원'), false);
 });
 
 test('combat renderer skips partner assist copy when the generated banner has not loaded', () => {
@@ -2902,7 +2903,7 @@ test('combat renderer skips partner assist copy when the generated banner has no
   drawRebootBattle(ctx, stateWithPartnerAutoPing(), { width: 390, height: 620 }, fakeRebootAssets({ partnerAssistPings }));
 
   assert.equal(ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === partnerAssistPings), false);
-  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '린 지원'), false);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '동료 지원'), false);
 });
 
 test('combat renderer draws the rescue variant of partner assist pings', () => {
@@ -2918,7 +2919,7 @@ test('combat renderer draws the rescue variant of partner assist pings', () => {
   assert.equal(dw / dh, sw / sh);
   assert.equal(dx, 52);
   assert.equal(dy > 130 && dy < 139, true);
-  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '린 지원'), true);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '동료 지원'), true);
   assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '구원 코일 구원'), true);
 });
 
@@ -2935,7 +2936,7 @@ test('bot rescue support ping lingers long enough to read as co-op help', () => 
     true,
     'partner rescue support should not vanish before the player can read it'
   );
-  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '린 지원'), true);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '동료 지원'), true);
   assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '구원 코일 구원'), true);
 });
 
@@ -3661,7 +3662,7 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     '--lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1")',
     '--lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next")',
     'class="lobby-intel-strip reward-hook coop-hook"',
-    'aria-label="파트너 린 준비됨, 보유 보석 ${gems}, 외형 해금 전용 재화"',
+    'aria-label="동료 준비됨, 보유 보석 ${gems}, 외형 해금 전용 재화"',
     'class="lobby-partner-capsule" aria-hidden="true"',
     'class="lobby-partner-avatar" data-sprite="rescue_coil"',
     'class="lobby-partner-name"',
@@ -5043,11 +5044,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=partner-identity1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=result-copy1'",
+    "from './reboot_screens.js?v=role-label1'",
     "from './reboot_game.js?v=partner-identity1'",
     "from '../shared/game.js?v=partner-identity1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=result-copy1',
+    '/src/client/reboot_screens.js?v=role-label1',
     '/src/shared/game.js?v=partner-identity1',
     '/src/shared/reboot_game.js?v=partner-identity1'
   ]) {
@@ -5226,7 +5227,7 @@ test('combat HUD keeps three resource meters bounded on compact phones', async (
     'font-size: 9px;',
     '.meter-label {\n    max-width: 20px;',
     'overflow: hidden;',
-    '#dangerMeter .meter-label {\n    max-width: 24px;\n    font-size: 6px;',
+    '#dangerMeter .meter-label {\n    max-width: 30px;\n    font-size: 6px;',
     '.meters > span::before {\n    width: 14px;',
     '#rescueMeter::before { background-position: -28px 0; }',
     '#dangerMeter::before { background-position: -42px 0; }'
@@ -5262,7 +5263,7 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     'setMeterValue(\n    dom.dangerMeter,',
     'partnerDangerAriaLabel(current, partner, partnerDanger)',
     'partnerDangerMeterLabel(current, partner)',
-    "return label.length > 1 ? '동료' : `${label} 위험`;",
+    "return '동료 위험';",
     "return label === '파트너' ? `파트너 위험도 ${danger}` : `파트너 ${label}의 위험도 ${danger}`;",
     '.meter-label',
     '.meter-value',
@@ -5278,6 +5279,7 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     '>구원 0%<',
     '>위험 0<',
     '<span class="meter-label">위험</span>',
+    '<span class="meter-label">린 위험</span>',
     '<span class="meter-label">동료위험</span>',
     '`${label}위험`',
     '`파트너 위험도 ${partnerDanger}`',

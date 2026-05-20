@@ -1141,7 +1141,7 @@ test('wave directive suppresses partner assist ping so central battlefield banne
     false,
     'partner assist generated banner should wait while the wave directive owns the center lane'
   );
-  assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '린 지원'), false);
+  assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '동료 지원'), false);
 });
 
 test('enemy sprites follow serialized track progress instead of a timer-only path', () => {
@@ -2112,7 +2112,7 @@ test('bot partner standby sigil marks the empty partner board before bot acts', 
   assert.equal(standbyDraw.args[1], 0, 'bot standby should use the first atlas cell');
   assert.equal(standbyDraw.args[5] >= 110 && standbyDraw.args[5] <= 140, true, 'standby sigil should sit inside the partner board');
   assert.equal(
-    ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '린 준비'),
+    ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '동료 준비'),
     true,
     'bot standby should label the partner presence without adding another HUD button'
   );

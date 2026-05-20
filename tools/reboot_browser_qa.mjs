@@ -89,30 +89,30 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v52');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v54');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=coop-launch1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=coop-launch1'))
+      '/src/client/styles.css?v=role-label1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=role-label1'))
         : false,
-      '/src/client/app.js?v=partner-ready1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=partner-ready1'))
+      '/src/client/app.js?v=role-label1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=role-label1'))
         : false,
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
         : false,
-      '/src/client/reboot_hud.js?v=combat-hud1': cache
-        ? Boolean(await cache.match('/src/client/reboot_hud.js?v=combat-hud1'))
+      '/src/client/reboot_hud.js?v=role-label1': cache
+        ? Boolean(await cache.match('/src/client/reboot_hud.js?v=role-label1'))
         : false,
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
         : false,
-      '/src/client/reboot_render.js?v=partner-ready1': cache
-        ? Boolean(await cache.match('/src/client/reboot_render.js?v=partner-ready1'))
+      '/src/client/reboot_render.js?v=role-label1': cache
+        ? Boolean(await cache.match('/src/client/reboot_render.js?v=role-label1'))
         : false,
-      '/src/client/reboot_screens.js?v=result-copy1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=result-copy1'))
+      '/src/client/reboot_screens.js?v=role-label1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=role-label1'))
         : false,
       '/src/shared/game.js?v=partner-identity1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=partner-identity1'))
@@ -120,8 +120,8 @@ async function verifyInstallableShell(page) {
       '/src/shared/reboot_game.js?v=partner-identity1': cache
         ? Boolean(await cache.match('/src/shared/reboot_game.js?v=partner-identity1'))
         : false,
-      '/src/client/reboot_action_ui.js?v=danger-label3': cache
-        ? Boolean(await cache.match('/src/client/reboot_action_ui.js?v=danger-label3'))
+      '/src/client/reboot_action_ui.js?v=role-label1': cache
+        ? Boolean(await cache.match('/src/client/reboot_action_ui.js?v=role-label1'))
         : false,
       '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1'))
@@ -154,7 +154,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v52', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v54', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }

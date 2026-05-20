@@ -1041,8 +1041,6 @@ function drawPartnerStandbySigil(ctx, state, assets = {}, partnerId = 'p2', opti
   const partnerPlayer = players.find((player) => normalizeBoardId(player.id) === normalizeBoardId(partnerId));
   const isBotPartner = state.mode === 'bot' || partnerPlayer?.bot === true;
   if (!isBotPartner) return false;
-  const partnerName = partnerPlayer?.name || '린';
-
   const pulse = Math.max(0, Math.sin((Number(state.now) || 0) * 3.8)) * 0.12;
   const alpha = Math.min(0.86, 0.62 + pulse);
   const drew = drawPartnerStandbySprite(ctx, assets.partnerStandbySigils, 0, 112, 64, 166, 66, alpha);
@@ -1054,7 +1052,7 @@ function drawPartnerStandbySigil(ctx, state, assets = {}, partnerId = 'p2', opti
   ctx.shadowBlur = 5;
   ctx.font = '900 12px system-ui';
   ctx.textAlign = 'center';
-  ctx.fillText(`${partnerName} 준비`, 195, 102);
+  ctx.fillText('동료 준비', 195, 102);
   ctx.restore();
   return true;
 }
@@ -1751,10 +1749,7 @@ function momentCalloutDetail(event, meta) {
 }
 
 function partnerAssistTitle(state, localBoardId = 'p1') {
-  const partnerId = partnerBoardId(localBoardId);
-  const partner = state.players?.find((player) => player.id === partnerId);
-  const name = partner?.name || (partner?.bot ? '린' : '파트너');
-  return `${name} 지원`;
+  return '동료 지원';
 }
 
 function partnerAssistBody(event, meta) {
