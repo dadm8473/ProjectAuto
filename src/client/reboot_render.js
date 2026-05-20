@@ -1041,10 +1041,22 @@ function drawPartnerStandbySigil(ctx, state, assets = {}, partnerId = 'p2', opti
   const partnerPlayer = players.find((player) => normalizeBoardId(player.id) === normalizeBoardId(partnerId));
   const isBotPartner = state.mode === 'bot' || partnerPlayer?.bot === true;
   if (!isBotPartner) return false;
+  const partnerName = partnerPlayer?.name || '린';
 
   const pulse = Math.max(0, Math.sin((Number(state.now) || 0) * 3.8)) * 0.12;
   const alpha = Math.min(0.86, 0.62 + pulse);
-  return drawPartnerStandbySprite(ctx, assets.partnerStandbySigils, 0, 112, 64, 166, 66, alpha);
+  const drew = drawPartnerStandbySprite(ctx, assets.partnerStandbySigils, 0, 112, 64, 166, 66, alpha);
+  if (!drew) return false;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.fillStyle = '#fff7dc';
+  ctx.shadowColor = '#071314';
+  ctx.shadowBlur = 5;
+  ctx.font = '900 12px system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText(`${partnerName} 준비`, 195, 102);
+  ctx.restore();
+  return true;
 }
 
 function drawCosmeticSigilSprite(ctx, image, index, x, y, w, h, alpha = 1) {

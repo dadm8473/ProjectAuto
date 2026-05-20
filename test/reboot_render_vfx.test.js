@@ -2111,6 +2111,11 @@ test('bot partner standby sigil marks the empty partner board before bot acts', 
   assert.ok(standbyDraw, 'expected generated bot partner standby sigil on the partner board');
   assert.equal(standbyDraw.args[1], 0, 'bot standby should use the first atlas cell');
   assert.equal(standbyDraw.args[5] >= 110 && standbyDraw.args[5] <= 140, true, 'standby sigil should sit inside the partner board');
+  assert.equal(
+    ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '린 준비'),
+    true,
+    'bot standby should label the partner presence without adding another HUD button'
+  );
 });
 
 test('first summon landing beacon stays hidden while waiting for an online partner', () => {
