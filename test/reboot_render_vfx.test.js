@@ -2785,13 +2785,46 @@ test('summon action stamp names the revealed unit and role', () => {
   );
 
   assert.equal(
-    ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '스파크 핀 · 공격'),
+    ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '스파크 핀 · 공격/피해'),
     true,
-    'summon reward stamp should reveal the unit identity without opening a separate web panel'
+    'summon reward stamp should reveal the unit identity and combat value without opening a separate web panel'
   );
-  const detailIndex = ctx.commands.findIndex((command) => command.type === 'fillText' && command.args[0] === '스파크 핀 · 공격');
+  const detailIndex = ctx.commands.findIndex((command) => command.type === 'fillText' && command.args[0] === '스파크 핀 · 공격/피해');
   const detailFont = ctx.commands.slice(0, detailIndex).findLast((command) => command.type === 'font')?.value ?? '';
   assert.match(detailFont, /12px/, 'unit identity should stay readable on a phone-scale action stamp');
+});
+
+test('summon action stamp explains control units as slow value, not only role taxonomy', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 11.0,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'slow_coil' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'quick_noise', spriteKey: 'quick_noise' }],
+      events: [{ type: 'summon', at: 10.1, playerId: 'p1', unitId: 'slow_coil' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      actionStamps: image(768, 128),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  assert.equal(
+    ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '느림 코일 · 제어/감속'),
+    true,
+    'control summon feedback should tell the player why the unit matters'
+  );
 });
 
 test('rescue action stamp stays below boss warning copy during crisis timing', () => {

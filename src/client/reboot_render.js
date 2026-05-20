@@ -283,6 +283,13 @@ const UNIT_ROLE_LABELS = {
   rescue: '구원'
 };
 
+const UNIT_ROLE_VALUE_LABELS = {
+  attack: '피해',
+  support: '증폭',
+  control: '감속',
+  rescue: '회복'
+};
+
 const MOMENT_CALLOUTS = {
   summon: { index: 0, icon: 'summon_charge', title: '소환 성공', body: '새 유닛 전장 투입' },
   merge: { index: 1, icon: 'merge_action', title: '합성 성공', body: '상위 전력으로 강화' },
@@ -1727,7 +1734,8 @@ function momentCalloutDetail(event, meta) {
   const unit = REBOOT_UNITS[event.unitIdResult ?? event.unitId];
   if (!unit) return meta.body;
   const role = UNIT_ROLE_LABELS[unit.role] ?? '유닛';
-  return `${unit.name} · ${role}`;
+  const value = UNIT_ROLE_VALUE_LABELS[unit.role] ?? role;
+  return `${unit.name} · ${role}/${value}`;
 }
 
 function partnerAssistTitle(state, localBoardId = 'p1') {
