@@ -110,12 +110,13 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
   const app = await readFile('src/client/app.js', 'utf8');
   const lines = app.split('\n').length;
 
-  assert.equal(lines <= 910, true, `app.js line budget exceeded: ${lines}`);
+  assert.equal(lines <= 880, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
     "from '../shared/game.js?v=partner-identity1'",
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=danger-label2'",
+    "from './reboot_hud.js?v=combat-hud1'",
     "from './reboot_render.js?v=partner-ready1'",
     "from './reboot_screens.js?v=partner-identity1'",
     "from './reboot_online.js'"
@@ -205,12 +206,13 @@ test('player-facing app branding is Korean and no longer exposes the repository 
 test('battle HUD title follows the current authored operation instead of a static web header', async () => {
   const html = await readFile('index.html', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const hud = await readFile('src/client/reboot_hud.js', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
   assert.equal(html.includes('<strong id="gameTitle">신호릴레이</strong>'), true);
   assert.equal(app.includes('gameTitle: qs(\'#gameTitle\')'), true);
-  assert.equal(app.includes('operationForSeedName'), true);
-  assert.equal(app.includes('dom.gameTitle.textContent = operationForSeedName(current.seedName).hudTitle;'), true);
+  assert.equal(hud.includes('operationForSeedName'), true);
+  assert.equal(hud.includes('dom.gameTitle.textContent = operationForSeedName(current.seedName).hudTitle;'), true);
   assert.equal(screens.includes('export function operationForSeedName'), true);
   assert.equal(screens.includes("hudTitle: '첫 구원'"), true);
 });
@@ -351,6 +353,7 @@ test('online entry has app-game fallback instead of trapping players in a dead c
 
 test('online waiting state blocks combat until the second player arrives', async () => {
   const app = await readFile('src/client/app.js', 'utf8');
+  const hud = await readFile('src/client/reboot_hud.js', 'utf8');
   const server = await readFile('server/server.js', 'utf8');
 
   for (const marker of [
@@ -364,7 +367,7 @@ test('online waiting state blocks combat until the second player arrives', async
     "if (game.mode === 'online' && waitingForOnlinePartner(game)) {",
     'cancelOnlineMatch();'
   ]) {
-    assert.equal(app.includes(marker), true, marker);
+    assert.equal(`${app}\n${hud}`.includes(marker), true, marker);
   }
 
   for (const marker of [
@@ -1225,6 +1228,7 @@ test('combat renderer keeps imagegen enemy sprites readable on phone canvas', as
 test('combat action buttons use generated icons instead of text-only web buttons', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const hud = await readFile('src/client/reboot_hud.js', 'utf8');
 
   for (const marker of [
     '--combat-action-buttons: url("/src/client/assets/generated/reboot-combat-action-buttons.png?v=action-buttons-alpha1")',
@@ -1295,7 +1299,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
     "button.setAttribute('aria-label', ariaLabel);",
     'button.dataset.critical = String(isCriticalRebootAction({ actionKey: key, current, localBoardId, enabled }));'
   ]) {
-    assert.equal(app.includes(marker), true, marker);
+    assert.equal(`${app}\n${hud}`.includes(marker), true, marker);
   }
 
   const actionBlock = css.slice(css.indexOf('.primary-actions button {\n  display: inline-flex;'), css.indexOf('.primary-actions button::before'));
@@ -1548,6 +1552,7 @@ test('combat coach cues remove duplicate status text for every taught action', a
 test('combat summon cooldown stays compact on the command button', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const hud = await readFile('src/client/reboot_hud.js', 'utf8');
   const actionUi = await readFile('src/client/reboot_action_ui.js', 'utf8');
   const cooldownLabelFn = actionUi.slice(
     actionUi.indexOf('function summonCooldownLabel'),
@@ -1557,8 +1562,8 @@ test('combat summon cooldown stays compact on the command button', async () => {
   for (const marker of [
     'const statusPrompt = buildCombatStatusPrompt({ current, localBoardId, onlineWaiting });',
     'dom.timeMeter.textContent = statusPrompt;',
-    "document.body.dataset.statusKind = statusPrompt.startsWith('충전 ') ? 'cooldown' : 'active';",
-    'delete document.body.dataset.statusKind;',
+    "body.dataset.statusKind = statusPrompt.startsWith('충전 ') ? 'cooldown' : 'active';",
+    'delete body.dataset.statusKind;',
     'body[data-app-screen="battle"][data-status-kind="cooldown"] .status-line',
     'display: none;',
     'buildCombatCommandLabels',
@@ -1573,7 +1578,7 @@ test('combat summon cooldown stays compact on the command button', async () => {
     "button.dataset.cooldownPhase = cooldownState.phase;",
     "button.style.setProperty('--cooldown-progress', `${Math.round(cooldownState.progress * 100)}%`);"
   ]) {
-    const source = marker.startsWith('body[') || marker === 'display: none;' ? css : app;
+    const source = marker.startsWith('body[') || marker === 'display: none;' ? css : `${app}\n${hud}`;
     assert.equal(source.includes(marker), true, marker);
   }
 
@@ -2748,7 +2753,8 @@ test('equipped cosmetics appear in battle as generated expression sigils only', 
     'equippedCosmetic: profile.equippedCosmetic',
     'reducedMotion: reduceMotion.matches',
     'localBoardId',
-    'onlineWaiting: waitingForOnlinePartner(current),',
+    'const onlineWaiting = waitingForOnlinePartner(current);',
+    'onlineWaiting,',
     "matchmakingBannerVisible: appScreen === 'battle' && !dom.matchmakingBanner.hidden"
   ]) {
     assert.equal(`${app}\n${render}`.includes(marker), true, marker);
@@ -5023,6 +5029,7 @@ test('combat resource HUD uses generated icons instead of text-only chips', asyn
 test('combat summon resource is named 전력 so it is not confused with the summon command', async () => {
   const html = await readFile('index.html', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const hud = await readFile('src/client/reboot_hud.js', 'utf8');
   const actions = await readFile('src/client/reboot_actions.js', 'utf8');
   const rebootGame = await readFile('src/shared/reboot_game.js', 'utf8');
   const sharedGame = await readFile('src/shared/game.js', 'utf8');
@@ -5044,7 +5051,7 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     '/src/shared/game.js?v=partner-identity1',
     '/src/shared/reboot_game.js?v=partner-identity1'
   ]) {
-    assert.equal(`${html}\n${app}\n${actions}\n${rebootGame}\n${sharedGame}\n${screens}\n${sw}`.includes(marker), true, marker);
+    assert.equal(`${html}\n${app}\n${hud}\n${actions}\n${rebootGame}\n${sharedGame}\n${screens}\n${sw}`.includes(marker), true, marker);
   }
 
   assert.equal(html.includes('<span class="meter-label">소환</span><span class="meter-value">10</span>'), false);
@@ -5060,7 +5067,7 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "\n  '/src/shared/game.js',",
     "\n  '/src/shared/reboot_game.js',"
   ]) {
-    assert.equal(`${html}\n${app}\n${actions}\n${rebootGame}\n${sharedGame}\n${screens}\n${sw}`.includes(forbidden), false, forbidden);
+    assert.equal(`${html}\n${app}\n${hud}\n${actions}\n${rebootGame}\n${sharedGame}\n${screens}\n${sw}`.includes(forbidden), false, forbidden);
   }
 });
 
@@ -5089,17 +5096,18 @@ test('combat status line uses generated game plates instead of plain web chips',
 test('combat status hides the idle boss chip until the boss warning matters', async () => {
   const html = await readFile('index.html', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const hud = await readFile('src/client/reboot_hud.js', 'utf8');
 
   assert.equal(html.includes('<span id="bossMeter" hidden>보스 경고</span>'), true);
   assert.equal(app.includes("statusLine: qs('.status-line')"), true);
-  assert.equal(app.includes('buildCombatStatusDisplay'), true);
-  assert.equal(app.includes('const bossWarning = current.now >= 92 && current.now < 120;'), true);
-  assert.equal(app.includes('dom.timeMeter.hidden = !statusDisplay.showPrompt;'), true);
-  assert.equal(app.includes('dom.statusLine.hidden = !statusDisplay.visible;'), true);
-  assert.equal(app.includes('dom.bossMeter.hidden = !statusDisplay.showBossWarning;'), true);
-  assert.equal(app.includes("dom.bossMeter.textContent = statusDisplay.showBossWarning ? '보스 경고' : '';"), true);
-  assert.equal(app.includes('dom.bossMeter.hidden = !bossWarning;'), false);
-  assert.equal(app.includes("'보스 대기'"), false);
+  assert.equal(hud.includes('buildCombatStatusDisplay'), true);
+  assert.equal(hud.includes('bossWarning: current.now >= 92 && current.now < 120'), true);
+  assert.equal(hud.includes('dom.timeMeter.hidden = !statusDisplay.showPrompt;'), true);
+  assert.equal(hud.includes('dom.statusLine.hidden = !statusDisplay.visible;'), true);
+  assert.equal(hud.includes('dom.bossMeter.hidden = !statusDisplay.showBossWarning;'), true);
+  assert.equal(hud.includes("dom.bossMeter.textContent = statusDisplay.showBossWarning ? '보스 경고' : '';"), true);
+  assert.equal(`${app}\n${hud}`.includes('dom.bossMeter.hidden = !bossWarning;'), false);
+  assert.equal(`${app}\n${hud}`.includes("'보스 대기'"), false);
 });
 
 test('combat shell uses generated HUD and action dock chrome', async () => {
@@ -5230,6 +5238,7 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
   const html = await readFile('index.html', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
   const actionUi = await readFile('src/client/reboot_action_ui.js', 'utf8');
+  const hud = await readFile('src/client/reboot_hud.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
@@ -5246,6 +5255,7 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     "export function partnerDangerMeterLabel(current, partnerBoardId) {",
     "export function partnerDangerAriaLabel(current, partnerBoardId, danger) {",
     "function setMeterValue(meter, value, label, state = 'idle', visibleLabel = '')",
+    'export function updateCombatHudMeters({ dom, current, localBoardId, appScreen, onlineWaiting, body = document.body })',
     'setMeterValue(\n    dom.summonMeter,',
     'setMeterValue(\n    dom.rescueMeter,',
     'setMeterValue(\n    dom.dangerMeter,',
@@ -5258,7 +5268,7 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     'margin-left: clamp(34px, 10vw, 46px);',
     'padding: clamp(4px, 1.4vw, 6px) clamp(3px, 1.2vw, 5px);'
   ]) {
-    assert.equal(`${html}\n${app}\n${actionUi}\n${css}`.includes(marker), true, marker);
+    assert.equal(`${html}\n${app}\n${actionUi}\n${hud}\n${css}`.includes(marker), true, marker);
   }
 
   for (const forbidden of [
@@ -5274,16 +5284,17 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     'dom.rescueMeter.textContent = `구원 ${Math.round(resources.rescue)}%`',
     'dom.dangerMeter.textContent = `위험 ${Math.round(current.boards[partner]?.danger ?? 0)}`'
   ]) {
-    assert.equal(`${html}\n${app}\n${actionUi}`.includes(forbidden), false, forbidden);
+    assert.equal(`${html}\n${app}\n${actionUi}\n${hud}`.includes(forbidden), false, forbidden);
   }
 });
 
 test('combat HUD meters use generated state pulses for ready and danger values', async () => {
   const app = await readFile('src/client/app.js', 'utf8');
+  const hud = await readFile('src/client/reboot_hud.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    "import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';",
+    "import { REBOOT_RULES } from '../shared/reboot_content.js?v=unit-roster1';",
     "function setMeterValue(meter, value, label, state = 'idle', visibleLabel = '')",
     'meter.dataset.meterState = state;',
     "(resources.summon ?? 0) >= REBOOT_RULES.summon.cost ? 'ready' : 'charging'",
@@ -5298,7 +5309,7 @@ test('combat HUD meters use generated state pulses for ready and danger values',
     '.meters > span[data-meter-state="danger"]::after',
     'animation: actionReadyPulse 1.18s ease-in-out infinite;'
   ]) {
-    assert.equal(`${app}\n${css}`.includes(marker), true, marker);
+    assert.equal(`${app}\n${hud}\n${css}`.includes(marker), true, marker);
   }
 });
 

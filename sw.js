@@ -7,6 +7,7 @@ const APP_SHELL_URLS = [
   '/src/client/app.js?v=partner-ready1',
   '/src/client/reboot_actions.js?v=combat-meter2',
   '/src/client/reboot_action_ui.js?v=danger-label2',
+  '/src/client/reboot_hud.js?v=combat-hud1',
   '/src/client/reboot_playtest.js?v=playtest2',
   '/src/client/reboot_preload.js?v=shell-backdrop1',
   '/src/client/reboot_render.js?v=partner-ready1',

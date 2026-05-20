@@ -102,6 +102,9 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
         : false,
+      '/src/client/reboot_hud.js?v=combat-hud1': cache
+        ? Boolean(await cache.match('/src/client/reboot_hud.js?v=combat-hud1'))
+        : false,
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
         : false,
