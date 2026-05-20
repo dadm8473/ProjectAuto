@@ -34,7 +34,7 @@ export function partnerDisplayName(current, partnerBoardId) {
 export function partnerDangerMeterLabel(current, partnerBoardId) {
   const label = partnerDisplayName(current, partnerBoardId).replace(/\s/g, '');
   if (!label || label === '파트너') return '동료';
-  return label.length > 2 ? '동료' : `${label}위험`;
+  return label.length > 1 ? '동료' : `${label} 위험`;
 }
 
 export function partnerDangerAriaLabel(current, partnerBoardId, danger) {

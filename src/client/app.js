@@ -3,7 +3,7 @@ import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=combat-meter2';
-import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildSummonCooldownState, isCriticalRebootAction } from './reboot_action_ui.js?v=danger-label2';
+import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildSummonCooldownState, isCriticalRebootAction } from './reboot_action_ui.js?v=danger-label3';
 import { updateCombatHudMeters } from './reboot_hud.js?v=combat-hud1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
 import { preloadCriticalRebootAssets } from './reboot_preload.js?v=shell-backdrop1';

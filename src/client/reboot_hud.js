@@ -1,5 +1,5 @@
 import { REBOOT_RULES } from '../shared/reboot_content.js?v=unit-roster1';
-import { buildCombatStatusDisplay, buildCombatStatusPrompt, partnerDangerAriaLabel, partnerDangerMeterLabel } from './reboot_action_ui.js?v=danger-label2';
+import { buildCombatStatusDisplay, buildCombatStatusPrompt, partnerDangerAriaLabel, partnerDangerMeterLabel } from './reboot_action_ui.js?v=danger-label3';
 import { operationForSeedName } from './reboot_screens.js?v=partner-identity1';
 
 function setMeterValue(meter, value, label, state = 'idle', visibleLabel = '') {

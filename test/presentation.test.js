@@ -115,7 +115,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from '../shared/game.js?v=partner-identity1'",
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_action_ui.js?v=danger-label2'",
+    "from './reboot_action_ui.js?v=danger-label3'",
     "from './reboot_hud.js?v=combat-hud1'",
     "from './reboot_render.js?v=partner-ready1'",
     "from './reboot_screens.js?v=partner-identity1'",
@@ -1283,7 +1283,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
   assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::before'), false);
 
   for (const marker of [
-    "from './reboot_action_ui.js?v=danger-label2'",
+    "from './reboot_action_ui.js?v=danger-label3'",
     'buildCombatCoachCue',
     'buildCombatCommandLabels',
     'buildCombatStatusPrompt',
@@ -5226,6 +5226,7 @@ test('combat HUD keeps three resource meters bounded on compact phones', async (
     'font-size: 9px;',
     '.meter-label {\n    max-width: 20px;',
     'overflow: hidden;',
+    '#dangerMeter .meter-label {\n    max-width: 24px;\n    font-size: 6px;',
     '.meters > span::before {\n    width: 14px;',
     '#rescueMeter::before { background-position: -28px 0; }',
     '#dangerMeter::before { background-position: -42px 0; }'
@@ -5261,7 +5262,7 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     'setMeterValue(\n    dom.dangerMeter,',
     'partnerDangerAriaLabel(current, partner, partnerDanger)',
     'partnerDangerMeterLabel(current, partner)',
-    "return label.length > 2 ? '동료' : `${label}위험`;",
+    "return label.length > 1 ? '동료' : `${label} 위험`;",
     "return label === '파트너' ? `파트너 위험도 ${danger}` : `파트너 ${label}의 위험도 ${danger}`;",
     '.meter-label',
     '.meter-value',
@@ -5278,6 +5279,7 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     '>위험 0<',
     '<span class="meter-label">위험</span>',
     '<span class="meter-label">동료위험</span>',
+    '`${label}위험`',
     '`파트너 위험도 ${partnerDanger}`',
     '`파트너 ${label} 위험도 ${danger}`',
     'dom.summonMeter.textContent = `소환 ${resources.summon}`',

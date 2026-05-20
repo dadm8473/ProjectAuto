@@ -23,12 +23,12 @@ test('critical action cue appears only for playable boss and rescue decisions', 
   assert.equal(isCriticalRebootAction({ actionKey: 'summon', current: state({ now: 94 }), localBoardId: 'p1', enabled: false }), false);
 });
 
-test('partner danger meter names the bot partner without growing the visible HUD label', () => {
+test('partner danger meter names the bot partner with readable compact spacing', () => {
   const current = {
     players: [{ id: 'p1', name: '나' }, { id: 'p2', name: '린', bot: true }]
   };
 
-  assert.equal(partnerDangerMeterLabel(current, 'p2'), '린위험');
+  assert.equal(partnerDangerMeterLabel(current, 'p2'), '린 위험');
   assert.equal(partnerDangerAriaLabel(current, 'p2', 72), '파트너 린의 위험도 72');
 });
 
@@ -36,9 +36,14 @@ test('partner danger meter keeps online or long partner names compact', () => {
   const current = {
     players: [{ id: 'p1', name: '나' }, { id: 'p2', name: '긴이름파트너' }]
   };
+  const twoLetterPartner = {
+    players: [{ id: 'p1', name: '나' }, { id: 'p2', name: '나리' }]
+  };
 
   assert.equal(partnerDangerMeterLabel(current, 'p2'), '동료');
   assert.equal(partnerDangerAriaLabel(current, 'p2', 41), '파트너 긴이름파트너의 위험도 41');
+  assert.equal(partnerDangerMeterLabel(twoLetterPartner, 'p2'), '동료');
+  assert.equal(partnerDangerAriaLabel(twoLetterPartner, 'p2', 41), '파트너 나리의 위험도 41');
   assert.equal(partnerDangerMeterLabel({}, 'p2'), '동료');
   assert.equal(partnerDangerAriaLabel({}, 'p2', 10), '파트너 위험도 10');
 });
