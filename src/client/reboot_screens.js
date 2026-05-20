@@ -1,4 +1,4 @@
-import { createGame } from '../shared/game.js?v=boss-vitality1';
+import { createGame } from '../shared/game.js?v=partner-identity1';
 import { SHOP } from '../shared/content.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 

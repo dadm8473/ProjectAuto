@@ -86,6 +86,7 @@ test('createRebootGame exposes the deterministic two-board state shape', () => {
   assert.equal(game.seedName, 'tutorial_success');
   assert.match(game.runId, /^reboot-/);
   assert.equal(game.now, 0);
+  assert.deepEqual(game.players.find((player) => player.id === 'p2'), { id: 'p2', name: '린', bot: true });
   assert.deepEqual(game.boards.p1, { playerId: 'p1', units: [], danger: 0 });
   assert.deepEqual(game.boards.p2, { playerId: 'p2', units: [], danger: 0 });
   assert.deepEqual(game.resources.p1, { summon: 10, rescue: 0 });

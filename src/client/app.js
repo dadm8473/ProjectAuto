@@ -1,4 +1,4 @@
-import { castLinkPulse, createGame, mergeRelays, serializeState, supplyRelay, tickGame } from '../shared/game.js?v=boss-vitality1';
+import { castLinkPulse, createGame, mergeRelays, serializeState, supplyRelay, tickGame } from '../shared/game.js?v=partner-identity1';
 import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
@@ -6,7 +6,7 @@ import { buildRebootActionState, commandForRebootAction } from './reboot_actions
 import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, buildSummonCooldownState, isCriticalRebootAction } from './reboot_action_ui.js?v=cooldown-sweep1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
 import { preloadCriticalRebootAssets } from './reboot_preload.js?v=shell-backdrop1';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=p0-polish1';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=partner-identity1';
 import {
   buildMetaNavAlerts,
   buildMissionScreen,
@@ -22,7 +22,7 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=shop-purpose1';
+} from './reboot_screens.js?v=partner-identity1';
 import { createRebootOnlineClient } from './reboot_online.js';
 
 const qs = (selector) => document.querySelector(selector);
@@ -220,7 +220,7 @@ function fallbackToBotPartner(reason) {
   game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
   localBoardId = 'p1';
   resultShownFor = '';
-  dom.netStatus.textContent = '봇 협동';
+  dom.netStatus.textContent = '린 협동';
   hideMatchmakingBanner();
   previousOnline?.close();
   showToast('온라인 응답이 없어 봇 파트너로 전환합니다', 'warning');
@@ -235,7 +235,7 @@ function cancelOnlineMatch() {
   game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
   localBoardId = 'p1';
   resultShownFor = '';
-  dom.netStatus.textContent = '봇 협동';
+  dom.netStatus.textContent = '린 협동';
   hideMatchmakingBanner();
   renderHomeScreens();
   setScreen('lobby');
@@ -578,7 +578,7 @@ function startBotRun() {
   game = createGame({ mode: 'bot', seedName: operation.seedName, seed: 1 });
   localBoardId = 'p1';
   resultShownFor = '';
-  dom.netStatus.textContent = '봇 협동';
+  dom.netStatus.textContent = '린 협동';
   hideMatchmakingBanner();
   previousOnline?.close();
   setScreen('battle');

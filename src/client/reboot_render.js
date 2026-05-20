@@ -1730,6 +1730,19 @@ function momentCalloutDetail(event, meta) {
   return `${unit.name} · ${role}`;
 }
 
+function partnerAssistTitle(state, localBoardId = 'p1') {
+  const partnerId = partnerBoardId(localBoardId);
+  const partner = state.players?.find((player) => player.id === partnerId);
+  const name = partner?.name || (partner?.bot ? '린' : '파트너');
+  return `${name} 지원`;
+}
+
+function partnerAssistBody(event, meta) {
+  const unit = REBOOT_UNITS[event?.unitId];
+  if (!unit) return meta.body;
+  return event?.action === 'rescue' ? `${unit.name} 구원` : `${unit.name} 소환`;
+}
+
 function drawPartnerAssistPing(ctx, state, assets = {}, localBoardId = 'p1') {
   if (hasRecentLocalPlayerActionSurge(state, localBoardId)) return;
   if (recentWaveDirective(state)) return;
@@ -1751,11 +1764,11 @@ function drawPartnerAssistPing(ctx, state, assets = {}, localBoardId = 'p1') {
   ctx.shadowColor = '#58d7ff';
   ctx.shadowBlur = 13;
   ctx.font = '900 16px system-ui';
-  ctx.fillText('파트너 지원', x + 92, y + 36);
+  ctx.fillText(partnerAssistTitle(state, localBoardId), x + 92, y + 36);
   ctx.shadowBlur = 0;
   ctx.fillStyle = 'rgba(245, 240, 220, 0.82)';
   ctx.font = '800 10px system-ui';
-  ctx.fillText(meta.body, x + 92, y + 52);
+  ctx.fillText(partnerAssistBody(event, meta), x + 92, y + 52);
   ctx.restore();
 }
 

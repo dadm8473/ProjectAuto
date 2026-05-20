@@ -1141,7 +1141,7 @@ test('wave directive suppresses partner assist ping so central battlefield banne
     false,
     'partner assist generated banner should wait while the wave directive owns the center lane'
   );
-  assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '파트너 지원'), false);
+  assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '린 지원'), false);
 });
 
 test('enemy sprites follow serialized track progress instead of a timer-only path', () => {

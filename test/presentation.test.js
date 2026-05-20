@@ -112,12 +112,12 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
 
   assert.equal(lines <= 910, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
-    "from '../shared/game.js?v=boss-vitality1'",
+    "from '../shared/game.js?v=partner-identity1'",
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=cooldown-sweep1'",
-    "from './reboot_render.js?v=p0-polish1'",
-    "from './reboot_screens.js?v=shop-purpose1'",
+    "from './reboot_render.js?v=partner-identity1'",
+    "from './reboot_screens.js?v=partner-identity1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -180,19 +180,22 @@ test('global button base never falls back to css web-button chrome', async () =>
 
 test('player-facing app branding is Korean and no longer exposes the repository name', async () => {
   const html = await readFile('index.html', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
   const manifest = JSON.parse(await readFile('manifest.webmanifest', 'utf8'));
   const server = await readFile('server/server.js', 'utf8');
 
   for (const marker of [
     '<title>신호릴레이</title>',
     'aria-label="신호릴레이 협동 타워디펜스 전장"',
-    '<strong>신호릴레이</strong>'
+    '<strong>신호릴레이</strong>',
+    '<span id="netStatus">린 협동</span>'
   ]) {
     assert.equal(html.includes(marker), true, marker);
   }
 
   assert.equal(manifest.name, '신호릴레이');
   assert.equal(manifest.short_name, '신호릴레이');
+  assert.equal(app.includes("dom.netStatus.textContent = '린 협동';"), true);
   assert.equal(html.includes('ProjectAuto'), false);
   assert.equal(JSON.stringify(manifest).includes('ProjectAuto'), false);
   assert.equal(server.includes('신호릴레이 실행 중'), true);
@@ -694,7 +697,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shop-purpose1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-identity1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-highlight1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest-feedback1"></script>'), false);
@@ -761,7 +764,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=p0-polish1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=partner-identity1'"), true);
   assert.equal(app.includes("from './reboot_render.js?v=enemy-atlas3'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=opening-route1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=match-banner-cutin1'"), false);
@@ -787,7 +790,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=shop-purpose1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=partner-identity1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=reward-detail1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label2'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label1'"), false);
@@ -2811,10 +2814,12 @@ test('combat renderer uses generated partner assist pings for bot co-op actions'
 	    'const ACTION_SURGE_DURATION = 2.0;',
 	    "recentEvents(state, type, ACTION_SURGE_DURATION)",
 	    'const meta = PARTNER_ASSIST_PINGS[event?.action] ?? PARTNER_ASSIST_PINGS.summon;',
+	    'function partnerAssistTitle',
+	    'function partnerAssistBody',
 	    'eventAlpha(state, event, PARTNER_ASSIST_PING_DURATION)',
 	    'drawPartnerAssistSprite(ctx, assets.partnerAssistPings, meta.index, x, y, w, h, alpha);',
-	    "ctx.fillText('파트너 지원'",
-	    "ctx.fillText(meta.body",
+	    'ctx.fillText(partnerAssistTitle(state, localBoardId)',
+	    'ctx.fillText(partnerAssistBody(event, meta)',
 	    'drawPartnerAssistPing(ctx, state, assets, localBoardId)'
 	  ]) {
     assert.equal(render.includes(marker), true, marker);
@@ -2836,7 +2841,8 @@ test('combat renderer draws partner assist ping without flattening the imagegen 
   assert.equal(dw / dh, sw / sh);
   assert.equal(dx, 52);
   assert.equal(dy > 130 && dy < 139, true);
-  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '파트너 지원'), true);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '린 지원'), true);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '스파크 핀 소환'), true);
 });
 
 test('local player merge and rescue moments suppress the large partner assist ping', () => {
@@ -2853,7 +2859,7 @@ test('local player merge and rescue moments suppress the large partner assist pi
 
   assert.equal(ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === actionSurges), true);
   assert.equal(ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === partnerAssistPings), false);
-  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '파트너 지원'), false);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '린 지원'), false);
 
   const p2State = stateWithPartnerAutoPing();
   p2State.events = [
@@ -2872,7 +2878,7 @@ test('local player merge and rescue moments suppress the large partner assist pi
 
   assert.equal(p2Ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === actionSurges), true);
   assert.equal(p2Ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === partnerAssistPings), false);
-  assert.equal(p2Ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '파트너 지원'), false);
+  assert.equal(p2Ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '린 지원'), false);
 });
 
 test('combat renderer skips partner assist copy when the generated banner has not loaded', () => {
@@ -2882,7 +2888,7 @@ test('combat renderer skips partner assist copy when the generated banner has no
   drawRebootBattle(ctx, stateWithPartnerAutoPing(), { width: 390, height: 620 }, fakeRebootAssets({ partnerAssistPings }));
 
   assert.equal(ctx.calls.some((call) => call.name === 'drawImage' && call.args[0] === partnerAssistPings), false);
-  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '파트너 지원'), false);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '린 지원'), false);
 });
 
 test('combat renderer draws the rescue variant of partner assist pings', () => {
@@ -2898,7 +2904,8 @@ test('combat renderer draws the rescue variant of partner assist pings', () => {
   assert.equal(dw / dh, sw / sh);
   assert.equal(dx, 52);
   assert.equal(dy > 130 && dy < 139, true);
-  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '구원 지원'), true);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '린 지원'), true);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '구원 코일 구원'), true);
 });
 
 test('bot rescue support ping lingers long enough to read as co-op help', () => {
@@ -2914,7 +2921,8 @@ test('bot rescue support ping lingers long enough to read as co-op help', () => 
     true,
     'partner rescue support should not vanish before the player can read it'
   );
-  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '구원 지원'), true);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '린 지원'), true);
+  assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '구원 코일 구원'), true);
 });
 
 test('combat renderer avoids stacking partner danger cutin over rescue support ping', () => {
@@ -4993,15 +5001,15 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     '`전력 ${resources.summon}`',
     "reason: actions.summon ? '소환 가능' : '전력 부족'",
     "return { ok: false, reason: '전력이 부족합니다.' };",
-    "from '../shared/game.js?v=boss-vitality1'",
+    "from '../shared/game.js?v=partner-identity1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=shop-purpose1'",
-    "from './reboot_game.js?v=boss-vitality1'",
-    "from '../shared/game.js?v=boss-vitality1'",
+    "from './reboot_screens.js?v=partner-identity1'",
+    "from './reboot_game.js?v=partner-identity1'",
+    "from '../shared/game.js?v=partner-identity1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=shop-purpose1',
-    '/src/shared/game.js?v=boss-vitality1',
-    '/src/shared/reboot_game.js?v=boss-vitality1'
+    '/src/client/reboot_screens.js?v=partner-identity1',
+    '/src/shared/game.js?v=partner-identity1',
+    '/src/shared/reboot_game.js?v=partner-identity1'
   ]) {
     assert.equal(`${html}\n${app}\n${actions}\n${rebootGame}\n${sharedGame}\n${screens}\n${sw}`.includes(marker), true, marker);
   }

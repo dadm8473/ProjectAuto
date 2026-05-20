@@ -17,7 +17,7 @@ import {
   serializeRebootState,
   summonToy,
   tickRebootGame
-} from './reboot_game.js?v=boss-vitality1';
+} from './reboot_game.js?v=partner-identity1';
 
 let nextId = 1;
 let nextRunId = 1;
@@ -744,7 +744,7 @@ export function createGame({ mode = 'bot', seed = Date.now(), seedName, branch, 
     },
     players: [
       { id: 'p1', name: '나', bot: false, ready: true },
-      { id: 'p2', name: mode === 'bot' ? '자동 파트너' : '파트너', bot: mode === 'bot', ready: true }
+      { id: 'p2', name: mode === 'bot' ? '린' : '파트너', bot: mode === 'bot', ready: true }
     ],
     boards: {
       p1: { id: 'p1', name: '내 릴레이 보드', anchorIndex: 5, slots: Array(GAME_RULES.boardSlots).fill(null), comboText: '', overclockUntil: 0, overclockResolvedUntil: 0, disabledLinks: [] },

@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v42');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v43');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
       '/src/client/styles.css?v=shop-purpose1': cache
         ? Boolean(await cache.match('/src/client/styles.css?v=shop-purpose1'))
         : false,
-      '/src/client/app.js?v=shop-purpose1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=shop-purpose1'))
+      '/src/client/app.js?v=partner-identity1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=partner-identity1'))
         : false,
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
@@ -105,17 +105,17 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
         : false,
-      '/src/client/reboot_render.js?v=p0-polish1': cache
-        ? Boolean(await cache.match('/src/client/reboot_render.js?v=p0-polish1'))
+      '/src/client/reboot_render.js?v=partner-identity1': cache
+        ? Boolean(await cache.match('/src/client/reboot_render.js?v=partner-identity1'))
         : false,
-      '/src/client/reboot_screens.js?v=shop-purpose1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=shop-purpose1'))
+      '/src/client/reboot_screens.js?v=partner-identity1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=partner-identity1'))
         : false,
-      '/src/shared/game.js?v=boss-vitality1': cache
-        ? Boolean(await cache.match('/src/shared/game.js?v=boss-vitality1'))
+      '/src/shared/game.js?v=partner-identity1': cache
+        ? Boolean(await cache.match('/src/shared/game.js?v=partner-identity1'))
         : false,
-      '/src/shared/reboot_game.js?v=boss-vitality1': cache
-        ? Boolean(await cache.match('/src/shared/reboot_game.js?v=boss-vitality1'))
+      '/src/shared/reboot_game.js?v=partner-identity1': cache
+        ? Boolean(await cache.match('/src/shared/reboot_game.js?v=partner-identity1'))
         : false,
       '/src/client/reboot_action_ui.js?v=cooldown-sweep1': cache
         ? Boolean(await cache.match('/src/client/reboot_action_ui.js?v=cooldown-sweep1'))
@@ -148,7 +148,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v42', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v43', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }

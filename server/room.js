@@ -43,7 +43,7 @@ export function assignRoomPlayers(room) {
   }));
   while (room.game.players.length < 2) {
     const botSlot = `p${room.game.players.length + 1}`;
-    room.game.players.push({ id: botSlot, name: '자동 파트너', bot: true, ready: true });
+    room.game.players.push({ id: botSlot, name: '린', bot: true, ready: true });
   }
 }
 

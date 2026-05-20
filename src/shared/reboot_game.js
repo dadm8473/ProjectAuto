@@ -455,7 +455,7 @@ export function createRebootGame({
   seed = 1,
   players = [
     { id: 'p1', name: '플레이어', bot: false },
-    { id: 'p2', name: '자동 파트너', bot: true }
+    { id: 'p2', name: '린', bot: true }
   ],
   branch = 'wait'
 } = {}) {

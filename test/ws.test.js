@@ -76,7 +76,7 @@ test('accepted joins reset a finished room before assigning the player slot', ()
   assert.equal(room.resetAt, null);
   assert.deepEqual(room.game.players, [
     { id: 'p1', name: 'First', bot: false, ready: true },
-    { id: 'p2', name: '자동 파트너', bot: true, ready: true }
+    { id: 'p2', name: '린', bot: true, ready: true }
   ]);
 });
 
@@ -93,7 +93,7 @@ test('single remaining online socket is reassigned to p1 after stale p1 disconne
   assert.equal(remaining.playerId, 'p1');
   assert.deepEqual(room.game.players, [
     { id: 'p1', name: 'New Player', bot: false, ready: true },
-    { id: 'p2', name: '자동 파트너', bot: true, ready: true }
+    { id: 'p2', name: '린', bot: true, ready: true }
   ]);
   assert.equal(boardForPlayer(room.game.players, remaining.playerId), 'p1');
 });
@@ -126,7 +126,7 @@ test('remaining online socket gets a fresh waiting run after a mid-combat discon
   assert.equal(room.game.boards.p1.units.length, 0);
   assert.deepEqual(room.game.players, [
     { id: 'p1', name: 'Staying', bot: false, ready: true },
-    { id: 'p2', name: '자동 파트너', bot: true, ready: true }
+    { id: 'p2', name: '린', bot: true, ready: true }
   ]);
 });
 
