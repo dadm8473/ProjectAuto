@@ -107,7 +107,7 @@
   --lobby-operation-poster-height: 154px;
   --lobby-intel-strip-height: 72px;
   --lobby-launch-button-height: 54px;
-  --lobby-online-button-height: 42px;
+  --lobby-online-button-height: 58px;
   --lobby-bottom-dock-button-height: 64px;
   --lobby-bottom-dock-padding-y: 6px;
   --lobby-bottom-dock-rendered-height: 80px;
@@ -1845,7 +1845,7 @@ body[data-app-screen="season"] .app-screen::after {
   align-self: stretch;
   min-height: clamp(96px, 25vw, 112px);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(64px, 18vw, 78px);
+  grid-template-columns: minmax(0, 1fr) clamp(82px, 22vw, 96px);
   align-items: center;
   gap: clamp(6px, 1.8vw, 8px);
   padding: clamp(10px, 2.8vw, 12px) clamp(18px, 5vw, 22px);
@@ -1866,10 +1866,10 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .launch-command-console > .match-button {
-  width: auto;
+  width: 100%;
   min-height: var(--lobby-online-button-height);
   grid-column: 2;
-  justify-self: center;
+  justify-self: stretch;
   border-radius: 999px;
   opacity: 1;
 }

@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v49');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v50');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=coop-briefing1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=coop-briefing1'))
+      '/src/client/styles.css?v=coop-launch1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=coop-launch1'))
         : false,
       '/src/client/app.js?v=partner-ready1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=partner-ready1'))
@@ -154,7 +154,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v49', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v50', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1171,6 +1171,39 @@ async function assertBattleReadyLobbyStaysFocused(page) {
   assert.equal(surface.nextHookCount, 0, `battle-ready lobby should not duplicate the launch intent: ${JSON.stringify(surface)}`);
 }
 
+async function assertLobbyLaunchCommandConsole(page, label) {
+  const surface = await page.evaluate(() => {
+    const readButton = (selector) => {
+      const node = document.querySelector(selector);
+      const rect = node?.getBoundingClientRect();
+      const frame = node?.querySelector('.launch-button-frame');
+      return rect && {
+        text: node.textContent.trim(),
+        ariaLabel: node.getAttribute('aria-label'),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        backgroundImage: getComputedStyle(node).backgroundImage,
+        frameSrc: frame?.getAttribute('src') ?? ''
+      };
+    };
+    const consoleRect = document.querySelector('.launch-command-console')?.getBoundingClientRect();
+    return {
+      consoleWidth: consoleRect ? Math.round(consoleRect.width) : 0,
+      bot: readButton('#launchBotButton'),
+      online: readButton('#launchOnlineButton')
+    };
+  });
+  assert.equal(surface.bot?.text, '출격', `${label} primary launch label changed: ${JSON.stringify(surface)}`);
+  assert.equal(surface.online?.text, '협동', `${label} online launch should read as co-op entry: ${JSON.stringify(surface)}`);
+  assert.equal(surface.online?.ariaLabel, '온라인 협동 출격', `${label} online aria should describe co-op launch: ${JSON.stringify(surface)}`);
+  assert.equal(surface.online?.width >= 82, true, `${label} online launch is still a tiny web button: ${JSON.stringify(surface)}`);
+  assert.equal(surface.online?.height >= 58, true, `${label} online launch touch target is too short: ${JSON.stringify(surface)}`);
+  assert.equal(surface.bot?.width > surface.online?.width, true, `${label} primary launch should remain dominant: ${JSON.stringify(surface)}`);
+  assert.match(surface.bot?.frameSrc ?? '', /reboot-launch-primary/, `${label} primary launch lost generated frame: ${JSON.stringify(surface)}`);
+  assert.match(surface.online?.frameSrc ?? '', /reboot-launch-secondary/, `${label} online launch lost generated frame: ${JSON.stringify(surface)}`);
+  await assertTouchableHitTarget(page, page.locator('#launchOnlineButton'), `${label} online launch`);
+}
+
 async function assertSplashCtaClearsBottomDeck(page) {
   const geometry = await page.locator('#splashStartButton').evaluate((button) => {
     const rect = button.getBoundingClientRect();
@@ -1777,6 +1810,7 @@ async function verifyShell(page, viewport) {
   await page.getByRole('button', { name: '시작' }).click();
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).waitFor({ state: 'visible' });
   await assertLobbyProfilePlate(page, 'lobby', 'Lv.1');
+  await assertLobbyLaunchCommandConsole(page, 'lobby');
   await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'lobby operation copy', 2);
   await assertOperationCopyClearsProgressRail(page);
   await assertOperationIntelClearsPreviewSprites(page);

@@ -594,7 +594,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=coop-briefing1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=coop-launch1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
@@ -1439,7 +1439,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=coop-briefing1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=coop-launch1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
@@ -1824,7 +1824,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=coop-briefing1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=coop-launch1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -3395,13 +3395,13 @@ test('lobby launch actions use dedicated generated button frames', async () => {
   for (const marker of [
     '<span>출격</span>',
     '<button id="launchBotButton" class="play-button" data-launch-action="bot" aria-label="첫 구원 작전 출격">',
-    '<button id="launchOnlineButton" class="match-button" data-launch-action="online" aria-label="온라인 협동 매칭">',
-    '<span>매칭</span>',
+    '<button id="launchOnlineButton" class="match-button" data-launch-action="online" aria-label="온라인 협동 출격">',
+    '<span>협동</span>',
     '<div class="launch-command-console" data-launch-console="operation">',
     'data-launch-action="bot"',
     'data-launch-action="online"',
     '--lobby-launch-bay: url("/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1")',
-    '--lobby-online-button-height: 42px;',
+    '--lobby-online-button-height: 58px;',
     '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',
     '/src/client/assets/generated/reboot-launch-secondary.png?v=gold-cta-alpha1',
     'class="launch-button-frame"',
@@ -3437,9 +3437,9 @@ test('lobby launch actions sit inside one generated command console', async () =
   for (const marker of [
     '<div class="launch-command-console" data-launch-console="operation">',
     '<button id="launchBotButton" class="play-button" data-launch-action="bot" aria-label="첫 구원 작전 출격">',
-    '<button id="launchOnlineButton" class="match-button" data-launch-action="online" aria-label="온라인 협동 매칭">',
+    '<button id="launchOnlineButton" class="match-button" data-launch-action="online" aria-label="온라인 협동 출격">',
     '.launch-command-console {',
-    'grid-template-columns: minmax(0, 1fr) clamp(64px, 18vw, 78px);',
+    'grid-template-columns: minmax(0, 1fr) clamp(82px, 22vw, 96px);',
     'background-image: var(--lobby-launch-bay);',
     'background-size: 100% 100%;',
     'min-height: clamp(96px, 25vw, 112px);',
@@ -3647,7 +3647,7 @@ test('lobby portrait layout budget keeps poster actions and dock from overlappin
     assert.ok(dockGap >= 32, `${viewport.width} dock overlaps lobby actions: ${dockGap}`);
     assert.ok(launchConsoleHeight >= 96, `${viewport.width} launch console lost touch height`);
     assert.ok(layout.launch >= 54, `${viewport.width} launch action hit zone lost touch height`);
-    assert.ok(layout.onlineLaunch >= 42, `${viewport.width} online option lost touch height`);
+    assert.ok(layout.onlineLaunch >= 58, `${viewport.width} online option lost co-op touch height`);
     assert.ok(layout.dockButton >= 64, `${viewport.width} dock buttons lost touch height`);
     assert.ok(layout.dockRendered >= layout.dockButton + layout.dockPaddingY * 2 + 4, `${viewport.width} dock render budget is too optimistic`);
   }
