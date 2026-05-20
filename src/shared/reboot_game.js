@@ -292,8 +292,42 @@ function effectLaneForBoard(boardId) {
   return boardId === 'p2' ? -0.45 : 0.25;
 }
 
+function hitDamageForUnit(game, unit = {}, enemy = {}, critical = isCriticalHit(game, unit, enemy)) {
+  const spec = REBOOT_UNITS[unit.unitId] ?? {};
+  if (!spec.id) return 0;
+  const baseDamage = Number(spec.damage);
+  const gradeScale = Math.max(1, Number(unit.grade) || Number(spec.grade) || 1);
+  const supportDamage = spec.amp ? 3 : 2;
+  const rawDamage = Number.isFinite(baseDamage) ? baseDamage : supportDamage * gradeScale;
+  const bossMultiplier = critical ? 2 : 1;
+  return Math.max(1, Math.round(rawDamage * bossMultiplier));
+}
+
+function isCriticalHit(game, unit = {}, enemy = {}) {
+  const spec = REBOOT_UNITS[unit.unitId] ?? {};
+  if (!spec.id) return false;
+  const grade = Math.max(1, Number(unit.grade) || Number(spec.grade) || 1);
+  return enemy.enemyId === 'mini_boss' && (grade >= 2 || game.now >= BOSS_DECISION_START);
+}
+
+function strongestHitUnitSlot(game, board, enemy) {
+  const candidates = board.units
+    .map((unit, index) => ({ unit, index, damage: hitDamageForUnit(game, unit, enemy) }))
+    .filter(({ damage }) => damage > 0)
+    .sort((a, b) => (
+      b.damage - a.damage
+        || (Number(b.unit.grade) || 0) - (Number(a.unit.grade) || 0)
+        || a.index - b.index
+    ));
+  return candidates[0]?.index ?? -1;
+}
+
 function pushHitEffect(game, boardId, board, enemy, progress) {
-  const slot = Math.max(0, Math.min(board.units.length - 1, Math.floor(game.now * 3) % Math.max(1, board.units.length)));
+  const slot = strongestHitUnitSlot(game, board, enemy);
+  if (slot < 0) return false;
+  const unit = board.units[slot] ?? {};
+  const critical = isCriticalHit(game, unit, enemy);
+  const damage = hitDamageForUnit(game, unit, enemy, critical);
   game.effects.push({
     id: `hfx${nextEffectId++}`,
     type: 'hit',
@@ -303,8 +337,11 @@ function pushHitEffect(game, boardId, board, enemy, progress) {
     targetType: enemy.enemyId,
     targetProgress: progress,
     targetLane: effectLaneForBoard(enemy.boardId),
+    damage,
+    critical,
     ttl: HIT_EFFECT_TTL
   });
+  return true;
 }
 
 function emitLiveHitEffects(game) {
@@ -318,8 +355,9 @@ function emitLiveHitEffects(game) {
       .filter(({ progress }) => progress < 0.98)
       .sort((a, b) => b.progress - a.progress)[0];
     if (!target) continue;
-    game.internal.hitPulseAt[boardId] = game.now;
-    pushHitEffect(game, boardId, board, target.enemy, target.progress);
+    if (pushHitEffect(game, boardId, board, target.enemy, target.progress)) {
+      game.internal.hitPulseAt[boardId] = game.now;
+    }
   }
 }
 

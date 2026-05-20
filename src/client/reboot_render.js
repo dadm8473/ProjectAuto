@@ -11,6 +11,8 @@ const ACTION_SURGE_DURATION = 2.0;
 const ACTION_SURGE_HOLD_SECONDS = 0.85;
 const MERGE_REWARD_SIGIL_DURATION = 1.9;
 const MERGE_REWARD_SIGIL_HOLD_SECONDS = 0.85;
+const FLOATING_DAMAGE_TTL = 0.62;
+const COMBAT_SHAKE_MAX_PX = 8;
 const GENERATED_TRACK_PATH = [
   { p: 0, x: 196, y: 158 },
   { p: 0.12, x: 202, y: 205 },
@@ -1439,6 +1441,28 @@ function drawDeathBursts(ctx, state, assets = {}, imageBackdrop = true) {
   }
 }
 
+function hitDamageLabel(effect = {}) {
+  const damage = Math.max(1, Math.round(Number(effect.damage) || 1));
+  return `${damage}${effect.critical ? '!' : ''}`;
+}
+
+function drawFloatingDamageNumber(ctx, effect, x, y, alpha = 1, reducedMotion = false) {
+  const ttl = Math.max(0, Number(effect.ttl) || 0);
+  const progress = reducedMotion ? 0 : Math.max(0, Math.min(1, 1 - ttl / FLOATING_DAMAGE_TTL));
+  const critical = Boolean(effect.critical);
+  const lift = critical ? 30 : 22;
+  ctx.save();
+  ctx.globalAlpha *= Math.max(0.18, alpha);
+  ctx.font = critical ? '1000 22px system-ui' : '1000 16px system-ui';
+  ctx.fillStyle = critical ? '#ff6f59' : '#fff2b4';
+  ctx.shadowColor = critical ? '#ff6f59' : '#111817';
+  ctx.shadowBlur = critical ? 14 : 7;
+  ctx.textAlign = 'center';
+  ctx.fillText(hitDamageLabel(effect), x, y - 18 - progress * lift);
+  ctx.restore();
+  return true;
+}
+
 function drawHitBeams(ctx, state, assets = {}, localBoardId = 'p1', imageBackdrop = true) {
   const hits = (state.effects ?? [])
     .filter((effect) => effect.type === 'hit')
@@ -1471,6 +1495,23 @@ function drawHitBeams(ctx, state, assets = {}, localBoardId = 'p1', imageBackdro
   }
 }
 
+function drawHitDamageNumbers(ctx, state, imageBackdrop = true, reducedMotion = false) {
+  const hits = (state.effects ?? [])
+    .filter((effect) => effect.type === 'hit')
+    .slice(-6);
+  for (const effect of hits) {
+    const to = trackPointFromProgress(effect.targetProgress, effect.targetLane, imageBackdrop);
+    const alpha = Math.max(0.16, Math.min(0.86, (effect.ttl ?? 0.62) / 0.62));
+    drawFloatingDamageNumber(ctx, effect, to.x, to.y, alpha, reducedMotion);
+  }
+}
+
+function drawCombatImpactVfx(ctx, state, assets = {}, localBoardId = 'p1', imageBackdrop = true) {
+  drawHitBeams(ctx, state, assets, localBoardId, imageBackdrop);
+  drawDeathBursts(ctx, state, assets, imageBackdrop);
+  drawCombatVfx(ctx, state, assets, localBoardId, imageBackdrop);
+}
+
 function drawCombatVfx(ctx, state, assets = {}, localBoardId = 'p1', imageBackdrop = true) {
   for (const event of recentEvents(state, 'summon')) {
     const point = boardVfxPoint(state, event, localBoardId);
@@ -1491,8 +1532,6 @@ function drawCombatVfx(ctx, state, assets = {}, localBoardId = 'p1', imageBackdr
     const drewReveal = drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 3, 195, 328, 156, 118, alpha * 0.9);
     if (!drewReveal) drawCombatActionFallbackStamp(ctx, assets, 'rescue', 195, 328, alpha * 0.84);
   }
-  drawHitBeams(ctx, state, assets, localBoardId, imageBackdrop);
-  drawDeathBursts(ctx, state, assets, imageBackdrop);
   if (state.enemies.length > 0) {
     const point = enemyScreenPoint(state, 0, state.enemies[0], imageBackdrop);
     const alpha = 0.34 + Math.max(0, Math.sin(state.now * 12)) * 0.22;
@@ -1720,6 +1759,27 @@ function drawPartnerAssistPing(ctx, state, assets = {}, localBoardId = 'p1') {
   ctx.restore();
 }
 
+function combatShakeOffset(state = {}, reducedMotion = false) {
+  if (reducedMotion) return { x: 0, y: 0, intensity: 0 };
+  const strongest = (state.effects ?? []).reduce((max, effect) => {
+    if (effect.type === 'hit' && effect.critical) {
+      return Math.max(max, ((Number(effect.ttl) || 0) / FLOATING_DAMAGE_TTL) * 7);
+    }
+    if (effect.type === 'death_burst' && (effect.targetType === 'mini_boss' || effect.targetType === 'boss')) {
+      return Math.max(max, ((Number(effect.ttl) || 0) / 1.25) * 8);
+    }
+    return max;
+  }, 0);
+  const intensity = Math.min(COMBAT_SHAKE_MAX_PX, Math.max(0, strongest));
+  if (intensity <= 0) return { x: 0, y: 0, intensity: 0 };
+  const now = Number(state.now) || 0;
+  return {
+    x: Math.sin(now * 79.1) * intensity,
+    y: Math.cos(now * 61.7) * intensity * 0.58,
+    intensity
+  };
+}
+
 export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 }, assets = {}, options = {}) {
   ctx.clearRect(0, 0, layout.width, layout.height);
   const imageBackdrop = drawBattleBackdrop(ctx, layout, assets);
@@ -1736,24 +1796,44 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
 
   const localBoardId = normalizeBoardId(options.localBoardId);
   const partnerId = partnerBoardId(localBoardId);
-  drawBoard(ctx, state.boards[partnerId], 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
-  drawPartnerStandbySigil(ctx, state, assets, partnerId, options);
-  drawTrack(ctx, state, assets, imageBackdrop, options);
+  const shake = combatShakeOffset(state, options.reducedMotion);
+  const shaking = shake.intensity > 0;
+  const drawShaken = (drawLayer) => {
+    if (!shaking) {
+      drawLayer();
+      return;
+    }
+    ctx.save();
+    ctx.translate(shake.x, shake.y);
+    drawLayer();
+    ctx.restore();
+  };
+
+  drawShaken(() => {
+    drawBoard(ctx, state.boards[partnerId], 28, 48, 334, 112, '파트너 보드', true, assets, imageBackdrop);
+    drawPartnerStandbySigil(ctx, state, assets, partnerId, options);
+    drawTrack(ctx, state, assets, imageBackdrop, options);
+  });
   drawWaveDirectiveBanner(ctx, state, assets);
   if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawCombatStartCutin(ctx, state, assets);
   drawCombatCrisisOverlays(ctx, state, assets, localBoardId);
-  drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
-  drawPlayerBoardBridge(ctx, assets, layout);
-  drawBoard(ctx, state.boards[localBoardId], 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
-  if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawPreSummonSocketCue(ctx, state, assets, localBoardId);
-  if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawFirstSummonLandingBeacon(ctx, state, assets, localBoardId);
-  drawFirstSummonIgnition(ctx, state, assets, localBoardId);
-  drawFirstSummonRewardSpotlight(ctx, state, assets, localBoardId);
-  drawCombatActionSurges(ctx, state, assets, layout, localBoardId);
-  drawFirstMergeRewardSigil(ctx, state, assets, options.reducedMotion, localBoardId);
-  drawFirstRescueRewardSigil(ctx, state, assets, options.reducedMotion, localBoardId);
-  drawRescueBeam(ctx, state, assets);
-  drawCombatVfx(ctx, state, assets, localBoardId, imageBackdrop);
+  drawShaken(() => {
+    drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
+    drawPlayerBoardBridge(ctx, assets, layout);
+    drawBoard(ctx, state.boards[localBoardId], 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
+    if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawPreSummonSocketCue(ctx, state, assets, localBoardId);
+    if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawFirstSummonLandingBeacon(ctx, state, assets, localBoardId);
+    drawFirstSummonIgnition(ctx, state, assets, localBoardId);
+    drawFirstSummonRewardSpotlight(ctx, state, assets, localBoardId);
+  });
+  drawShaken(() => {
+    drawCombatActionSurges(ctx, state, assets, layout, localBoardId);
+    drawFirstMergeRewardSigil(ctx, state, assets, options.reducedMotion, localBoardId);
+    drawFirstRescueRewardSigil(ctx, state, assets, options.reducedMotion, localBoardId);
+    drawRescueBeam(ctx, state, assets);
+    drawCombatImpactVfx(ctx, state, assets, localBoardId, imageBackdrop);
+  });
+  drawHitDamageNumbers(ctx, state, imageBackdrop, options.reducedMotion);
   const drewDualCrisis = drawDualCrisisCutin(ctx, state, assets, localBoardId);
   if (!drewDualCrisis) {
     drawBossWarningCutin(ctx, state, assets);

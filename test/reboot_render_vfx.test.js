@@ -69,7 +69,9 @@ function mockContext() {
     set shadowBlur(value) { commands.push({ type: 'shadowBlur', value }); },
     get shadowBlur() { return 0; },
     set font(value) { commands.push({ type: 'font', value }); },
-    get font() { return '10px system-ui'; }
+    get font() { return '10px system-ui'; },
+    set textAlign(value) { commands.push({ type: 'textAlign', value }); },
+    get textAlign() { return 'left'; }
   };
   return ctx;
 }
@@ -87,6 +89,38 @@ function stateWithEffects() {
       { type: 'hit', playerId: 'p1', slot: 0, targetProgress: 0.62, targetLane: 0, targetType: 'mini_boss', ttl: 0.5 }
     ]
   };
+}
+
+function closingRestoreIndexForTranslate(commands, translateIndex) {
+  let depth = 0;
+  let translateDepth = 0;
+  for (let index = 0; index < commands.length; index += 1) {
+    const command = commands[index];
+    if (command.type === 'save') depth += 1;
+    if (index === translateIndex) translateDepth = depth;
+    if (index > translateIndex && command.type === 'restore') {
+      depth -= 1;
+      if (depth < translateDepth) return index;
+      continue;
+    }
+    if (command.type === 'restore') depth -= 1;
+  }
+  return -1;
+}
+
+function insideAnyBoundedShake(commands, commandIndex) {
+  return commands
+    .map((command, index) => ({ command, index }))
+    .filter(({ command }) => (
+      command.type === 'translate'
+        && Math.abs(command.x) > 0
+        && Math.abs(command.x) <= 8
+        && Math.abs(command.y) <= 8
+    ))
+    .some(({ index }) => {
+      const restoreIndex = closingRestoreIndexForTranslate(commands, index);
+      return index < commandIndex && commandIndex < restoreIndex;
+    });
 }
 
 test('combat VFX uses compact hit bolts and rescue pulses instead of screen-crossing strokes', () => {
@@ -129,6 +163,318 @@ test('combat VFX uses compact hit bolts and rescue pulses instead of screen-cros
     ctx.commands.filter((command) => command.type === 'save').length,
     ctx.commands.filter((command) => command.type === 'restore').length
   );
+});
+
+test('hit effects float readable damage numbers above the impact', () => {
+  const ctx = mockContext();
+  drawRebootBattle(ctx, {
+    now: 18.24,
+    boards: {
+      p1: { danger: 0, units: [] },
+      p2: { danger: 0, units: [] }
+    },
+    enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard', progress: 0.42 }],
+    events: [],
+    effects: [
+      {
+        type: 'hit',
+        playerId: 'p1',
+        slot: 0,
+        targetProgress: 0.42,
+        targetLane: 0.25,
+        targetType: 'noise_shard',
+        damage: 8,
+        critical: false,
+        ttl: 0.52
+      }
+    ]
+  }, { width: 390, height: 620 }, {
+    backdrop: image(390, 620),
+    enemies: image(1024, 256),
+    board: image(1280, 256),
+    hitBolts: image(768, 128)
+  });
+
+  const damageText = ctx.commands.find((command) => command.type === 'fillText' && command.args[0] === '8');
+  assert.ok(damageText, 'expected a floating damage number');
+  assert.equal(damageText.args[2] < 310, true, 'damage number should float above the impact point');
+});
+
+test('critical hit effects use punchier numbers and a short combat shake', () => {
+  const ctx = mockContext();
+  drawRebootBattle(ctx, {
+    now: 96.4,
+    boards: {
+      p1: { danger: 0, units: [] },
+      p2: { danger: 0, units: [] }
+    },
+    enemies: [{ enemyId: 'mini_boss', spriteKey: 'mini_boss', progress: 0.7, hp: 48, maxHp: 220 }],
+    events: [],
+    effects: [
+      {
+        type: 'hit',
+        playerId: 'p1',
+        slot: 0,
+        targetProgress: 0.7,
+        targetLane: 0.25,
+        targetType: 'mini_boss',
+        damage: 36,
+        critical: true,
+        ttl: 0.58
+      }
+    ]
+  }, { width: 390, height: 620 }, {
+    backdrop: image(390, 620),
+    enemies: image(1024, 256),
+    board: image(1280, 256),
+    boardLabelPlates: image(768, 128),
+    hitBolts: image(768, 128)
+  });
+
+  assert.ok(
+    ctx.commands.find((command) => command.type === 'fillText' && command.args[0] === '36!'),
+    'expected a critical damage number'
+  );
+  const shakeTranslate = ctx.commands.find((command) => (
+    command.type === 'translate'
+      && Math.abs(command.x) > 0
+      && Math.abs(command.x) <= 8
+      && Math.abs(command.y) <= 8
+  ));
+  assert.ok(shakeTranslate, 'expected a bounded combat shake on critical hits');
+});
+
+test('critical shake ends before readable combat labels render', () => {
+  const ctx = mockContext();
+  drawRebootBattle(ctx, {
+    now: 96.4,
+    boards: {
+      p1: { danger: 0, units: [] },
+      p2: { danger: 0, units: [] }
+    },
+    enemies: [{ enemyId: 'mini_boss', spriteKey: 'mini_boss', progress: 0.7, hp: 48, maxHp: 220 }],
+    events: [],
+    effects: [
+      {
+        type: 'hit',
+        playerId: 'p1',
+        slot: 0,
+        targetProgress: 0.7,
+        targetLane: 0.25,
+        targetType: 'mini_boss',
+        damage: 36,
+        critical: true,
+        ttl: 0.58
+      }
+    ]
+  }, { width: 390, height: 620 }, {
+    backdrop: image(390, 620),
+    enemies: image(1024, 256),
+    board: image(1280, 256),
+    boardLabelPlates: image(768, 128),
+    hitBolts: image(768, 128)
+  });
+
+  const shakeIndex = ctx.commands.findIndex((command) => (
+    command.type === 'translate'
+      && Math.abs(command.x) > 0
+      && Math.abs(command.x) <= 8
+      && Math.abs(command.y) <= 8
+  ));
+  const shakeRestoreIndex = closingRestoreIndexForTranslate(ctx.commands, shakeIndex);
+  const damageIndex = ctx.commands.findIndex((command) => command.type === 'fillText' && command.args[0] === '36!');
+
+  assert.notEqual(shakeIndex, -1, 'expected a bounded shake transform');
+  assert.notEqual(shakeRestoreIndex, -1, 'expected shake transform to be restored');
+  assert.equal(shakeRestoreIndex < damageIndex, true, 'damage numbers should stay readable outside the shake transform');
+});
+
+test('critical hit impact sprites stay attached to the shaken battlefield layer', () => {
+  const ctx = mockContext();
+  const hitBolts = image(768, 128);
+  drawRebootBattle(ctx, {
+    now: 96.4,
+    boards: {
+      p1: { danger: 0, units: [] },
+      p2: { danger: 0, units: [] }
+    },
+    enemies: [{ enemyId: 'mini_boss', spriteKey: 'mini_boss', progress: 0.7, hp: 48, maxHp: 220 }],
+    events: [],
+    effects: [
+      {
+        type: 'hit',
+        playerId: 'p1',
+        slot: 0,
+        targetProgress: 0.7,
+        targetLane: 0.25,
+        targetType: 'mini_boss',
+        damage: 36,
+        critical: true,
+        ttl: 0.58
+      }
+    ]
+  }, { width: 390, height: 620 }, {
+    backdrop: image(390, 620),
+    enemies: image(1024, 256),
+    board: image(1280, 256),
+    hitBolts
+  });
+
+  const boltIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === hitBolts);
+  const damageIndex = ctx.commands.findIndex((command) => command.type === 'fillText' && command.args[0] === '36!');
+
+  assert.notEqual(boltIndex, -1, 'expected generated hit bolt sprite');
+  assert.equal(insideAnyBoundedShake(ctx.commands, boltIndex), true, 'impact sprite should move with the shaken enemy layer');
+  assert.equal(insideAnyBoundedShake(ctx.commands, damageIndex), false, 'damage number should remain in the readable overlay layer');
+});
+
+test('anchored combat reveal VFX and ambient sparks stay on the shaken battlefield layer', () => {
+  const ctx = mockContext();
+  const combatRevealVfx = image(1920, 512);
+  const vfx = image(1280, 256);
+  drawRebootBattle(ctx, {
+    now: 96.4,
+    boards: {
+      p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+      p2: { danger: 0, units: [] }
+    },
+    enemies: [{ enemyId: 'mini_boss', spriteKey: 'mini_boss', progress: 0.7, hp: 48, maxHp: 220 }],
+    events: [{ type: 'summon', at: 96.2, playerId: 'p1', unitId: 'spark_pin' }],
+    effects: [
+      {
+        type: 'death_burst',
+        targetProgress: 0.7,
+        targetLane: 0.25,
+        targetType: 'mini_boss',
+        ttl: 1.0
+      }
+    ]
+  }, { width: 390, height: 620 }, {
+    backdrop: image(390, 620),
+    enemies: image(1024, 256),
+    board: image(1280, 256),
+    combatRevealVfx,
+    vfx
+  });
+
+  const revealIndex = ctx.commands.findIndex((command) => command.type === 'drawImage' && command.args[0] === combatRevealVfx);
+  const ambientSparkIndex = ctx.commands.findIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === vfx
+      && command.args[1] === 768
+  ));
+
+  assert.notEqual(revealIndex, -1, 'expected generated combat reveal VFX');
+  assert.notEqual(ambientSparkIndex, -1, 'expected generated enemy spark VFX');
+  assert.equal(insideAnyBoundedShake(ctx.commands, revealIndex), true, 'summon reveal should move with its board socket');
+  assert.equal(insideAnyBoundedShake(ctx.commands, ambientSparkIndex), true, 'ambient enemy spark should move with the shaken enemy');
+});
+
+test('rescue beam remains above first rescue reward sigil after shake layering', () => {
+  const ctx = mockContext();
+  const board = image(1280, 256);
+  const cosmeticSigils = image(1280, 256);
+  drawRebootBattle(ctx, {
+    now: 88.35,
+    boards: {
+      p1: { danger: 0, units: [{ spriteKey: 'rescue_coil' }] },
+      p2: { danger: 36, units: [{ spriteKey: 'spark_pin' }] }
+    },
+    enemies: [],
+    events: [{ type: 'rescue', at: 88.1, playerId: 'p1', highlight: true }],
+    effects: []
+  }, { width: 390, height: 620 }, {
+    backdrop: image(390, 620),
+    units: image(1280, 256),
+    board,
+    cosmeticSigils,
+    playerBoardTray: image(780, 320)
+  });
+
+  const lastSigilIndex = ctx.commands.findLastIndex((command) => command.type === 'drawImage' && command.args[0] === cosmeticSigils);
+  const lastBeamIndex = ctx.commands.findLastIndex((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === board
+      && command.args[1] === 768
+  ));
+
+  assert.notEqual(lastSigilIndex, -1, 'expected first rescue reward sigil');
+  assert.notEqual(lastBeamIndex, -1, 'expected generated rescue beam segments');
+  assert.equal(lastBeamIndex > lastSigilIndex, true, 'rescue beam should stay above overlapping rescue sigil art');
+});
+
+test('reduced motion keeps hit damage labels anchored instead of rising every frame', () => {
+  function damageY(ttl) {
+    const ctx = mockContext();
+    drawRebootBattle(ctx, {
+      now: 18.24,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard', progress: 0.42 }],
+      events: [],
+      effects: [
+        {
+          type: 'hit',
+          playerId: 'p1',
+          slot: 0,
+          targetProgress: 0.42,
+          targetLane: 0.25,
+          targetType: 'noise_shard',
+          damage: 8,
+          critical: false,
+          ttl
+        }
+      ]
+    }, { width: 390, height: 620 }, {
+      backdrop: image(390, 620),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      hitBolts: image(768, 128)
+    }, { reducedMotion: true });
+
+    return ctx.commands.find((command) => command.type === 'fillText' && command.args[0] === '8')?.args[2];
+  }
+
+  assert.equal(damageY(0.58), damageY(0.18));
+});
+
+test('floating damage numbers use centered text for large values', () => {
+  const ctx = mockContext();
+  drawRebootBattle(ctx, {
+    now: 96.4,
+    boards: {
+      p1: { danger: 0, units: [] },
+      p2: { danger: 0, units: [] }
+    },
+    enemies: [{ enemyId: 'mini_boss', spriteKey: 'mini_boss', progress: 0.7, hp: 48, maxHp: 220 }],
+    events: [],
+    effects: [
+      {
+        type: 'hit',
+        playerId: 'p1',
+        slot: 0,
+        targetProgress: 0.7,
+        targetLane: 0.25,
+        targetType: 'mini_boss',
+        damage: 144,
+        critical: true,
+        ttl: 0.58
+      }
+    ]
+  }, { width: 390, height: 620 }, {
+    backdrop: image(390, 620),
+    enemies: image(1024, 256),
+    board: image(1280, 256),
+    hitBolts: image(768, 128)
+  });
+
+  const labelIndex = ctx.commands.findIndex((command) => command.type === 'fillText' && command.args[0] === '144!');
+  const alignment = ctx.commands.slice(0, labelIndex).findLast((command) => command.type === 'textAlign')?.value;
+
+  assert.notEqual(labelIndex, -1, 'expected a large critical damage label');
+  assert.equal(alignment, 'center');
 });
 
 test('recent rescue draws a strong generated link between partner and player boards', () => {

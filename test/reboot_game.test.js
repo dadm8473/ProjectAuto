@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { REBOOT_WAVES } from '../src/shared/reboot_content.js';
 import {
   castRescue,
   createRebootGame,
@@ -195,8 +196,62 @@ test('summoned units emit live hit effects before enemies die', () => {
   assert.equal(hit.targetType, 'noise_shard');
   assert.equal(hit.targetProgress >= 0 && hit.targetProgress <= 1, true);
   assert.equal(Number.isFinite(hit.targetLane), true);
+  assert.equal(hit.damage, 8);
+  assert.equal(hit.critical, false);
   assert.equal(hit.ttl > 0, true);
   assert.equal(state.effects.some((effect) => effect.type === 'death_burst'), false);
+});
+
+test('live hit effects attribute damage to the strongest known firing unit', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 113 });
+  summonToy(game, { playerId: 'p1' });
+  game.boards.p1.units.push({
+    id: 'p1-test-burst',
+    unitId: 'burst_pin',
+    owner: 'p1',
+    grade: 2,
+    role: 'attack',
+    spriteKey: 'burst_pin'
+  });
+  advance(game, 0.25);
+
+  const hit = serializeRebootState(game).effects.find((effect) => effect.type === 'hit');
+
+  assert.ok(hit, 'expected a live hit effect');
+  assert.equal(hit.slot, 1);
+  assert.equal(hit.damage, 18);
+});
+
+test('boss-window critical hits show a matching damage bump for grade-one units', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 115 });
+  summonToy(game, { playerId: 'p1' });
+  game.now = 92.1;
+  game.internal.wavesSpawned = REBOOT_WAVES.map((wave) => wave.at);
+  game.enemies = [
+    { id: 'test-mini-boss', enemyId: 'mini_boss', boardId: 'p1', progress: 0, spawnedAt: 92.1 }
+  ];
+  advance(game, 0.1);
+
+  const hit = serializeRebootState(game).effects.find((effect) => effect.type === 'hit');
+
+  assert.ok(hit, 'expected a boss-window hit effect');
+  assert.equal(hit.targetType, 'mini_boss');
+  assert.equal(hit.critical, true);
+  assert.equal(hit.damage, 16);
+});
+
+test('live hit effects skip invalid unit slots instead of showing fake damage', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 114 });
+  game.boards.p1.units.push({
+    id: 'p1-invalid-unit',
+    owner: 'p1',
+    grade: 1
+  });
+  advance(game, 0.25);
+
+  const hits = serializeRebootState(game).effects.filter((effect) => effect.type === 'hit');
+
+  assert.deepEqual(hits, []);
 });
 
 test('bot partner visibly contributes with scripted board actions', () => {
