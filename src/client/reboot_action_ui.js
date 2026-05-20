@@ -26,6 +26,22 @@ function summonCooldownLabel(current, localBoardId) {
   return cooldown.active ? `소환 ${cooldown.seconds}초` : '';
 }
 
+export function partnerDisplayName(current, partnerBoardId) {
+  const partner = current.players?.find((player) => player.id === partnerBoardId);
+  return partner?.name || (partner?.bot ? '린' : '파트너');
+}
+
+export function partnerDangerMeterLabel(current, partnerBoardId) {
+  const label = partnerDisplayName(current, partnerBoardId).replace(/\s/g, '');
+  if (!label || label === '파트너') return '동료';
+  return label.length > 2 ? '동료' : `${label}위험`;
+}
+
+export function partnerDangerAriaLabel(current, partnerBoardId, danger) {
+  const label = partnerDisplayName(current, partnerBoardId);
+  return label === '파트너' ? `파트너 위험도 ${danger}` : `파트너 ${label}의 위험도 ${danger}`;
+}
+
 function clamp01(value) {
   return Math.min(1, Math.max(0, value));
 }

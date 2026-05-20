@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { buildRebootActionState } from '../src/client/reboot_actions.js';
-import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, buildSummonCooldownState, isCriticalRebootAction } from '../src/client/reboot_action_ui.js';
+import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, buildSummonCooldownState, isCriticalRebootAction, partnerDangerAriaLabel, partnerDangerMeterLabel } from '../src/client/reboot_action_ui.js';
 
 function state(overrides = {}) {
   return {
@@ -21,6 +21,26 @@ test('critical action cue appears only for playable boss and rescue decisions', 
   assert.equal(isCriticalRebootAction({ actionKey: 'summon', current: state({ now: 102 }), localBoardId: 'p1', enabled: true }), false);
   assert.equal(isCriticalRebootAction({ actionKey: 'merge', current: state({ now: 120 }), localBoardId: 'p1', enabled: true }), false);
   assert.equal(isCriticalRebootAction({ actionKey: 'summon', current: state({ now: 94 }), localBoardId: 'p1', enabled: false }), false);
+});
+
+test('partner danger meter names the bot partner without growing the visible HUD label', () => {
+  const current = {
+    players: [{ id: 'p1', name: '나' }, { id: 'p2', name: '린', bot: true }]
+  };
+
+  assert.equal(partnerDangerMeterLabel(current, 'p2'), '린위험');
+  assert.equal(partnerDangerAriaLabel(current, 'p2', 72), '파트너 린의 위험도 72');
+});
+
+test('partner danger meter keeps online or long partner names compact', () => {
+  const current = {
+    players: [{ id: 'p1', name: '나' }, { id: 'p2', name: '긴이름파트너' }]
+  };
+
+  assert.equal(partnerDangerMeterLabel(current, 'p2'), '동료');
+  assert.equal(partnerDangerAriaLabel(current, 'p2', 41), '파트너 긴이름파트너의 위험도 41');
+  assert.equal(partnerDangerMeterLabel({}, 'p2'), '동료');
+  assert.equal(partnerDangerAriaLabel({}, 'p2', 10), '파트너 위험도 10');
 });
 
 test('critical rescue cue follows partner danger for either local board', () => {

@@ -664,18 +664,20 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   }
 
   .meters > span {
-    gap: 3px;
-    padding: 4px 3px;
+    gap: 2px;
+    padding: 4px 2px;
     font-size: 8px;
   }
 
   .meter-value {
-    min-width: 13px;
-    font-size: 10px;
+    min-width: 14px;
+    font-size: 9px;
   }
 
   .meter-label {
-    font-size: 7px;
+    max-width: 20px;
+    overflow: hidden;
+    font-size: 6px;
   }
 
   .meters > span::before {

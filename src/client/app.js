@@ -3,7 +3,7 @@ import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=combat-meter2';
-import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, buildSummonCooldownState, isCriticalRebootAction } from './reboot_action_ui.js?v=cooldown-sweep1';
+import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildCombatStatusDisplay, buildCombatStatusPrompt, buildSummonCooldownState, isCriticalRebootAction, partnerDangerAriaLabel, partnerDangerMeterLabel } from './reboot_action_ui.js?v=danger-label2';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
 import { preloadCriticalRebootAssets } from './reboot_preload.js?v=shell-backdrop1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=partner-identity1';
@@ -672,8 +672,10 @@ function command(actionName) {
   softFeedback(actionName);
 }
 
-function setMeterValue(meter, value, label, state = 'idle') {
+function setMeterValue(meter, value, label, state = 'idle', visibleLabel = '') {
+  const labelNode = meter?.querySelector('.meter-label');
   const valueNode = meter?.querySelector('.meter-value');
+  if (visibleLabel && labelNode) labelNode.textContent = visibleLabel;
   if (valueNode) valueNode.textContent = value;
   else if (meter) meter.textContent = value;
   meter?.setAttribute('aria-label', label);
@@ -700,8 +702,9 @@ function updateMeters(current) {
   setMeterValue(
     dom.dangerMeter,
     `${partnerDanger}`,
-    `파트너 위험도 ${partnerDanger}`,
-    partnerDanger >= 70 ? 'danger' : partnerDanger >= 40 ? 'warning' : 'safe'
+    partnerDangerAriaLabel(current, partner, partnerDanger),
+    partnerDanger >= 70 ? 'danger' : partnerDanger >= 40 ? 'warning' : 'safe',
+    partnerDangerMeterLabel(current, partner)
   );
   const onlineWaiting = waitingForOnlinePartner(current);
   const statusPrompt = buildCombatStatusPrompt({ current, localBoardId, onlineWaiting });

@@ -115,7 +115,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from '../shared/game.js?v=partner-identity1'",
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_action_ui.js?v=cooldown-sweep1'",
+    "from './reboot_action_ui.js?v=danger-label2'",
     "from './reboot_render.js?v=partner-identity1'",
     "from './reboot_screens.js?v=partner-identity1'",
     "from './reboot_online.js'"
@@ -698,7 +698,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-identity1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=danger-label2"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-identity1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-highlight1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest-feedback1"></script>'), false);
@@ -1278,7 +1279,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
   assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::before'), false);
 
   for (const marker of [
-    "from './reboot_action_ui.js?v=cooldown-sweep1'",
+    "from './reboot_action_ui.js?v=danger-label2'",
     'buildCombatCoachCue',
     'buildCombatCommandLabels',
     'buildCombatStatusPrompt',
@@ -5206,6 +5207,12 @@ test('combat HUD keeps three resource meters bounded on compact phones', async (
     'white-space: nowrap;',
     '@media (max-width: 360px)',
     '.brand span {\n    display: none;',
+    '.meters > span {\n    gap: 2px;',
+    'padding: 4px 2px;',
+    '.meter-value {\n    min-width: 14px;',
+    'font-size: 9px;',
+    '.meter-label {\n    max-width: 20px;',
+    'overflow: hidden;',
     '.meters > span::before {\n    width: 14px;',
     '#rescueMeter::before { background-position: -28px 0; }',
     '#dangerMeter::before { background-position: -42px 0; }'
@@ -5217,6 +5224,7 @@ test('combat HUD keeps three resource meters bounded on compact phones', async (
 test('combat HUD meter labels explain values through icon sockets and accessibility labels', async () => {
   const html = await readFile('index.html', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const actionUi = await readFile('src/client/reboot_action_ui.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
@@ -5225,20 +5233,27 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     'id="dangerMeter" data-meter-kind="danger" aria-label="파트너 위험도 0"',
     '<span class="meter-label">전력</span>',
     '<span class="meter-label">구원</span>',
-    '<span class="meter-label">위험</span>',
+    '<span class="meter-label">동료</span>',
     '<span class="meter-value">10</span>',
     '<span class="meter-value">0%</span>',
     '<span class="meter-value">0</span>',
-    "function setMeterValue(meter, value, label, state = 'idle')",
+    "export function partnerDisplayName(current, partnerBoardId) {",
+    "export function partnerDangerMeterLabel(current, partnerBoardId) {",
+    "export function partnerDangerAriaLabel(current, partnerBoardId, danger) {",
+    "function setMeterValue(meter, value, label, state = 'idle', visibleLabel = '')",
     'setMeterValue(\n    dom.summonMeter,',
     'setMeterValue(\n    dom.rescueMeter,',
     'setMeterValue(\n    dom.dangerMeter,',
+    'partnerDangerAriaLabel(current, partner, partnerDanger)',
+    'partnerDangerMeterLabel(current, partner)',
+    "return label.length > 2 ? '동료' : `${label}위험`;",
+    "return label === '파트너' ? `파트너 위험도 ${danger}` : `파트너 ${label}의 위험도 ${danger}`;",
     '.meter-label',
     '.meter-value',
     'margin-left: clamp(34px, 10vw, 46px);',
     'padding: clamp(4px, 1.4vw, 6px) clamp(3px, 1.2vw, 5px);'
   ]) {
-    assert.equal(`${html}\n${app}\n${css}`.includes(marker), true, marker);
+    assert.equal(`${html}\n${app}\n${actionUi}\n${css}`.includes(marker), true, marker);
   }
 
   for (const forbidden of [
@@ -5246,11 +5261,15 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     '소환 에너지',
     '>구원 0%<',
     '>위험 0<',
+    '<span class="meter-label">위험</span>',
+    '<span class="meter-label">동료위험</span>',
+    '`파트너 위험도 ${partnerDanger}`',
+    '`파트너 ${label} 위험도 ${danger}`',
     'dom.summonMeter.textContent = `소환 ${resources.summon}`',
     'dom.rescueMeter.textContent = `구원 ${Math.round(resources.rescue)}%`',
     'dom.dangerMeter.textContent = `위험 ${Math.round(current.boards[partner]?.danger ?? 0)}`'
   ]) {
-    assert.equal(`${html}\n${app}`.includes(forbidden), false, forbidden);
+    assert.equal(`${html}\n${app}\n${actionUi}`.includes(forbidden), false, forbidden);
   }
 });
 
@@ -5260,7 +5279,7 @@ test('combat HUD meters use generated state pulses for ready and danger values',
 
   for (const marker of [
     "import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';",
-    "function setMeterValue(meter, value, label, state = 'idle')",
+    "function setMeterValue(meter, value, label, state = 'idle', visibleLabel = '')",
     'meter.dataset.meterState = state;',
     "(resources.summon ?? 0) >= REBOOT_RULES.summon.cost ? 'ready' : 'charging'",
     "(resources.rescue ?? 0) >= 100 ? 'ready' : partnerDanger >= 70 ? 'warning' : 'charging'",
