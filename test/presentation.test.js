@@ -118,7 +118,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_action_ui.js?v=danger-label3'",
     "from './reboot_hud.js?v=combat-hud1'",
     "from './reboot_render.js?v=partner-ready1'",
-    "from './reboot_screens.js?v=partner-identity1'",
+    "from './reboot_screens.js?v=result-copy1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -795,7 +795,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=partner-identity1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=result-copy1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=reward-detail1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label2'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label1'"), false);
@@ -5043,11 +5043,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=partner-identity1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=partner-identity1'",
+    "from './reboot_screens.js?v=result-copy1'",
     "from './reboot_game.js?v=partner-identity1'",
     "from '../shared/game.js?v=partner-identity1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=partner-identity1',
+    '/src/client/reboot_screens.js?v=result-copy1',
     '/src/shared/game.js?v=partner-identity1',
     '/src/shared/reboot_game.js?v=partner-identity1'
   ]) {

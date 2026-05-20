@@ -211,7 +211,7 @@ test('playtest recorder keeps stored result in sync with post-result screen even
   clock = 110000;
   recorder.recordAction('rescue', { ok: true, atSeconds: 110 });
   clock = 120000;
-  recorder.recordResult({ status: 'won', reason: '파트너 구원 성공', nextGoal: '위험 80 전 구원', atSeconds: 120 });
+  recorder.recordResult({ status: 'won', reason: '파트너 구원 성공', nextGoal: '위험 80 직전 구원', atSeconds: 120 });
   clock = 120080;
   recorder.recordScreen('result');
 

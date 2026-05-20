@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v51';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v52';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -47,7 +47,7 @@ test('service worker keeps the installable mobile game shell available after fir
     '/src/client/reboot_hud.js?v=combat-hud1',
     '/src/client/reboot_playtest.js?v=playtest2',
     '/src/client/reboot_render.js?v=partner-ready1',
-    '/src/client/reboot_screens.js?v=partner-identity1',
+    '/src/client/reboot_screens.js?v=result-copy1',
     '/src/client/reboot_action_ui.js?v=danger-label3',
     '/src/client/reboot_online.js',
     '/src/shared/game.js?v=partner-identity1',
@@ -146,7 +146,7 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v51'",
+    "cacheName === 'projectauto-reboot-shell-v52'",
     "await cache.match('/index.html')",
     "await cache.match('/src/client/styles.css?v=coop-launch1')",
     "await cache.match('/src/client/app.js?v=partner-ready1')",
@@ -154,7 +154,7 @@ test('browser QA verifies the runtime service worker cache activation', async ()
     "await cache.match('/src/client/reboot_hud.js?v=combat-hud1')",
     "await cache.match('/src/client/reboot_playtest.js?v=playtest2')",
     "await cache.match('/src/client/reboot_render.js?v=partner-ready1')",
-    "await cache.match('/src/client/reboot_screens.js?v=partner-identity1')",
+    "await cache.match('/src/client/reboot_screens.js?v=result-copy1')",
     "await cache.match('/src/shared/game.js?v=partner-identity1')",
     "await cache.match('/src/shared/reboot_game.js?v=partner-identity1')",
     "await cache.match('/src/client/reboot_action_ui.js?v=danger-label3')",

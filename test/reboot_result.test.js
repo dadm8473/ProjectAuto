@@ -311,6 +311,11 @@ test('result primary action keeps the next authored operation as button context 
 
 test('result next-goal copy stays compact for generated result plates', () => {
   assert.equal(
+    buildRebootResultModel({ result: { status: 'won', reason: 'partner_rescued', nextGoal: 'time_next_rescue' } }).nextGoal.label,
+    '위험 80 직전 구원'
+  );
+
+  assert.equal(
     buildRebootResultModel({ result: { status: 'lost', reason: 'boss_leaked', nextGoal: 'answer_boss_warning' } }).nextGoal.label,
     '보스 경고 때 합성'
   );

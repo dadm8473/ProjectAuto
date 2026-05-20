@@ -14,7 +14,7 @@ const REASON_LABELS = {
 };
 
 const GOAL_LABELS = {
-  time_next_rescue: '위험 80 전 구원',
+  time_next_rescue: '위험 80 직전 구원',
   repeat_boss_timing: '보스 경고 후 선택',
   protect_control_unit: '느림 코일 생존',
   rescue_before_merge_greed: '위험 높으면 구원',
