@@ -57,6 +57,13 @@ const IMAGEGEN_REBOOT_OVERLAYS = [
     width: 640,
     height: 512,
     minRuntimeBytes: 80_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-sound-toggle.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260520-sound-toggle-imagegen.png',
+    width: 256,
+    height: 256,
+    minRuntimeBytes: 60_000
   }
 ];
 
@@ -1548,6 +1555,26 @@ test('reboot runtime overlay art is promoted from imagegen sources', async () =>
     assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
     assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
   }
+});
+
+test('reboot sound toggle is a transparent generated audio glyph', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-sound-toggle.png'));
+  const corners = [
+    alphaAt(image, 2, 2),
+    alphaAt(image, image.width - 3, 2),
+    alphaAt(image, 2, image.height - 3),
+    alphaAt(image, image.width - 3, image.height - 3)
+  ];
+  const rect = { x: 0, y: 0, width: image.width, height: image.height };
+  const bounds = alphaBounds(image, rect, 24);
+  const greenFringeRatio = colorRatio(image, rect, (r, g, b) => g > 190 && r < 80 && b < 80);
+  const width = bounds.maxX - bounds.minX;
+  const height = bounds.maxY - bounds.minY;
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, `sound toggle has opaque corners: ${corners.join(',')}`);
+  assert.equal(width >= 180 && height >= 180, true, `sound toggle silhouette is too weak: ${JSON.stringify(bounds)}`);
+  assert.equal(Math.abs((bounds.minX + bounds.maxX) / 2 - 128) <= 8, true, `sound toggle is off-center: ${JSON.stringify(bounds)}`);
+  assert.equal(greenFringeRatio < 0.002, true, `sound toggle keeps chroma-key green fringe: ${greenFringeRatio}`);
 });
 
 test('reboot hero squad v2 is a transparent collectible character overlay', async () => {

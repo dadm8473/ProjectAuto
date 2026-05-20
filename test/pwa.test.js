@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v56';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v57';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -41,7 +41,7 @@ test('service worker keeps the installable mobile game shell available after fir
     'event.request.mode === \'navigate\'',
     "caches.match('/index.html')",
     '/manifest.webmanifest',
-    '/src/client/styles.css?v=audio-safe1',
+    '/src/client/styles.css?v=sound-toggle1',
     '/src/client/app.js?v=audio-safe1',
     '/src/client/reboot_audio.js?v=audio-safe1',
     '/src/client/reboot_actions.js?v=combat-meter2',
@@ -55,6 +55,7 @@ test('service worker keeps the installable mobile game shell available after fir
     '/src/shared/reboot_game.js?v=partner-identity1',
     '/src/shared/reboot_content.js',
     '/src/client/assets/generated/reboot-app-shell-backdrop.png',
+    '/src/client/assets/generated/reboot-sound-toggle.png?v=sound-toggle1',
     '/src/client/assets/generated/reboot-meta-showcase-copy-plates.png?v=showcase-nameplate1',
     '/src/client/assets/generated/reboot-shop-banner-v2.png?v=shop-banner2',
     '/src/client/assets/generated/reboot-unit-atlas.png',
@@ -147,9 +148,9 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v56'",
+    "cacheName === 'projectauto-reboot-shell-v57'",
     "await cache.match('/index.html')",
-    "await cache.match('/src/client/styles.css?v=audio-safe1')",
+    "await cache.match('/src/client/styles.css?v=sound-toggle1')",
     "await cache.match('/src/client/app.js?v=audio-safe1')",
     "await cache.match('/src/client/reboot_audio.js?v=audio-safe1')",
     "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
@@ -161,6 +162,7 @@ test('browser QA verifies the runtime service worker cache activation', async ()
     "await cache.match('/src/shared/reboot_game.js?v=partner-identity1')",
     "await cache.match('/src/client/reboot_action_ui.js?v=role-label1')",
     "await cache.match('/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1')",
+    "await cache.match('/src/client/assets/generated/reboot-sound-toggle.png?v=sound-toggle1')",
     "await cache.match('/src/client/assets/generated/reboot-meta-showcase-copy-plates.png?v=showcase-nameplate1')",
     "await cache.match('/src/client/assets/generated/reboot-shop-banner-v2.png?v=shop-banner2')",
     "await cache.match('/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3')",

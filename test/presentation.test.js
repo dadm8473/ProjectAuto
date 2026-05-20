@@ -188,10 +188,21 @@ test('sound control is opt-in and does not add another combat command', async ()
     'rebootAudio.unlock();',
     'projectauto.reboot.audio.enabled.v1',
     '.sound-toggle',
-    '.sound-toggle[data-audio-enabled="true"]'
+    '.sound-toggle[data-audio-enabled="true"]',
+    '.sound-toggle span {',
+    'min-width: 44px;',
+    'min-height: 44px;',
+    'transform: translate(-50%, -50%);',
+    'background-image: url("/src/client/assets/generated/reboot-sound-toggle.png?v=sound-toggle1");',
+    'background-size: contain;',
+    'background-position: center;'
   ]) {
     assert.equal(`${app}\n${audio}\n${css}`.includes(marker), true, marker);
   }
+  const soundBlock = css.slice(css.indexOf('.sound-toggle {'), css.indexOf('.brand strong,', css.indexOf('.sound-toggle {')));
+  assert.equal(soundBlock.includes('reboot-ui-icons.png'), false);
+  assert.equal(soundBlock.includes('clip-path'), false);
+  assert.equal(soundBlock.includes('radial-gradient'), false);
 });
 
 test('global button base never falls back to css web-button chrome', async () => {
@@ -622,7 +633,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=audio-safe1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=sound-toggle1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
@@ -1468,7 +1479,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=audio-safe1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=sound-toggle1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
@@ -1853,7 +1864,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=audio-safe1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=sound-toggle1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }

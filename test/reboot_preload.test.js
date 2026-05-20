@@ -7,6 +7,7 @@ import { CRITICAL_REBOOT_ASSETS, preloadCriticalRebootAssets } from '../src/clie
 test('critical reboot preload list starts with generated game identity and first-play assets', () => {
   const required = [
     '/src/client/assets/generated/reboot-app-icon-192.png',
+    '/src/client/assets/generated/reboot-sound-toggle.png?v=sound-toggle1',
     '/src/client/assets/generated/reboot-title-emblem.png',
     '/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2',
     '/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title',
