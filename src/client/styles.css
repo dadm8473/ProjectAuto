@@ -67,6 +67,7 @@
   --training-banner: url("/src/client/assets/generated/reboot-training-banner.png");
   --shop-banner: url("/src/client/assets/generated/reboot-shop-banner-v2.png?v=shop-banner2");
   --missions-banner: url("/src/client/assets/generated/reboot-missions-banner.png");
+  --mission-command-board: url("/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1");
   --season-banner: url("/src/client/assets/generated/reboot-season-banner.png");
   --meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row-alpha1");
   --meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges-alpha1");
@@ -3248,6 +3249,34 @@ body[data-app-screen="season"] .app-screen::after {
   display: none;
 }
 
+#missionsList {
+  position: relative;
+  isolation: isolate;
+  background-image: var(--mission-command-board);
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 100% 100%;
+}
+
+#missionsList::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: var(--mission-command-board);
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 100% 100%;
+  opacity: 0.98;
+  filter: saturate(1.22) brightness(1.28) contrast(1.08) drop-shadow(0 18px 30px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+}
+
+#missionsList > * {
+  position: relative;
+  z-index: 2;
+}
+
 .meta-shelf-grid {
   position: relative;
   z-index: 1;
@@ -3321,6 +3350,16 @@ body[data-app-screen="season"] .app-screen::after {
     "copy command"
     "stamps command";
   align-content: stretch;
+}
+
+#missionsList .mission-stamp-board {
+  background-image: none;
+  filter: none;
+}
+
+#missionsList .meta-progress-board[data-progress-board="missions"] {
+  background-image: none;
+  filter: none;
 }
 
 .season-track-board {

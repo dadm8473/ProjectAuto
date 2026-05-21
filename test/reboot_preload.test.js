@@ -17,6 +17,7 @@ test('critical reboot preload list starts with generated game identity and first
     '/src/client/assets/generated/reboot-splash-season-badge-v1.png?v=splash-season-badge1',
     '/src/client/assets/generated/reboot-lobby-backdrop.png',
     '/src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png?v=operation-title-plate1',
+    '/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1',
     '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',
     '/src/client/assets/generated/reboot-unit-atlas.png',
     '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1',
@@ -64,6 +65,7 @@ test('critical reboot preload includes generated meta and result screen lighting
 test('critical reboot preload includes generated reward and meta polish overlays', () => {
   const required = [
     '/src/client/assets/generated/reboot-reward-reveal-payoff-stage.png?v=reward-payoff-stage1',
+    '/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1',
     '/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console2'
   ];
 
@@ -79,6 +81,7 @@ test('critical reboot preload follows generated polish css asset urls', async ()
     '--meta-lower-console',
     '--splash-season-badge',
     '--combat-operation-badge',
+    '--mission-command-board',
     '--lobby-operation-title-plate',
     '--meta-title-wordmarks',
     '--meta-caption-plate'

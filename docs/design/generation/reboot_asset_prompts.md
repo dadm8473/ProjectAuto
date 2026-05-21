@@ -993,6 +993,27 @@ Postprocess: remove chroma key with soft matte/despill, center-crop vertical tra
 Acceptance: collection/shop/mission/season screen titles read as generated Korean game wordmarks instead of browser h1 text, while the original Korean title text remains available to assistive tech.
 ```
 
+## Runtime Prompt: Mission Command Board
+
+```text
+Use case: stylized-concept
+Asset type: project-bound vertical mobile game UI background panel for the mission/objective screen.
+Primary request: Create a premium sci-fi cooperative tower defense mission contract board. It should look like a high-end portrait mobile game screen panel, not a web card. No readable text.
+Scene/backdrop: dark teal-black futuristic command room machinery with cyan energy tubes and warm gold accents, matching a polished Korean mobile game UI. The panel should include a prominent upper mission reward console and three large horizontal contract row bays below, each row with an empty circular reward socket on the left, a wide empty nameplate in the middle, and a compact empty action socket on the right.
+Style/medium: crisp 2.5D game UI illustration, rendered mechanical metal, collectible RPG/tower-defense UI polish, high contrast edges.
+Composition/framing: portrait 2:3 vertical panel, centered, generous safe margins, top command board occupies upper 28%, three mission rows occupy lower 60%, all sockets empty and readable when overlaid with external text/icons.
+Lighting/mood: luminous cyan core lighting, amber/gold bevel highlights, premium arcade command-console feel.
+Color palette: dark graphite metal, deep teal glass, cyan glow, small gold warning accents, no purple dominant palette.
+Materials/textures: beveled metal, glass energy capsules, brushed panels, subtle scratches, light bloom only on edges.
+Text: none. Do not include letters, numbers, logos, words, watermarks, UI labels, or fake readable text.
+Constraints: single coherent game panel, no web-style rectangles, no cards-with-text, no character art, no large empty flat dark areas, leave the inner sockets clear for overlaid real UI. The image may be opaque; corners can blend into dark game background.
+Avoid: gradients as the main design, flat CSS-looking panels, readable or fake text, rounded web cards, random icons inside the empty sockets, clutter that would block overlaid Korean UI.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260521-mission-command-board-imagegen.png
+Runtime file: src/client/assets/generated/reboot-mission-command-board-v1.png
+Postprocess: crop the generated 1024x1536 source to the central board area `(74, 58, 950, 1490)`, boost color/contrast/brightness for phone-scale readability, resize to 768x1152, apply a light unsharp mask, and use it as a single fitted background layer behind mission copy, reward icons, and row controls.
+Acceptance: the mission screen reads as one generated operation board instead of floating HTML fragments; mission reward, three contract rows, and action sockets remain readable at 390x844 and compact portrait widths.
+```
+
 ## 후처리 기준
 
 필수:

@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v79');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v80');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=combat-op-badge1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=combat-op-badge1'))
+      '/src/client/styles.css?v=mission-command-board1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=mission-command-board1'))
         : false,
-      '/src/client/app.js?v=meta-clarity1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=meta-clarity1'))
+      '/src/client/app.js?v=mission-command-board1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=mission-command-board1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -134,6 +134,9 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
+        : false,
+      '/src/client/reboot_preload.js?v=mission-command-board1': cache
+        ? Boolean(await cache.match('/src/client/reboot_preload.js?v=mission-command-board1'))
         : false,
       '/src/client/reboot_render.js?v=unit-pedestal1': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=unit-pedestal1'))
@@ -179,6 +182,9 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/assets/generated/reboot-combat-operation-badge-v1.png?v=combat-op-badge1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-combat-operation-badge-v1.png?v=combat-op-badge1'))
+        : false,
+      '/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1'))
         : false
     };
     return {
@@ -193,7 +199,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v79', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v80', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -998,6 +1004,34 @@ async function assertBannerOverlayClear(page, selector, label) {
   assert.equal(overlay.backgroundImage, 'none', `${label} banner overlay still has css image/gradient: ${JSON.stringify(overlay)}`);
   assert.equal(overlay.backdropFilter, 'none', `${label} banner overlay still uses backdrop filter: ${JSON.stringify(overlay)}`);
   assert.equal(overlay.webkitBackdropFilter, 'none', `${label} banner overlay still uses webkit backdrop filter: ${JSON.stringify(overlay)}`);
+}
+
+async function assertMissionCommandBoard(page, label = 'missions') {
+  const board = await page.locator('#missionsList').evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const before = getComputedStyle(node, '::before');
+    const stamp = node.querySelector('.mission-stamp-board');
+    const contracts = node.querySelector('.meta-progress-board[data-progress-board="missions"]');
+    const stampStyle = stamp ? getComputedStyle(stamp) : null;
+    const contractsStyle = contracts ? getComputedStyle(contracts) : null;
+    return {
+      backgroundImage: before.backgroundImage,
+      backgroundSize: before.backgroundSize,
+      pointerEvents: before.pointerEvents,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      stampBackgroundImage: stampStyle?.backgroundImage ?? '',
+      contractsBackgroundImage: contractsStyle?.backgroundImage ?? ''
+    };
+  });
+  assert.match(board.backgroundImage, /reboot-mission-command-board-v1/, `${label} lacks generated mission command board: ${JSON.stringify(board)}`);
+  assert.equal(board.backgroundSize, '100% 100%', `${label} mission command board is not fitted: ${JSON.stringify(board)}`);
+  assert.equal(board.pointerEvents, 'none', `${label} mission command board blocks taps: ${JSON.stringify(board)}`);
+  const minWidth = label.includes('compact') ? 280 : 300;
+  const minHeight = label.includes('compact') ? 320 : 560;
+  assert.equal(board.width >= minWidth && board.height >= minHeight, true, `${label} mission command board collapsed: ${JSON.stringify(board)}`);
+  assert.equal(board.stampBackgroundImage, 'none', `${label} top mission fragments still cover the unified board: ${JSON.stringify(board)}`);
+  assert.equal(board.contractsBackgroundImage, 'none', `${label} lower mission rows still cover the unified board: ${JSON.stringify(board)}`);
 }
 
 async function assertResultGeneratedCopySurfaces(page) {
@@ -2198,6 +2232,7 @@ async function verifyShell(page, viewport) {
   await assertActiveNavLabelPlate(page, '미션', 'missions');
   await assertMetaStationHeader(page, '#missionsScreen', 'missions');
   await page.locator('#missionsList .mission-stamp-board').waitFor({ state: 'visible' });
+  await assertMissionCommandBoard(page, 'missions');
   await assertMetaCaptionPlates(page, '#missionsScreen .mission-board-copy span, #missionsScreen .mission-board-copy p', 'missions', 2);
   const missionBoardCopy = await page.locator('#missionsScreen .mission-board-copy').evaluate((node) => ({
     label: node.querySelector('span')?.textContent?.trim() ?? '',
@@ -2313,6 +2348,7 @@ async function verifyCompactMeta(page) {
   await page.getByRole('button', { name: '미션', exact: true }).click();
   await page.locator('#missionsList .mission-stamp-board').waitFor({ state: 'visible' });
   await assertMetaStationHeader(page, '#missionsScreen', 'compact missions');
+  await assertMissionCommandBoard(page, 'compact missions');
   await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await page.getByRole('button', { name: '시즌', exact: true }).click();
   await page.locator('#seasonList .season-track-board').waitFor({ state: 'visible' });

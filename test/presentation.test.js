@@ -635,7 +635,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-op-badge1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-command-board1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
@@ -744,7 +744,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-clarity1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=mission-command-board1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-ready-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shop-chips1"></script>'), false);
@@ -896,7 +896,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets } from './reboot_preload.js?v=shell-backdrop1';",
+    "import { preloadCriticalRebootAssets } from './reboot_preload.js?v=mission-command-board1';",
     'preloadCriticalRebootAssets().then(hideLoadingGate, hideLoadingGate);',
     'function hideLoadingGate()',
     "dom.loadingGate.dataset.loadingState = 'ready';",
@@ -1498,7 +1498,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=combat-op-badge1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=mission-command-board1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=hud-meter1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
@@ -1885,7 +1885,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=combat-op-badge1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=mission-command-board1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -4950,6 +4950,7 @@ test('mission and season screens use generated stamp and reward-track boards', a
 
   for (const marker of [
     '--missions-banner: url("/src/client/assets/generated/reboot-missions-banner.png")',
+    '--mission-command-board: url("/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1")',
     '--season-banner: url("/src/client/assets/generated/reboot-season-banner.png")',
     'function buildMissionStampBoard',
     'function buildSeasonTrackBoard',
@@ -5034,6 +5035,36 @@ test('mission and season first screens use distinct game-board compositions', as
 
   const seasonListBlock = cssRuleBlock(css, '.meta-progress-board[data-board-layout="season-pass-tiers"]');
   assert.equal(seasonListBlock.includes('grid-template-rows: repeat(4, minmax(0, 1fr));'), true);
+});
+
+test('mission screen reads as one generated command board instead of floating web fragments', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--mission-command-board: url("/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1")',
+    '#missionsList',
+    '#missionsList::before',
+    'background-image: var(--mission-command-board);',
+    'background-size: 100% 100%;',
+    '#missionsList > *',
+    '#missionsList .mission-stamp-board',
+    '#missionsList .meta-progress-board[data-progress-board="missions"]'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const missionListBlock = cssRuleBlock(css, '#missionsList');
+  assert.equal(missionListBlock.includes('isolation: isolate;'), true);
+  assert.equal(missionListBlock.includes('background-image: var(--mission-command-board);'), true);
+  const boardLayerBlock = cssRuleBlock(css, '#missionsList::before');
+  assert.equal(boardLayerBlock.includes('z-index: 1;'), true);
+  assert.equal(boardLayerBlock.includes('brightness(1.28)'), true);
+  assert.equal(boardLayerBlock.includes('pointer-events: none;'), true);
+  assert.equal(boardLayerBlock.includes('linear-gradient'), false);
+  const stampOverrideBlock = cssRuleBlock(css, '#missionsList .mission-stamp-board');
+  const progressOverrideBlock = cssRuleBlock(css, '#missionsList .meta-progress-board[data-progress-board="missions"]');
+  assert.equal(stampOverrideBlock.includes('background-image: none;'), true);
+  assert.equal(progressOverrideBlock.includes('background-image: none;'), true);
 });
 
 test('mission and season top boards promote one generated reward claim command', async () => {

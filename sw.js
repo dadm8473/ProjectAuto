@@ -1,16 +1,16 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v79';
+const CACHE_NAME = 'projectauto-reboot-shell-v80';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/src/client/styles.css?v=combat-op-badge1',
-  '/src/client/app.js?v=meta-clarity1',
+  '/src/client/styles.css?v=mission-command-board1',
+  '/src/client/app.js?v=mission-command-board1',
   '/src/client/reboot_audio.js?v=audio-safe1',
   '/src/client/reboot_actions.js?v=combat-meter2',
   '/src/client/reboot_action_ui.js?v=hud-meter1',
   '/src/client/reboot_hud.js?v=board-copy1',
   '/src/client/reboot_playtest.js?v=playtest2',
-  '/src/client/reboot_preload.js?v=shell-backdrop1',
+  '/src/client/reboot_preload.js?v=mission-command-board1',
   '/src/client/reboot_render.js?v=unit-pedestal1',
   '/src/client/reboot_result_ui.js?v=result-ui2',
   '/src/client/reboot_screens.js?v=meta-clarity1',
@@ -32,6 +32,7 @@ const APP_SHELL_URLS = [
   '/src/client/assets/generated/reboot-app-shell-backdrop.png',
   '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1',
   '/src/client/assets/generated/reboot-shop-banner-v2.png?v=shop-banner2',
+  '/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1',
   '/src/client/assets/generated/reboot-title-emblem.png',
   '/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2',
   '/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title',
