@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v64');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v65');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
       '/src/client/styles.css?v=hud-meter1': cache
         ? Boolean(await cache.match('/src/client/styles.css?v=hud-meter1'))
         : false,
-      '/src/client/app.js?v=shop-copy1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=shop-copy1'))
+      '/src/client/app.js?v=reward-copy1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=reward-copy1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -108,8 +108,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
         : false,
-      '/src/client/reboot_hud.js?v=shop-copy1': cache
-        ? Boolean(await cache.match('/src/client/reboot_hud.js?v=shop-copy1'))
+      '/src/client/reboot_hud.js?v=reward-copy1': cache
+        ? Boolean(await cache.match('/src/client/reboot_hud.js?v=reward-copy1'))
         : false,
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
@@ -120,8 +120,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_result_ui.js?v=result-ui1': cache
         ? Boolean(await cache.match('/src/client/reboot_result_ui.js?v=result-ui1'))
         : false,
-      '/src/client/reboot_screens.js?v=shop-copy1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=shop-copy1'))
+      '/src/client/reboot_screens.js?v=reward-copy1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=reward-copy1'))
         : false,
       '/src/shared/game.js?v=retry-context1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=retry-context1'))
@@ -169,7 +169,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v64', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v65', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -701,7 +701,7 @@ async function assertObjectiveBoardCommand(page, selector, label, expectedState)
   );
   if (expectedState === 'ready') {
     assert.equal(geometry.controlClass.includes('featured-objective-action'), true, `${label} claim button was not rendered: ${JSON.stringify(geometry)}`);
-    assert.equal(geometry.controlText, '수령', `${label} claim button copy changed: ${JSON.stringify(geometry)}`);
+    assert.equal(geometry.controlText, '받기', `${label} claim button copy changed: ${JSON.stringify(geometry)}`);
     assert.equal(geometry.controlPointerEvents, 'auto', `${label} claim button cannot receive taps: ${JSON.stringify(geometry)}`);
     await page.locator(`${selector} .featured-objective-action`).first().evaluate((node) => {
       node.focus({ focusVisible: true });
@@ -736,7 +736,7 @@ async function assertFeaturedMissionClaimFlow(page, label) {
     };
   });
   assert.equal(before.missionId, 'first-run', `${label} featured mission id changed: ${JSON.stringify(before)}`);
-  assert.equal(before.text, '수령', `${label} featured mission copy changed: ${JSON.stringify(before)}`);
+  assert.equal(before.text, '받기', `${label} featured mission copy changed: ${JSON.stringify(before)}`);
   assert.equal(before.hitMissionId, 'first-run', `${label} featured mission CTA center is blocked: ${JSON.stringify(before)}`);
   assert.equal(before.hitIsFeaturedButton, true, `${label} featured mission CTA hit a different layer: ${JSON.stringify(before)}`);
 
@@ -764,7 +764,7 @@ async function assertFeaturedSeasonClaimFlow(page, label) {
     };
   });
   assert.equal(before.tier, '0', `${label} featured season tier changed: ${JSON.stringify(before)}`);
-  assert.equal(before.text, '수령', `${label} featured season copy changed: ${JSON.stringify(before)}`);
+  assert.equal(before.text, '받기', `${label} featured season copy changed: ${JSON.stringify(before)}`);
   assert.equal(before.hitTier, '0', `${label} featured season CTA center is blocked: ${JSON.stringify(before)}`);
   assert.equal(before.hitIsFeaturedButton, true, `${label} featured season CTA hit a different layer: ${JSON.stringify(before)}`);
 
@@ -2140,7 +2140,7 @@ async function verifyFastPlaythrough(page) {
   assert.match(await page.locator('#rewardReveal').textContent(), /미션 보상/);
   assert.match(await page.locator('#rewardReveal').textContent(), /보석 \+20/);
   await assertRewardRevealGeneratedSurface(page);
-  assert.match(await page.locator('#seasonList').textContent(), /수령/);
+  assert.match(await page.locator('#seasonList').textContent(), /받기/);
   assert.match(await page.locator('#missionsList .mission-card').first().textContent(), /받음/);
 }
 

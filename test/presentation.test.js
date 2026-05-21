@@ -117,10 +117,10 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=hud-meter1'",
     "from './reboot_audio.js?v=audio-safe1'",
-    "from './reboot_hud.js?v=shop-copy1'",
+    "from './reboot_hud.js?v=reward-copy1'",
     "from './reboot_render.js?v=unit-pedestal1'",
     "from './reboot_result_ui.js?v=result-ui1'",
-    "from './reboot_screens.js?v=shop-copy1'",
+    "from './reboot_screens.js?v=reward-copy1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -741,7 +741,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shop-copy1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-copy1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shop-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-meter1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-identity1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready1"></script>'), false);
@@ -837,7 +838,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=shop-copy1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=reward-copy1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=shop-copy1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-goal1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=reward-detail1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label2'"), false);
@@ -4441,8 +4443,10 @@ test('client wires missions and season pass claim loops', async () => {
 
   for (const marker of [
     'REBOOT_MISSIONS',
+    "const CLAIM_ACTION_LABEL = '받기';",
     'data-mission-claim="${mission.id}"',
     'data-pass-claim="${index}"',
+    '>${CLAIM_ACTION_LABEL}</button>',
     'handleMissionClaim',
     'handlePassClaim',
     'claimedMissions',
@@ -5138,11 +5142,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=retry-context1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=shop-copy1'",
+    "from './reboot_screens.js?v=reward-copy1'",
     "from './reboot_game.js?v=retry-context1'",
     "from '../shared/game.js?v=retry-context1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=shop-copy1',
+    '/src/client/reboot_screens.js?v=reward-copy1',
     '/src/shared/game.js?v=retry-context1',
     '/src/shared/reboot_game.js?v=retry-context1'
   ]) {

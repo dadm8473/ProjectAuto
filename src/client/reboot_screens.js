@@ -238,6 +238,7 @@ const CARD_STATE_BADGES = {
 const SHOP_PURPOSE_LABEL = '외형 전용';
 const SHOP_PURPOSE_BADGE = '외형';
 const SHOP_NO_POWER_LABEL = '전투력 영향 없음';
+const CLAIM_ACTION_LABEL = '받기';
 
 function cardStateBadge(state) {
   return CARD_STATE_BADGES[state] ?? CARD_STATE_BADGES.locked;
@@ -356,14 +357,14 @@ function buildFeaturedMissionCommand(featuredMission) {
   return `
       <div class="mission-board-command" data-feature-command="ready">
         <span class="reward-token board-feature-reward" data-reward-icon="${rewardIconForGrant(featuredMission.reward, 'mission')}" aria-hidden="true"></span>
-        <button type="button" class="featured-objective-action" data-mission-claim="${featuredMission.id}" aria-label="${featuredMission.title} 보상 ${rewardLabel} 수령">수령</button>
+        <button type="button" class="featured-objective-action" data-mission-claim="${featuredMission.id}" aria-label="${featuredMission.title} 보상 ${rewardLabel} 수령">${CLAIM_ACTION_LABEL}</button>
       </div>
     `;
 }
 
 function buildMissionStampBoard(profile = {}, claimed = new Set()) {
   const claimable = countClaimableMissions(profile);
-  const boardStatus = claimable > 0 ? '수령 가능' : '작전 진행';
+  const boardStatus = claimable > 0 ? CLAIM_ACTION_LABEL : '작전 진행';
   const boardAriaState = claimable > 0 ? `수령 가능 ${claimable}개` : '대기 보상 없음';
   const missionStates = REBOOT_MISSIONS.map((mission) => {
     const progress = missionProgress(profile, mission);
@@ -418,7 +419,7 @@ function buildFeaturedSeasonCommand(featuredTier) {
   return `
       <div class="season-board-command" data-feature-command="ready">
         <span class="reward-token board-feature-reward" data-reward-icon="${rewardIconForGrant(featuredTier.tier.grant, 'season')}" aria-hidden="true"></span>
-        <button type="button" class="featured-objective-action" data-pass-claim="${featuredTier.index}" aria-label="${featuredTier.index + 1}단계 시즌 보상 ${rewardLabel} 수령">수령</button>
+        <button type="button" class="featured-objective-action" data-pass-claim="${featuredTier.index}" aria-label="${featuredTier.index + 1}단계 시즌 보상 ${rewardLabel} 수령">${CLAIM_ACTION_LABEL}</button>
       </div>
     `;
 }
@@ -426,7 +427,7 @@ function buildFeaturedSeasonCommand(featuredTier) {
 function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
   const xp = profile.xp ?? 0;
   const claimable = countClaimablePassTiers(profile);
-  const rewardStatus = claimable > 0 ? `보상 ${claimable}개` : '보상 없음';
+  const rewardStatus = claimable > 0 ? CLAIM_ACTION_LABEL : '보상 없음';
   const rewardAriaState = claimable > 0 ? `보상 가능 ${claimable}개` : '대기 보상 없음';
   const tierStates = SHOP.pass.tiers.map((tier, index) => {
     const state = seasonState(xp, tier, index, claimed);
@@ -462,10 +463,10 @@ function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
 
 export function nextLobbyAction(profile = {}) {
   if (countClaimableMissions(profile) > 0) {
-    return { label: '미션 보상', status: '수령', title: '받을 미션 보상', detail: '완료 목표 수령', screen: 'missions', cta: '수령', beacon: 'mission' };
+    return { label: '미션 보상', status: CLAIM_ACTION_LABEL, title: '받을 미션 보상', detail: '완료 목표 수령', screen: 'missions', cta: CLAIM_ACTION_LABEL, ariaCta: '수령', beacon: 'mission' };
   }
   if (countClaimablePassTiers(profile) > 0) {
-    return { label: '시즌 보상', status: '보상', title: '시즌 보상 도착', detail: '시즌 보상 수령', screen: 'season', cta: '수령', beacon: 'season' };
+    return { label: '시즌 보상', status: CLAIM_ACTION_LABEL, title: '시즌 보상 도착', detail: '시즌 보상 수령', screen: 'season', cta: CLAIM_ACTION_LABEL, ariaCta: '수령', beacon: 'season' };
   }
   if (countTrainableUnits(profile) > 0) {
     return { label: '강화 가능', status: '강화', title: '유닛 강화 가능', detail: '전투 유닛 성장', screen: 'collection', cta: '강화', beacon: 'training' };
@@ -502,7 +503,8 @@ export function postRewardRoute(profile = {}, fallbackScreen = 'lobby') {
 }
 
 function buildLobbyNextActionControl(nextAction) {
-  return `<button type="button" class="lobby-next-action" data-lobby-open="${nextAction.screen}" aria-label="${nextAction.label} ${nextAction.cta}"><span class="lobby-next-action-label">${nextAction.cta}</span></button>`;
+  const ariaAction = nextAction.ariaCta ?? nextAction.cta;
+  return `<button type="button" class="lobby-next-action" data-lobby-open="${nextAction.screen}" aria-label="${nextAction.label} ${ariaAction}"><span class="lobby-next-action-label">${nextAction.cta}</span></button>`;
 }
 
 function buildLobbyNextActionStrip(nextAction) {
@@ -813,7 +815,7 @@ export function buildMissionScreen(profile = {}) {
     const action = received
       ? passiveCardState('받음', 'owned')
       : done
-        ? `<button type="button" data-mission-claim="${mission.id}" aria-label="${mission.title} 보상 ${rewardLabel} 수령">수령</button>`
+        ? `<button type="button" data-mission-claim="${mission.id}" aria-label="${mission.title} 보상 ${rewardLabel} 수령">${CLAIM_ACTION_LABEL}</button>`
         : passiveCardState('진행중', 'locked');
     return `
     <article class="screen-card mission-card" data-mission="${mission.id}" data-owned="${received}" data-objective-state="${stampState}" aria-label="${mission.title} · 미션 진행 ${progress}/${mission.target} · 보상 ${rewardLabel} · ${actionLabel}">
@@ -859,7 +861,7 @@ export function buildSeasonScreen(profile = {}) {
     const action = received
       ? passiveCardState('받음', 'owned')
       : done
-        ? `<button type="button" data-pass-claim="${index}" aria-label="${index + 1}단계 시즌 보상 ${rewardLabel} 수령">수령</button>`
+        ? `<button type="button" data-pass-claim="${index}" aria-label="${index + 1}단계 시즌 보상 ${rewardLabel} 수령">${CLAIM_ACTION_LABEL}</button>`
         : passiveCardState('진행중', 'locked');
     return `
     <article class="screen-card season-card" data-pass-tier="${index}" data-owned="${received}" data-objective-state="${stampState}" aria-label="${index + 1}단계 · 시즌 경험치 ${progress}/${tier.xp} · 보상 ${rewardLabel} · ${actionLabel}">

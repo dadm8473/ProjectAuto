@@ -868,7 +868,8 @@ test('mission and season top boards keep large copy numeric while preserving ful
   );
   assert.equal(missions.includes('<span>받을 보상</span>'), true);
   assert.equal(missions.includes('<strong>1</strong>'), true);
-  assert.equal(missions.includes('<p>수령 가능</p>'), true);
+  assert.equal(missions.includes('<p>받기</p>'), true);
+  assert.equal(missions.includes('<p>수령 가능</p>'), false);
   assert.equal(missions.includes('<span>보상 대기</span>'), false);
   assert.equal(missions.includes('<strong>1개</strong>'), false);
   assert.equal(missions.includes('완료 목표 보상 전환</p>'), false);
@@ -895,7 +896,8 @@ test('mission top board does not promise a reward claim when none are ready', ()
   assert.equal(emptyMissions.includes('<p>작전 진행</p>'), true);
   assert.equal(emptyMissions.includes('<p>진행중</p>'), false);
   assert.equal(emptyMissions.includes('<p>수령 가능</p>'), false);
-  assert.equal(readyMissions.includes('<p>수령 가능</p>'), true);
+  assert.equal(readyMissions.includes('<p>받기</p>'), true);
+  assert.equal(readyMissions.includes('<p>수령 가능</p>'), false);
 });
 
 test('season top board names empty reward state as no rewards instead of zero claimable rewards', () => {
@@ -906,7 +908,8 @@ test('season top board names empty reward state as no rewards instead of zero cl
   assert.equal(emptySeason.includes('<p>보상 없음</p>'), true);
   assert.equal(emptySeason.includes('<p>보상 0개</p>'), false);
   assert.equal(readySeason.includes('aria-label="시즌 보드 · 시즌 경험치 80 · 보상 가능 1개"'), true);
-  assert.equal(readySeason.includes('<p>보상 1개</p>'), true);
+  assert.equal(readySeason.includes('<p>받기</p>'), true);
+  assert.equal(readySeason.includes('<p>보상 1개</p>'), false);
 });
 
 test('shop card descriptions stay compact enough for portrait game cards', () => {
@@ -937,7 +940,8 @@ test('mission screen renders profile progress and claim states', () => {
   assert.equal(missions.includes('첫 작전 완료'), true);
   assert.equal(missions.includes('유닛 강화'), true);
   assert.equal(missions.includes('>받음<'), true);
-  assert.equal(missions.includes('>수령<'), true);
+  assert.equal(missions.includes('>받기<'), true);
+  assert.equal(missions.includes('>수령<'), false);
 });
 
 test('mission and season objective rows keep readable labels while reducing visible copy', () => {
@@ -953,10 +957,10 @@ test('mission and season objective rows keep readable labels while reducing visi
   assert.equal(missions.includes('aria-label="첫 작전 완료 · 미션 진행 1/1 · 보상 20 보석 · 받음"'), true);
   assert.equal(missions.includes('aria-label="유닛 강화 · 미션 진행 1/1 · 보상 20 보석 · 수령 가능"'), true);
   assert.equal(missions.includes('aria-label="외형 해금 · 미션 진행 0/1 · 보상 25 보석 · 진행중"'), true);
-  assert.equal(missions.includes('data-mission-claim="train-unit" aria-label="유닛 강화 보상 20 보석 수령"'), true);
+  assert.equal(missions.includes('data-mission-claim="train-unit" aria-label="유닛 강화 보상 20 보석 수령">받기</button>'), true);
   assert.equal(season.includes('aria-label="1단계 · 시즌 경험치 60/60 · 보상 20 보석 · 받음"'), true);
   assert.equal(season.includes('aria-label="2단계 · 시즌 경험치 80/160 · 보상 외형 · 진행중"'), true);
-  assert.equal(readySeason.includes('data-pass-claim="1" aria-label="2단계 시즌 보상 외형 수령"'), true);
+  assert.equal(readySeason.includes('data-pass-claim="1" aria-label="2단계 시즌 보상 외형 수령">받기</button>'), true);
   assert.equal(missions.includes('class="objective-detail"'), true);
   assert.equal(season.includes('class="objective-cost shop-price"'), true);
 });
@@ -1191,10 +1195,11 @@ test('lobby next action uses compact game-state chips while preserving meaning f
 
   assert.equal(missionLobby.includes('class="lobby-intel-strip next-hook"'), true);
   assert.equal(missionLobby.includes('aria-label="미션 보상: 받을 미션 보상. 완료 목표 수령"'), true);
-  assert.equal(missionLobby.includes('class="lobby-next-state" aria-label="미션 보상">수령</span>'), true);
+  assert.equal(missionLobby.includes('class="lobby-next-state" aria-label="미션 보상">받기</span>'), true);
   assert.equal(missionLobby.includes('class="lobby-next-title">받을 미션 보상</strong>'), true);
   assert.equal(missionLobby.includes('class="lobby-next-action" data-lobby-open="missions" aria-label="미션 보상 수령"'), true);
-  assert.equal(missionLobby.includes('<span class="lobby-next-action-label">수령</span>'), true);
+  assert.equal(missionLobby.includes('<span class="lobby-next-action-label">받기</span>'), true);
+  assert.equal(missionLobby.includes('<span class="lobby-next-action-label">수령</span>'), false);
   assert.equal(missionLobby.includes('>보상 보기<'), false);
   assert.equal(missionLobby.includes('<span>미션 보상</span>'), false);
 
@@ -1207,8 +1212,8 @@ test('lobby next action uses compact game-state chips while preserving meaning f
   });
 
   assert.equal(seasonLobby.includes('class="lobby-next-action" data-lobby-open="season" aria-label="시즌 보상 수령"'), true);
-  assert.equal(seasonLobby.includes('class="lobby-next-state" aria-label="시즌 보상">보상</span>'), true);
-  assert.equal(seasonLobby.includes('<span class="lobby-next-action-label">수령</span>'), true);
+  assert.equal(seasonLobby.includes('class="lobby-next-state" aria-label="시즌 보상">받기</span>'), true);
+  assert.equal(seasonLobby.includes('<span class="lobby-next-action-label">받기</span>'), true);
   assert.equal(seasonLobby.includes('>열기<'), false);
 
   const battleLobby = buildRebootLobby({
