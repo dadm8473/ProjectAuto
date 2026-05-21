@@ -7,7 +7,7 @@ import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabel
 import { createRebootAudio } from './reboot_audio.js?v=audio-safe1';
 import { updateCombatHudMeters } from './reboot_hud.js?v=board-copy1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
-import { preloadCriticalRebootAssets } from './reboot_preload.js?v=mission-command-board1';
+import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=staged-preload1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=unit-pedestal1';
 import { applyRebootResultView } from './reboot_result_ui.js?v=result-ui2';
 import {
@@ -180,6 +180,17 @@ function hideLoadingGate() {
   if (!dom.loadingGate) return;
   dom.loadingGate.dataset.loadingState = 'ready';
   dom.loadingGate.hidden = true;
+}
+
+function scheduleWarmRebootAssets() {
+  const warm = () => {
+    warmRebootAssets().catch(() => {});
+  };
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(warm, { timeout: 1000 });
+    return;
+  }
+  setTimeout(warm, 0);
 }
 
 function hideMatchmakingBanner() {
@@ -837,5 +848,8 @@ bind();
 updateSoundToggle();
 setScreen('splash');
 registerServiceWorker();
-preloadCriticalRebootAssets().then(hideLoadingGate, hideLoadingGate);
+preloadCriticalRebootAssets().then(() => {
+  hideLoadingGate();
+  scheduleWarmRebootAssets();
+}, hideLoadingGate);
 requestAnimationFrame(loop);

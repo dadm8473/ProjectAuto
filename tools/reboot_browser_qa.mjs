@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v80');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v81');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
       '/src/client/styles.css?v=mission-command-board1': cache
         ? Boolean(await cache.match('/src/client/styles.css?v=mission-command-board1'))
         : false,
-      '/src/client/app.js?v=mission-command-board1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=mission-command-board1'))
+      '/src/client/app.js?v=staged-preload1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=staged-preload1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -135,8 +135,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
         : false,
-      '/src/client/reboot_preload.js?v=mission-command-board1': cache
-        ? Boolean(await cache.match('/src/client/reboot_preload.js?v=mission-command-board1'))
+      '/src/client/reboot_preload.js?v=staged-preload1': cache
+        ? Boolean(await cache.match('/src/client/reboot_preload.js?v=staged-preload1'))
         : false,
       '/src/client/reboot_render.js?v=unit-pedestal1': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=unit-pedestal1'))
@@ -185,6 +185,15 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1'))
+        : false,
+      '/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1'))
+        : false,
+      '/src/client/assets/generated/reboot-lobby-operation-progress-rail.png?v=operation-progress1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-lobby-operation-progress-rail.png?v=operation-progress1'))
+        : false,
+      '/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1'))
         : false
     };
     return {
@@ -199,7 +208,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v80', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v81', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }

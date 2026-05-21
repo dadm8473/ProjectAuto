@@ -744,7 +744,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=mission-command-board1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=staged-preload1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-ready-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shop-chips1"></script>'), false);
@@ -896,8 +896,10 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets } from './reboot_preload.js?v=mission-command-board1';",
-    'preloadCriticalRebootAssets().then(hideLoadingGate, hideLoadingGate);',
+    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=staged-preload1';",
+    'function scheduleWarmRebootAssets()',
+    'warmRebootAssets().catch(() => {});',
+    'preloadCriticalRebootAssets().then(() => {\n  hideLoadingGate();\n  scheduleWarmRebootAssets();\n}, hideLoadingGate);',
     'function hideLoadingGate()',
     "dom.loadingGate.dataset.loadingState = 'ready';",
     'dom.loadingGate.hidden = true;',

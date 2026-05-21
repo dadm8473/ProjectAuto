@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v80';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v81';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -42,12 +42,12 @@ test('service worker keeps the installable mobile game shell available after fir
     "caches.match('/index.html')",
     '/manifest.webmanifest',
     '/src/client/styles.css?v=mission-command-board1',
-    '/src/client/app.js?v=mission-command-board1',
+    '/src/client/app.js?v=staged-preload1',
     '/src/client/reboot_audio.js?v=audio-safe1',
     '/src/client/reboot_actions.js?v=combat-meter2',
     '/src/client/reboot_hud.js?v=board-copy1',
     '/src/client/reboot_playtest.js?v=playtest2',
-    '/src/client/reboot_preload.js?v=mission-command-board1',
+    '/src/client/reboot_preload.js?v=staged-preload1',
     '/src/client/reboot_render.js?v=unit-pedestal1',
     '/src/client/reboot_result_ui.js?v=result-ui2',
     '/src/client/reboot_screens.js?v=meta-clarity1',
@@ -67,6 +67,9 @@ test('service worker keeps the installable mobile game shell available after fir
     '/src/client/assets/generated/reboot-meta-showcase-copy-plates.png?v=showcase-nameplate1',
     '/src/client/assets/generated/reboot-shop-banner-v2.png?v=shop-banner2',
     '/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1',
+    '/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1',
+    '/src/client/assets/generated/reboot-lobby-operation-progress-rail.png?v=operation-progress1',
+    '/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1',
     '/src/client/assets/generated/reboot-unit-atlas.png',
     '/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3',
     '/src/client/assets/generated/reboot-player-board-tray.png?v=player-tray',
@@ -79,6 +82,7 @@ test('service worker keeps the installable mobile game shell available after fir
   ]) {
     assert.equal(sw.includes(marker), true, marker);
   }
+  assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v80';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v79';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v78';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v77';"), false);
@@ -202,15 +206,15 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v80'",
+    "cacheName === 'projectauto-reboot-shell-v81'",
     "await cache.match('/index.html')",
     "await cache.match('/src/client/styles.css?v=mission-command-board1')",
-    "await cache.match('/src/client/app.js?v=mission-command-board1')",
+    "await cache.match('/src/client/app.js?v=staged-preload1')",
     "await cache.match('/src/client/reboot_audio.js?v=audio-safe1')",
     "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
     "await cache.match('/src/client/reboot_hud.js?v=board-copy1')",
     "await cache.match('/src/client/reboot_playtest.js?v=playtest2')",
-    "await cache.match('/src/client/reboot_preload.js?v=mission-command-board1')",
+    "await cache.match('/src/client/reboot_preload.js?v=staged-preload1')",
     "await cache.match('/src/client/reboot_render.js?v=unit-pedestal1')",
     "await cache.match('/src/client/reboot_result_ui.js?v=result-ui2')",
     "await cache.match('/src/client/reboot_screens.js?v=meta-clarity1')",
@@ -228,6 +232,9 @@ test('browser QA verifies the runtime service worker cache activation', async ()
     "await cache.match('/src/client/assets/generated/reboot-meta-showcase-copy-plates.png?v=showcase-nameplate1')",
     "await cache.match('/src/client/assets/generated/reboot-shop-banner-v2.png?v=shop-banner2')",
     "await cache.match('/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1')",
+    "await cache.match('/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1')",
+    "await cache.match('/src/client/assets/generated/reboot-lobby-operation-progress-rail.png?v=operation-progress1')",
+    "await cache.match('/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1')",
     "await cache.match('/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3')",
     "await cache.match('/src/client/assets/generated/reboot-unit-atlas.png')",
     "await cache.match('/src/client/assets/generated/reboot-player-board-tray.png?v=player-tray')",
