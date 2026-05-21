@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v66';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v67';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -42,14 +42,14 @@ test('service worker keeps the installable mobile game shell available after fir
     "caches.match('/index.html')",
     '/manifest.webmanifest',
     '/src/client/styles.css?v=hud-meter1',
-    '/src/client/app.js?v=result-home1',
+    '/src/client/app.js?v=pending-copy1',
     '/src/client/reboot_audio.js?v=audio-safe1',
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_hud.js?v=result-home1',
+    '/src/client/reboot_hud.js?v=pending-copy1',
     '/src/client/reboot_playtest.js?v=playtest2',
     '/src/client/reboot_render.js?v=unit-pedestal1',
     '/src/client/reboot_result_ui.js?v=result-ui1',
-    '/src/client/reboot_screens.js?v=result-home1',
+    '/src/client/reboot_screens.js?v=pending-copy1',
     '/src/client/reboot_action_ui.js?v=hud-meter1',
     '/src/client/reboot_online.js',
     '/src/shared/game.js?v=retry-context1',
@@ -69,6 +69,7 @@ test('service worker keeps the installable mobile game shell available after fir
   ]) {
     assert.equal(sw.includes(marker), true, marker);
   }
+  assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v66';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v65';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v64';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v63';"), false);
@@ -117,9 +118,11 @@ test('service worker keeps the installable mobile game shell available after fir
   assert.equal(sw.includes('/src/client/app.js?v=hud-meter1'), false);
   assert.equal(sw.includes('/src/client/app.js?v=shop-copy1'), false);
   assert.equal(sw.includes('/src/client/app.js?v=reward-copy1'), false);
+  assert.equal(sw.includes('/src/client/app.js?v=result-home1'), false);
   assert.equal(sw.includes('/src/client/reboot_hud.js?v=hud-meter1'), false);
   assert.equal(sw.includes('/src/client/reboot_hud.js?v=shop-copy1'), false);
   assert.equal(sw.includes('/src/client/reboot_hud.js?v=reward-copy1'), false);
+  assert.equal(sw.includes('/src/client/reboot_hud.js?v=result-home1'), false);
   assert.equal(sw.includes('/src/client/styles.css?v=result-xp1'), false);
   assert.equal(sw.includes('/src/client/styles.css?v=lobby-profile8'), false);
   assert.equal(sw.includes('/src/client/styles.css?v=lobby-profile7'), false);
@@ -137,6 +140,7 @@ test('service worker keeps the installable mobile game shell available after fir
   assert.equal(sw.includes('/src/client/reboot_screens.js?v=result-goal1'), false);
   assert.equal(sw.includes('/src/client/reboot_screens.js?v=shop-copy1'), false);
   assert.equal(sw.includes('/src/client/reboot_screens.js?v=reward-copy1'), false);
+  assert.equal(sw.includes('/src/client/reboot_screens.js?v=result-home1'), false);
   assert.equal(sw.includes('/src/client/reboot_screens.js?v=lobby-profile2'), false);
   assert.equal(sw.includes('/src/client/reboot_screens.js?v=lobby-focus1'), false);
   assert.equal(sw.includes('/src/client/reboot_screens.js?v=boss-vitality1'), false);
@@ -163,17 +167,17 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v66'",
+    "cacheName === 'projectauto-reboot-shell-v67'",
     "await cache.match('/index.html')",
     "await cache.match('/src/client/styles.css?v=hud-meter1')",
-    "await cache.match('/src/client/app.js?v=result-home1')",
+    "await cache.match('/src/client/app.js?v=pending-copy1')",
     "await cache.match('/src/client/reboot_audio.js?v=audio-safe1')",
     "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
-    "await cache.match('/src/client/reboot_hud.js?v=result-home1')",
+    "await cache.match('/src/client/reboot_hud.js?v=pending-copy1')",
     "await cache.match('/src/client/reboot_playtest.js?v=playtest2')",
     "await cache.match('/src/client/reboot_render.js?v=unit-pedestal1')",
     "await cache.match('/src/client/reboot_result_ui.js?v=result-ui1')",
-    "await cache.match('/src/client/reboot_screens.js?v=result-home1')",
+    "await cache.match('/src/client/reboot_screens.js?v=pending-copy1')",
     "await cache.match('/src/shared/game.js?v=retry-context1')",
     "await cache.match('/src/shared/reboot_game.js?v=retry-context1')",
     "await cache.match('/src/client/reboot_action_ui.js?v=hud-meter1')",
@@ -191,6 +195,7 @@ test('browser QA verifies the runtime service worker cache activation', async ()
     assert.equal(qa.includes(marker), true, marker);
   }
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v26'"), false);
+  assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v66'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v65'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v64'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v63'"), false);
@@ -225,13 +230,16 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   assert.equal(qa.includes("await cache.match('/src/client/app.js?v=hud-meter1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/app.js?v=shop-copy1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/app.js?v=reward-copy1')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/app.js?v=result-home1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_hud.js?v=hud-meter1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_hud.js?v=shop-copy1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_hud.js?v=reward-copy1')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/reboot_hud.js?v=result-home1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_screens.js?v=lobby-focus1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_screens.js?v=result-goal1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_screens.js?v=shop-copy1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_screens.js?v=reward-copy1')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/reboot_screens.js?v=result-home1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_screens.js?v=boss-vitality1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_actions.js?v=merge-reason1')"), false);
 });

@@ -349,7 +349,7 @@ function buildFeaturedMissionCommand(featuredMission) {
     return `
       <div class="mission-board-command" data-feature-command="locked">
         <span class="reward-token board-feature-reward" data-reward-icon="unlock_capsule" aria-hidden="true"></span>
-        ${passiveCardStateMarkup('진행중', 'locked', '진행중', 'featured-objective-passive')}
+        ${passiveCardStateMarkup('진행중', 'locked', '대기', 'featured-objective-passive')}
       </div>
     `;
   }
@@ -816,7 +816,7 @@ export function buildMissionScreen(profile = {}) {
       ? passiveCardState('받음', 'owned')
       : done
         ? `<button type="button" data-mission-claim="${mission.id}" aria-label="${mission.title} 보상 ${rewardLabel} 수령">${CLAIM_ACTION_LABEL}</button>`
-        : passiveCardState('진행중', 'locked');
+        : passiveCardState('진행중', 'locked', '대기');
     return `
     <article class="screen-card mission-card" data-mission="${mission.id}" data-owned="${received}" data-objective-state="${stampState}" aria-label="${mission.title} · 미션 진행 ${progress}/${mission.target} · 보상 ${rewardLabel} · ${actionLabel}">
       ${cardStateBadge(cardState)}
@@ -862,7 +862,7 @@ export function buildSeasonScreen(profile = {}) {
       ? passiveCardState('받음', 'owned')
       : done
         ? `<button type="button" data-pass-claim="${index}" aria-label="${index + 1}단계 시즌 보상 ${rewardLabel} 수령">${CLAIM_ACTION_LABEL}</button>`
-        : passiveCardState('진행중', 'locked');
+        : passiveCardState('진행중', 'locked', '대기');
     return `
     <article class="screen-card season-card" data-pass-tier="${index}" data-owned="${received}" data-objective-state="${stampState}" aria-label="${index + 1}단계 · 시즌 경험치 ${progress}/${tier.xp} · 보상 ${rewardLabel} · ${actionLabel}">
       ${cardStateBadge(cardState)}

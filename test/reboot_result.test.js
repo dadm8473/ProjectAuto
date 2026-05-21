@@ -797,7 +797,8 @@ test('mission board uses a passive generated command when no reward is ready', (
 
   assert.equal(missions.includes('data-board-state="locked"'), true);
   assert.equal(missions.includes('data-featured-mission=""'), true);
-  assert.equal(missions.includes('class="card-passive-state featured-objective-passive" data-passive-state="locked" aria-label="진행중">진행중</span>'), true);
+  assert.equal(missions.includes('class="card-passive-state featured-objective-passive" data-passive-state="locked" aria-label="진행중">대기</span>'), true);
+  assert.equal(missions.includes('aria-label="진행중">진행중</span>'), false);
   assert.equal(missions.includes('class="featured-objective-action"'), false);
 });
 
@@ -1039,7 +1040,8 @@ test('season screen renders pass tiers from profile XP and claim states', () => 
   assert.equal(season.includes('60 경험치'), true);
   assert.equal(season.includes('160 경험치'), true);
   assert.equal(season.includes('>받음<'), true);
-  assert.equal(season.includes('>진행중<'), true);
+  assert.equal(season.includes('>대기<'), true);
+  assert.equal(season.includes('>진행중<'), false);
 });
 
 test('lobby recommends the next profile action after rewards settle', () => {
