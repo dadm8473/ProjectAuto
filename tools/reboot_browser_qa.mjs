@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v61');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v62');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=result-goal1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=result-goal1'))
+      '/src/client/styles.css?v=reward-source1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=reward-source1'))
         : false,
-      '/src/client/app.js?v=result-ui1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=result-ui1'))
+      '/src/client/app.js?v=reward-source1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=reward-source1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -169,7 +169,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v61', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v62', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1597,11 +1597,19 @@ async function assertRewardRevealGeneratedSurface(page) {
     if (!node) return { missing: true };
     const rect = node.getBoundingClientRect();
     const after = getComputedStyle(node, '::after');
+    const source = document.querySelector('#rewardRevealSource');
+    const sourceRect = source?.getBoundingClientRect();
+    const sourceStyle = source ? getComputedStyle(source) : null;
     const title = document.querySelector('#rewardRevealTitle')?.getBoundingClientRect();
     const detail = document.querySelector('#rewardRevealDetail')?.getBoundingClientRect();
     return {
       hidden: node.hidden,
       datasetRevealKind: node.dataset.revealKind,
+      datasetRevealSource: node.dataset.revealSource,
+      sourceBackgroundImage: sourceStyle?.backgroundImage ?? '',
+      sourceBackgroundSize: sourceStyle?.backgroundSize ?? '',
+      sourceWidth: Math.round(sourceRect?.width ?? 0),
+      sourceHeight: Math.round(sourceRect?.height ?? 0),
       afterBackgroundImage: after.backgroundImage,
       afterBackgroundSize: after.backgroundSize,
       afterOpacity: after.opacity,
@@ -1622,6 +1630,10 @@ async function assertRewardRevealGeneratedSurface(page) {
   assert.equal(surface.missing, undefined, `reward reveal unavailable: ${JSON.stringify(surface)}`);
   assert.equal(surface.hidden, false, `reward reveal unexpectedly hidden: ${JSON.stringify(surface)}`);
   assert.equal(surface.datasetRevealKind, 'soft_currency', `reward reveal kind changed: ${JSON.stringify(surface)}`);
+  assert.equal(surface.datasetRevealSource, 'missions', `reward reveal source should identify the reward station: ${JSON.stringify(surface)}`);
+  assert.match(surface.sourceBackgroundImage, /reboot-nav-icons/, `reward reveal source seal uses generated station icon: ${JSON.stringify(surface)}`);
+  assert.equal(surface.sourceBackgroundSize, '500% 100%', `reward reveal source seal sizing changed: ${JSON.stringify(surface)}`);
+  assert.equal(surface.sourceWidth >= 30 && surface.sourceHeight >= 30, true, `reward reveal source seal collapsed: ${JSON.stringify(surface)}`);
   assert.match(surface.afterBackgroundImage, /reboot-reward-reveal-payoff-stage/, `reward reveal lacks generated payoff stage: ${JSON.stringify(surface)}`);
   assert.equal(surface.afterBackgroundSize, '100% 100%', `reward reveal payoff stage sizing changed: ${JSON.stringify(surface)}`);
   assert.equal(Number(surface.afterOpacity) > 0.6, true, `reward reveal payoff stage too faint: ${JSON.stringify(surface)}`);

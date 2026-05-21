@@ -76,6 +76,7 @@ const dom = {
   resultLobbyLabel: qs('#resultLobbyButton span'),
   primaryActions: qs('.primary-actions'),
   rewardReveal: qs('#rewardReveal'),
+  rewardRevealSource: qs('#rewardRevealSource'),
   rewardRevealIcon: qs('#rewardRevealIcon'),
   rewardRevealTitle: qs('#rewardRevealTitle'),
   rewardRevealDetail: qs('#rewardRevealDetail'),
@@ -159,13 +160,17 @@ function hideRewardReveal() {
   clearTimeout(showRewardReveal.timer);
   dom.rewardReveal.hidden = true;
   delete dom.rewardReveal.dataset.revealKind;
+  delete dom.rewardReveal.dataset.revealSource;
 }
 
-function showRewardReveal(title, detail, icon = 'soft_currency') {
+function showRewardReveal(title, detail, icon = 'soft_currency', source = 'missions') {
   dom.rewardRevealTitle.textContent = title;
   dom.rewardRevealDetail.textContent = detail;
   dom.rewardReveal.dataset.revealKind = icon;
+  dom.rewardReveal.dataset.revealSource = source;
+  dom.rewardRevealSource.dataset.revealSource = source;
   dom.rewardRevealIcon.dataset.revealIcon = icon;
+  dom.rewardReveal.setAttribute('aria-label', `${title} ${detail}`);
   dom.rewardReveal.hidden = false;
   clearTimeout(showRewardReveal.timer);
   showRewardReveal.timer = setTimeout(hideRewardReveal, REWARD_REVEAL_MS);
@@ -384,7 +389,7 @@ function handleShopPurchase(event) {
     saveProfile();
     renderHomeScreens();
     flashMetaClaim(dom.shopList, `[data-item="${selectorValue(item.id)}"]`, 'shop');
-    showRewardReveal('외형 장착', item.name, 'cosmetic_shard');
+    showRewardReveal('외형 장착', item.name, 'cosmetic_shard', 'shop');
     showToast(`${item.name} 장착`, 'reward');
     return;
   }
@@ -402,7 +407,7 @@ function handleShopPurchase(event) {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.shopList, `[data-item="${selectorValue(item.id)}"]`, 'shop');
-  showRewardReveal('외형 해금', item.name, 'unlock_capsule');
+  showRewardReveal('외형 해금', item.name, 'unlock_capsule', 'shop');
   showToast(`${item.name} 해금`, 'reward');
 }
 
@@ -439,7 +444,7 @@ function handleUnitUpgrade(event) {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.collectionList, `[data-unit-card="${selectorValue(unit.id)}"]`, 'training');
-  showRewardReveal('강화 완료', `${unit.name} Lv.${currentLevel + 1}`, 'season_progress');
+  showRewardReveal('강화 완료', `${unit.name} Lv.${currentLevel + 1}`, 'season_progress', 'collection');
   showToast(`${unit.name} Lv.${currentLevel + 1}`, 'reward');
 }
 
@@ -492,7 +497,7 @@ function claimReadyMissionsFromResult() {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.missionsList, `[data-mission="${selectorValue(ready[0].id)}"]`, 'mission');
-  showRewardReveal('미션 보상', rewardBundleDetail(grants), 'soft_currency');
+  showRewardReveal('미션 보상', rewardBundleDetail(grants), 'soft_currency', 'missions');
   return true;
 }
 
@@ -514,7 +519,7 @@ function claimReadySeasonFromResult() {
   renderHomeScreens();
   flashMetaClaim(dom.seasonList, `.season-card[data-pass-tier="${ready[0].index}"]`, 'season');
   const hasCosmetic = ready.some(({ tier }) => tier.grant.cosmetic);
-  showRewardReveal('시즌 보상', rewardBundleDetail(grants), hasCosmetic ? 'cosmetic_shard' : 'season_progress');
+  showRewardReveal('시즌 보상', rewardBundleDetail(grants), hasCosmetic ? 'cosmetic_shard' : 'season_progress', 'season');
   return true;
 }
 
@@ -531,7 +536,7 @@ function handleMissionClaim(event) {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.missionsList, `[data-mission="${selectorValue(mission.id)}"]`, 'mission');
-  showRewardReveal('미션 보상', rewardGrantDetail(mission.reward), 'soft_currency');
+  showRewardReveal('미션 보상', rewardGrantDetail(mission.reward), 'soft_currency', 'missions');
   showToast(`${mission.title} 보상`, 'reward');
 }
 
@@ -549,7 +554,7 @@ function handlePassClaim(event) {
   saveProfile();
   renderHomeScreens();
   flashMetaClaim(dom.seasonList, `.season-card[data-pass-tier="${index}"]`, 'season');
-  showRewardReveal('시즌 보상', rewardGrantDetail(tier.grant), tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress');
+  showRewardReveal('시즌 보상', rewardGrantDetail(tier.grant), tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress', 'season');
   showToast(`${index + 1}단계 보상`, 'reward');
 }
 

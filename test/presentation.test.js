@@ -634,7 +634,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-goal1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-source1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
@@ -741,7 +741,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-ui1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-source1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-identity1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
@@ -1480,7 +1480,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=result-goal1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=reward-source1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
@@ -1865,7 +1865,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=result-goal1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=reward-source1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -4270,9 +4270,11 @@ test('profile rewards use a generated reveal panel instead of toast-only feedbac
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
 
   for (const marker of [
     '<section id="rewardReveal" class="reward-reveal" hidden aria-live="polite">',
+    'id="rewardRevealSource"',
     'id="rewardRevealIcon"',
     'id="rewardRevealTitle"',
     'id="rewardRevealDetail"',
@@ -4284,26 +4286,36 @@ test('profile rewards use a generated reveal panel instead of toast-only feedbac
     '.reward-reveal[hidden]',
     'background-image: var(--reward-reveal-panel);',
     'background-image: var(--reward-reveal-payoff-stage);',
+    '.reward-reveal-source',
+    'background-image: var(--nav-icons);',
+    'background-size: 500% 100%;',
+    '.reward-reveal-source[data-reveal-source="collection"]',
+    '.reward-reveal-source[data-reveal-source="shop"]',
+    '.reward-reveal-source[data-reveal-source="missions"]',
+    '.reward-reveal-source[data-reveal-source="season"]',
     '.reward-reveal-icon',
+    'dom.rewardReveal.dataset.revealSource = source;',
+    'dom.rewardRevealSource.dataset.revealSource = source;',
     'dom.rewardReveal.dataset.revealKind = icon;',
     'data-reveal-icon="soft_currency"',
     "const qaFast = query.get('qaFast') === '1';",
     'const REWARD_REVEAL_MS = qaFast ? 6000 : 1500;',
-    'function showRewardReveal(title, detail, icon = \'soft_currency\')',
+    'function showRewardReveal(title, detail, icon = \'soft_currency\', source = \'missions\')',
     'dom.rewardReveal.hidden = false;',
     'clearTimeout(showRewardReveal.timer);',
     'function hideRewardReveal()',
     'function rewardGrantDetail(grant = {})',
     'function rewardBundleDetail(grants = [])',
     'return rewardDetailFromParts(gems, hasCosmetic);',
-    "showRewardReveal('외형 해금', item.name, 'unlock_capsule');",
-    "showRewardReveal('강화 완료', `${unit.name} Lv.${currentLevel + 1}`, 'season_progress');",
-    "showRewardReveal('미션 보상', rewardGrantDetail(mission.reward), 'soft_currency');",
-    "showRewardReveal('시즌 보상', rewardGrantDetail(tier.grant), tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress');",
-    "showRewardReveal('미션 보상', rewardBundleDetail(grants), 'soft_currency');",
-    "showRewardReveal('시즌 보상', rewardBundleDetail(grants), hasCosmetic ? 'cosmetic_shard' : 'season_progress');"
+    "showRewardReveal('외형 해금', item.name, 'unlock_capsule', 'shop');",
+    "showRewardReveal('강화 완료', `${unit.name} Lv.${currentLevel + 1}`, 'season_progress', 'collection');",
+    "showRewardReveal('미션 보상', rewardGrantDetail(mission.reward), 'soft_currency', 'missions');",
+    "showRewardReveal('시즌 보상', rewardGrantDetail(tier.grant), tier.grant.cosmetic ? 'cosmetic_shard' : 'season_progress', 'season');",
+    "showRewardReveal('미션 보상', rewardBundleDetail(grants), 'soft_currency', 'missions');",
+    "showRewardReveal('시즌 보상', rewardBundleDetail(grants), hasCosmetic ? 'cosmetic_shard' : 'season_progress', 'season');",
+    'reward reveal source seal uses generated station icon'
   ]) {
-    assert.equal(`${html}\n${css}\n${app}`.includes(marker), true, marker);
+    assert.equal(`${html}\n${css}\n${app}\n${qa}`.includes(marker), true, marker);
   }
 
   const revealBlock = css.slice(css.indexOf('.reward-reveal {'), css.indexOf('.reward-reveal[hidden]'));

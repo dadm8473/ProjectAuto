@@ -971,6 +971,26 @@ body[data-app-screen="season"] .toast {
   animation: rewardRevealPulse 1.15s ease-out both;
 }
 
+.reward-reveal-source {
+  position: absolute;
+  top: clamp(48px, 12.1vw, 54px);
+  left: calc(50% - clamp(72px, 18.6vw, 80px));
+  z-index: 3;
+  width: clamp(30px, 8.14vw, 35px);
+  aspect-ratio: 1;
+  background-image: var(--nav-icons);
+  background-repeat: no-repeat;
+  background-size: 500% 100%;
+  background-position: 50% 0;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6));
+  pointer-events: none;
+}
+
+.reward-reveal-source[data-reveal-source="collection"] { background-position: 0 0; }
+.reward-reveal-source[data-reveal-source="shop"] { background-position: 25% 0; }
+.reward-reveal-source[data-reveal-source="missions"] { background-position: 50% 0; }
+.reward-reveal-source[data-reveal-source="season"] { background-position: 75% 0; }
+
 .reward-reveal-icon {
   position: absolute;
   top: clamp(36px, 9.53vw, 41px);
