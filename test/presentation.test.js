@@ -2890,11 +2890,11 @@ test('combat renderer draws partner assist ping without flattening the imagegen 
   assert.ok(pingDraw, 'partner assist sprite was not drawn');
   const [, sx, sy, sw, sh, dx, dy, dw, dh] = pingDraw.args;
   assert.deepEqual([sx, sy, sw, sh], [0, 0, 320, 100]);
-  assert.equal(dw, 288);
-  assert.equal(dh, 90);
+  assert.equal(dw, 208);
+  assert.equal(dh, 65);
   assert.equal(dw / dh, sw / sh);
-  assert.equal(dx, 52);
-  assert.equal(dy > 130 && dy < 139, true);
+  assert.equal(dx, 91);
+  assert.equal(dy > 49 && dy < 51, true);
   assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '동료 지원'), true);
   assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '스파크 핀 소환'), true);
 });
@@ -2956,8 +2956,8 @@ test('combat renderer draws the rescue variant of partner assist pings', () => {
   const [, sx, sy, sw, sh, dx, dy, dw, dh] = pingDraw.args;
   assert.deepEqual([sx, sy, sw, sh], [320, 0, 320, 100]);
   assert.equal(dw / dh, sw / sh);
-  assert.equal(dx, 52);
-  assert.equal(dy > 130 && dy < 139, true);
+  assert.equal(dx, 91);
+  assert.equal(dy > 50 && dy < 52, true);
   assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '동료 지원'), true);
   assert.equal(ctx.calls.some((call) => call.name === 'fillText' && call.args[0] === '구원 코일 구원'), true);
 });

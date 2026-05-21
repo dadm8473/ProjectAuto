@@ -1765,25 +1765,25 @@ function drawPartnerAssistPing(ctx, state, assets = {}, localBoardId = 'p1') {
   if (!event) return;
   const meta = PARTNER_ASSIST_PINGS[event?.action] ?? PARTNER_ASSIST_PINGS.summon;
   const alpha = Math.min(0.95, eventAlpha(state, event, PARTNER_ASSIST_PING_DURATION) * 1.16);
-  const rise = (1 - alpha) * 7;
-  const x = 52;
-  const y = 138 - rise;
-  const w = 288;
-  const h = 90;
+  const rise = (1 - alpha) * 5;
+  const x = 91;
+  const y = 52 - rise;
+  const w = 208;
+  const h = 65;
   const drewAssistPing = drawPartnerAssistSprite(ctx, assets.partnerAssistPings, meta.index, x, y, w, h, alpha);
   if (!drewAssistPing) return;
-  drawAtlasSprite(ctx, assets, 'ui', meta.icon, x + 52, y + 38, 32, alpha);
+  drawAtlasSprite(ctx, assets, 'ui', meta.icon, x + 34, y + 28, 24, alpha);
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.fillStyle = '#fff7dc';
   ctx.shadowColor = '#58d7ff';
-  ctx.shadowBlur = 13;
-  ctx.font = '900 16px system-ui';
-  ctx.fillText(partnerAssistTitle(state, localBoardId), x + 92, y + 36);
+  ctx.shadowBlur = 10;
+  ctx.font = '900 13px system-ui';
+  ctx.fillText(partnerAssistTitle(state, localBoardId), x + 66, y + 27);
   ctx.shadowBlur = 0;
   ctx.fillStyle = 'rgba(245, 240, 220, 0.82)';
-  ctx.font = '800 10px system-ui';
-  ctx.fillText(partnerAssistBody(event, meta), x + 92, y + 52);
+  ctx.font = '800 9px system-ui';
+  ctx.fillText(partnerAssistBody(event, meta), x + 66, y + 41);
   ctx.restore();
 }
 

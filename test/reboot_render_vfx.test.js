@@ -488,7 +488,9 @@ test('recent rescue draws a strong generated link between partner and player boa
         p1: { danger: 0, units: [{ spriteKey: 'burst_pin' }, { spriteKey: 'rescue_coil' }] },
         p2: { danger: 35, units: [{ spriteKey: 'spark_pin' }] }
       },
-      enemies: [],
+      enemies: [
+        { enemyId: 'noise_shard', spriteKey: 'noise_shard', boardId: 'p1', progress: 0.02 }
+      ],
       events: [{ type: 'rescue', at: 78.04, playerId: 'p1', highlight: true }],
       effects: []
     },
@@ -1142,6 +1144,45 @@ test('wave directive suppresses partner assist ping so central battlefield banne
     'partner assist generated banner should wait while the wave directive owns the center lane'
   );
   assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '동료 지원'), false);
+});
+
+test('partner assist ping stays above the early threat lane so combat does not read empty', () => {
+  const ctx = mockContext();
+  const partnerAssistPings = image(640, 100);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 10.4,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [],
+      events: [
+        { type: 'summon', at: 5.2, playerId: 'p1', unitId: 'spark_pin' },
+        { type: 'partner_auto', at: 10, action: 'summon', playerId: 'p2', unitId: 'spark_pin' }
+      ],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      openingThreatPreview: image(512, 256),
+      partnerAssistPings
+    }
+  );
+
+  const assistDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === partnerAssistPings);
+  assert.ok(assistDraw, 'expected the generated partner assist ping to render');
+  assert.equal(
+    assistDraw.args[6] + assistDraw.args[8] <= 132,
+    true,
+    `partner assist ping covers the early threat lane: ${JSON.stringify(assistDraw.args)}`
+  );
+  assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '동료 지원'), true);
 });
 
 test('enemy sprites follow serialized track progress instead of a timer-only path', () => {
