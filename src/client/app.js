@@ -694,7 +694,7 @@ function updateButtons(current) {
       button.style.setProperty('--cooldown-progress', '100%');
       if (cancel) button.dataset.matchCancel = 'true';
       else delete button.dataset.matchCancel;
-      button.title = cancel ? '매칭을 취소하고 로비로 돌아가기' : '파트너 입장 대기 중';
+      button.title = cancel ? '매칭을 취소하고 준비실로 돌아가기' : '파트너 입장 대기 중';
     }
     return;
   }

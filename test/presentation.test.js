@@ -403,12 +403,13 @@ test('online waiting state blocks combat until the second player arrives', async
     'buildCombatStatusPrompt({ current, localBoardId, onlineWaiting })',
     'function cancelOnlineMatch()',
     "showToast('매칭 취소', 'info');",
-    "button.title = cancel ? '매칭을 취소하고 로비로 돌아가기' : '파트너 입장 대기 중';",
+    "button.title = cancel ? '매칭을 취소하고 준비실로 돌아가기' : '파트너 입장 대기 중';",
     "if (game.mode === 'online' && waitingForOnlinePartner(game)) {",
     'cancelOnlineMatch();'
   ]) {
     assert.equal(`${app}\n${hud}`.includes(marker), true, marker);
   }
+  assert.equal(app.includes("button.title = cancel ? '매칭을 취소하고 로비로 돌아가기' : '파트너 입장 대기 중';"), false);
 
   for (const marker of [
     'roomReadyForOnlineCombat',
@@ -741,7 +742,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-copy1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-ready-copy1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shop-chips1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=pending-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-home1"></script>'), false);
