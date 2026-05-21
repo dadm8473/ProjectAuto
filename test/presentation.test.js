@@ -1689,7 +1689,7 @@ test('browser QA verifies post-rescue state returns to one summon command', asyn
     'const summonCoolingDown = /소환\\s+\\d+초/.test(collapse.summon.text);',
     "const summonReady = collapse.summon.text === '소환';",
     'assert.equal(summonCoolingDown || summonReady, true',
-    'const mergeReadyBeforeRescue = await page.locator(\'#mergeButton\').isEnabled();',
+    "const mergeReadyBeforeRescue = await canTap(page.locator('#mergeButton'));",
     'if (mergeReadyBeforeRescue) {',
     "events.push(`merge@${seconds}`);",
     'assert.equal(collapse.merge.hidden, true',

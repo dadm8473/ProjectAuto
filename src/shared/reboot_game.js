@@ -10,8 +10,9 @@ let nextRunId = 1;
 let nextEffectId = 1;
 const BOSS_DECISION_START = 92;
 const BOSS_DECISION_END = 102;
-const HIT_EFFECT_INTERVAL = 0.48;
 const HIT_EFFECT_TTL = 0.62;
+const DEFAULT_ATTACK_CYCLE = 1.15;
+const SIMULATION_STEP = 0.05;
 
 const BOT_PARTNER_SCRIPT = [
   { at: 10, unitId: 'spark_pin', highlight: false },
@@ -68,6 +69,8 @@ function nextGoalForReason(reason) {
     greed: 'rescue_before_merge_greed',
     rescue_missed: 'save_rescue_for_partner_danger',
     boss_leaked: 'answer_boss_warning',
+    boss_unfinished: 'focus_boss_damage',
+    signal_overrun: 'protect_signal_core',
     merge_gap: 'merge_before_boss',
     bad_luck: 'turn_bad_rolls_into_utility'
   }[reason] ?? 'retry_first_120_seconds';
@@ -96,7 +99,7 @@ function nextMergeUnit(game) {
   return merges[index] ?? merges[merges.length - 1] ?? 'burst_pin';
 }
 
-function makeUnit(unitId, owner, sequence) {
+function makeUnit(unitId, owner, sequence, now = 0) {
   const spec = REBOOT_UNITS[unitId] ?? REBOOT_UNITS.spark_pin;
   return {
     id: `${owner}-${sequence}-${unitId}`,
@@ -104,7 +107,8 @@ function makeUnit(unitId, owner, sequence) {
     owner,
     grade: spec.grade,
     role: spec.role,
-    spriteKey: spec.spriteKey
+    spriteKey: spec.spriteKey,
+    nextAttackAt: Number(now.toFixed(4))
   };
 }
 
@@ -132,18 +136,18 @@ function refreshActionState(game) {
     const resources = game.resources[playerId];
     game.actionState[playerId] = {
       summon: !game.result && resources.summon >= REBOOT_RULES.summon.cost,
-      merge: !game.result && (hasMergeCandidate(board) || canBossMerge(game)),
+      merge: !game.result && (hasMergeCandidate(board) || canBossMerge(game, board)),
       rescue: !game.result && resources.rescue >= REBOOT_RULES.rescue.chargeRequired
     };
   }
 }
 
-function canBossMerge(game) {
-  return isBossDecisionWindow(game);
+function canBossMerge(game, board) {
+  return isBossDecisionWindow(game) && (board?.units?.length ?? 0) > 0;
 }
 
 function isBossDecisionWindow(game) {
-  return game.seedName === 'boss_clutch' && game.now >= BOSS_DECISION_START && game.now < BOSS_DECISION_END;
+  return game.now >= BOSS_DECISION_START && game.now < BOSS_DECISION_END;
 }
 
 function applyTimedResources(game) {
@@ -163,29 +167,10 @@ function applyTimedResources(game) {
     }
   }
 
-  const rescueReadyAt = game.seedName === 'tutorial_success'
-    ? REBOOT_RULES.rescue.tutorialWindowStart
-    : 70;
-  if (!game.internal.rescued && game.now >= rescueReadyAt) {
+  if (!game.internal.rescued && game.now >= 70) {
     for (const resources of Object.values(game.resources)) {
       resources.rescue = REBOOT_RULES.rescue.chargeRequired;
     }
-  }
-}
-
-function applyPressureScript(game) {
-  if (game.internal.rescued) return;
-
-  if (game.now >= 62) {
-    game.boards.p2.danger = Math.max(game.boards.p2.danger, 80);
-  } else if (game.now >= 28) {
-    game.boards.p2.danger = Math.max(game.boards.p2.danger, 65);
-  } else if (game.now >= 18) {
-    game.boards.p2.danger = Math.max(game.boards.p2.danger, 35);
-  }
-
-  if (game.seedName === 'greed_loss' && game.now >= 77) {
-    game.boards.p2.danger = Math.max(game.boards.p2.danger, 90);
   }
 }
 
@@ -194,9 +179,13 @@ function applyBotPartnerScript(game) {
   for (const step of BOT_PARTNER_SCRIPT) {
     if (game.now < step.at || game.internal.partnerAutoApplied.includes(step.at)) continue;
     game.internal.partnerAutoApplied.push(step.at);
-    const unit = makeUnit(step.unitId, 'p2', game.internal.unitSequence++);
+    const unit = makeUnit(step.unitId, 'p2', game.internal.unitSequence++, game.now);
     game.boards.p2.units.push(unit);
-    game.boards.p2.danger = Math.max(0, game.boards.p2.danger - 6);
+    if (step.action === 'rescue') {
+      applyPartnerRescueAssist(game);
+    } else {
+      game.boards.p2.danger = Math.max(0, game.boards.p2.danger - 6);
+    }
     event(game, {
       type: 'partner_auto',
       action: step.action ?? 'summon',
@@ -207,6 +196,17 @@ function applyBotPartnerScript(game) {
   }
 }
 
+function applyPartnerRescueAssist(game) {
+  game.boards.p2.danger = Math.max(0, game.boards.p2.danger - REBOOT_RULES.rescue.dangerReduction);
+  for (const enemy of game.enemies) {
+    if (enemy.boardId !== 'p2' || enemyHp(enemy) <= 0) continue;
+    enemy.progress = Math.max(0, enemyProgress(game, enemy) - (REBOOT_RULES.rescue.knockbackPx / REBOOT_RULES.path.length));
+    enemy.slowPercent = Math.max(Number(enemy.slowPercent) || 0, REBOOT_RULES.rescue.slowPercent);
+    enemy.slowUntil = Math.max(Number(enemy.slowUntil) || 0, game.now + REBOOT_RULES.rescue.slowSeconds);
+  }
+  game.internal.partnerRescueAssistSeen = true;
+}
+
 function spawnDueWaves(game) {
   for (const wave of REBOOT_WAVES) {
     if (game.now < wave.at || game.internal.wavesSpawned.includes(wave.at)) continue;
@@ -214,12 +214,17 @@ function spawnDueWaves(game) {
     for (const [boardId, spawns] of Object.entries(wave.boards)) {
       for (const spawn of spawns) {
         for (let i = 0; i < spawn.count; i += 1) {
+          if (spawn.enemyId === 'mini_boss') game.internal.bossSpawned = true;
           game.enemies.push({
             id: `${boardId}-${wave.at}-${spawn.enemyId}-${i}`,
             boardId,
             enemyId: spawn.enemyId,
             progress: 0,
-            spawnedAt: wave.at + (spawn.interval * i)
+            spawnedAt: wave.at + (spawn.interval * i),
+            hp: REBOOT_ENEMIES[spawn.enemyId]?.hp ?? REBOOT_ENEMIES.noise_shard.hp,
+            maxHp: REBOOT_ENEMIES[spawn.enemyId]?.hp ?? REBOOT_ENEMIES.noise_shard.hp,
+            slowUntil: 0,
+            slowPercent: 0
           });
         }
       }
@@ -229,28 +234,26 @@ function spawnDueWaves(game) {
 }
 
 function enemyProgress(game, enemy) {
+  if (Number.isFinite(Number(enemy.progress))) {
+    return Math.max(0, Math.min(1, Number(enemy.progress)));
+  }
   const spec = REBOOT_ENEMIES[enemy.enemyId] ?? REBOOT_ENEMIES.noise_shard;
   const age = Math.max(0, game.now - enemy.spawnedAt);
-  return Math.max(0, Math.min(0.98, (age * spec.speed) / REBOOT_RULES.path.length));
+  return Math.max(0, Math.min(1, (age * spec.speed) / REBOOT_RULES.path.length));
 }
 
 function serializedBossHp(game, enemy) {
   if (enemy.enemyId !== 'mini_boss') return null;
   const maxHp = REBOOT_ENEMIES.mini_boss.hp;
-  const bossWindow = Math.max(1, 120 - REBOOT_RULES.boss.spawnAt);
-  const bossProgress = Math.max(0, Math.min(1, (game.now - REBOOT_RULES.boss.spawnAt) / bossWindow));
-  let targetHp = maxHp;
-  if (game.internal.bossChoice === 'summonSlow') {
-    targetHp = maxHp - ((maxHp - 28) * bossProgress);
-  } else if (game.internal.bossChoice === 'summonBurst' || game.internal.bossChoice === 'merge') {
-    targetHp = maxHp * (1 - bossProgress);
-  } else if (Number.isFinite(Number(game.boss?.remainingHp))) {
-    targetHp = game.boss.remainingHp;
-  }
   return {
-    hp: Math.max(0, Math.ceil(targetHp)),
+    hp: Math.max(0, Math.ceil(Number.isFinite(Number(enemy.hp)) ? Number(enemy.hp) : maxHp)),
     maxHp
   };
+}
+
+function enemyHp(enemy) {
+  const spec = REBOOT_ENEMIES[enemy.enemyId] ?? REBOOT_ENEMIES.noise_shard;
+  return Number.isFinite(Number(enemy.hp)) ? Number(enemy.hp) : spec.hp;
 }
 
 function serializeEnemy(game, enemy) {
@@ -262,13 +265,6 @@ function serializeEnemy(game, enemy) {
     progress: Number.isFinite(Number(enemy.progress)) ? Number(enemy.progress) : enemyProgress(game, enemy),
     ...(bossHp ?? {})
   };
-}
-
-function defeatDelay(enemyId) {
-  if (enemyId === 'mini_boss') return 7.5;
-  if (enemyId === 'heavy_noise') return 3.6;
-  if (enemyId === 'quick_noise') return 1.65;
-  return 2.35;
 }
 
 function pushDeathBurst(game, enemy, progress) {
@@ -292,7 +288,7 @@ function effectLaneForBoard(boardId) {
   return boardId === 'p2' ? -0.45 : 0.25;
 }
 
-function hitDamageForUnit(game, unit = {}, enemy = {}, critical = isCriticalHit(game, unit, enemy)) {
+function hitDamageForUnit(game, unit = {}, enemy = {}, critical = isCriticalHit(game, unit, enemy), amp = 1) {
   const spec = REBOOT_UNITS[unit.unitId] ?? {};
   if (!spec.id) return 0;
   const baseDamage = Number(spec.damage);
@@ -300,7 +296,7 @@ function hitDamageForUnit(game, unit = {}, enemy = {}, critical = isCriticalHit(
   const supportDamage = spec.amp ? 3 : 2;
   const rawDamage = Number.isFinite(baseDamage) ? baseDamage : supportDamage * gradeScale;
   const bossMultiplier = critical ? 2 : 1;
-  return Math.max(1, Math.round(rawDamage * bossMultiplier));
+  return Math.max(1, Math.round(rawDamage * bossMultiplier * Math.max(1, amp)));
 }
 
 function isCriticalHit(game, unit = {}, enemy = {}) {
@@ -310,24 +306,31 @@ function isCriticalHit(game, unit = {}, enemy = {}) {
   return enemy.enemyId === 'mini_boss' && (grade >= 2 || game.now >= BOSS_DECISION_START);
 }
 
-function strongestHitUnitSlot(game, board, enemy) {
-  const candidates = board.units
-    .map((unit, index) => ({ unit, index, damage: hitDamageForUnit(game, unit, enemy) }))
-    .filter(({ damage }) => damage > 0)
-    .sort((a, b) => (
-      b.damage - a.damage
-        || (Number(b.unit.grade) || 0) - (Number(a.unit.grade) || 0)
-        || a.index - b.index
-    ));
-  return candidates[0]?.index ?? -1;
+function unitAttackCycle(unit = {}) {
+  const spec = REBOOT_UNITS[unit.unitId] ?? {};
+  return Number.isFinite(Number(spec.cycle)) ? Number(spec.cycle) : DEFAULT_ATTACK_CYCLE;
 }
 
-function pushHitEffect(game, boardId, board, enemy, progress) {
-  const slot = strongestHitUnitSlot(game, board, enemy);
-  if (slot < 0) return false;
-  const unit = board.units[slot] ?? {};
-  const critical = isCriticalHit(game, unit, enemy);
-  const damage = hitDamageForUnit(game, unit, enemy, critical);
+function boardAttackAmp(board, sourceUnit) {
+  return board.units.reduce((amp, unit) => {
+    if (unit.id === sourceUnit.id) return amp;
+    const spec = REBOOT_UNITS[unit.unitId] ?? {};
+    return Math.max(amp, Number(spec.amp) || 1);
+  }, 1);
+}
+
+function targetForUnit(game, boardId, unit = {}) {
+  const spec = REBOOT_UNITS[unit.unitId] ?? {};
+  if (!spec.id) return null;
+  return game.enemies
+    .filter((enemy) => enemy.boardId === boardId && game.now >= enemy.spawnedAt)
+    .filter((enemy) => enemyHp(enemy) > 0)
+    .map((enemy) => ({ enemy, progress: enemyProgress(game, enemy) }))
+    .filter(({ progress }) => progress < 1)
+    .sort((a, b) => b.progress - a.progress)[0]?.enemy ?? null;
+}
+
+function pushHitEffect(game, boardId, slot, unit, enemy, progress, damage, critical) {
   game.effects.push({
     id: `hfx${nextEffectId++}`,
     type: 'hit',
@@ -344,25 +347,49 @@ function pushHitEffect(game, boardId, board, enemy, progress) {
   return true;
 }
 
-function emitLiveHitEffects(game) {
+function applyUnitSlow(game, unit, enemy) {
+  const spec = REBOOT_UNITS[unit.unitId] ?? {};
+  const slow = Number(spec.slow);
+  if (!Number.isFinite(slow) || slow <= 0) return;
+  const seconds = Number.isFinite(Number(spec.slowSeconds)) ? Number(spec.slowSeconds) : REBOOT_RULES.rescue.slowSeconds;
+  enemy.slowPercent = Math.max(Number(enemy.slowPercent) || 0, Math.min(0.8, slow));
+  enemy.slowUntil = Math.max(Number(enemy.slowUntil) || 0, game.now + seconds);
+  if (enemy.enemyId === 'mini_boss') game.internal.bossControlSeen = true;
+}
+
+function resolveUnitAttacks(game) {
   for (const [boardId, board] of Object.entries(game.boards)) {
-    if (board.units.length === 0) continue;
-    const lastHitAt = game.internal.hitPulseAt[boardId] ?? -Infinity;
-    if (game.now - lastHitAt < HIT_EFFECT_INTERVAL) continue;
-    const target = game.enemies
-      .filter((enemy) => enemy.boardId === boardId)
-      .map((enemy) => ({ enemy, progress: enemyProgress(game, enemy) }))
-      .filter(({ progress }) => progress < 0.98)
-      .sort((a, b) => b.progress - a.progress)[0];
-    if (!target) continue;
-    if (pushHitEffect(game, boardId, board, target.enemy, target.progress)) {
-      game.internal.hitPulseAt[boardId] = game.now;
+    for (const [slot, unit] of board.units.entries()) {
+      const spec = REBOOT_UNITS[unit.unitId] ?? {};
+      if (!spec.id) continue;
+      if (!Number.isFinite(Number(unit.nextAttackAt))) unit.nextAttackAt = game.now;
+      if (game.now + 0.0001 < unit.nextAttackAt) continue;
+      const target = targetForUnit(game, boardId, unit);
+      if (!target) continue;
+      const critical = isCriticalHit(game, unit, target);
+      const damage = hitDamageForUnit(game, unit, target, critical, boardAttackAmp(board, unit));
+      target.hp = Math.max(0, enemyHp(target) - damage);
+      applyUnitSlow(game, unit, target);
+      pushHitEffect(game, boardId, slot, unit, target, enemyProgress(game, target), damage, critical);
+      unit.nextAttackAt = Number((game.now + unitAttackCycle(unit)).toFixed(4));
+      if (target.enemyId === 'mini_boss') game.boss.remainingHp = target.hp;
+      if (target.hp <= 0) {
+        const targetProgress = enemyProgress(game, target);
+        pushDeathBurst(game, target, enemyProgress(game, target));
+        if (target.enemyId === 'mini_boss') {
+          game.internal.bossRewardEmitted = true;
+          game.internal.bossKilledAt = game.now;
+          game.internal.bossKilledProgress = targetProgress;
+          game.internal.bossKillerUnitId = unit.unitId;
+          game.boss.remainingHp = 0;
+        }
+      }
     }
   }
 }
 
-function pushMiniBossRewardBurst(game) {
-  if (game.internal.bossRewardEmitted) return;
+function pushMiniBossRewardBurst(game, { force = false } = {}) {
+  if (game.internal.bossRewardEmitted && !force) return;
   game.internal.bossRewardEmitted = true;
   const boss = game.enemies.find((enemy) => enemy.enemyId === 'mini_boss') ?? {
     id: 'final-mini-boss',
@@ -376,23 +403,13 @@ function pushMiniBossRewardBurst(game) {
 
 function resolveCombatEffects(game, dt) {
   game.effects = game.effects.map((effect) => ({ ...effect, ttl: effect.ttl - dt })).filter((effect) => effect.ttl > 0);
-  emitLiveHitEffects(game);
+  advanceEnemies(game, dt);
+  resolveUnitAttacks(game);
   const survivors = [];
   for (const enemy of game.enemies) {
-    if (enemy.enemyId === 'mini_boss') {
-      survivors.push({
-        ...enemy,
-        progress: enemyProgress(game, enemy)
-      });
-      continue;
-    }
-    const board = game.boards[enemy.boardId] ?? game.boards.p1;
-    const age = game.now - enemy.spawnedAt;
     const progress = enemyProgress(game, enemy);
-    if (board.units.length > 0 && age >= defeatDelay(enemy.enemyId)) {
-      pushDeathBurst(game, enemy, progress);
-      continue;
-    }
+    if (enemyHp(enemy) <= 0) continue;
+    if (progress >= 1) continue;
     survivors.push({
       ...enemy,
       progress
@@ -401,52 +418,116 @@ function resolveCombatEffects(game, dt) {
   game.enemies = survivors;
 }
 
+function advanceEnemies(game, dt) {
+  for (const enemy of game.enemies) {
+    if (game.now < enemy.spawnedAt) continue;
+    if (enemyHp(enemy) <= 0) continue;
+    const spec = REBOOT_ENEMIES[enemy.enemyId] ?? REBOOT_ENEMIES.noise_shard;
+    const slowMultiplier = Number(enemy.slowUntil) > game.now
+      ? 1 - Math.max(0, Math.min(0.8, Number(enemy.slowPercent) || 0))
+      : 1;
+    enemy.progress = Math.max(0, Math.min(1, enemyProgress(game, enemy) + ((spec.speed * slowMultiplier * dt) / REBOOT_RULES.path.length)));
+    if (enemy.boardId === 'p2' && !game.internal.rescued && enemy.progress >= 0.62) {
+      game.internal.partnerDangerSeen = true;
+      game.internal.partnerDangerPeak = Math.max(game.internal.partnerDangerPeak, REBOOT_RULES.rescue.partnerDangerWarning);
+      game.resources.p1.rescue = Math.max(game.resources.p1.rescue, REBOOT_RULES.rescue.chargeRequired);
+    }
+    if (enemy.progress >= 1) {
+      const board = game.boards[enemy.boardId] ?? game.boards.p1;
+      const damage = spec.leakDamage ?? REBOOT_RULES.leakDamage.normal;
+      board.danger = Math.min(REBOOT_RULES.defeatDanger, board.danger + damage);
+      if (enemy.enemyId === 'mini_boss') game.boss.leaked = true;
+      if (enemy.boardId === 'p2' && !game.internal.rescued && board.danger >= REBOOT_RULES.rescue.partnerDangerWarning) {
+        game.resources.p1.rescue = Math.max(game.resources.p1.rescue, REBOOT_RULES.rescue.chargeRequired);
+      }
+      if (enemy.boardId === 'p2') {
+        game.internal.partnerDangerSeen = true;
+        game.internal.partnerDangerPeak = Math.max(game.internal.partnerDangerPeak, board.danger);
+      }
+      event(game, { type: 'enemy_leaked', boardId: enemy.boardId, enemyId: enemy.enemyId, damage, danger: board.danger, highlight: enemy.enemyId === 'mini_boss' || board.danger >= REBOOT_RULES.rescue.partnerDangerCritical });
+    }
+  }
+}
+
+function recoveredHighlights(game, highlights) {
+  if (!game.internal.utilityRecoverySeen) return highlights;
+  return ['bad_roll_recovered', ...highlights.filter((highlight) => highlight !== 'bad_roll_recovered')];
+}
+
+function bossKillWasClutch(game) {
+  return (
+    Number(game.internal.bossResponseAt) >= BOSS_DECISION_START
+    || Number(game.internal.bossKilledAt) >= REBOOT_RULES.boss.expectedResolveStart
+    || Number(game.internal.bossKilledProgress) >= 0.55
+  );
+}
+
+function partnerRescueNeeded(game) {
+  if (game.boards.p2.danger >= REBOOT_RULES.rescue.partnerDangerWarning) return true;
+  return game.enemies.some((enemy) => (
+    enemy.boardId === 'p2'
+    && enemyHp(enemy) > 0
+    && game.now >= enemy.spawnedAt
+    && enemyProgress(game, enemy) >= 0.62
+  ));
+}
+
 function resolveTerminal(game) {
   if (game.result || game.now < 120) return;
 
-  if (game.seedName === 'greed_loss') {
-    result(game, 'lost', 'greed', ['greed']);
+  const bossAlive = game.enemies.some((enemy) => enemy.enemyId === 'mini_boss' && enemyHp(enemy) > 0);
+  const bossSpawned = game.internal.bossSpawned || game.internal.bossRewardEmitted || bossAlive;
+  const partnerInDanger = partnerRescueNeeded(game);
+
+  if (game.boards.p1.danger >= REBOOT_RULES.defeatDanger) {
+    result(game, 'lost', 'signal_overrun', ['signal_overrun']);
     return;
   }
 
-  if (game.seedName === 'rescue_miss') {
-    result(game, 'lost', 'rescue_missed', ['rescue_missed']);
-    return;
-  }
-
-  if (game.seedName === 'lucky_clutch') {
-    game.boss.remainingHp = 0;
-    pushMiniBossRewardBurst(game);
-    result(game, 'won', 'boss_final_hit', ['boss_final_hit']);
-    return;
-  }
-
-  if (game.seedName === 'bad_recoverable') {
-    result(game, 'won', 'partner_rescued', ['bad_roll_recovered', 'partner_rescued']);
-    return;
-  }
-
-  if (game.seedName === 'boss_clutch') {
-    if (game.internal.bossChoice === 'summonSlow') {
-      game.boss.remainingHp = 28;
-      result(game, 'won', 'boss_slowed', ['boss_slowed']);
-      return;
-    }
-    if (game.internal.bossChoice === 'summonBurst' || game.internal.bossChoice === 'merge') {
-      game.boss.remainingHp = 0;
-      pushMiniBossRewardBurst(game);
-      result(game, 'won', 'boss_final_hit', ['boss_final_hit']);
-      return;
-    }
+  if (game.boss.leaked) {
     result(game, 'lost', 'boss_leaked', ['boss_leaked']);
     return;
   }
 
-  if (game.internal.rescued) {
-    result(game, 'won', 'partner_rescued', ['partner_rescued']);
-  } else {
-    result(game, 'lost', 'rescue_missed', ['rescue_missed']);
+  if (!game.internal.rescued && partnerInDanger) {
+    result(game, 'lost', game.internal.greedDecision ? 'greed' : 'rescue_missed', [game.internal.greedDecision ? 'greed' : 'rescue_missed']);
+    return;
   }
+
+  if (bossSpawned && !bossAlive && game.internal.bossRewardEmitted) {
+    if (!game.effects.some((effect) => effect.type === 'death_burst' && effect.targetType === 'mini_boss')) {
+      pushMiniBossRewardBurst(game, { force: true });
+    }
+    if (bossKillWasClutch(game) || !game.internal.rescued) {
+      result(game, 'won', 'boss_final_hit', recoveredHighlights(game, ['boss_final_hit']));
+      return;
+    }
+    result(game, 'won', 'partner_rescued', recoveredHighlights(game, ['partner_rescued']));
+    return;
+  }
+
+  if (bossAlive && game.internal.bossControlSeen) {
+    game.boss.remainingHp = game.enemies.find((enemy) => enemy.enemyId === 'mini_boss')?.hp ?? game.boss.remainingHp;
+    result(game, 'won', 'boss_slowed', recoveredHighlights(game, ['boss_slowed']));
+    return;
+  }
+
+  if (!game.internal.rescued && bossAlive && game.boss.active && !partnerInDanger) {
+    result(game, 'lost', 'boss_unfinished', ['boss_unfinished']);
+    return;
+  }
+
+  if (bossAlive && game.boss.active) {
+    result(game, 'lost', 'boss_unfinished', ['boss_unfinished']);
+    return;
+  }
+
+  if (game.internal.rescued) {
+    result(game, 'won', 'partner_rescued', recoveredHighlights(game, ['partner_rescued']));
+    return;
+  }
+
+  result(game, 'lost', 'rescue_missed', ['rescue_missed']);
 }
 
 export function createRebootGame({
@@ -495,13 +576,24 @@ export function createRebootGame({
       grantsApplied: [],
       wavesSpawned: [],
       partnerAutoApplied: [],
-      hitPulseAt: { p1: -Infinity, p2: -Infinity },
       summonIndexes: { p1: 0, p2: 0 },
       mergeIndex: 0,
       unitSequence: 0,
       rescued: false,
       bossChoice: null,
-      bossRewardEmitted: false
+      bossRewardEmitted: false,
+      bossSpawned: false,
+      bossResponseAt: null,
+      bossControlSeen: false,
+      bossKilledAt: null,
+      bossKilledProgress: 0,
+      bossKillerUnitId: null,
+      greedDecision: false,
+      partnerDangerSeen: false,
+      partnerDangerPeak: 0,
+      partnerRescueAssistSeen: false,
+      utilityRolls: 0,
+      utilityRecoverySeen: false
     }
   };
   refreshActionState(game);
@@ -519,11 +611,16 @@ export function summonToy(game, { playerId = 'p1' } = {}) {
   resources.summon -= REBOOT_RULES.summon.cost;
   const unitId = nextScriptUnit(game, owner);
   game.internal.summonIndexes[owner] = (game.internal.summonIndexes[owner] ?? 0) + 1;
-  const unit = makeUnit(unitId, owner, game.internal.unitSequence++);
+  const unit = makeUnit(unitId, owner, game.internal.unitSequence++, game.now);
   game.boards[owner].units.push(unit);
+  const spec = REBOOT_UNITS[unitId] ?? {};
+  if (owner === 'p1' && ['support', 'control', 'rescue'].includes(spec.role)) {
+    game.internal.utilityRolls += 1;
+  }
 
   if (isBossDecisionWindow(game)) {
     game.internal.bossChoice = unitId === 'slow_coil' ? 'summonSlow' : 'summonBurst';
+    game.internal.bossResponseAt = game.now;
   }
 
   event(game, { type: 'summon', playerId: owner, unitId, unitIdResult: unitId, highlight: unit.grade >= 2 });
@@ -537,13 +634,14 @@ export function mergeToys(game, { playerId = 'p1', unitIds = [] } = {}) {
   const board = game.boards[owner];
   const candidateIndexes = mergeCandidateIndexes(board);
   const hasNormalCandidate = candidateIndexes.length >= REBOOT_RULES.merge.requiredSameGrade;
-  const bossMerge = canBossMerge(game);
+  const bossMerge = canBossMerge(game, board);
   if (!hasNormalCandidate && !bossMerge) {
     return { ok: false, reason: '합성할 유닛이 없습니다.' };
   }
 
   const unitId = nextMergeUnit(game);
-  const unit = makeUnit(unitId, owner, game.internal.unitSequence++);
+  const unit = makeUnit(unitId, owner, game.internal.unitSequence++, game.now);
+  const spec = REBOOT_UNITS[unitId] ?? {};
   const indexesToConsume = hasNormalCandidate
     ? candidateIndexes
     : board.units.slice(0, REBOOT_RULES.merge.requiredSameGrade).map((_, index) => index);
@@ -557,6 +655,19 @@ export function mergeToys(game, { playerId = 'p1', unitIds = [] } = {}) {
 
   if (isBossDecisionWindow(game)) {
     game.internal.bossChoice = 'merge';
+    game.internal.bossResponseAt = game.now;
+  }
+  if (
+    owner === 'p1'
+    && !game.internal.rescued
+    && partnerRescueNeeded(game)
+    && game.now >= 70
+    && game.resources.p1.rescue >= REBOOT_RULES.rescue.chargeRequired
+  ) {
+    game.internal.greedDecision = true;
+  }
+  if (owner === 'p1' && game.internal.utilityRolls > 0 && ['support', 'control', 'rescue'].includes(spec.role)) {
+    game.internal.utilityRecoverySeen = true;
   }
 
   event(game, { type: 'merge', playerId: owner, unitId, consumed, highlight: true });
@@ -582,14 +693,18 @@ export function castRescue(game, { playerId = 'p1' } = {}) {
 
 export function tickRebootGame(game, dt) {
   if (dt <= 0 || game.result) return game;
-  game.now = Number((game.now + dt).toFixed(4));
-  applyTimedResources(game);
-  spawnDueWaves(game);
-  applyPressureScript(game);
-  applyBotPartnerScript(game);
-  resolveCombatEffects(game, dt);
-  if (game.now >= REBOOT_RULES.boss.spawnAt) game.boss.active = true;
-  resolveTerminal(game);
+  let remaining = dt;
+  while (remaining > 0 && !game.result) {
+    const step = Math.min(SIMULATION_STEP, remaining);
+    game.now = Number((game.now + step).toFixed(4));
+    applyTimedResources(game);
+    spawnDueWaves(game);
+    applyBotPartnerScript(game);
+    resolveCombatEffects(game, step);
+    if (game.now >= REBOOT_RULES.boss.spawnAt) game.boss.active = true;
+    resolveTerminal(game);
+    remaining = Number((remaining - step).toFixed(4));
+  }
   refreshActionState(game);
   return game;
 }

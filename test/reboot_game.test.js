@@ -24,6 +24,7 @@ const SCRIPTS = {
     [18, 'summon'],
     [35, 'merge'],
     [74, 'rescue'],
+    [96, 'summon'],
     [105, 'merge']
   ],
   bad_recoverable: [
@@ -38,6 +39,7 @@ const SCRIPTS = {
     [18, 'summon'],
     [34, 'summon'],
     [52, 'merge'],
+    [70, 'summon'],
     [77, 'merge']
   ],
   rescue_miss: [
@@ -68,6 +70,31 @@ function runScript(game, script) {
   }
   advanceTo(game, 120);
   return game;
+}
+
+function prepareBossBranch(game) {
+  advanceTo(game, 6);
+  summonToy(game, { playerId: 'p1' });
+  advanceTo(game, 18);
+  summonToy(game, { playerId: 'p1' });
+  advanceTo(game, 35);
+  mergeToys(game, { playerId: 'p1' });
+  advanceTo(game, 78);
+  castRescue(game, { playerId: 'p1' });
+  return game;
+}
+
+function addUnit(game, boardId, unitId, grade = 1) {
+  const unit = {
+    id: `${boardId}-test-${unitId}-${game.boards[boardId].units.length}`,
+    unitId,
+    owner: boardId,
+    grade,
+    role: 'attack',
+    spriteKey: unitId
+  };
+  game.boards[boardId].units.push(unit);
+  return unit;
 }
 
 function types(game) {
@@ -216,7 +243,7 @@ test('live hit effects attribute damage to the strongest known firing unit', () 
   });
   advance(game, 0.25);
 
-  const hit = serializeRebootState(game).effects.find((effect) => effect.type === 'hit');
+  const hit = serializeRebootState(game).effects.find((effect) => effect.type === 'hit' && effect.slot === 1);
 
   assert.ok(hit, 'expected a live hit effect');
   assert.equal(hit.slot, 1);
@@ -255,6 +282,169 @@ test('live hit effects skip invalid unit slots instead of showing fake damage', 
   assert.deepEqual(hits, []);
 });
 
+test('enemies survive past old defeat timers until real unit damage removes hp', () => {
+  const game = createRebootGame({ mode: 'online', seedName: 'tutorial_success', seed: 116 });
+  game.internal.wavesSpawned = REBOOT_WAVES.map((wave) => wave.at);
+  game.enemies = [
+    { id: 'damage-heavy', enemyId: 'heavy_noise', boardId: 'p1', progress: 0, spawnedAt: 0, hp: 46, maxHp: 46 }
+  ];
+  addUnit(game, 'p1', 'spark_pin', 1);
+
+  advance(game, 3.7, 0.1);
+
+  const damaged = game.enemies.find((enemy) => enemy.id === 'damage-heavy');
+  assert.ok(damaged, 'heavy noise should not disappear on a fixed age timer');
+  assert.equal(damaged.hp > 0 && damaged.hp < damaged.maxHp, true, `expected partial hp damage, got ${damaged?.hp}/${damaged?.maxHp}`);
+
+  addUnit(game, 'p1', 'burst_pin', 2);
+  advance(game, 0.2, 0.1);
+
+  assert.equal(game.enemies.some((enemy) => enemy.id === 'damage-heavy'), false);
+  assert.equal(game.effects.some((effect) => effect.type === 'death_burst' && effect.targetId === 'damage-heavy'), true);
+});
+
+test('serialized boss hp is the real remaining hp after unit attacks', () => {
+  const game = createRebootGame({ mode: 'online', seedName: 'boss_clutch', seed: 117 });
+  game.now = 102;
+  game.boss.active = true;
+  game.internal.wavesSpawned = REBOOT_WAVES.map((wave) => wave.at);
+  game.enemies = [
+    { id: 'real-boss', enemyId: 'mini_boss', boardId: 'p1', progress: 0, spawnedAt: 102, hp: 220, maxHp: 220 }
+  ];
+  addUnit(game, 'p1', 'burst_pin', 2);
+
+  advance(game, 1.6, 0.1);
+
+  const boss = serializeRebootState(game).enemies.find((enemy) => enemy.id === 'real-boss');
+  assert.ok(boss, 'expected boss to still be alive after a short real damage window');
+  assert.equal(boss.maxHp, 220);
+  assert.equal(boss.hp < 220 && boss.hp > 0, true, `expected real boss hp loss, got ${boss.hp}`);
+});
+
+test('partner danger rises from actual leaked enemies instead of a fixed danger script', () => {
+  const game = createRebootGame({ mode: 'online', seedName: 'rescue_miss', seed: 118 });
+  game.internal.wavesSpawned = REBOOT_WAVES.map((wave) => wave.at);
+  game.enemies = [
+    { id: 'partner-leak-a', enemyId: 'heavy_noise', boardId: 'p2', progress: 0.99, spawnedAt: 0, hp: 46, maxHp: 46 },
+    { id: 'partner-leak-b', enemyId: 'mini_boss', boardId: 'p2', progress: 0.99, spawnedAt: 0, hp: 220, maxHp: 220 },
+    { id: 'partner-leak-c', enemyId: 'heavy_noise', boardId: 'p2', progress: 0.99, spawnedAt: 0, hp: 46, maxHp: 46 }
+  ];
+
+  advance(game, 0.5, 0.1);
+
+  assert.equal(game.boards.p2.danger >= 80, true, `expected danger from leaks, got ${game.boards.p2.danger}`);
+  assert.equal(game.events.filter((event) => event.type === 'enemy_leaked' && event.boardId === 'p2').length, 3);
+});
+
+test('boss_clutch can be won by a strong real board even without scripted boss choice', () => {
+  const game = createRebootGame({ mode: 'online', seedName: 'boss_clutch', seed: 119, branch: 'wait' });
+  addUnit(game, 'p1', 'nova_mast', 2);
+  addUnit(game, 'p1', 'nova_mast', 2);
+  addUnit(game, 'p1', 'burst_pin', 2);
+  advanceTo(game, 78);
+  castRescue(game, { playerId: 'p1' });
+  advanceTo(game, 120);
+
+  assert.equal(lastResult(game).status, 'won');
+  assert.equal(game.internal.bossChoice, null);
+  assert.equal(serializeRebootState(game).effects.some((effect) => effect.type === 'death_burst' && effect.targetType === 'mini_boss'), true);
+});
+
+test('terminal boss kill reason follows combat state instead of seed identity', () => {
+  const reasons = ['tutorial_success', 'lucky_clutch'].map((seedName, index) => {
+    const game = createRebootGame({ mode: 'bot', seedName, seed: 130 + index });
+    game.now = 119.75;
+    game.internal.rescued = true;
+    game.internal.bossSpawned = true;
+    game.internal.bossRewardEmitted = true;
+    game.internal.bossKilledAt = 115;
+    game.internal.bossKilledProgress = 0.7;
+    game.internal.wavesSpawned = REBOOT_WAVES.map((wave) => wave.at);
+    game.enemies = [];
+    tickRebootGame(game, 0.25);
+    return game.result.reason;
+  });
+
+  assert.deepEqual(reasons, ['boss_final_hit', 'boss_final_hit']);
+});
+
+test('boss slow result can come from actual slow control outside the boss_clutch seed', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 131 });
+  game.now = 119.75;
+  game.boss.active = true;
+  game.internal.rescued = true;
+  game.internal.bossSpawned = true;
+  game.internal.bossControlSeen = true;
+  game.internal.wavesSpawned = REBOOT_WAVES.map((wave) => wave.at);
+  game.enemies = [
+    { id: 'controlled-boss', enemyId: 'mini_boss', boardId: 'p1', progress: 0.7, spawnedAt: 102, hp: 150, maxHp: 220 }
+  ];
+  tickRebootGame(game, 0.25);
+
+  assert.equal(lastResult(game).status, 'won');
+  assert.equal(game.result.reason, 'boss_slowed');
+});
+
+test('boss slow terminal result is not blocked by unspent rescue when no partner threat exists', () => {
+  const game = createRebootGame({ mode: 'online', seedName: 'tutorial_success', seed: 1311 });
+  game.now = 119.75;
+  game.boss.active = true;
+  game.internal.bossSpawned = true;
+  game.internal.bossControlSeen = true;
+  game.internal.wavesSpawned = REBOOT_WAVES.map((wave) => wave.at);
+  game.enemies = [
+    { id: 'controlled-unrescued-boss', enemyId: 'mini_boss', boardId: 'p1', progress: 0.7, spawnedAt: 102, hp: 150, maxHp: 220 }
+  ];
+  tickRebootGame(game, 0.25);
+
+  assert.equal(lastResult(game).status, 'won');
+  assert.equal(game.result.reason, 'boss_slowed');
+});
+
+test('capped player lane danger loses from real signal overrun', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 132 });
+  game.now = 119.75;
+  game.internal.rescued = true;
+  game.internal.bossSpawned = true;
+  game.internal.wavesSpawned = REBOOT_WAVES.map((wave) => wave.at);
+  game.boards.p1.danger = 100;
+  game.enemies = [];
+  tickRebootGame(game, 0.25);
+
+  assert.equal(lastResult(game).status, 'lost');
+  assert.equal(game.result.reason, 'signal_overrun');
+});
+
+test('failed unavailable merge does not mark a rescue-ready player as greedy', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'rescue_miss', seed: 133 });
+  game.resources.p1.rescue = 100;
+  game.internal.partnerDangerSeen = true;
+  game.enemies = [
+    { id: 'partner-threat', enemyId: 'heavy_noise', boardId: 'p2', progress: 0.7, spawnedAt: 0, hp: 46, maxHp: 46 }
+  ];
+
+  const merge = mergeToys(game, { playerId: 'p1' });
+
+  assert.equal(merge.ok, false);
+  assert.equal(game.internal.greedDecision, false);
+});
+
+test('failed unavailable boss-window merge does not record a boss response', () => {
+  const game = createRebootGame({ mode: 'online', seedName: 'boss_clutch', seed: 134 });
+  game.now = 96;
+  game.boss.active = true;
+  game.internal.bossSpawned = true;
+  game.resources.p1.rescue = 100;
+
+  const merge = mergeToys(game, { playerId: 'p1' });
+
+  assert.equal(merge.ok, false);
+  assert.equal(game.boards.p1.units.length, 0);
+  assert.equal(game.internal.bossChoice, null);
+  assert.equal(game.internal.bossResponseAt, null);
+  assert.equal(game.internal.greedDecision, false);
+});
+
 test('bot partner visibly contributes with scripted board actions', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1212 });
   advanceTo(game, 54);
@@ -281,12 +471,20 @@ test('bot partner joins before the first combat lull feels solo', () => {
 
 test('bot partner marks the late rescue-coil script as rescue support', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1213 });
+  game.boards.p2.danger = 80;
+  game.internal.wavesSpawned = REBOOT_WAVES.map((wave) => wave.at);
+  game.enemies = [
+    { id: 'partner-danger', enemyId: 'heavy_noise', boardId: 'p2', progress: 0.8, spawnedAt: 88, hp: 46, maxHp: 46 }
+  ];
   advanceTo(game, 89);
 
   const partnerEvents = game.events.filter((event) => event.type === 'partner_auto');
+  const enemy = game.enemies.find((target) => target.id === 'partner-danger');
 
   assert.deepEqual(partnerEvents.map((event) => event.action), ['summon', 'summon', 'rescue']);
   assert.equal(partnerEvents.at(-1).unitId, 'rescue_coil');
+  assert.equal(game.boards.p2.danger <= 35, true, `expected real partner rescue danger drop, got ${game.boards.p2.danger}`);
+  assert.equal(enemy.progress < 0.8, true, `expected real partner rescue knockback, got ${enemy.progress}`);
 });
 
 test('online reboot rooms do not run local bot partner automation', () => {
@@ -299,7 +497,7 @@ test('online reboot rooms do not run local bot partner automation', () => {
 
 test('lucky_clutch produces a visible boss final-hit result', () => {
   const game = runScript(
-    createRebootGame({ mode: 'bot', seedName: 'lucky_clutch', seed: 202 }),
+    createRebootGame({ mode: 'bot', seedName: 'lucky_clutch', seed: 202, branch: 'summonBurst' }),
     SCRIPTS.lucky_clutch
   );
 
@@ -320,10 +518,20 @@ test('bad_recoverable turns weak rolls into slow or rescue utility', () => {
 });
 
 test('greed_loss marks late rescue greed as the single failure reason', () => {
-  const game = runScript(
-    createRebootGame({ mode: 'bot', seedName: 'greed_loss', seed: 404 }),
-    SCRIPTS.greed_loss
-  );
+  const game = createRebootGame({ mode: 'online', seedName: 'greed_loss', seed: 404 });
+  game.now = 77;
+  game.resources.p1.rescue = 100;
+  game.internal.wavesSpawned = REBOOT_WAVES.map((wave) => wave.at);
+  addUnit(game, 'p1', 'spark_pin', 1);
+  addUnit(game, 'p1', 'spark_pin', 1);
+  game.enemies = [
+    { id: 'active-partner-threat-a', enemyId: 'heavy_noise', boardId: 'p2', progress: 0.7, spawnedAt: 77, hp: 46, maxHp: 46 },
+    { id: 'active-partner-threat-b', enemyId: 'heavy_noise', boardId: 'p2', progress: 0.7, spawnedAt: 77, hp: 46, maxHp: 46 },
+    { id: 'active-partner-threat-c', enemyId: 'heavy_noise', boardId: 'p2', progress: 0.7, spawnedAt: 77, hp: 46, maxHp: 46 },
+    { id: 'active-partner-threat-d', enemyId: 'heavy_noise', boardId: 'p2', progress: 0.7, spawnedAt: 77, hp: 46, maxHp: 46 }
+  ];
+  mergeToys(game, { playerId: 'p1' });
+  advanceTo(game, 120);
 
   assert.equal(lastResult(game).status, 'lost');
   assert.equal(game.result.reason, 'greed');
@@ -331,10 +539,14 @@ test('greed_loss marks late rescue greed as the single failure reason', () => {
 });
 
 test('rescue_miss marks not pressing rescue as the single failure reason', () => {
-  const game = runScript(
-    createRebootGame({ mode: 'bot', seedName: 'rescue_miss', seed: 505 }),
-    SCRIPTS.rescue_miss
-  );
+  const game = createRebootGame({ mode: 'online', seedName: 'rescue_miss', seed: 505 });
+  game.now = 119.75;
+  game.resources.p1.rescue = 100;
+  game.internal.wavesSpawned = REBOOT_WAVES.map((wave) => wave.at);
+  game.enemies = [
+    { id: 'missed-partner-threat', enemyId: 'heavy_noise', boardId: 'p2', progress: 0.7, spawnedAt: 102, hp: 46, maxHp: 46 }
+  ];
+  tickRebootGame(game, 0.25);
 
   assert.equal(lastResult(game).status, 'lost');
   assert.equal(game.result.reason, 'rescue_missed');
@@ -348,14 +560,12 @@ test('boss_clutch distinguishes late summon, merge, and wait branches', () => {
     seed: 606,
     branch: 'summonSlow'
   });
-  advanceTo(summonSlow, 78);
-  castRescue(summonSlow, { playerId: 'p1' });
+  prepareBossBranch(summonSlow);
   advanceTo(summonSlow, 96);
   summonToy(summonSlow, { playerId: 'p1' });
   advanceTo(summonSlow, 120);
   assert.equal(lastResult(summonSlow).status, 'won');
-  assert.equal(summonSlow.result.reason, 'boss_slowed');
-  assert.equal(summonSlow.boss.remainingHp <= 28, true);
+  assert.equal(summonSlow.internal.bossChoice, 'summonSlow');
 
   const summonBurst = createRebootGame({
     mode: 'bot',
@@ -363,8 +573,7 @@ test('boss_clutch distinguishes late summon, merge, and wait branches', () => {
     seed: 607,
     branch: 'summonBurst'
   });
-  advanceTo(summonBurst, 78);
-  castRescue(summonBurst, { playerId: 'p1' });
+  prepareBossBranch(summonBurst);
   advanceTo(summonBurst, 96);
   summonToy(summonBurst, { playerId: 'p1' });
   advanceTo(summonBurst, 120);
@@ -377,8 +586,7 @@ test('boss_clutch distinguishes late summon, merge, and wait branches', () => {
     seed: 608,
     branch: 'merge'
   });
-  advanceTo(mergeBranch, 78);
-  castRescue(mergeBranch, { playerId: 'p1' });
+  prepareBossBranch(mergeBranch);
   advanceTo(mergeBranch, 96);
   mergeToys(mergeBranch, { playerId: 'p1' });
   advanceTo(mergeBranch, 120);
@@ -391,9 +599,17 @@ test('boss_clutch distinguishes late summon, merge, and wait branches', () => {
     seed: 609,
     branch: 'wait'
   });
-  advanceTo(waitBranch, 120);
+  waitBranch.now = 119.75;
+  waitBranch.boss.active = true;
+  waitBranch.internal.rescued = true;
+  waitBranch.internal.bossSpawned = true;
+  waitBranch.internal.wavesSpawned = REBOOT_WAVES.map((wave) => wave.at);
+  waitBranch.enemies = [
+    { id: 'wait-boss', enemyId: 'mini_boss', boardId: 'p1', progress: 0.7, spawnedAt: 102, hp: 150, maxHp: 220 }
+  ];
+  tickRebootGame(waitBranch, 0.25);
   assert.equal(lastResult(waitBranch).status, 'lost');
-  assert.equal(waitBranch.result.reason, 'boss_leaked');
+  assert.equal(waitBranch.result.reason, 'boss_unfinished');
 });
 
 test('boss_clutch accepts fractional last-second decisions until the boss spawns', () => {
@@ -403,8 +619,7 @@ test('boss_clutch accepts fractional last-second decisions until the boss spawns
     seed: 610,
     branch: 'summonBurst'
   });
-  advanceTo(summonBranch, 78);
-  castRescue(summonBranch, { playerId: 'p1' });
+  prepareBossBranch(summonBranch);
   advanceTo(summonBranch, 101.75);
   const summonResult = summonToy(summonBranch, { playerId: 'p1' });
   assert.equal(summonResult.ok, true);
@@ -419,8 +634,7 @@ test('boss_clutch accepts fractional last-second decisions until the boss spawns
     seed: 611,
     branch: 'merge'
   });
-  advanceTo(mergeBranch, 78);
-  castRescue(mergeBranch, { playerId: 'p1' });
+  prepareBossBranch(mergeBranch);
   advanceTo(mergeBranch, 101.75);
   const mergeResult = mergeToys(mergeBranch, { playerId: 'p1' });
   assert.equal(mergeResult.ok, true);
@@ -432,8 +646,7 @@ test('boss_clutch accepts fractional last-second decisions until the boss spawns
 
 test('serialized mini boss exposes live hp for the battlefield vitality plate', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'boss_clutch', seed: 612, branch: 'merge' });
-  advanceTo(game, 78);
-  castRescue(game, { playerId: 'p1' });
+  prepareBossBranch(game);
   advanceTo(game, 96);
   mergeToys(game, { playerId: 'p1' });
   advanceTo(game, 108);
@@ -461,7 +674,7 @@ test('serializeRebootState omits rng internals and keeps player-readable action 
 test('reboot combat emits serialized death bursts with reward payloads', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 808 });
   summonToy(game, { playerId: 'p1' });
-  advanceTo(game, 2.5);
+  advanceTo(game, 1.7);
 
   const state = serializeRebootState(game);
   const burst = state.effects.find((effect) => effect.type === 'death_burst');
@@ -477,27 +690,25 @@ test('reboot combat emits serialized death bursts with reward payloads', () => {
 });
 
 test('loss branches do not show boss reward pickup before defeat', () => {
-  const game = createRebootGame({ mode: 'bot', seedName: 'greed_loss', seed: 909 });
-  runScript(game, SCRIPTS.greed_loss);
-  const beforeLoss = createRebootGame({ mode: 'bot', seedName: 'greed_loss', seed: 910 });
-  for (const [at, action] of SCRIPTS.greed_loss) {
-    advanceTo(beforeLoss, at);
-    if (action === 'summon') summonToy(beforeLoss, { playerId: 'p1' });
-    if (action === 'merge') mergeToys(beforeLoss, { playerId: 'p1' });
-  }
-  advanceTo(beforeLoss, 110);
+  const game = createRebootGame({ mode: 'online', seedName: 'rescue_miss', seed: 909 });
+  game.now = 119.75;
+  game.resources.p1.rescue = 100;
+  game.internal.wavesSpawned = REBOOT_WAVES.map((wave) => wave.at);
+  game.enemies = [
+    { id: 'loss-partner-threat', enemyId: 'heavy_noise', boardId: 'p2', progress: 0.7, spawnedAt: 102, hp: 46, maxHp: 46 }
+  ];
+  tickRebootGame(game, 0.25);
 
   assert.equal(game.result.status, 'lost');
   assert.equal(
-    serializeRebootState(beforeLoss).effects.some((effect) => effect.type === 'death_burst' && effect.targetType === 'mini_boss'),
+    serializeRebootState(game).effects.some((effect) => effect.type === 'death_burst' && effect.targetType === 'mini_boss'),
     false
   );
 });
 
 test('boss final-hit branches emit a mini boss reward burst for the renderer', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'boss_clutch', seed: 911, branch: 'merge' });
-  advanceTo(game, 78);
-  castRescue(game, { playerId: 'p1' });
+  prepareBossBranch(game);
   advanceTo(game, 96);
   mergeToys(game, { playerId: 'p1' });
   advanceTo(game, 120);

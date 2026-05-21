@@ -992,18 +992,27 @@ async function assertResultGeneratedCopySurfaces(page) {
     };
   }));
   assert.equal(highlightSurfaces.length >= 1, true, `result highlight density changed: ${JSON.stringify(highlightSurfaces)}`);
-  const reasonCopy = copySurfaces.find((surface) => surface.text === '파트너 구원 성공');
+  const resultReasonLabels = ['파트너 구원 성공', '보스 막타 성공', '보스 둔화 성공'];
+  const reasonCopy = copySurfaces.find((surface) => resultReasonLabels.includes(surface.text));
   assert.equal(Boolean(reasonCopy), true, `result reason copy changed: ${JSON.stringify(copySurfaces)}`);
-  assert.equal(
-    highlightSurfaces.some((surface) => surface.text?.includes('결정적 구원')),
-    true,
-    `result highlight should name the memorable rescue moment separately: ${JSON.stringify(highlightSurfaces)}`
-  );
-  assert.equal(
-    highlightSurfaces.some((surface) => surface.text?.includes('파트너 구원 성공')),
-    false,
-    `result highlight repeats the reason copy: ${JSON.stringify(highlightSurfaces)}`
-  );
+  if (reasonCopy.text === '파트너 구원 성공') {
+    assert.equal(
+      highlightSurfaces.some((surface) => surface.text?.includes('결정적 구원')),
+      true,
+      `result highlight should name the memorable rescue moment separately: ${JSON.stringify(highlightSurfaces)}`
+    );
+    assert.equal(
+      highlightSurfaces.some((surface) => surface.text?.includes('파트너 구원 성공')),
+      false,
+      `result highlight repeats the reason copy: ${JSON.stringify(highlightSurfaces)}`
+    );
+  } else {
+    assert.equal(
+      highlightSurfaces.some((surface) => surface.text?.includes(reasonCopy.text)),
+      true,
+      `boss/control result highlight should match the combat peak: ${JSON.stringify(highlightSurfaces)}`
+    );
+  }
   for (const surface of highlightSurfaces) {
     assert.match(surface.backgroundImage, /reboot-result-detail-strips/, `result highlight lacks generated strip: ${JSON.stringify(surface)}`);
     assert.equal(surface.backgroundSize, '200% 100%', `result highlight strip sizing changed: ${JSON.stringify(surface)}`);
@@ -1985,6 +1994,20 @@ async function verifyFastPlaythrough(page) {
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });
 
+  async function canTap(locator) {
+    return (await locator.isVisible()) && (await locator.isEnabled());
+  }
+
+  async function tryTap(locator) {
+    if (!(await canTap(locator))) return false;
+    try {
+      await locator.click({ timeout: 350 });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   const events = [];
   let postRescueCollapseChecked = false;
   const deadline = Date.now() + 12000;
@@ -1992,25 +2015,23 @@ async function verifyFastPlaythrough(page) {
     if (await page.locator('#resultTitle').isVisible()) break;
     const timeText = await page.locator('#timeMeter').textContent();
     const seconds = Number.parseInt(timeText ?? '0', 10) || 0;
-    if (await page.locator('#rescueButton').isEnabled()) {
-      const mergeReadyBeforeRescue = await page.locator('#mergeButton').isEnabled();
+    if (await canTap(page.locator('#rescueButton'))) {
+      const mergeReadyBeforeRescue = await canTap(page.locator('#mergeButton'));
       if (mergeReadyBeforeRescue) {
-        await page.locator('#mergeButton').click();
+        if (!(await tryTap(page.locator('#mergeButton')))) continue;
         events.push(`merge@${seconds}`);
         await page.waitForTimeout(20);
         continue;
       }
-      await page.locator('#rescueButton').click();
+      if (!(await tryTap(page.locator('#rescueButton')))) continue;
       events.push(`rescue@${seconds}`);
       if (!postRescueCollapseChecked) {
         await assertPostRescueCommandCollapse(page);
         postRescueCollapseChecked = true;
       }
-    } else if (await page.locator('#mergeButton').isEnabled()) {
-      await page.locator('#mergeButton').click();
+    } else if (await tryTap(page.locator('#mergeButton'))) {
       events.push(`merge@${seconds}`);
-    } else if (await page.locator('#summonButton').isEnabled()) {
-      await page.locator('#summonButton').click();
+    } else if (await tryTap(page.locator('#summonButton'))) {
       events.push(`summon@${seconds}`);
     }
     await page.waitForTimeout(20);
@@ -2051,16 +2072,28 @@ async function verifyCompactResult(page) {
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });
 
+  async function tryTap(locator) {
+    if (!(await locator.isVisible()) || !(await locator.isEnabled())) return false;
+    try {
+      await locator.click({ timeout: 350 });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   const deadline = Date.now() + 12000;
   while (Date.now() < deadline) {
     if (await page.locator('#resultTitle').isVisible()) break;
-    if (await page.locator('#rescueButton').isEnabled()) {
-      await page.locator('#rescueButton').click();
-    } else if (await page.locator('#mergeButton').isEnabled()) {
-      await page.locator('#mergeButton').click();
-    } else if (await page.locator('#summonButton').isEnabled()) {
-      await page.locator('#summonButton').click();
+    if (await tryTap(page.locator('#rescueButton'))) {
+      await page.waitForTimeout(20);
+      continue;
     }
+    if (await tryTap(page.locator('#mergeButton'))) {
+      await page.waitForTimeout(20);
+      continue;
+    }
+    await tryTap(page.locator('#summonButton'));
     await page.waitForTimeout(20);
   }
 

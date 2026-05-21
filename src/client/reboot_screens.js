@@ -9,6 +9,8 @@ const REASON_LABELS = {
   greed: '합성 욕심 실패',
   rescue_missed: '구원 타이밍 실패',
   boss_leaked: '보스 돌파',
+  boss_unfinished: '보스 처치 실패',
+  signal_overrun: '신호 과부하',
   merge_gap: '합성 지연',
   bad_luck: '약한 조합 방치'
 };
@@ -20,6 +22,8 @@ const GOAL_LABELS = {
   rescue_before_merge_greed: '위험 높으면 구원',
   save_rescue_for_partner_danger: '구원 게이지 보존',
   answer_boss_warning: '보스 경고 때 합성',
+  focus_boss_damage: '보스 화력 집중',
+  protect_signal_core: '초반 라인 방어',
   merge_before_boss: '보스 전 합성',
   turn_bad_rolls_into_utility: '약한 유닛 활용'
 };
@@ -31,6 +35,8 @@ const HIGHLIGHT_LABELS = {
   boss_slowed: { label: '보스 둔화 성공', medal: 'boss' },
   rescue_missed: { label: '구원 타이밍 실패', medal: 'rescue' },
   boss_leaked: { label: '보스 돌파', medal: 'boss' },
+  boss_unfinished: { label: '보스 처치 실패', medal: 'boss' },
+  signal_overrun: { label: '신호 과부하', medal: 'tactics' },
   merge_gap: { label: '합성 지연', medal: 'tactics' },
   greed: { label: '합성 욕심 실패', medal: 'tactics' },
   bad_luck: { label: '약한 조합 방치', medal: 'tactics' }
@@ -52,7 +58,7 @@ const ROLE_LABELS = {
 
 function resultMedalForReason(reason) {
   if (['partner_rescued', 'rescue_missed', 'save_rescue_for_partner_danger'].includes(reason)) return 'rescue';
-  if (['boss_final_hit', 'boss_slowed', 'boss_leaked'].includes(reason)) return 'boss';
+  if (['boss_final_hit', 'boss_slowed', 'boss_leaked', 'boss_unfinished'].includes(reason)) return 'boss';
   return 'tactics';
 }
 

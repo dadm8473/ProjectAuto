@@ -294,8 +294,8 @@ export const REBOOT_SEEDS = {
       summonSlow: { action: 'summon', at: [92, 102], result: 'slow_coil', reason: 'boss_slowed' },
       summonBurst: { action: 'summon', at: [92, 102], result: 'burst_pin', reason: 'boss_final_hit' },
       merge: { action: 'merge', at: [92, 102], result: 'burst_pin', reason: 'boss_final_hit' },
-      lateSummon: { action: 'summon', after: 102, reason: 'boss_leaked' },
-      wait: { action: 'wait', at: [92, 116], reason: 'boss_leaked' }
+      lateSummon: { action: 'summon', after: 102, reason: 'boss_unfinished' },
+      wait: { action: 'wait', at: [92, 116], reason: 'boss_unfinished' }
     }
   }
 };

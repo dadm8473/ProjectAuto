@@ -327,6 +327,7 @@ test('result next-goal copy stays compact for generated result plates', () => {
     'rescue_before_merge_greed',
     'save_rescue_for_partner_danger',
     'answer_boss_warning',
+    'focus_boss_damage',
     'merge_before_boss',
     'turn_bad_rolls_into_utility',
     undefined
@@ -348,6 +349,7 @@ test('result reason copy stays compact for generated result plates', () => {
     'greed',
     'rescue_missed',
     'boss_leaked',
+    'boss_unfinished',
     'merge_gap',
     'bad_luck'
   ];
