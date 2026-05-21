@@ -932,6 +932,22 @@ Postprocess: remove #ff00ff chroma key with soft matte/despill, split source int
 Acceptance: featured unit/shop title copy sits on generated game nameplates instead of floating directly on banner art; the two cells keep transparent corners, distinct training/shop identity, and a readable center plate at phone scale.
 ```
 
+## Runtime Prompt: Meta Screen Title Wordmarks
+
+```text
+Use case: stylized-concept
+Asset type: project-bound transparent Korean mobile game UI title wordmark atlas for ProjectAuto meta screens; final runtime will be sliced into four equal horizontal cells.
+Primary request: Create one polished premium mobile game title wordmark atlas on a perfectly flat solid #00ff00 chroma-key background. The atlas must contain exactly four separate Korean title wordmarks, arranged left to right in four equal cells: "유닛", "상점", "미션", "시즌".
+Style: match a high-quality Korean sci-fi toy-board cooperative tower-defense game: beveled metal letters, cream-white inner face, teal glow edges, small gold mechanical trim, compact readable silhouette, same visual language as a commercial mobile game title plate.
+Composition: one row, four equal cells, each title centered in its cell with generous padding. No surrounding rectangular panel, no UI frame, no extra subtitles, no icons except tiny symmetric decorative bolts integrated into the lettering. Keep each wordmark independent and similar height.
+Chroma key requirements: background must be one uniform #00ff00 with no shadows, gradients, texture, reflections, floor plane, or lighting variation. Do not use #00ff00 anywhere in the wordmarks. No cast shadow outside the wordmark edges, no watermark.
+Text accuracy: Korean text must be exact and legible: 유닛 / 상점 / 미션 / 시즌. No English, no extra letters, no numbers.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260521-meta-title-wordmarks-chromakey-imagegen.png
+Runtime file: src/client/assets/generated/reboot-meta-title-wordmarks-v1.png
+Postprocess: remove chroma key with soft matte/despill, center-crop vertical transparent padding to 1200x170 after resize, and preserve four equal 300x170 cells.
+Acceptance: collection/shop/mission/season screen titles read as generated Korean game wordmarks instead of browser h1 text, while the original Korean title text remains available to assistive tech.
+```
+
 ## 후처리 기준
 
 필수:

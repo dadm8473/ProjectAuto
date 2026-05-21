@@ -419,6 +419,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 60_000
   },
   {
+    path: 'src/client/assets/generated/reboot-meta-title-wordmarks-v1.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260521-meta-title-wordmarks-chromakey-imagegen.png',
+    width: 1200,
+    height: 170,
+    minRuntimeBytes: 120_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-meta-action-buttons.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-meta-action-buttons-imagegen.png',
     width: 720,
@@ -1912,6 +1919,31 @@ test('bottom navigation active label plate is promoted from imagegen source art'
   assert.equal(alphaAt(image, image.width - 2, 1) < 10, true, 'nav label plate has an opaque top-right corner');
   assert.equal(alphaAt(image, 1, image.height - 2) < 10, true, 'nav label plate has an opaque bottom-left corner');
   assert.equal(alphaAt(image, image.width - 2, image.height - 2) < 10, true, 'nav label plate has an opaque bottom-right corner');
+});
+
+test('meta screen title wordmarks are generated Korean transparent atlas art', async () => {
+  const runtime = await readFile('src/client/assets/generated/reboot-meta-title-wordmarks-v1.png');
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(runtime[25], 6, 'meta title wordmark atlas must be RGBA');
+  assert.equal(runtime.readUInt32BE(16), 1200);
+  assert.equal(runtime.readUInt32BE(20), 170);
+  assert.equal(runtime.length > 120_000, true, 'meta title wordmark atlas is unexpectedly small');
+
+  const image = parsePng(runtime);
+  const cellWidth = image.width / 4;
+  for (let cell = 0; cell < 4; cell += 1) {
+    const x0 = cell * cellWidth;
+    const bounds = alphaBounds(image, { x: x0, y: 0, width: cellWidth, height: image.height }, 18);
+    assert.equal(bounds.count > 13_000, true, `meta title wordmark cell ${cell} is too sparse: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minX >= 8, true, `meta title wordmark cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 9, true, `meta title wordmark cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minY >= 2, true, `meta title wordmark cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxY <= image.height - 3, true, `meta title wordmark cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+    assert.equal(alphaAt(image, x0 + 1, 1) < 10, true, `meta title wordmark cell ${cell} has opaque top-left corner`);
+    assert.equal(alphaAt(image, x0 + cellWidth - 2, 1) < 10, true, `meta title wordmark cell ${cell} has opaque top-right corner`);
+    assert.equal(alphaAt(image, x0 + 1, image.height - 2) < 10, true, `meta title wordmark cell ${cell} has opaque bottom-left corner`);
+    assert.equal(alphaAt(image, x0 + cellWidth - 2, image.height - 2) < 10, true, `meta title wordmark cell ${cell} has opaque bottom-right corner`);
+  }
 });
 
 test('meta caption plate is promoted from imagegen source art', async () => {

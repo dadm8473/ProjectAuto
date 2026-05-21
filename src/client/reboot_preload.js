@@ -3,6 +3,7 @@ export const CRITICAL_REBOOT_ASSETS = [
   '/src/client/assets/generated/reboot-sound-toggle.png?v=sound-toggle1',
   '/src/client/assets/generated/reboot-title-emblem.png',
   '/src/client/assets/generated/reboot-title-wordmark-v1.png?v=title-wordmark1',
+  '/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1',
   '/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1',
   '/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2',
   '/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title',

@@ -635,7 +635,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-title2">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-title-wordmark1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
@@ -1498,7 +1498,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=result-title2'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=meta-title-wordmark1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=hud-meter1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
@@ -1885,7 +1885,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=result-title2">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=meta-title-wordmark1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2108,26 +2108,29 @@ test('meta screen titles use generated header plates instead of browser default 
   for (const marker of [
     '--meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title")',
     '<button class="screen-back" data-open-screen="lobby" data-nav-icon="home" aria-label="준비실로 돌아가기">준비실</button>',
-    '<h1 data-title-icon="collection" data-station-kind="collection"><span>정비실</span><strong>유닛</strong></h1>',
-    '<h1 data-title-icon="shop" data-station-kind="shop"><span>보급소</span><strong>상점</strong></h1>',
-    '<h1 data-title-icon="missions" data-station-kind="missions"><span>작전판</span><strong>미션</strong></h1>',
-    '<h1 data-title-icon="season" data-station-kind="season"><span>시즌실</span><strong>시즌</strong></h1>',
+    '<h1 data-title-icon="collection" data-station-kind="collection"><span class="hub-station-label">정비실</span><span class="hub-title-wordmark" aria-hidden="true"></span><span class="hub-title-text">유닛</span></h1>',
+    '<h1 data-title-icon="shop" data-station-kind="shop"><span class="hub-station-label">보급소</span><span class="hub-title-wordmark" aria-hidden="true"></span><span class="hub-title-text">상점</span></h1>',
+    '<h1 data-title-icon="missions" data-station-kind="missions"><span class="hub-station-label">작전판</span><span class="hub-title-wordmark" aria-hidden="true"></span><span class="hub-title-text">미션</span></h1>',
+    '<h1 data-title-icon="season" data-station-kind="season"><span class="hub-station-label">시즌실</span><span class="hub-title-wordmark" aria-hidden="true"></span><span class="hub-title-text">시즌</span></h1>',
     '.hub-screen h1',
     'background-image: var(--meta-title-plate);',
     'background-size: 100% 100%;',
+    '--meta-title-wordmarks: url("/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1")',
     '.hub-screen h1::before',
     'background-image: var(--station-title-banner);',
     '.hub-screen h1[data-station-kind="collection"] { --station-title-banner: var(--training-banner); }',
     '.hub-screen h1[data-station-kind="missions"] { --station-title-banner: var(--missions-banner); }',
     '.hub-screen h1[data-station-kind="season"] { --station-title-banner: var(--season-banner); }',
-    '.hub-screen h1 > span',
-    '.hub-screen h1 > strong',
-    '.hub-screen h1::after',
-    'background-image: var(--nav-icons);',
-    '.hub-screen h1[data-title-icon="collection"]::after',
-    '.hub-screen h1[data-title-icon="shop"]::after',
-    '.hub-screen h1[data-title-icon="missions"]::after',
-    '.hub-screen h1[data-title-icon="season"]::after',
+    '.hub-screen h1 > .hub-station-label',
+    '.hub-title-text',
+    '.hub-title-wordmark',
+    '.hub-title-wordmark::before',
+    'background-image: var(--meta-title-wordmarks);',
+    'background-size: 400% 100%;',
+    '.hub-screen h1[data-title-icon="collection"] > .hub-title-wordmark::before',
+    '.hub-screen h1[data-title-icon="shop"] > .hub-title-wordmark::before',
+    '.hub-screen h1[data-title-icon="missions"] > .hub-title-wordmark::before',
+    '.hub-screen h1[data-title-icon="season"] > .hub-title-wordmark::before',
     'margin: 0 0 8px auto;',
     '.hub-screen .screen-back',
     'position: absolute;',
@@ -2141,14 +2144,26 @@ test('meta screen titles use generated header plates instead of browser default 
 
   const titleBlock = css.slice(css.indexOf('.hub-screen h1'), css.indexOf('.screen-list'));
   assert.equal(titleBlock.includes('font-size: 2em'), false);
+  assert.equal(titleBlock.includes('font-size: clamp(20px, 5.9vw, 25px);'), false);
   assert.equal(titleBlock.includes('margin-block-start'), false);
   assert.equal(titleBlock.includes('linear-gradient'), false);
+  assert.equal(titleBlock.includes('.hub-screen h1::after'), false);
   assert.equal(titleBlock.includes('.hub-screen h1[data-station-kind="shop"] { --station-title-banner: var(--shop-banner); }'), false);
   assert.equal(html.includes('<h1 data-title-icon="collection">유닛 강화</h1>'), false);
   assert.equal((html.match(/class="screen-back" data-open-screen="lobby" data-nav-icon="home" aria-label="준비실로 돌아가기">준비실<\/button>/g) ?? []).length, 4);
   assert.equal(html.includes('class="screen-back" data-open-screen="lobby" data-nav-icon="home" aria-label="로비로 돌아가기">홈</button>'), false);
   const hubBackBlock = cssRuleBlock(css, '.hub-screen .screen-back::before');
   assert.equal(hubBackBlock.includes('opacity: 0;'), false);
+  const strongBlock = css.slice(css.indexOf('.hub-title-wordmark {\n'), css.indexOf('.hub-title-wordmark::before'));
+  assert.equal(strongBlock.includes('color: transparent;'), true);
+  assert.equal(strongBlock.includes('aspect-ratio: 300 / 170;'), true);
+  const hiddenTitleBlock = cssRuleBlock(css, '.hub-title-text');
+  assert.equal(hiddenTitleBlock.includes('position: absolute;'), true);
+  assert.equal(hiddenTitleBlock.includes('clip-path: inset(50%);'), true);
+  assert.equal(hiddenTitleBlock.includes('overflow: hidden;'), true);
+  const strongBeforeBlock = cssRuleBlock(css, '.hub-title-wordmark::before');
+  assert.equal(strongBeforeBlock.includes('background-image: var(--meta-title-wordmarks);'), true);
+  assert.equal(strongBeforeBlock.includes('background-size: 400% 100%;'), true);
   const backGlowBlock = cssRuleBlock(css, '.hub-screen .screen-back::after');
   assert.equal(backGlowBlock.includes('background-image: var(--nav-button-glow);'), true);
   assert.equal(backGlowBlock.includes('background-size: 400% 100%;'), true);

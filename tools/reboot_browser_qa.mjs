@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v75');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v76');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=result-title2': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=result-title2'))
+      '/src/client/styles.css?v=meta-title-wordmark1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=meta-title-wordmark1'))
         : false,
       '/src/client/app.js?v=meta-clarity1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=meta-clarity1'))
@@ -113,6 +113,9 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2'))
+        : false,
+      '/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1'))
         : false,
       '/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1'))
@@ -181,7 +184,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v75', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v76', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -387,10 +390,10 @@ async function assertMetaCaptionPlates(page, selector, label, expectedCount = 1)
 
 async function assertMetaStationHeader(page, screenSelector, label) {
   const expectedStations = {
-    collection: { banner: /reboot-training-banner/, caption: '정비실', title: '유닛' },
-    shop: { banner: null, caption: '보급소', title: '상점' },
-    missions: { banner: /reboot-missions-banner/, caption: '작전판', title: '미션' },
-    season: { banner: /reboot-season-banner/, caption: '시즌실', title: '시즌' }
+    collection: { banner: /reboot-training-banner/, caption: '정비실', title: '유닛', position: '0' },
+    shop: { banner: null, caption: '보급소', title: '상점', position: '33.333%' },
+    missions: { banner: /reboot-missions-banner/, caption: '작전판', title: '미션', position: '66.666%' },
+    season: { banner: /reboot-season-banner/, caption: '시즌실', title: '시즌', position: '100%' }
   };
   const screenKey = screenSelector.replace(/^#/, '').replace(/Screen$/, '').replace('List', '');
   const expectedStation = expectedStations[screenKey] ?? expectedStations.collection;
@@ -398,23 +401,23 @@ async function assertMetaStationHeader(page, screenSelector, label) {
     const rect = node.getBoundingClientRect();
     const style = getComputedStyle(node);
     const before = getComputedStyle(node, '::before');
-    const after = getComputedStyle(node, '::after');
     const span = node.querySelector('span');
     const spanRect = span?.getBoundingClientRect();
     const spanStyle = span ? getComputedStyle(span) : null;
-    const strong = node.querySelector('strong');
-    const strongRect = strong?.getBoundingClientRect();
+    const wordmark = node.querySelector('.hub-title-wordmark');
+    const wordmarkRect = wordmark?.getBoundingClientRect();
+    const wordmarkStyle = wordmark ? getComputedStyle(wordmark) : null;
+    const wordmarkBefore = wordmark ? getComputedStyle(wordmark, '::before') : null;
+    const hiddenTitle = node.querySelector('.hub-title-text');
+    const hiddenTitleStyle = hiddenTitle ? getComputedStyle(hiddenTitle) : null;
     const back = node.parentElement?.querySelector('.screen-back');
     const backRect = back?.getBoundingClientRect();
-    const afterRight = Number.parseFloat(after.right) || 0;
-    const afterWidth = Number.parseFloat(after.width) || 0;
     return {
       text: node.textContent?.trim(),
       width: Math.round(rect.width),
       height: Math.round(rect.height),
       left: Math.round(rect.left),
       right: Math.round(rect.right),
-      iconLeft: Math.round(rect.right - afterRight - afterWidth),
       scrollWidth: Math.round(node.scrollWidth),
       clientWidth: Math.round(node.clientWidth),
       captionText: span?.textContent?.trim(),
@@ -423,11 +426,20 @@ async function assertMetaStationHeader(page, screenSelector, label) {
       captionScrollWidth: span ? Math.round(span.scrollWidth) : 0,
       captionClientWidth: span ? Math.round(span.clientWidth) : 0,
       captionBackgroundImage: spanStyle?.backgroundImage ?? '',
-      strongText: strong?.textContent?.trim(),
-      strongWidth: strongRect ? Math.round(strongRect.width) : 0,
-      strongRight: strongRect ? Math.round(strongRect.right) : 0,
-      strongScrollWidth: strong ? Math.round(strong.scrollWidth) : 0,
-      strongClientWidth: strong ? Math.round(strong.clientWidth) : 0,
+      wordmarkAriaHidden: wordmark?.getAttribute('aria-hidden') ?? '',
+      wordmarkWidth: wordmarkRect ? Math.round(wordmarkRect.width) : 0,
+      wordmarkHeight: wordmarkRect ? Math.round(wordmarkRect.height) : 0,
+      wordmarkScrollWidth: wordmark ? Math.round(wordmark.scrollWidth) : 0,
+      wordmarkClientWidth: wordmark ? Math.round(wordmark.clientWidth) : 0,
+      wordmarkFontSize: wordmarkStyle?.fontSize ?? '',
+      wordmarkColor: wordmarkStyle?.color ?? '',
+      wordmarkBeforeBackgroundImage: wordmarkBefore?.backgroundImage ?? '',
+      wordmarkBeforeBackgroundSize: wordmarkBefore?.backgroundSize ?? '',
+      wordmarkBeforeBackgroundPosition: wordmarkBefore?.backgroundPosition ?? '',
+      hiddenTitleText: hiddenTitle?.textContent?.trim() ?? '',
+      hiddenTitlePosition: hiddenTitleStyle?.position ?? '',
+      hiddenTitleClipPath: hiddenTitleStyle?.clipPath ?? '',
+      hiddenTitleOverflow: hiddenTitleStyle?.overflow ?? '',
       backLeft: backRect ? Math.round(backRect.left) : 0,
       backRight: backRect ? Math.round(backRect.right) : 0,
       backgroundImage: style.backgroundImage,
@@ -441,18 +453,26 @@ async function assertMetaStationHeader(page, screenSelector, label) {
     assert.equal(header.beforeBackgroundImage, 'none', `${label} station title should keep the premium shop banner out of the compact title plate: ${JSON.stringify(header)}`);
   }
   assert.equal(header.captionText, expectedStation.caption, `${label} station caption changed at runtime: ${JSON.stringify(header)}`);
-  assert.equal(header.strongText, expectedStation.title, `${label} station title changed at runtime: ${JSON.stringify(header)}`);
+  assert.equal(header.wordmarkAriaHidden, 'true', `${label} visual title wordmark should be hidden from assistive tech: ${JSON.stringify(header)}`);
+  assert.equal(header.hiddenTitleText, expectedStation.title, `${label} hidden station title changed at runtime: ${JSON.stringify(header)}`);
+  assert.equal(header.hiddenTitlePosition, 'absolute', `${label} hidden station title is not sr-only positioned: ${JSON.stringify(header)}`);
+  assert.equal(header.hiddenTitleOverflow, 'hidden', `${label} hidden station title is not clipped: ${JSON.stringify(header)}`);
+  assert.match(header.hiddenTitleClipPath, /inset\(50%\)/, `${label} hidden station title lost clip-path: ${JSON.stringify(header)}`);
   assert.equal(header.width <= 300, true, `${label} station title is still page-header sized: ${JSON.stringify(header)}`);
-  assert.equal(header.height <= 72, true, `${label} station title is too tall: ${JSON.stringify(header)}`);
+  assert.equal(header.height <= 84, true, `${label} station title is too tall: ${JSON.stringify(header)}`);
   assert.equal(header.left >= header.backRight + 6, true, `${label} station title overlaps back command: ${JSON.stringify(header)}`);
   assert.equal(header.scrollWidth <= header.clientWidth + 1, true, `${label} station title text overflows: ${JSON.stringify(header)}`);
   assert.equal(header.captionBackgroundImage.includes('reboot-meta-caption-plate'), true, `${label} station caption lost generated plate: ${JSON.stringify(header)}`);
   assert.equal(header.captionWidth >= 38, true, `${label} station caption is clipped too tightly: ${JSON.stringify(header)}`);
   assert.equal(header.captionHeight >= 20, true, `${label} station caption is too shallow: ${JSON.stringify(header)}`);
   assert.equal(header.captionScrollWidth <= header.captionClientWidth + 1, true, `${label} station caption text overflows: ${JSON.stringify(header)}`);
-  assert.equal(header.strongWidth >= 38, true, `${label} station title strong label is clipped too tightly: ${JSON.stringify(header)}`);
-  assert.equal(header.strongRight <= header.iconLeft - 2, true, `${label} station icon overlaps title label: ${JSON.stringify(header)}`);
-  assert.equal(header.strongScrollWidth <= header.strongClientWidth + 1, true, `${label} station title strong text overflows: ${JSON.stringify(header)}`);
+  assert.equal(header.wordmarkWidth >= 104, true, `${label} station title wordmark is clipped too tightly: ${JSON.stringify(header)}`);
+  assert.equal(header.wordmarkHeight >= 58, true, `${label} station title wordmark is too shallow: ${JSON.stringify(header)}`);
+  assert.equal(header.wordmarkFontSize, '0px', `${label} station title visible text was not replaced by the wordmark: ${JSON.stringify(header)}`);
+  assert.match(header.wordmarkBeforeBackgroundImage, /reboot-meta-title-wordmarks-v1/, `${label} station title lacks generated Korean wordmark: ${JSON.stringify(header)}`);
+  assert.equal(header.wordmarkBeforeBackgroundSize, '400% 100%', `${label} station title wordmark atlas is not sliced: ${JSON.stringify(header)}`);
+  assert.equal(header.wordmarkBeforeBackgroundPosition.startsWith(expectedStation.position), true, `${label} station title wordmark uses wrong atlas cell: ${JSON.stringify(header)}`);
+  assert.equal(header.wordmarkScrollWidth <= header.wordmarkClientWidth + 1, true, `${label} station title wordmark overflows: ${JSON.stringify(header)}`);
 }
 
 async function assertMetaShowcaseChips(page, selector, label, expectedCount) {
