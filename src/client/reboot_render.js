@@ -19,14 +19,15 @@ const FLOATING_DAMAGE_TTL = 0.62;
 const COMBAT_SHAKE_MAX_PX = 8;
 const GENERATED_TRACK_PATH = [
   { p: 0, x: 196, y: 158 },
-  { p: 0.12, x: 202, y: 205 },
-  { p: 0.24, x: 284, y: 248 },
-  { p: 0.36, x: 284, y: 288 },
-  { p: 0.49, x: 160, y: 301 },
-  { p: 0.6, x: 82, y: 334 },
-  { p: 0.7, x: 89, y: 348 },
-  { p: 0.82, x: 270, y: 356 },
-  { p: 1, x: 300, y: 345 }
+  { p: 0.12, x: 214, y: 183 },
+  { p: 0.24, x: 270, y: 224 },
+  { p: 0.36, x: 250, y: 252 },
+  { p: 0.49, x: 154, y: 266 },
+  { p: 0.6, x: 88, y: 292 },
+  { p: 0.7, x: 92, y: 316 },
+  { p: 0.82, x: 204, y: 338 },
+  { p: 0.92, x: 240, y: 346 },
+  { p: 1, x: 252, y: 346 }
 ];
 
 export const REBOOT_ATLAS_MANIFEST = {
@@ -76,7 +77,7 @@ export const REBOOT_ATLAS_MANIFEST = {
 
 export const REBOOT_BACKDROP_MANIFEST = {
   battle: {
-    src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1',
+    src: '/src/client/assets/generated/reboot-battle-backdrop-v2.png?v=battle-backdrop-v2',
     width: 390,
     height: 620,
     source: 'imagegen'

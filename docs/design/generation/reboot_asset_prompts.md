@@ -603,6 +603,22 @@ Constraints: transparent background, no text, no letters, no numbers, no waterma
 Export target: icon bbox 148-190px longest side, pivot x 128 y 128, center deviation <= 6px, at least 24px margin around the subject.
 ```
 
+## Runtime Prompt: Battle Backdrop V2
+
+```text
+Use case: stylized-concept
+Asset type: opaque portrait combat battlefield background for ProjectAuto reboot battle screen.
+Primary request: Create a premium dark sci-fi cooperative tower defense battlefield map for a portrait mobile game. Preserve the gameplay geometry from the current battle backdrop: a 390x620 vertical frame, the same S-shaped enemy route, a bottom player board area, and a top partner socket deck, but restyle it to match ProjectAuto's dark graphite metal, cyan signal energy, amber gold trim, and generated app chrome.
+Canvas/layout: vertical portrait map. Enemy route must be a bright cyan signal-lit S road that starts near x=196 y=158, passes x=270 y=224, x=154 y=266, x=88 y=292, x=92 y=316, x=204 y=338, and ends near x=252 y=346 in the 390x620 coordinate system. Leave readable floor around the route for enemies and effects. Keep a premium bottom command/player socket platform from y=455 to y=560 that is not a black empty hole. Keep the upper partner socket deck around y=95 to y=170. The map must work behind existing HUD and action dock overlays.
+Style: high-end Korean mobile game UI background, dark sci-fi toy-board cooperative defense arena, polished graphite and gunmetal, luminous cyan glass route, restrained amber gold accents, compact commercial game readability, dramatic but not busy, consistent with ProjectAuto Signal Relay meta screens.
+Lighting: darker, moodier, more premium than the earlier beige garden-like map; no bright grass, no warm daylight, no cute park scenery, no cartoon plaza. Use controlled cyan rim lights and dark floor plates.
+Avoid: text, letters, numbers, logos, watermarks, dice/casino cues, large characters, enemies, towers, oversized trees, bright beige concrete, cheerful daytime lighting, blurry route, route geometry drift, empty black lower socket panel.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260522-battle-backdrop-v2-imagegen.png
+Runtime file: src/client/assets/generated/reboot-battle-backdrop-v2.png
+Postprocess: center-crop the generated source to the 390:620 target aspect, resize to 390x620, lightly boost contrast/color/sharpness for phone readability while preserving dark map tone.
+Acceptance: the battle screen reads as part of the same premium dark sci-fi app as meta/result screens; enemies and generated track effects remain grounded on the cyan S route at the existing serialized path coordinates.
+```
+
 ## Runtime Prompt: Result Badges
 
 ```text

@@ -1230,7 +1230,7 @@ test('signal core gate anchors the protected end of the track before enemies arr
 
   assert.notEqual(coreIndex, -1, 'expected generated signal core gate at the protected track end');
   assert.notEqual(enemyIndex, -1, 'expected enemy sprites to render');
-  assert.equal(coreCenterX >= 260, true, 'signal core gate should sit near the right-side track endpoint');
+  assert.equal(coreCenterX >= 230, true, 'signal core gate should sit near the visible lower track endpoint');
   assert.equal(coreCenterY >= 340 && coreCenterY <= 370, true, `signal core gate should anchor the visible lower generated track end: ${coreCenterY}`);
   assert.equal(coreBottom <= 392, true, `signal core gate should not be buried under the player board tray: ${coreBottom}`);
   assert.equal(coreIndex < enemyIndex, true, 'signal core gate should sit behind enemies so the threat reads clearly');
@@ -1466,8 +1466,8 @@ test('enemy sprites follow serialized track progress instead of a timer-only pat
   assert.ok(enemyDraw, 'expected enemy atlas draw');
   const enemyCenterY = enemyDraw.args[6] + enemyDraw.args[8] / 2;
   const enemyBottom = enemyDraw.args[6] + enemyDraw.args[8];
-  assert.equal(enemyDraw.args[5] + enemyDraw.args[7] / 2 > 260, true, 'enemy with high progress should render near the protected track end');
-  assert.equal(enemyCenterY >= 350, true, `enemy with high progress should render on the lower generated track end: ${enemyCenterY}`);
+  assert.equal(enemyDraw.args[5] + enemyDraw.args[7] / 2 > 200, true, 'enemy with high progress should render near the protected track end');
+  assert.equal(enemyCenterY >= 330, true, `enemy with high progress should render on the lower generated track end: ${enemyCenterY}`);
   assert.equal(enemyBottom <= 392, true, `enemy with high progress should remain above the player board tray: ${enemyBottom}`);
 });
 

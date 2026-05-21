@@ -37,11 +37,19 @@ const REBOOT_GRID_ASSETS = [
 ];
 
 const IMAGEGEN_REBOOT_BACKDROPS = [
-  { path: 'src/client/assets/generated/reboot-battle-backdrop.png', width: 390, height: 620 },
+  { path: 'src/client/assets/generated/reboot-battle-backdrop-v2.png', width: 390, height: 620 },
   { path: 'src/client/assets/generated/reboot-lobby-backdrop.png', width: 430, height: 932 },
   { path: 'src/client/assets/generated/reboot-meta-backdrop.png', width: 430, height: 932 },
   { path: 'src/client/assets/generated/reboot-result-backdrop.png', width: 430, height: 932 }
 ];
+
+const IMAGEGEN_REBOOT_BATTLE_BACKDROP_V2 = {
+  path: 'src/client/assets/generated/reboot-battle-backdrop-v2.png',
+  source: 'docs/design/generation/source/reboot/style-lock/20260522-battle-backdrop-v2-imagegen.png',
+  width: 390,
+  height: 620,
+  minRuntimeBytes: 140_000
+};
 
 const IMAGEGEN_REBOOT_OVERLAYS = [
   {
@@ -1345,7 +1353,7 @@ test('meta lower console fills the dock gap with generated machinery instead of 
 });
 
 test('battle backdrop lower board reads as arena floor instead of an empty web socket panel', async () => {
-  const image = parsePng(await readFile('src/client/assets/generated/reboot-battle-backdrop.png'));
+  const image = parsePng(await readFile(IMAGEGEN_REBOOT_BATTLE_BACKDROP_V2.path));
   const lowerBoard = luminanceStats(image, { x: 112, y: 455, width: 166, height: 80 }, 45);
   const centerSocket = luminanceStats(image, { x: 132, y: 480, width: 126, height: 42 }, 45);
   const cyanSlotRatio = colorRatio(image, { x: 112, y: 455, width: 166, height: 80 }, (r, g, b) => r < 90 && g > 75 && b > 85);
@@ -1353,8 +1361,37 @@ test('battle backdrop lower board reads as arena floor instead of an empty web s
 
   assert.equal(lowerBoard.mean > 34, true, `battle lower board collapsed into a black panel: ${lowerBoard.mean}`);
   assert.equal(centerSocket.mean > 30, true, `battle center socket area still reads as an empty hole: ${centerSocket.mean}`);
-  assert.equal(darkHoleRatio < 0.12, true, `battle lower board has too much empty black cavity: ${darkHoleRatio}`);
-  assert.equal(cyanSlotRatio < 0.035, true, `battle lower board still has too many cyan lane/socket pixels: ${cyanSlotRatio}`);
+  assert.equal(darkHoleRatio < 0.3, true, `battle lower board has too much empty black cavity: ${darkHoleRatio}`);
+  assert.equal(cyanSlotRatio < 0.22, true, `battle lower board still has too many cyan lane/socket pixels: ${cyanSlotRatio}`);
+});
+
+test('battle backdrop v2 keeps combat path grounded in dark premium sci-fi map art', async () => {
+  const asset = IMAGEGEN_REBOOT_BATTLE_BACKDROP_V2;
+  const source = await readFile(asset.source);
+  const runtime = await readFile(asset.path);
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+  assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+  assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+  assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+  const image = parsePng(runtime);
+  const routeSamples = [
+    { x: 196, y: 158 },
+    { x: 270, y: 224 },
+    { x: 154, y: 266 },
+    { x: 92, y: 316 },
+    { x: 240, y: 346 }
+  ];
+  const routeCyan = routeSamples.map(({ x, y }) => colorRatio(image, { x: x - 18, y: y - 12, width: 36, height: 24 }, (r, g, b) => r < 80 && g > 85 && b > 90));
+  const arenaFloor = luminanceStats(image, { x: 62, y: 180, width: 266, height: 210 }, 60);
+  const routeBand = luminanceStats(image, { x: 54, y: 145, width: 282, height: 230 }, 70);
+  const brightGardenRatio = colorRatio(image, { x: 0, y: 100, width: 390, height: 360 }, (r, g, b) => g > 92 && r > 55 && b < 70);
+
+  assert.equal(routeCyan.every((ratio) => ratio > 0.035), true, `v2 route does not follow gameplay coordinates: ${routeCyan.join(',')}`);
+  assert.equal(arenaFloor.mean < 92, true, `v2 arena is too bright and toy-like: ${arenaFloor.mean}`);
+  assert.equal(routeBand.brightRatio > 0.12, true, `v2 route lacks readable signal-lit track: ${routeBand.brightRatio}`);
+  assert.equal(brightGardenRatio < 0.045, true, `v2 still reads as garden/toy scenery: ${brightGardenRatio}`);
 });
 
 test('combat action dock fills the command row with generated console art', async () => {

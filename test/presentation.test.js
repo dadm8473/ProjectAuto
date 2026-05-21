@@ -118,7 +118,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_action_ui.js?v=hud-meter1'",
     "from './reboot_audio.js?v=audio-safe1'",
     "from './reboot_hud.js?v=board-copy1'",
-    "from './reboot_render.js?v=online-wait-field1'",
+    "from './reboot_render.js?v=battle-backdrop-v2'",
     "from './reboot_result_ui.js?v=result-ui2'",
     "from './reboot_screens.js?v=objective-slots1'",
     "from './reboot_online.js'"
@@ -263,7 +263,7 @@ test('reboot render uses only reboot atlases and manifest keys', async () => {
   for (const marker of [
     'REBOOT_ATLAS_MANIFEST',
     'REBOOT_BACKDROP_MANIFEST',
-    'reboot-battle-backdrop.png',
+    'reboot-battle-backdrop-v2.png',
     'reboot-unit-atlas.png',
     'reboot-enemy-atlas-v3.png?v=enemy-atlas-v3',
     'openingThreatPreview: {',
@@ -755,7 +755,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-slots1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-backdrop-v2"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-standby2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-ready-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-copy1"></script>'), false);
@@ -833,7 +833,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=online-wait-field1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=battle-backdrop-v2'"), true);
   assert.equal(app.includes("from './reboot_render.js?v=partner-standby2'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=enemy-atlas3'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=opening-route1'"), false);
@@ -890,7 +890,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_screens.js?v=lobby-next1'"), false);
   assert.equal(app.includes("from './reboot_screens.js'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=reboot-action-ready1'"), false);
-  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1'"), true);
+  assert.equal(render.includes("src: '/src/client/assets/generated/reboot-battle-backdrop-v2.png?v=battle-backdrop-v2'"), true);
   assert.equal(render.includes("src: '/src/client/assets/generated/reboot-combat-first-command-spotlight.png?v=summon-reward1'"), true);
   assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1")'), true);
   assert.equal(css.includes('--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=reboot-action-ready1")'), false);
@@ -909,7 +909,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=objective-slots1';",
+    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=battle-backdrop-v2';",
     'function scheduleWarmRebootAssets()',
     'warmRebootAssets().catch(() => {});',
     'preloadCriticalRebootAssets().then(() => {\n  hideLoadingGate();\n  scheduleWarmRebootAssets();\n}, hideLoadingGate);',
