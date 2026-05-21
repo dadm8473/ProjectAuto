@@ -747,8 +747,7 @@ function buildShopFeaturedShowcase({ featuredItem, profile, unlocks, gems }) {
     detail: featuredItem.description,
     stats: [
       { text: SHOP_PURPOSE_BADGE, label: `${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL}` },
-      { text: `보유 ${gems}`, label: `보유 ${gems} 보석` },
-      { text: `가격 ${price}`, label: `가격 ${price} 보석` }
+      { text: `보유 ${gems}`, label: `보유 ${gems} 보석` }
     ],
     spriteClass: 'shop-cosmetic',
     spriteAttr: 'data-shop-cosmetic',

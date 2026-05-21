@@ -117,10 +117,10 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=hud-meter1'",
     "from './reboot_audio.js?v=audio-safe1'",
-    "from './reboot_hud.js?v=pending-copy1'",
+    "from './reboot_hud.js?v=shop-chips1'",
     "from './reboot_render.js?v=unit-pedestal1'",
     "from './reboot_result_ui.js?v=result-ui1'",
-    "from './reboot_screens.js?v=pending-copy1'",
+    "from './reboot_screens.js?v=shop-chips1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -741,7 +741,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=pending-copy1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shop-chips1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=pending-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-home1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shop-copy1"></script>'), false);
@@ -840,7 +841,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=pending-copy1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=shop-chips1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=pending-copy1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-home1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=reward-copy1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=shop-copy1'"), false);
@@ -4603,7 +4605,6 @@ test('shop screen uses the active generated showcase stage', async () => {
     '추천 외형',
     "{ text: SHOP_PURPOSE_BADGE, label: `${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL}` }",
     "{ text: `보유 ${gems}`, label: `보유 ${gems} 보석` }",
-    "{ text: `가격 ${price}`, label: `가격 ${price} 보석` }",
     'data-shop-purpose="cosmetic-only"',
     '전투력 영향 없음',
     '<span class="role-pill" aria-label="${SHOP_PURPOSE_LABEL}">${SHOP_PURPOSE_BADGE}</span>',
@@ -4615,6 +4616,8 @@ test('shop screen uses the active generated showcase stage', async () => {
 
   assert.equal(css.includes('.meta-summary[data-summary-kind="shop"]'), false);
   assert.equal(css.includes('--shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png")'), false);
+  assert.equal(screens.includes("{ text: `가격 ${price}`, label: `가격 ${price} 보석` }"), false);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="가격 90 보석">가격 90</span>'), false);
 });
 
 test('shop showcase promotes the generated cosmetic icon above the dark banner art', async () => {
@@ -5146,11 +5149,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=retry-context1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=pending-copy1'",
+    "from './reboot_screens.js?v=shop-chips1'",
     "from './reboot_game.js?v=retry-context1'",
     "from '../shared/game.js?v=retry-context1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=pending-copy1',
+    '/src/client/reboot_screens.js?v=shop-chips1',
     '/src/shared/game.js?v=retry-context1',
     '/src/shared/reboot_game.js?v=retry-context1'
   ]) {

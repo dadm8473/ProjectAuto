@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v67');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v68');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
       '/src/client/styles.css?v=hud-meter1': cache
         ? Boolean(await cache.match('/src/client/styles.css?v=hud-meter1'))
         : false,
-      '/src/client/app.js?v=pending-copy1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=pending-copy1'))
+      '/src/client/app.js?v=shop-chips1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=shop-chips1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -108,8 +108,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
         : false,
-      '/src/client/reboot_hud.js?v=pending-copy1': cache
-        ? Boolean(await cache.match('/src/client/reboot_hud.js?v=pending-copy1'))
+      '/src/client/reboot_hud.js?v=shop-chips1': cache
+        ? Boolean(await cache.match('/src/client/reboot_hud.js?v=shop-chips1'))
         : false,
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
@@ -120,8 +120,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_result_ui.js?v=result-ui1': cache
         ? Boolean(await cache.match('/src/client/reboot_result_ui.js?v=result-ui1'))
         : false,
-      '/src/client/reboot_screens.js?v=pending-copy1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=pending-copy1'))
+      '/src/client/reboot_screens.js?v=shop-chips1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=shop-chips1'))
         : false,
       '/src/shared/game.js?v=retry-context1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=retry-context1'))
@@ -169,7 +169,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v67', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v68', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1919,7 +1919,7 @@ async function verifyShell(page, viewport) {
   await assertMetaStationHeader(page, '#shopScreen', 'shop');
   await page.locator('.shop-cosmetic').first().waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#shopScreen .meta-showcase-copy > span:first-child', 'shop', 1);
-  await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'shop', 3);
+  await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'shop', 2);
   assert.equal(await page.locator('#shopScreen .meta-showcase-chip').first().textContent(), '외형');
   assert.equal(
     await page.locator('#shopScreen .meta-showcase-chip').first().getAttribute('aria-label'),
@@ -2024,7 +2024,7 @@ async function verifyCompactMeta(page) {
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
   await assertLobbyNextActionShop(page, 'compact shop-only priority');
   await assertMetaStationHeader(page, '#shopScreen', 'compact shop');
-  await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'compact shop', 3);
+  await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'compact shop', 2);
   assert.equal(await page.locator('#shopScreen .meta-showcase-chip').first().textContent(), '외형');
   assert.equal(
     await page.locator('#shopScreen .meta-showcase-chip').first().getAttribute('aria-label'),

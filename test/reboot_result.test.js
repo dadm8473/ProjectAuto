@@ -605,7 +605,8 @@ test('meta screens start with compact actionable status headers', () => {
   assert.equal(shop.includes('meta-showcase'), true);
   assert.equal(shop.includes('추천 외형'), true);
   assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="보유 100 보석">보유 100</span>'), true);
-  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="가격 90 보석">가격 90</span>'), true);
+  assert.equal(shop.includes('class="shop-price shop-feature-price" aria-label="해금 비용 90 보석">90</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="가격 90 보석">가격 90</span>'), false);
 
   const missions = buildMissionScreen({
     processedRuns: ['run-1'],
@@ -657,9 +658,9 @@ test('collection and shop showcases split numeric state into compact game badges
   assert.equal(shop.includes('class="meta-showcase-stats"'), true);
   assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="외형 전용 · 전투력 영향 없음">외형</span>'), true);
   assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="보유 0 보석">보유 0</span>'), true);
-  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="가격 90 보석">가격 90</span>'), true);
   assert.equal(shop.includes('<span class="meta-showcase-chip">외형 전용</span>'), false);
   assert.equal(shop.includes('<span class="meta-showcase-chip">보유 0 보석</span>'), false);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="가격 90 보석">가격 90</span>'), false);
   assert.equal(shop.includes('<span class="meta-showcase-chip">가격 90 보석</span>'), false);
   assert.equal(shop.includes('0 보석 보유 · 90 보석'), false);
   assert.equal(shop.includes('젬'), false);
