@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v78');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v79');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=splash-season-badge1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=splash-season-badge1'))
+      '/src/client/styles.css?v=combat-op-badge1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=combat-op-badge1'))
         : false,
       '/src/client/app.js?v=meta-clarity1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=meta-clarity1'))
@@ -176,6 +176,9 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2'))
+        : false,
+      '/src/client/assets/generated/reboot-combat-operation-badge-v1.png?v=combat-op-badge1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-combat-operation-badge-v1.png?v=combat-op-badge1'))
         : false
     };
     return {
@@ -190,7 +193,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v78', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v79', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1516,6 +1519,42 @@ async function assertCombatHudMeterBounds(page, label = 'combat battle') {
   }
 }
 
+async function assertCombatOperationBadge(page, label = 'combat battle') {
+  const badge = await page.locator('.brand').evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const title = node.querySelector('strong')?.getBoundingClientRect();
+    const subtitleNode = node.querySelector('span');
+    const subtitle = subtitleNode?.getBoundingClientRect();
+    const subtitleStyle = subtitleNode ? getComputedStyle(subtitleNode) : null;
+    const before = getComputedStyle(node, '::before');
+    const style = getComputedStyle(node);
+    return {
+      text: node.querySelector('strong')?.textContent?.trim() ?? '',
+      subtitle: subtitleNode?.textContent?.trim() ?? '',
+      subtitleDisplay: subtitleStyle?.display ?? '',
+      backgroundImage: style.backgroundImage,
+      backgroundSize: style.backgroundSize,
+      beforeContent: before.content,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      titleLeft: Math.round(title?.left ?? 0),
+      titleRight: Math.round(title?.right ?? 0),
+      subtitleLeft: Math.round(subtitle?.left ?? 0),
+      subtitleRight: Math.round(subtitle?.right ?? 0),
+      left: Math.round(rect.left),
+      right: Math.round(rect.right),
+      viewportWidth: window.innerWidth
+    };
+  });
+  assert.match(badge.backgroundImage, /reboot-combat-operation-badge-v1/, `${label} operation badge lacks generated nameplate art: ${JSON.stringify(badge)}`);
+  assert.equal(badge.backgroundSize, '100% 100%', `${label} operation badge art is not fitted: ${JSON.stringify(badge)}`);
+  assert.equal(badge.beforeContent === 'none' || badge.beforeContent === 'normal', true, `${label} operation badge should rely on generated socket art only: ${JSON.stringify(badge)}`);
+  assert.equal(badge.width >= 104 && badge.height >= 28, true, `${label} operation badge too small: ${JSON.stringify(badge)}`);
+  assert.equal(badge.titleLeft >= badge.left && badge.titleRight <= badge.right, true, `${label} operation title escapes badge: ${JSON.stringify(badge)}`);
+  if (badge.subtitle && badge.subtitleDisplay !== 'none') assert.equal(badge.subtitleLeft >= badge.left && badge.subtitleRight <= badge.right, true, `${label} operation subtitle escapes badge: ${JSON.stringify(badge)}`);
+  assert.equal(badge.left >= 0 && badge.right <= badge.viewportWidth, true, `${label} operation badge leaves viewport: ${JSON.stringify(badge)}`);
+}
+
 async function assertActionDockGeneratedConsoleSurface(page) {
   const surface = await page.locator('.action-panel').evaluate(async (node) => {
     async function analyzeGeneratedDockImage(backgroundImage) {
@@ -2213,6 +2252,7 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#bossMeter').isVisible(), false);
   assert.notEqual(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await assertCombatDockSafeArea(page);
+  await assertCombatOperationBadge(page);
   await assertCombatHudMeterBounds(page);
   await assertActionDockGeneratedConsoleSurface(page);
   await assertActionDockRenderedBoundaryScreenshot(page);
@@ -2387,6 +2427,7 @@ async function verifyCompactResult(page) {
   await page.getByRole('button', { name: '시작' }).click();
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });
+  await assertCombatOperationBadge(page, 'compact battle');
   await assertCombatHudMeterBounds(page, 'compact battle');
 
   async function tryTap(locator) {

@@ -22,6 +22,7 @@ test('critical reboot preload list starts with generated game identity and first
     '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1',
     '/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3',
     '/src/client/assets/generated/reboot-combat-hud-frame.png',
+    '/src/client/assets/generated/reboot-combat-operation-badge-v1.png?v=combat-op-badge1',
     '/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1',
     '/src/client/assets/generated/reboot-player-board-bridge.png?v=player-board-bridge1'
   ];
@@ -77,6 +78,7 @@ test('critical reboot preload follows generated polish css asset urls', async ()
     '--reward-reveal-payoff-stage',
     '--meta-lower-console',
     '--splash-season-badge',
+    '--combat-operation-badge',
     '--lobby-operation-title-plate',
     '--meta-title-wordmarks',
     '--meta-caption-plate'

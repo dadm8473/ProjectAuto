@@ -87,6 +87,7 @@
   --meta-objective-status-stamps: url("/src/client/assets/generated/reboot-meta-objective-status-stamps.png?v=objective-stamps1");
   --meta-objective-rails: url("/src/client/assets/generated/reboot-meta-objective-rails.png?v=objective-rails1");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
+  --combat-operation-badge: url("/src/client/assets/generated/reboot-combat-operation-badge-v1.png?v=combat-op-badge1");
   --combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1");
   --combat-first-command-dock: url("/src/client/assets/generated/reboot-combat-first-command-dock.png?v=first-command-dock1");
   --combat-command-console-v2: url("/src/client/assets/generated/reboot-combat-command-console-v2.png?v=command-console-v2");
@@ -546,26 +547,28 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 }
 
 .brand {
-  flex: 1 1 auto;
-  min-width: 0;
+  position: relative;
+  flex: 0 1 clamp(108px, 30vw, 124px);
+  min-width: 104px;
   margin-left: clamp(34px, 10vw, 46px);
+  box-sizing: border-box;
   display: grid;
-  grid-template-columns: clamp(28px, 8vw, 34px) minmax(0, 1fr);
-  column-gap: clamp(5px, 1.4vw, 7px);
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
   align-items: center;
+  justify-items: start;
+  aspect-ratio: 640 / 175;
+  padding: 4px 8px 4px clamp(36px, 10vw, 42px);
+  background-image: var(--combat-operation-badge);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  filter: drop-shadow(0 6px 11px rgba(0, 0, 0, 0.42));
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.74);
 }
 
 .brand::before {
-  content: "";
-  grid-row: 1 / span 2;
-  width: clamp(28px, 8vw, 34px);
-  aspect-ratio: 1;
-  background-image: var(--title-emblem);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: auto 100%;
-  filter: drop-shadow(0 4px 9px rgba(88, 215, 255, 0.28));
+  content: none;
 }
 
 .brand strong {
@@ -585,7 +588,9 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 
 .meters {
   display: grid;
-  flex: 0 0 clamp(220px, 60vw, 258px);
+  flex: 1 1 clamp(220px, 60vw, 258px);
+  min-width: 0;
+  max-width: clamp(220px, 60vw, 258px);
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
 }
@@ -701,7 +706,8 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 @media (max-width: 360px) {
   .brand {
     margin-left: 32px;
-    grid-template-columns: 28px minmax(0, 1fr);
+    flex-basis: 106px;
+    padding-left: 34px;
   }
 
   .brand span {
@@ -710,22 +716,23 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 
   .meters {
     flex-basis: 182px;
+    max-width: 182px;
     gap: 3px;
   }
 
   .meters > span {
     gap: 2px;
-    padding: 4px 2px;
+    padding: 4px 1px;
     font-size: 8px;
   }
 
   .meter-value {
-    min-width: 14px;
-    font-size: 9px;
+    min-width: 12px;
+    font-size: 8px;
   }
 
   .meter-label {
-    max-width: 20px;
+    max-width: 18px;
     overflow: hidden;
     font-size: 6px;
   }
@@ -736,14 +743,14 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   }
 
   .meters > span::before {
-    width: 14px;
-    height: 14px;
-    flex-basis: 14px;
-    background-size: 84px 14px;
+    width: 12px;
+    height: 12px;
+    flex-basis: 12px;
+    background-size: 72px 12px;
   }
 
-  #rescueMeter::before { background-position: -28px 0; }
-  #dangerMeter::before { background-position: -42px 0; }
+  #rescueMeter::before { background-position: -24px 0; }
+  #dangerMeter::before { background-position: -36px 0; }
 }
 
 .stage-wrap {

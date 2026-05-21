@@ -181,6 +181,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 60_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-operation-badge-v1.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260521-combat-operation-badge-chromakey-imagegen.png',
+    width: 640,
+    height: 175,
+    minRuntimeBytes: 120_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-combat-action-dock.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-shell-chrome-imagegen.png',
     width: 430,
@@ -1715,6 +1722,26 @@ test('splash season badge is transparent generated chrome for overlaid Korean te
   assert.equal(bounds.minX >= 4, true, `splash season badge touches left edge: ${JSON.stringify(bounds)}`);
   assert.equal(bounds.maxX <= image.width - 5, true, `splash season badge touches right edge: ${JSON.stringify(bounds)}`);
   assert.equal(centerPanelCoverage > 0.9, true, `splash season badge center panel is not solid enough for Korean text: ${centerPanelCoverage}`);
+});
+
+test('combat operation badge is transparent generated chrome for the battle HUD title', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-combat-operation-badge-v1.png'));
+  const corners = [
+    alphaAt(image, 1, 1),
+    alphaAt(image, image.width - 2, 1),
+    alphaAt(image, 1, image.height - 2),
+    alphaAt(image, image.width - 2, image.height - 2)
+  ];
+  const bounds = alphaBounds(image, { x: 0, y: 0, width: image.width, height: image.height }, 18);
+  const titlePanelCoverage = alphaCoverage(image, { x: 170, y: 55, width: 365, height: 65 }, 180);
+  const socketCoverage = alphaCoverage(image, { x: 80, y: 38, width: 70, height: 90 }, 180);
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, `combat operation badge has opaque corners: ${corners.join(',')}`);
+  assert.equal(bounds.count > 64_000, true, `combat operation badge is too sparse: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.minX >= 6, true, `combat operation badge touches left edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxX <= image.width - 7, true, `combat operation badge touches right edge: ${JSON.stringify(bounds)}`);
+  assert.equal(titlePanelCoverage > 0.9, true, `combat operation title panel is not solid enough for Korean text: ${titlePanelCoverage}`);
+  assert.equal(socketCoverage > 0.85, true, `combat operation emblem socket is not readable enough: ${socketCoverage}`);
 });
 
 test('bottom navigation selector pads use transparent imagegen cells instead of black rectangles', async () => {

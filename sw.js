@@ -1,9 +1,9 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v78';
+const CACHE_NAME = 'projectauto-reboot-shell-v79';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/src/client/styles.css?v=splash-season-badge1',
+  '/src/client/styles.css?v=combat-op-badge1',
   '/src/client/app.js?v=meta-clarity1',
   '/src/client/reboot_audio.js?v=audio-safe1',
   '/src/client/reboot_actions.js?v=combat-meter2',
@@ -56,6 +56,7 @@ const APP_SHELL_URLS = [
   '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1',
   '/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3',
   '/src/client/assets/generated/reboot-combat-hud-frame.png',
+  '/src/client/assets/generated/reboot-combat-operation-badge-v1.png?v=combat-op-badge1',
   '/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1',
   '/src/client/assets/generated/reboot-player-board-tray.png?v=player-tray',
   '/src/client/assets/generated/reboot-unit-activation-ring.png?v=unit-activation-ring1',

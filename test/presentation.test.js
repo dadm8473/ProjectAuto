@@ -635,7 +635,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=splash-season-badge1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-op-badge1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
@@ -1498,7 +1498,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=splash-season-badge1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=combat-op-badge1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=hud-meter1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
@@ -1885,7 +1885,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=splash-season-badge1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=combat-op-badge1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -5367,6 +5367,7 @@ test('combat shell uses generated HUD and action dock chrome', async () => {
 
   for (const marker of [
     '--combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png")',
+    '--combat-operation-badge: url("/src/client/assets/generated/reboot-combat-operation-badge-v1.png?v=combat-op-badge1")',
     '--combat-action-dock: url("/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1")',
     'body[data-app-screen="battle"] .hud::before',
     'body[data-app-screen="battle"] .action-panel::before',
@@ -5386,9 +5387,12 @@ test('combat HUD brand reads as a generated operation badge, not a web header', 
 
   for (const marker of [
     '<strong>신호릴레이</strong>',
+    '--combat-operation-badge: url("/src/client/assets/generated/reboot-combat-operation-badge-v1.png?v=combat-op-badge1")',
+    'background-image: var(--combat-operation-badge);',
+    'aspect-ratio: 640 / 175;',
     '.brand::before',
-    'background-image: var(--title-emblem);',
-    'grid-template-columns: clamp(28px, 8vw, 34px) minmax(0, 1fr);',
+    'content: none;',
+    'grid-template-columns: minmax(0, 1fr);',
     'text-shadow: 0 2px 8px rgba(0, 0, 0, 0.74);',
     'white-space: nowrap;'
   ]) {
@@ -5397,6 +5401,12 @@ test('combat HUD brand reads as a generated operation badge, not a web header', 
 
   const hudBlock = html.slice(html.indexOf('<section class="hud">'), html.indexOf('</section>', html.indexOf('<section class="hud">')));
   assert.equal(hudBlock.includes('<strong>ProjectAuto</strong>'), false);
+  const brandBlock = css.slice(css.indexOf('.brand {\n'), css.indexOf('.brand::before'));
+  const brandBeforeBlock = css.slice(css.indexOf('.brand::before'), css.indexOf('.brand strong'));
+  assert.equal(brandBlock.includes('background: rgba('), false);
+  assert.equal(brandBlock.includes('linear-gradient'), false);
+  assert.equal(brandBlock.includes('border: 1px'), false);
+  assert.equal(brandBeforeBlock.includes('background-image: var(--title-emblem);'), false);
 });
 
 test('combat shell chrome renders the generated action dock as a full command console', async () => {
@@ -5468,7 +5478,9 @@ test('combat HUD keeps three resource meters bounded on compact phones', async (
 
   for (const marker of [
     '.hud {\n  gap: 4px;',
-    'flex: 0 0 clamp(220px, 60vw, 258px);',
+    'flex: 1 1 clamp(220px, 60vw, 258px);',
+    'min-width: 0;',
+    'max-width: clamp(220px, 60vw, 258px);',
     'grid-template-columns: repeat(3, minmax(0, 1fr));',
     'white-space: nowrap;',
     'overflow: hidden;',
@@ -5478,16 +5490,17 @@ test('combat HUD keeps three resource meters bounded on compact phones', async (
     'HUD meter value escapes generated socket',
     '@media (max-width: 360px)',
     '.brand span {\n    display: none;',
+    'max-width: 182px;',
     '.meters > span {\n    gap: 2px;',
-    'padding: 4px 2px;',
-    '.meter-value {\n    min-width: 14px;',
-    'font-size: 9px;',
-    '.meter-label {\n    max-width: 20px;',
+    'padding: 4px 1px;',
+    '.meter-value {\n    min-width: 12px;',
+    'font-size: 8px;',
+    '.meter-label {\n    max-width: 18px;',
     'overflow: hidden;',
     '#dangerMeter .meter-label {\n    max-width: 30px;\n    font-size: 6px;',
-    '.meters > span::before {\n    width: 14px;',
-    '#rescueMeter::before { background-position: -28px 0; }',
-    '#dangerMeter::before { background-position: -42px 0; }'
+    '.meters > span::before {\n    width: 12px;',
+    '#rescueMeter::before { background-position: -24px 0; }',
+    '#dangerMeter::before { background-position: -36px 0; }'
   ]) {
     assert.equal(`${css}\n${qa}`.includes(marker), true, marker);
   }

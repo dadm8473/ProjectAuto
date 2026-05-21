@@ -804,6 +804,21 @@ Runtime files:
 - src/client/assets/generated/reboot-splash-season-badge-v1.png
 ```
 
+## Runtime Prompt: Combat Operation Badge
+
+```text
+Use case: stylized-concept
+Asset type: transparent mobile game UI badge for ProjectAuto combat HUD operation title.
+Primary request: Create one compact horizontal operation-title badge frame with no text, on a perfectly flat solid #00ff00 chroma-key background for background removal.
+Composition: one left-HUD nameplate for a portrait Korean mobile co-op tower-defense combat screen, with a small integrated circular emblem socket on the left and a dark teal glass center panel for overlaid Korean operation title/status copy. The badge must remain readable when displayed around 120x34 CSS pixels.
+Style/medium: polished ProjectAuto rescue relay toy-board tower-defense UI, graphite metal, teal inner glow, small gold trim, amber/blue gem lights, crisp bevels, painterly rendered PNG game asset. Match the splash season badge, lobby operation title plate, and combat HUD chrome.
+Constraints: no letters, numbers, symbols, placeholder text, watermark, logo, cast shadow, reflection, floor plane, website card, CSS pill, casino UI, or flat browser label. Keep the chroma background perfectly flat and do not use #00ff00 inside the subject.
+Postprocess: remove chroma key with soft matte, trim to alpha bounds, add transparent padding, and resize proportionally to 640x175 RGBA runtime PNG.
+Runtime files:
+- docs/design/generation/source/reboot/style-lock/20260521-combat-operation-badge-chromakey-imagegen.png
+- src/client/assets/generated/reboot-combat-operation-badge-v1.png
+```
+
 ## Runtime Prompt: Dual Crisis Cutin
 
 ```text
