@@ -69,6 +69,7 @@
   --missions-banner: url("/src/client/assets/generated/reboot-missions-banner.png");
   --mission-command-board: url("/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1");
   --season-banner: url("/src/client/assets/generated/reboot-season-banner.png");
+  --season-reward-board: url("/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1");
   --meta-row-frames: url("/src/client/assets/generated/reboot-meta-row-frames.png?v=meta-row-alpha1");
   --meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges-alpha1");
   --meta-status-plaques: url("/src/client/assets/generated/reboot-meta-status-plaques.png?v=meta-status-plaques1");
@@ -3277,6 +3278,35 @@ body[data-app-screen="season"] .app-screen::after {
   z-index: 2;
 }
 
+#seasonList {
+  position: relative;
+  isolation: isolate;
+  grid-auto-rows: auto;
+  background-image: var(--season-reward-board);
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 100% 100%;
+}
+
+#seasonList::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: var(--season-reward-board);
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 100% 100%;
+  opacity: 0.98;
+  filter: saturate(1.18) brightness(1.18) contrast(1.06) drop-shadow(0 18px 30px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+}
+
+#seasonList > * {
+  position: relative;
+  z-index: 2;
+}
+
 .meta-shelf-grid {
   position: relative;
   z-index: 1;
@@ -3362,6 +3392,14 @@ body[data-app-screen="season"] .app-screen::after {
   filter: none;
 }
 
+#seasonList .meta-progress-board[data-progress-board="season"] {
+  background-image: none;
+  filter: none;
+  min-height: clamp(500px, 126vw, 600px);
+  padding: clamp(18px, 5vw, 24px) clamp(26px, 7vw, 34px) clamp(46px, 11vw, 56px);
+  gap: clamp(3px, 1.2vw, 5px);
+}
+
 .season-track-board {
   background-image: var(--season-banner);
   min-height: clamp(178px, 47vw, 208px);
@@ -3371,6 +3409,39 @@ body[data-app-screen="season"] .app-screen::after {
     "copy command"
     "rail rail";
   padding: 16px 18px 17px;
+}
+
+#seasonList .season-track-board {
+  background-image: none;
+  filter: none;
+  min-height: clamp(286px, 74vw, 318px);
+  grid-template-columns: clamp(132px, 38vw, 154px) minmax(0, 1fr);
+  grid-template-rows: minmax(108px, auto) minmax(112px, auto);
+  grid-template-areas:
+    "copy rail"
+    "copy command";
+  align-items: center;
+  padding: clamp(18px, 5vw, 24px) clamp(18px, 5vw, 24px) clamp(26px, 7vw, 34px);
+  gap: 8px 10px;
+}
+
+#seasonList .season-board-copy {
+  align-self: start;
+  max-width: clamp(120px, 36vw, 150px);
+}
+
+#seasonList .season-track-rail {
+  grid-column: auto;
+  align-self: center;
+  min-height: 72px;
+  padding: 10px 12px;
+  gap: 6px;
+}
+
+#seasonList .season-board-command {
+  align-self: center;
+  justify-self: end;
+  transform: translateY(-4px);
 }
 
 .mission-stamp-board::after,

@@ -1,9 +1,9 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v81';
+const CACHE_NAME = 'projectauto-reboot-shell-v82';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/src/client/styles.css?v=mission-command-board1',
+  '/src/client/styles.css?v=season-reward-board1',
   '/src/client/app.js?v=staged-preload1',
   '/src/client/reboot_audio.js?v=audio-safe1',
   '/src/client/reboot_actions.js?v=combat-meter2',
@@ -33,6 +33,7 @@ const APP_SHELL_URLS = [
   '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1',
   '/src/client/assets/generated/reboot-shop-banner-v2.png?v=shop-banner2',
   '/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1',
+  '/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1',
   '/src/client/assets/generated/reboot-title-emblem.png',
   '/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2',
   '/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title',

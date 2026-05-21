@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v81');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v82');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=mission-command-board1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=mission-command-board1'))
+      '/src/client/styles.css?v=season-reward-board1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=season-reward-board1'))
         : false,
       '/src/client/app.js?v=staged-preload1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=staged-preload1'))
@@ -186,6 +186,9 @@ async function verifyInstallableShell(page) {
       '/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1'))
         : false,
+      '/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1'))
+        : false,
       '/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1'))
         : false,
@@ -208,7 +211,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v81', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v82', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1041,6 +1044,34 @@ async function assertMissionCommandBoard(page, label = 'missions') {
   assert.equal(board.width >= minWidth && board.height >= minHeight, true, `${label} mission command board collapsed: ${JSON.stringify(board)}`);
   assert.equal(board.stampBackgroundImage, 'none', `${label} top mission fragments still cover the unified board: ${JSON.stringify(board)}`);
   assert.equal(board.contractsBackgroundImage, 'none', `${label} lower mission rows still cover the unified board: ${JSON.stringify(board)}`);
+}
+
+async function assertSeasonRewardBoard(page, label = 'season') {
+  const board = await page.locator('#seasonList').evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const before = getComputedStyle(node, '::before');
+    const track = node.querySelector('.season-track-board');
+    const tiers = node.querySelector('.meta-progress-board[data-progress-board="season"]');
+    const trackStyle = track ? getComputedStyle(track) : null;
+    const tiersStyle = tiers ? getComputedStyle(tiers) : null;
+    return {
+      backgroundImage: before.backgroundImage,
+      backgroundSize: before.backgroundSize,
+      pointerEvents: before.pointerEvents,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      trackBackgroundImage: trackStyle?.backgroundImage ?? '',
+      tiersBackgroundImage: tiersStyle?.backgroundImage ?? ''
+    };
+  });
+  assert.match(board.backgroundImage, /reboot-season-reward-board-v1/, `${label} lacks generated season reward board: ${JSON.stringify(board)}`);
+  assert.equal(board.backgroundSize, '100% 100%', `${label} season reward board is not fitted: ${JSON.stringify(board)}`);
+  assert.equal(board.pointerEvents, 'none', `${label} season reward board blocks taps: ${JSON.stringify(board)}`);
+  const minWidth = label.includes('compact') ? 280 : 300;
+  const minHeight = label.includes('compact') ? 320 : 560;
+  assert.equal(board.width >= minWidth && board.height >= minHeight, true, `${label} season reward board collapsed: ${JSON.stringify(board)}`);
+  assert.equal(board.trackBackgroundImage, 'none', `${label} top season fragments still cover the unified board: ${JSON.stringify(board)}`);
+  assert.equal(board.tiersBackgroundImage, 'none', `${label} lower season rows still cover the unified board: ${JSON.stringify(board)}`);
 }
 
 async function assertResultGeneratedCopySurfaces(page) {
@@ -2260,6 +2291,7 @@ async function verifyShell(page, viewport) {
   await assertActiveNavLabelPlate(page, '시즌', 'season');
   await assertMetaStationHeader(page, '#seasonScreen', 'season');
   await page.locator('#seasonList .season-track-board').waitFor({ state: 'visible' });
+  await assertSeasonRewardBoard(page, 'season');
   await assertMetaCaptionPlates(page, '#seasonScreen .season-board-copy span, #seasonScreen .season-board-copy p', 'season', 2);
   const seasonBoardCopy = await page.locator('#seasonScreen .season-board-copy').evaluate((node) => ({
     label: node.querySelector('span')?.textContent?.trim() ?? '',
@@ -2362,6 +2394,7 @@ async function verifyCompactMeta(page) {
   await page.getByRole('button', { name: '시즌', exact: true }).click();
   await page.locator('#seasonList .season-track-board').waitFor({ state: 'visible' });
   await assertMetaStationHeader(page, '#seasonScreen', 'compact season');
+  await assertSeasonRewardBoard(page, 'compact season');
 }
 
 async function verifyCompactRewardBoards(page) {

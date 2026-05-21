@@ -147,6 +147,14 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     requiresAlpha: false
   },
   {
+    path: 'src/client/assets/generated/reboot-season-reward-board-v1.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260521-season-reward-board-imagegen.png',
+    width: 768,
+    height: 1152,
+    minRuntimeBytes: 400_000,
+    requiresAlpha: false
+  },
+  {
     path: 'src/client/assets/generated/reboot-season-banner.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-season-banner-imagegen.png',
     width: 430,

@@ -635,7 +635,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-command-board1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-reward-board1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-command-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
@@ -1500,7 +1501,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=mission-command-board1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=season-reward-board1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=mission-command-board1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hud-meter1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
@@ -1887,7 +1889,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=mission-command-board1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=season-reward-board1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -4954,6 +4956,7 @@ test('mission and season screens use generated stamp and reward-track boards', a
     '--missions-banner: url("/src/client/assets/generated/reboot-missions-banner.png")',
     '--mission-command-board: url("/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1")',
     '--season-banner: url("/src/client/assets/generated/reboot-season-banner.png")',
+    '--season-reward-board: url("/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1")',
     'function buildMissionStampBoard',
     'function buildSeasonTrackBoard',
     'class="mission-stamp-board"',
@@ -5066,6 +5069,37 @@ test('mission screen reads as one generated command board instead of floating we
   const stampOverrideBlock = cssRuleBlock(css, '#missionsList .mission-stamp-board');
   const progressOverrideBlock = cssRuleBlock(css, '#missionsList .meta-progress-board[data-progress-board="missions"]');
   assert.equal(stampOverrideBlock.includes('background-image: none;'), true);
+  assert.equal(progressOverrideBlock.includes('background-image: none;'), true);
+});
+
+test('season screen reads as one generated reward board instead of floating web fragments', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '--season-reward-board: url("/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1")',
+    '#seasonList',
+    '#seasonList::before',
+    'background-image: var(--season-reward-board);',
+    'background-size: 100% 100%;',
+    '#seasonList > *',
+    '#seasonList .season-track-board',
+    '#seasonList .meta-progress-board[data-progress-board="season"]'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const seasonListBlock = cssRuleBlock(css, '#seasonList');
+  assert.equal(seasonListBlock.includes('isolation: isolate;'), true);
+  assert.equal(seasonListBlock.includes('grid-auto-rows: auto;'), true);
+  assert.equal(seasonListBlock.includes('background-image: var(--season-reward-board);'), true);
+  const boardLayerBlock = cssRuleBlock(css, '#seasonList::before');
+  assert.equal(boardLayerBlock.includes('z-index: 1;'), true);
+  assert.equal(boardLayerBlock.includes('brightness(1.18)'), true);
+  assert.equal(boardLayerBlock.includes('pointer-events: none;'), true);
+  assert.equal(boardLayerBlock.includes('linear-gradient'), false);
+  const trackOverrideBlock = cssRuleBlock(css, '#seasonList .season-track-board');
+  const progressOverrideBlock = cssRuleBlock(css, '#seasonList .meta-progress-board[data-progress-board="season"]');
+  assert.equal(trackOverrideBlock.includes('background-image: none;'), true);
   assert.equal(progressOverrideBlock.includes('background-image: none;'), true);
 });
 
