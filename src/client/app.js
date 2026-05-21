@@ -7,7 +7,7 @@ import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabel
 import { createRebootAudio } from './reboot_audio.js?v=audio-safe1';
 import { updateCombatHudMeters } from './reboot_hud.js?v=board-copy1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
-import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=online-wait-field1';
+import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=objective-slots1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=online-wait-field1';
 import { applyRebootResultView } from './reboot_result_ui.js?v=result-ui2';
 import {
@@ -24,7 +24,7 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=meta-clarity1';
+} from './reboot_screens.js?v=objective-slots1';
 import { createRebootOnlineClient } from './reboot_online.js';
 const qs = (selector) => document.querySelector(selector);
 const query = new URLSearchParams(location.search);

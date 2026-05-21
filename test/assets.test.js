@@ -817,6 +817,15 @@ const IMAGEGEN_REBOOT_META_OBJECTIVE_RAILS = {
   minRuntimeBytes: 50_000
 };
 
+const IMAGEGEN_REBOOT_META_OBJECTIVE_COMMAND_SLOTS = {
+  path: 'src/client/assets/generated/reboot-meta-objective-command-slots-v1.png',
+  source: 'docs/design/generation/source/reboot/style-lock/20260522-meta-objective-command-slots-chromakey-imagegen.png',
+  width: 2048,
+  height: 384,
+  columns: 4,
+  minRuntimeBytes: 240_000
+};
+
 const IMAGEGEN_REBOOT_META_ITEM_STATUS_OVERLAYS = {
   path: 'src/client/assets/generated/reboot-meta-item-status-overlays.png',
   source: 'docs/design/generation/source/reboot/style-lock/20260516-meta-item-status-overlays-chromakey-imagegen.png',
@@ -2519,6 +2528,43 @@ test('meta objective rail cells turn mission and season rows into generated boar
     assert.equal(bounds.maxX <= cellWidth - 7, true, `objective rail cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 4, true, `objective rail cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 5, true, `objective rail cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('meta objective command slots expose generated state cells for mission and season rows', async () => {
+  const asset = IMAGEGEN_REBOOT_META_OBJECTIVE_COMMAND_SLOTS;
+  const source = await readFile(asset.source);
+  const runtime = await readFile(asset.path);
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+  assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+  assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+  assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+  assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+  const image = parsePng(runtime);
+  const cellWidth = asset.width / asset.columns;
+  for (let cell = 0; cell < asset.columns; cell += 1) {
+    const x0 = cell * cellWidth;
+    const corners = [
+      alphaAt(image, x0 + 3, 3),
+      alphaAt(image, x0 + cellWidth - 4, 3),
+      alphaAt(image, x0 + 3, image.height - 4),
+      alphaAt(image, x0 + cellWidth - 4, image.height - 4)
+    ];
+    const bounds = alphaBounds(image, { x: x0, y: 0, width: cellWidth, height: image.height }, 32);
+    const socketCoverage = alphaCoverage(image, { x: x0 + 26, y: 78, width: 122, height: 170 }, 48);
+    const commandCoverage = alphaCoverage(image, { x: x0 + 392, y: 78, width: 90, height: 184 }, 48);
+    const titleLaneCoverage = alphaCoverage(image, { x: x0 + 158, y: 90, width: 210, height: 142 }, 48);
+
+    assert.equal(corners.every((alpha) => alpha < 12), true, `objective slot cell ${cell} has opaque corners: ${corners.join(',')}`);
+    assert.equal(bounds.count > 45_000, true, `objective slot cell ${cell} has too little generated game chrome`);
+    assert.equal(socketCoverage > 0.18, true, `objective slot cell ${cell} lacks a left reward socket`);
+    assert.equal(commandCoverage > 0.15, true, `objective slot cell ${cell} lacks a right command bay`);
+    assert.equal(titleLaneCoverage > 0.16, true, `objective slot cell ${cell} lacks a central objective lane`);
+    assert.equal(titleLaneCoverage < 0.94, true, `objective slot cell ${cell} is an opaque text slab`);
+    assert.equal(bounds.minX >= 4, true, `objective slot cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 5, true, `objective slot cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
   }
 });
 

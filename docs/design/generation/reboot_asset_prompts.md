@@ -1014,6 +1014,24 @@ Postprocess: crop the generated 1024x1536 source to the central board area `(74,
 Acceptance: the mission screen reads as one generated operation board instead of floating HTML fragments; mission reward, three contract rows, and action sockets remain readable at 390x844 and compact portrait widths.
 ```
 
+## Runtime Prompt: Meta Objective Command Slots
+
+```text
+Use case: stylized-concept
+Asset type: project-bound transparent-background mission/season objective row state atlas for ProjectAuto.
+Primary request: Create one premium Korean mobile game objective command slot atlas with four state cells for mission and season rows. The atlas replaces web-like repeated list rails with generated game slots.
+Canvas/layout: source can be four stacked or four side-by-side cells on a perfectly flat #00ff00 chroma-key background. Each cell must contain one horizontal objective row frame with a left circular reward socket, a central empty objective nameplate/progress lane, and a right compact command bay. No text, letters, numbers, logos, or watermarks.
+Cell order: locked/progress, ready/claimable, claimed/received, current/next target.
+Style: high-end Korean mobile game UI, sci-fi toy-board cooperative tower defense, glossy dark graphite metal, teal/cyan glass energy, restrained amber gold trim, crisp bevels, readable at phone scale, matching ProjectAuto Signal Relay assets.
+State treatments: locked is dim teal with a mechanical latch; ready is bright cyan with warm reward glow; claimed is subdued gold seal and stable cyan lights; current is cyan tracking brackets with small amber pointer accents.
+Transparency/chroma constraints: background must be perfectly flat #00ff00 with no shadows, gradients, texture, reflections, floor plane, or lighting variation. Keep all slot pixels separated from the background. Do not use #00ff00 inside the slots.
+Avoid: browser cards, flat CSS panels, plain rounded rectangles, full opaque slabs, casino/gacha/dice cues, random fantasy ornaments, clutter inside the center lane, fake text.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260522-meta-objective-command-slots-chromakey-imagegen.png
+Runtime file: src/client/assets/generated/reboot-meta-objective-command-slots-v1.png
+Postprocess: remove chroma key with soft matte/despill, split the four generated rows into state cells, resize each cell into a 512x384 transparent slot, compose a 2048x384 horizontal atlas, then boost contrast/color and sharpen lightly for compact portrait readability.
+Acceptance: mission and season rows read as stateful generated objective slots with clear reward socket, center progress lane, and command bay; the rows no longer look like empty web list rails, and current/ready/claimed/locked states are visually distinct at 390x844.
+```
+
 ## Runtime Prompt: Collection Training Board
 
 ```text

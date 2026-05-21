@@ -847,6 +847,7 @@ export function buildSeasonScreen(profile = {}) {
   const claimed = new Set(profile.claimedPassTiers ?? []);
   const xp = profile.xp ?? 0;
   const board = buildSeasonTrackBoard(profile, claimed);
+  const currentIndex = SHOP.pass.tiers.findIndex((tier, index) => !claimed.has(index) && xp < tier.xp);
   const tiers = SHOP.pass.tiers.map((tier, index) => {
     const done = xp >= tier.xp;
     const received = claimed.has(index);
@@ -860,8 +861,9 @@ export function buildSeasonScreen(profile = {}) {
       : done
         ? `<button type="button" data-pass-claim="${index}" aria-label="${index + 1}단계 시즌 보상 ${rewardLabel} 수령">${CLAIM_ACTION_LABEL}</button>`
         : passiveCardState('진행중', 'locked', '대기');
+    const currentAttrs = index === currentIndex ? ' data-objective-current="true" aria-current="step"' : '';
     return `
-    <article class="screen-card season-card" data-pass-tier="${index}" data-owned="${received}" data-objective-state="${stampState}" aria-label="${index + 1}단계 · 시즌 경험치 ${progress}/${tier.xp} · 보상 ${rewardLabel} · ${actionLabel}">
+    <article class="screen-card season-card" data-pass-tier="${index}" data-owned="${received}" data-objective-state="${stampState}"${currentAttrs} aria-label="${index + 1}단계 · 시즌 경험치 ${progress}/${tier.xp} · 보상 ${rewardLabel} · ${actionLabel}">
       ${cardStateBadge(cardState)}
       <span class="reward-token season-reward-token" data-reward-icon="${rewardIconForGrant(tier.grant, 'season')}"></span>
       <div class="card-copy">

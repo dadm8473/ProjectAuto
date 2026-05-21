@@ -120,7 +120,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_hud.js?v=board-copy1'",
     "from './reboot_render.js?v=online-wait-field1'",
     "from './reboot_result_ui.js?v=result-ui2'",
-    "from './reboot_screens.js?v=meta-clarity1'",
+    "from './reboot_screens.js?v=objective-slots1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -642,7 +642,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-wait-field1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-slots1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-reward-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-unified-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-reward-board1">'), false);
@@ -755,7 +755,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-wait-field1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-slots1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-standby2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-ready-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-copy1"></script>'), false);
@@ -860,7 +860,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=meta-clarity1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=objective-slots1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=board-copy1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=shop-chips1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=pending-copy1'"), false);
@@ -909,7 +909,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=online-wait-field1';",
+    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=objective-slots1';",
     'function scheduleWarmRebootAssets()',
     'warmRebootAssets().catch(() => {});',
     'preloadCriticalRebootAssets().then(() => {\n  hideLoadingGate();\n  scheduleWarmRebootAssets();\n}, hideLoadingGate);',
@@ -1513,7 +1513,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=online-wait-field1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=objective-slots1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=meta-unified-board1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=season-reward-board1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=mission-command-board1'), false);
@@ -1903,7 +1903,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=online-wait-field1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=objective-slots1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -4903,7 +4903,7 @@ test('mission and season use a generated progress board instead of bare stacked 
   const season = buildSeasonScreen({ xp: 0, claimedPassTiers: [] });
 
   assert.equal(css.includes('--meta-progress-board: url("/src/client/assets/generated/reboot-meta-progress-board.png?v=meta-progress-board1")'), true);
-  assert.equal(css.includes('--meta-objective-rails: url("/src/client/assets/generated/reboot-meta-objective-rails.png?v=objective-rails1")'), true);
+  assert.equal(css.includes('--meta-objective-command-slots: url("/src/client/assets/generated/reboot-meta-objective-command-slots-v1.png?v=objective-slots1")'), true);
   assert.equal(missions.includes('class="meta-progress-board" data-progress-board="missions"'), true);
   assert.equal(season.includes('class="meta-progress-board" data-progress-board="season"'), true);
 
@@ -4928,11 +4928,16 @@ test('mission and season use a generated progress board instead of bare stacked 
 
   const boardFrameBlock = css.slice(css.indexOf('.meta-progress-board .mission-card::before,'), css.indexOf('.meta-progress-board .card-state-badge'));
   for (const marker of [
-    'background-image: var(--meta-objective-rails);',
-    'background-size: 200% 100%;',
+    'background-image: var(--meta-objective-command-slots);',
+    'background-size: 400% 100%;',
     'inset: clamp(1px, 0.8vw, 4px) clamp(2px, 1.2vw, 5px);',
-    '.meta-progress-board .mission-card::before { background-position: 0 0; }',
-    '.meta-progress-board .season-card::before { background-position: 100% 0; }'
+    '.meta-progress-board .mission-card[data-objective-state="locked"]::before,',
+    '.meta-progress-board .season-card[data-objective-state="locked"]::before { background-position: 0 0; }',
+    '.meta-progress-board .mission-card[data-objective-state="ready"]::before,',
+    '.meta-progress-board .season-card[data-objective-state="ready"]::before { background-position: 33.333% 0; }',
+    '.meta-progress-board .mission-card[data-objective-state="claimed"]::before,',
+    '.meta-progress-board .season-card[data-objective-state="claimed"]::before { background-position: 66.666% 0; }',
+    '.meta-progress-board .season-card[data-objective-current="true"]::before { background-position: 100% 0; }'
   ]) {
     assert.equal(boardFrameBlock.includes(marker), true, marker);
   }
@@ -4941,6 +4946,7 @@ test('mission and season use a generated progress board instead of bare stacked 
 
 test('mission and season rows compress into reward-track slots instead of large text cards', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
+  const season = buildSeasonScreen({ xp: 0, claimedPassTiers: [] });
 
   const boardCardBlock = css.slice(css.indexOf('.meta-progress-board .mission-card,'), css.indexOf('.meta-progress-board .mission-card::before,'));
   for (const marker of [
@@ -4966,6 +4972,8 @@ test('mission and season rows compress into reward-track slots instead of large 
   const progressBlock = cssRuleBlock(css, '.meta-progress-board .meta-progress');
   assert.equal(progressBlock.includes('width: min(100%, 132px);'), true);
   assert.equal(progressBlock.includes('height: 14px;'), true);
+  assert.equal(season.includes('data-objective-current="true"'), true);
+  assert.equal(season.includes('aria-current="step"'), true);
 });
 
 test('mission and season screens use generated stamp and reward-track boards', async () => {
@@ -5436,11 +5444,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=retry-context1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=meta-clarity1'",
+    "from './reboot_screens.js?v=objective-slots1'",
     "from './reboot_game.js?v=retry-context1'",
     "from '../shared/game.js?v=retry-context1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=meta-clarity1',
+    '/src/client/reboot_screens.js?v=objective-slots1',
     '/src/shared/game.js?v=retry-context1',
     '/src/shared/reboot_game.js?v=retry-context1'
   ]) {

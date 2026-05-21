@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v86');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v87');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=online-wait-field1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=online-wait-field1'))
+      '/src/client/styles.css?v=objective-slots1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=objective-slots1'))
         : false,
-      '/src/client/app.js?v=online-wait-field1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=online-wait-field1'))
+      '/src/client/app.js?v=objective-slots1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=objective-slots1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -138,8 +138,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
         : false,
-      '/src/client/reboot_preload.js?v=online-wait-field1': cache
-        ? Boolean(await cache.match('/src/client/reboot_preload.js?v=online-wait-field1'))
+      '/src/client/reboot_preload.js?v=objective-slots1': cache
+        ? Boolean(await cache.match('/src/client/reboot_preload.js?v=objective-slots1'))
         : false,
       '/src/client/reboot_render.js?v=online-wait-field1': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=online-wait-field1'))
@@ -147,8 +147,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_result_ui.js?v=result-ui2': cache
         ? Boolean(await cache.match('/src/client/reboot_result_ui.js?v=result-ui2'))
         : false,
-      '/src/client/reboot_screens.js?v=meta-clarity1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=meta-clarity1'))
+      '/src/client/reboot_screens.js?v=objective-slots1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=objective-slots1'))
         : false,
       '/src/shared/game.js?v=retry-context1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=retry-context1'))
@@ -204,6 +204,9 @@ async function verifyInstallableShell(page) {
       '/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1'))
         : false,
+      '/src/client/assets/generated/reboot-meta-objective-command-slots-v1.png?v=objective-slots1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-objective-command-slots-v1.png?v=objective-slots1'))
+        : false,
       '/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1'))
         : false,
@@ -226,7 +229,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v86', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v87', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -2330,7 +2333,7 @@ async function verifyShell(page, viewport) {
   await assertMetaListReachesDock(page, '#missionsList', 'missions');
   assert.equal(await page.locator('#missionsList .mission-stamp-slot').count(), 3);
   assert.equal(await page.locator('#missionsList .mission-card').count(), 3);
-  await assertGeneratedCardSurface(page, '#missionsList .mission-card', 'mission row card', /reboot-meta-objective-rails/);
+  await assertGeneratedCardSurface(page, '#missionsList .mission-card', 'mission row card', /reboot-meta-objective-command-slots/);
   await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await page.getByRole('button', { name: '시즌', exact: true }).click();
   await assertActiveNavLabelPlate(page, '시즌', 'season');
@@ -2363,7 +2366,8 @@ async function verifyShell(page, viewport) {
   assert.match(currentSeasonMarker.afterBackgroundImage, /reboot-meta-objective-status-stamps/, `season current marker lacks generated stamp art: ${JSON.stringify(currentSeasonMarker)}`);
   assert.equal(currentSeasonMarker.afterOpacity > 0.3, true, `season current marker art is too faint: ${JSON.stringify(currentSeasonMarker)}`);
   assert.equal(await page.locator('#seasonList .season-card').count(), 4);
-  await assertGeneratedCardSurface(page, '#seasonList .season-card', 'season row card', /reboot-meta-objective-rails/);
+  assert.equal(await page.locator('#seasonList .season-card[data-objective-current="true"]').count(), 1);
+  await assertGeneratedCardSurface(page, '#seasonList .season-card', 'season row card', /reboot-meta-objective-command-slots/);
   await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
 
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).click();

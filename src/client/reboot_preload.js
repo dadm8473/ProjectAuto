@@ -32,6 +32,7 @@ export const REBOOT_WARMUP_ASSETS = [
   '/src/client/assets/generated/reboot-shop-display-board-v1.png?v=shop-display-board1',
   '/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1',
   '/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1',
+  '/src/client/assets/generated/reboot-meta-objective-command-slots-v1.png?v=objective-slots1',
   '/src/client/assets/generated/reboot-lobby-operation-progress-rail.png?v=operation-progress1',
   '/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1',
   '/src/client/assets/generated/reboot-unit-atlas.png',
