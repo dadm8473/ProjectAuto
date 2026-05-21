@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v72');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v73');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
       '/src/client/styles.css?v=title-wordmark1': cache
         ? Boolean(await cache.match('/src/client/styles.css?v=title-wordmark1'))
         : false,
-      '/src/client/app.js?v=online-ready-copy1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=online-ready-copy1'))
+      '/src/client/app.js?v=meta-clarity1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=meta-clarity1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -126,8 +126,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_result_ui.js?v=result-ui1': cache
         ? Boolean(await cache.match('/src/client/reboot_result_ui.js?v=result-ui1'))
         : false,
-      '/src/client/reboot_screens.js?v=board-copy1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=board-copy1'))
+      '/src/client/reboot_screens.js?v=meta-clarity1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=meta-clarity1'))
         : false,
       '/src/shared/game.js?v=retry-context1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=retry-context1'))
@@ -175,7 +175,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v72', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v73', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1913,6 +1913,26 @@ async function verifyShell(page, viewport) {
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#collectionScreen .meta-showcase-copy > span:first-child', 'collection', 1);
   await assertMetaShowcaseChips(page, '#collectionScreen .meta-showcase-chip', 'collection', 2);
+  const collectionFeatureCopy = await page.locator('#collectionScreen .unit-feature-showcase').evaluate((node) => ({
+    label: node.querySelector('.meta-showcase-copy > span:first-child')?.textContent?.trim() ?? '',
+    detail: node.querySelector('.meta-showcase-copy > p')?.textContent?.trim() ?? '',
+    chips: [...node.querySelectorAll('.meta-showcase-chip')].map((chip) => ({
+      text: chip.textContent?.trim() ?? '',
+      label: chip.getAttribute('aria-label') ?? ''
+    }))
+  }));
+  assert.deepEqual(
+    collectionFeatureCopy,
+    {
+      label: '대표 유닛',
+      detail: '공격 유닛',
+      chips: [
+        { text: 'Lv.1', label: '레벨 1' },
+        { text: 'XP 0/40', label: '강화 경험치 0/40' }
+      ]
+    },
+    `collection feature copy should explain XP without long text: ${JSON.stringify(collectionFeatureCopy)}`
+  );
   await assertBannerOverlayClear(page, '#collectionScreen .meta-showcase', 'collection showcase');
   await assertUnitFeatureOffer(page, 'collection locked');
   await assertMetaListReachesDock(page, '#collectionList', 'collection');
@@ -1944,6 +1964,12 @@ async function verifyShell(page, viewport) {
   await assertMetaStationHeader(page, '#missionsScreen', 'missions');
   await page.locator('#missionsList .mission-stamp-board').waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#missionsScreen .mission-board-copy span, #missionsScreen .mission-board-copy p', 'missions', 2);
+  const missionBoardCopy = await page.locator('#missionsScreen .mission-board-copy').evaluate((node) => ({
+    label: node.querySelector('span')?.textContent?.trim() ?? '',
+    value: node.querySelector('strong')?.textContent?.trim() ?? '',
+    status: node.querySelector('p')?.textContent?.trim() ?? ''
+  }));
+  assert.deepEqual(missionBoardCopy, { label: '수령', value: '0', status: '완료 대기' }, `mission board claim counter is unclear: ${JSON.stringify(missionBoardCopy)}`);
   await assertBannerOverlayClear(page, '#missionsScreen .mission-stamp-board', 'mission banner');
   await assertObjectiveBoardCommand(page, '#missionsList .mission-stamp-board', 'mission locked board', 'locked');
   await assertMetaListReachesDock(page, '#missionsList', 'missions');
@@ -1956,6 +1982,12 @@ async function verifyShell(page, viewport) {
   await assertMetaStationHeader(page, '#seasonScreen', 'season');
   await page.locator('#seasonList .season-track-board').waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#seasonScreen .season-board-copy span, #seasonScreen .season-board-copy p', 'season', 2);
+  const seasonBoardCopy = await page.locator('#seasonScreen .season-board-copy').evaluate((node) => ({
+    label: node.querySelector('span')?.textContent?.trim() ?? '',
+    value: node.querySelector('strong')?.textContent?.trim() ?? '',
+    status: node.querySelector('p')?.textContent?.trim() ?? ''
+  }));
+  assert.deepEqual(seasonBoardCopy, { label: '시즌 XP', value: '0', status: '다음 60' }, `season board next target is unclear: ${JSON.stringify(seasonBoardCopy)}`);
   await assertBannerOverlayClear(page, '#seasonScreen .season-track-board', 'season banner');
   await assertObjectiveBoardCommand(page, '#seasonList .season-track-board', 'season locked board', 'locked');
   await assertMetaListReachesDock(page, '#seasonList', 'season');

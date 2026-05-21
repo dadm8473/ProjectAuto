@@ -120,7 +120,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_hud.js?v=board-copy1'",
     "from './reboot_render.js?v=unit-pedestal1'",
     "from './reboot_result_ui.js?v=result-ui1'",
-    "from './reboot_screens.js?v=board-copy1'",
+    "from './reboot_screens.js?v=meta-clarity1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -743,7 +743,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-ready-copy1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-clarity1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-ready-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shop-chips1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=pending-copy1"></script>'), false);
@@ -845,7 +846,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=board-copy1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=meta-clarity1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=board-copy1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=shop-chips1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=pending-copy1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-home1'"), false);
@@ -4547,7 +4549,8 @@ test('unit training screen uses the active generated showcase stage', async () =
     'function buildMetaShowcase',
     'data-showcase-kind="collection"',
     '대표 유닛',
-    'stats: [`Lv.${featuredLevel}`, `${Math.min(xp, featuredCost)}/${featuredCost} 경험치`]',
+    '{ text: `Lv.${featuredLevel}`, label: `레벨 ${featuredLevel}` }',
+    '{ text: `XP ${Math.min(xp, featuredCost)}/${featuredCost}`, label: `강화 경험치 ${Math.min(xp, featuredCost)}/${featuredCost}` }',
     'class="meta-showcase-preview unit-feature-pedestal"',
     'class="sprite-token unit-sprite"'
   ]) {
@@ -5170,11 +5173,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=retry-context1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=board-copy1'",
+    "from './reboot_screens.js?v=meta-clarity1'",
     "from './reboot_game.js?v=retry-context1'",
     "from '../shared/game.js?v=retry-context1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=board-copy1',
+    '/src/client/reboot_screens.js?v=meta-clarity1',
     '/src/shared/game.js?v=retry-context1',
     '/src/shared/reboot_game.js?v=retry-context1'
   ]) {

@@ -364,7 +364,7 @@ function buildFeaturedMissionCommand(featuredMission) {
 
 function buildMissionStampBoard(profile = {}, claimed = new Set()) {
   const claimable = countClaimableMissions(profile);
-  const boardStatus = claimable > 0 ? CLAIM_ACTION_LABEL : '진행';
+  const boardStatus = claimable > 0 ? CLAIM_ACTION_LABEL : '완료 대기';
   const boardAriaState = claimable > 0 ? `수령 가능 ${claimable}개` : '대기 보상 없음';
   const missionStates = REBOOT_MISSIONS.map((mission) => {
     const progress = missionProgress(profile, mission);
@@ -384,7 +384,7 @@ function buildMissionStampBoard(profile = {}, claimed = new Set()) {
   return `
     <section class="mission-stamp-board" data-board-kind="missions" data-board-layout="contract-stamps" aria-label="미션 보드 · ${boardAriaState} · 완료 목표 보상 전환" data-featured-mission="${featuredMission?.id ?? ''}" data-board-state="${boardState}">
       <div class="mission-board-copy">
-        <span>보상</span>
+        <span>수령</span>
         <strong>${claimable}</strong>
         <p>${boardStatus}</p>
       </div>
@@ -427,7 +427,6 @@ function buildFeaturedSeasonCommand(featuredTier) {
 function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
   const xp = profile.xp ?? 0;
   const claimable = countClaimablePassTiers(profile);
-  const rewardStatus = claimable > 0 ? CLAIM_ACTION_LABEL : '대기';
   const rewardAriaState = claimable > 0 ? `보상 가능 ${claimable}개` : '대기 보상 없음';
   const tierStates = SHOP.pass.tiers.map((tier, index) => {
     const state = seasonState(xp, tier, index, claimed);
@@ -436,6 +435,7 @@ function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
   const featuredTier = tierStates.find(({ state }) => state === 'ready');
   const currentTier = tierStates.find(({ state }) => state !== 'claimed');
   const currentIndex = currentTier?.index ?? -1;
+  const rewardStatus = claimable > 0 ? CLAIM_ACTION_LABEL : currentTier ? `다음 ${currentTier.tier.xp}` : '완료';
   const boardState = featuredTier ? 'ready' : 'locked';
   const nodes = tierStates.map(({ tier, index, state }) => {
     const current = index === currentIndex;
@@ -524,11 +524,6 @@ function buildLobbyNextActionStrip(nextAction) {
     </section>`;
 }
 
-function trainingAvailabilityCopy(profile = {}) {
-  const trainable = countTrainableUnits(profile);
-  return trainable > 0 ? `${trainable}기 강화 가능` : '강화 대기';
-}
-
 function unitFeatureState({ xp, cost }) {
   return xp >= cost ? 'ready' : 'locked';
 }
@@ -556,8 +551,11 @@ function buildUnitFeaturedShowcase({ featuredUnit, profile, xp, unitLevels }) {
     kind: 'collection',
     label: '대표 유닛',
     title: featuredUnit.name,
-    detail: `${roleLabel} · ${trainingAvailabilityCopy(profile)}`,
-    stats: [`Lv.${featuredLevel}`, `${Math.min(xp, featuredCost)}/${featuredCost} 경험치`],
+    detail: `${roleLabel} 유닛`,
+    stats: [
+      { text: `Lv.${featuredLevel}`, label: `레벨 ${featuredLevel}` },
+      { text: `XP ${Math.min(xp, featuredCost)}/${featuredCost}`, label: `강화 경험치 ${Math.min(xp, featuredCost)}/${featuredCost}` }
+    ],
     spriteClass: 'unit-sprite',
     spriteAttr: 'data-sprite',
     spriteValue: featuredUnit.spriteKey,

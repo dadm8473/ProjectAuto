@@ -599,7 +599,7 @@ test('meta screens start with compact actionable status headers', () => {
   const collection = buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 2 } });
   assert.equal(collection.includes('meta-showcase'), true);
   assert.equal(collection.includes('대표 유닛'), true);
-  assert.equal(collection.includes('60/60 경험치'), true);
+  assert.equal(collection.includes('XP 60/60'), true);
 
   const shop = buildRebootShop({ gems: 100, unlocks: [] });
   assert.equal(shop.includes('meta-showcase'), true);
@@ -651,8 +651,10 @@ test('collection and shop showcases split numeric state into compact game badges
   const shop = buildRebootShop({ gems: 0, unlocks: [] });
 
   assert.equal(collection.includes('class="meta-showcase-stats"'), true);
-  assert.equal(collection.includes('<span class="meta-showcase-chip">Lv.1</span>'), true);
-  assert.equal(collection.includes('<span class="meta-showcase-chip">0/40 경험치</span>'), true);
+  assert.equal(collection.includes('<span class="meta-showcase-chip" aria-label="레벨 1">Lv.1</span>'), true);
+  assert.equal(collection.includes('<span class="meta-showcase-chip" aria-label="강화 경험치 0/40">XP 0/40</span>'), true);
+  assert.equal(collection.includes('<span class="meta-showcase-chip">0/40 경험치</span>'), false);
+  assert.equal(collection.includes('Lv.1 · XP 0/40'), false);
   assert.equal(collection.includes('Lv.1 · 0/40 경험치'), false);
 
   assert.equal(shop.includes('class="meta-showcase-stats"'), true);
@@ -670,9 +672,10 @@ test('collection showcase names upgrade availability as game-state copy instead 
   const idleCollection = buildRebootCollection({ xp: 0, unitLevels: {} });
   const readyCollection = buildRebootCollection({ xp: 40, unitLevels: {} });
 
-  assert.equal(idleCollection.includes('공격 · 강화 대기'), true);
+  assert.equal(idleCollection.includes('<p>공격 유닛</p>'), true);
+  assert.equal(idleCollection.includes('공격 · 강화 대기'), false);
   assert.equal(idleCollection.includes('0명 강화 가능'), false);
-  assert.equal(readyCollection.includes('8기 강화 가능'), true);
+  assert.equal(readyCollection.includes('8기 강화 가능'), false);
   assert.equal(readyCollection.includes('명 강화 가능'), false);
 });
 
@@ -868,7 +871,8 @@ test('mission and season top boards keep large copy numeric while preserving ful
     missions.includes('class="mission-stamp-board" data-board-kind="missions" data-board-layout="contract-stamps" aria-label="미션 보드 · 수령 가능 1개 · 완료 목표 보상 전환"'),
     true
   );
-  assert.equal(missions.includes('<span>보상</span>'), true);
+  assert.equal(missions.includes('<span>수령</span>'), true);
+  assert.equal(missions.includes('<span>보상</span>'), false);
   assert.equal(missions.includes('<span>받을 보상</span>'), false);
   assert.equal(missions.includes('<strong>1</strong>'), true);
   assert.equal(missions.includes('<p>받기</p>'), true);
@@ -883,7 +887,8 @@ test('mission and season top boards keep large copy numeric while preserving ful
   );
   assert.equal(season.includes('<span>시즌 XP</span>'), true);
   assert.equal(season.includes('<strong>80</strong>'), true);
-  assert.equal(season.includes('<p>대기</p>'), true);
+  assert.equal(season.includes('<p>다음 160</p>'), true);
+  assert.equal(season.includes('<p>대기</p>'), false);
   assert.equal(season.includes('<p>보상 없음</p>'), false);
   assert.equal(season.includes('<span>시즌 점수</span>'), false);
   assert.equal(season.includes('<strong>80 경험치</strong>'), false);
@@ -894,11 +899,13 @@ test('mission top board does not promise a reward claim when none are ready', ()
   const emptyMissions = buildMissionScreen({ processedRuns: [], claimedMissions: [] });
   const readyMissions = buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] });
 
-  assert.equal(emptyMissions.includes('<span>보상</span>'), true);
+  assert.equal(emptyMissions.includes('<span>수령</span>'), true);
+  assert.equal(emptyMissions.includes('<span>보상</span>'), false);
   assert.equal(emptyMissions.includes('<span>받을 보상</span>'), false);
   assert.equal(emptyMissions.includes('<strong>0</strong>'), true);
   assert.equal(emptyMissions.includes('aria-label="미션 보드 · 대기 보상 없음 · 완료 목표 보상 전환"'), true);
-  assert.equal(emptyMissions.includes('<p>진행</p>'), true);
+  assert.equal(emptyMissions.includes('<p>완료 대기</p>'), true);
+  assert.equal(emptyMissions.includes('<p>진행</p>'), false);
   assert.equal(emptyMissions.includes('<p>작전 진행</p>'), false);
   assert.equal(emptyMissions.includes('<p>진행중</p>'), false);
   assert.equal(emptyMissions.includes('<p>수령 가능</p>'), false);
@@ -909,14 +916,19 @@ test('mission top board does not promise a reward claim when none are ready', ()
 test('season top board names empty reward state as no rewards instead of zero claimable rewards', () => {
   const emptySeason = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
   const readySeason = buildSeasonScreen({ xp: 80, claimedPassTiers: [] });
+  const completedSeason = buildSeasonScreen({ xp: 999, claimedPassTiers: [0, 1, 2, 3] });
 
   assert.equal(emptySeason.includes('aria-label="시즌 보드 · 시즌 경험치 80 · 대기 보상 없음"'), true);
-  assert.equal(emptySeason.includes('<p>대기</p>'), true);
+  assert.equal(emptySeason.includes('<p>다음 160</p>'), true);
+  assert.equal(emptySeason.includes('<p>대기</p>'), false);
   assert.equal(emptySeason.includes('<p>보상 없음</p>'), false);
   assert.equal(emptySeason.includes('<p>보상 0개</p>'), false);
   assert.equal(readySeason.includes('aria-label="시즌 보드 · 시즌 경험치 80 · 보상 가능 1개"'), true);
   assert.equal(readySeason.includes('<p>받기</p>'), true);
   assert.equal(readySeason.includes('<p>보상 1개</p>'), false);
+  assert.equal(completedSeason.includes('aria-label="시즌 보드 · 시즌 경험치 999 · 대기 보상 없음"'), true);
+  assert.equal(completedSeason.includes('<p>완료</p>'), true);
+  assert.equal(completedSeason.includes('<p>다음 '), false);
 });
 
 test('shop card descriptions stay compact enough for portrait game cards', () => {
@@ -948,7 +960,7 @@ test('mission screen renders profile progress and claim states', () => {
   assert.equal(missions.includes('유닛 강화'), true);
   assert.equal(missions.includes('>받음<'), true);
   assert.equal(missions.includes('>받기<'), true);
-  assert.equal(missions.includes('>수령<'), false);
+  assert.equal(missions.includes('>수령</button>'), false);
 });
 
 test('mission and season objective rows keep readable labels while reducing visible copy', () => {
