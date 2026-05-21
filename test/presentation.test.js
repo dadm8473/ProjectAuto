@@ -119,6 +119,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_audio.js?v=audio-safe1'",
     "from './reboot_hud.js?v=result-goal1'",
     "from './reboot_render.js?v=unit-pedestal1'",
+    "from './reboot_result_ui.js?v=result-ui1'",
     "from './reboot_screens.js?v=result-goal1'",
     "from './reboot_online.js'"
   ]) {
@@ -740,7 +741,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-goal1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-ui1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-identity1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
@@ -2272,6 +2273,7 @@ test('meta shelf tiles use generated status overlays instead of catalog cells', 
 test('result screen uses generated status badges for win and loss peaks', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const resultUi = await readFile('src/client/reboot_result_ui.js', 'utf8');
 
   for (const marker of [
     '--result-badges: url("/src/client/assets/generated/reboot-result-badges.png")',
@@ -2279,9 +2281,9 @@ test('result screen uses generated status badges for win and loss peaks', async 
     'background-image: var(--result-badges)',
     '.result-overlay[data-result-status="won"] .result-panel::after',
     '.result-overlay[data-result-status="lost"] .result-panel::after',
-    'dom.resultOverlay.dataset.resultStatus = model.status'
+    'resultOverlay.dataset.resultStatus = model.status'
   ]) {
-    assert.equal(`${css}\n${app}`.includes(marker), true, marker);
+    assert.equal(`${css}\n${app}\n${resultUi}`.includes(marker), true, marker);
   }
 });
 
@@ -2404,19 +2406,20 @@ test('result actions use dedicated generated button frames', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const resultUi = await readFile('src/client/reboot_result_ui.js', 'utf8');
 
   for (const marker of [
     '--result-action-buttons: url("/src/client/assets/generated/reboot-result-action-buttons.png?v=result-actions-alpha1")',
     '<button id="resultRetryButton" class="result-action-button result-action-primary"><span>다시 도전</span></button>',
     '<button id="resultLobbyButton" class="result-action-button result-action-secondary"><span>홈</span></button>',
     'resultRetryLabel: qs(\'#resultRetryButton span\')',
-    'dom.resultRetryLabel.textContent = model.primaryAction.label',
-    'dom.resultRetryButton.title = model.primaryAction.title ?? model.primaryAction.label',
-    "dom.resultRetryButton.setAttribute('aria-label', model.primaryAction.ariaLabel ?? model.primaryAction.label);",
+    'resultRetryLabel.textContent = model.primaryAction.label',
+    'resultRetryButton.title = model.primaryAction.title ?? model.primaryAction.label',
+    "resultRetryButton.setAttribute('aria-label', model.primaryAction.ariaLabel ?? model.primaryAction.label);",
     'resultLobbyLabel: qs(\'#resultLobbyButton span\')',
-    'dom.resultLobbyLabel.textContent = model.secondaryAction.label',
-    'dom.resultLobbyButton.title = model.secondaryAction.title ?? model.secondaryAction.label',
-    "dom.resultLobbyButton.setAttribute('aria-label', model.secondaryAction.ariaLabel ?? model.secondaryAction.label);",
+    'resultLobbyLabel.textContent = model.secondaryAction.label',
+    'resultLobbyButton.title = model.secondaryAction.title ?? model.secondaryAction.label',
+    "resultLobbyButton.setAttribute('aria-label', model.secondaryAction.ariaLabel ?? model.secondaryAction.label);",
     '.result-overlay .result-action-button',
     'background-image: var(--result-action-buttons);',
     'background: transparent;',
@@ -2432,7 +2435,7 @@ test('result actions use dedicated generated button frames', async () => {
     '.result-action-button > span',
     'min-height: 48px;'
   ]) {
-    assert.equal(`${html}\n${css}\n${app}`.includes(marker), true, marker);
+    assert.equal(`${html}\n${css}\n${app}\n${resultUi}`.includes(marker), true, marker);
   }
 
   assert.equal(css.includes('.result-actions button {\n    min-height: 40px;'), false);
@@ -2443,18 +2446,19 @@ test('result actions use dedicated generated button frames', async () => {
 test('result reward claim action is promoted to the generated primary button', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const resultUi = await readFile('src/client/reboot_result_ui.js', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
   for (const marker of [
     "const rewardClaimActions = new Set(['claim-missions', 'claim-season']);",
-    "dom.resultOverlay.dataset.resultCta = rewardClaimActions.has(model.primaryAction.action) ? 'claim' : 'default';",
+    "resultOverlay.dataset.resultCta = rewardClaimActions.has(model.primaryAction.action) ? 'claim' : 'default';",
     'const primaryAction = profileAction ?? nextOperationAction ?? retryAction;',
     'const secondaryAction = profileAction ? (nextOperationAction ?? homeAction) : homeAction;',
-    'dom.resultRetryButton.dataset.resultOpen = model.primaryAction.action',
+    'resultRetryButton.dataset.resultOpen = model.primaryAction.action',
     '.result-overlay[data-result-cta="claim"] .result-action-primary',
     'background-position: 0 0;'
   ]) {
-    assert.equal(`${css}\n${app}\n${screens}`.includes(marker), true, marker);
+    assert.equal(`${css}\n${app}\n${resultUi}\n${screens}`.includes(marker), true, marker);
   }
 
   assert.equal(css.includes('.result-overlay[data-result-cta="claim"] .result-action-secondary {\n  display: none;'), false);
@@ -2463,17 +2467,18 @@ test('result reward claim action is promoted to the generated primary button', a
 
 test('result reward copy names the earned currency instead of a generic reward number', async () => {
   const app = await readFile('src/client/app.js', 'utf8');
+  const resultUi = await readFile('src/client/reboot_result_ui.js', 'utf8');
   const index = await readFile('index.html', 'utf8');
 
   for (const marker of [
     'function resultRewardText(reward)',
     'function resultRewardKind(reward)',
-    'function formatResultRewards(rewards)',
+    'export function formatResultRewards(rewards = [])',
     "if (reward.type === 'soft') return `보석 +${reward.amount}`;",
     "if (reward.type === 'xp') return `경험치 +${reward.amount}`;",
     'id="resultReward" class="result-reward" role="group"',
-    "dom.resultReward.setAttribute('aria-label', `획득 ${formatResultRewards(model.rewards)}`);",
-    'dom.resultReward.dataset.rewardTone = model.rewardTone;',
+    "resultReward.setAttribute('aria-label', `획득 ${formatResultRewards(model.rewards)}`);",
+    'resultReward.dataset.rewardTone = model.rewardTone;',
     'class="result-reward-label" aria-hidden="true"',
     'class="result-reward-icon"',
     'class="result-reward-value" aria-hidden="true"',
@@ -2481,16 +2486,17 @@ test('result reward copy names the earned currency instead of a generic reward n
     'class="result-reward-chip" data-reward-kind="${resultRewardKind(reward)}"',
     'resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel)'
   ]) {
-    assert.equal(`${index}\n${app}`.includes(marker), true, marker);
+    assert.equal(`${index}\n${app}\n${resultUi}`.includes(marker), true, marker);
   }
 
-  assert.equal(app.includes('`보상 ${reward.amount}`'), false);
-  assert.equal(app.includes('<span class="result-reward-label">획득</span><strong'), false);
+  assert.equal(`${app}\n${resultUi}`.includes('`보상 ${reward.amount}`'), false);
+  assert.equal(`${app}\n${resultUi}`.includes('<span class="result-reward-label">획득</span><strong'), false);
 });
 
 test('result reward uses a generated claim capsule instead of a text strip', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const resultUi = await readFile('src/client/reboot_result_ui.js', 'utf8');
 
   for (const marker of [
     '--result-reward-capsules: url("/src/client/assets/generated/reboot-result-reward-capsules.png?v=result-capsules1")',
@@ -2501,17 +2507,17 @@ test('result reward uses a generated claim capsule instead of a text strip', asy
     'display: flex;\n  flex-wrap: wrap;',
     '.result-reward-chip',
     'background-image: var(--meta-command-ribbons);',
-    'function resultRewardMarkup(rewards, icon, label)',
+    'export function resultRewardMarkup(rewards = [], icon, label)',
     'class="result-reward-label"',
     'class="result-reward-icon"',
     'class="result-reward-value"',
-    'dom.resultReward.innerHTML = resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel);',
+    'resultReward.innerHTML = resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel);',
     '.result-reward-icon',
     'background-image: url("/src/client/assets/generated/reboot-reward-icons.png");',
     '.result-reward-icon[data-reward-icon="unlock_capsule"]',
     '.result-overlay[data-result-status="won"] .result-reward[data-reward-tone="boss"]::after'
   ]) {
-    assert.equal(`${css}\n${app}`.includes(marker), true, marker);
+    assert.equal(`${css}\n${app}\n${resultUi}`.includes(marker), true, marker);
   }
 
   const rewardStart = css.indexOf('\n.result-reward {', css.indexOf('.result-medal[data-result-medal="tactics"]'));
@@ -2570,11 +2576,12 @@ test('result highlights use generated strip frames while reward uses a loot caps
 test('result highlights use generated run medal badges instead of text-only callouts', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const resultUi = await readFile('src/client/reboot_result_ui.js', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
   for (const marker of [
     '--result-medals: url("/src/client/assets/generated/reboot-result-medals.png?v=result-medals")',
-    'function resultHighlightMarkup(model)',
+    'export function resultHighlightMarkup(model)',
     'class="result-medal"',
     'model.highlights.map',
     'data-result-medal="${highlight.medal}"',
@@ -2591,7 +2598,7 @@ test('result highlights use generated run medal badges instead of text-only call
     '.result-medal[data-result-medal="boss"]',
     '.result-medal[data-result-medal="tactics"]'
   ]) {
-    assert.equal(`${css}\n${app}\n${screens}`.includes(marker), true, marker);
+    assert.equal(`${css}\n${app}\n${resultUi}\n${screens}`.includes(marker), true, marker);
   }
 
   const medalBlock = css.slice(css.indexOf('.result-medal {'), css.indexOf('.result-medal[data-result-medal="rescue"]'));
@@ -2681,14 +2688,15 @@ test('result debrief copy plates protect text from generated finale effects', as
 test('result next-goal renders as a generated tactical objective slot', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const app = await readFile('src/client/app.js', 'utf8');
+  const resultUi = await readFile('src/client/reboot_result_ui.js', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
   const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
 
   for (const marker of [
     'function resultGoalTone(goal)',
     "tone: resultGoalTone(result?.nextGoal)",
-    "dom.resultNextGoal.dataset.resultGoalTone = model.nextGoal.tone;",
-    "dom.resultNextGoal.setAttribute('aria-label', `다음 목표 ${model.nextGoal.label}`);",
+    "resultNextGoal.dataset.resultGoalTone = model.nextGoal.tone;",
+    "resultNextGoal.setAttribute('aria-label', `다음 목표 ${model.nextGoal.label}`);",
     '#resultNextGoal::before',
     'background-image: var(--result-medals);',
     'background-size: 300% 100%;',
@@ -2699,7 +2707,7 @@ test('result next-goal renders as a generated tactical objective slot', async ()
     'nextGoal.tone',
     'nextGoal.ariaLabel'
   ]) {
-    assert.equal(`${css}\n${app}\n${screens}\n${qa}`.includes(marker), true, marker);
+    assert.equal(`${css}\n${app}\n${resultUi}\n${screens}\n${qa}`.includes(marker), true, marker);
   }
 
   const nextGoalBlock = css.slice(css.indexOf('#resultNextGoal {'), css.indexOf('#resultTitle,\n#resultReason,\n#resultNextGoal'));
@@ -4116,15 +4124,16 @@ test('result reward strip uses generated reward burst art', async () => {
 
 test('result actions can claim ready rewards without an extra tap', async () => {
   const app = await readFile('src/client/app.js', 'utf8');
+  const resultUi = await readFile('src/client/reboot_result_ui.js', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
   for (const marker of [
     'buildRebootResultModel({ result: current.result, rewards, profile, seedName: current.seedName })',
     "resultCode: qs('#resultCode')",
-    'dom.resultCode.textContent = model.code',
-    'dom.resultLobbyLabel.textContent = model.secondaryAction.label',
-    'dom.resultRetryButton.dataset.resultOpen = model.primaryAction.action',
-    'dom.resultLobbyButton.dataset.resultOpen = model.secondaryAction.action',
+    'resultCode.textContent = model.code',
+    'resultLobbyLabel.textContent = model.secondaryAction.label',
+    'resultRetryButton.dataset.resultOpen = model.primaryAction.action',
+    'resultLobbyButton.dataset.resultOpen = model.secondaryAction.action',
     "action: 'claim-missions'",
     "action: 'claim-season'",
     'function claimReadyMissionsFromResult()',
@@ -4148,7 +4157,7 @@ test('result actions can claim ready rewards without an extra tap', async () => 
     'title: nextAction.title',
     'nextLobbyAction(profile)'
   ]) {
-    assert.equal(`${app}\n${screens}`.includes(marker), true, marker);
+    assert.equal(`${app}\n${resultUi}\n${screens}`.includes(marker), true, marker);
   }
 });
 
