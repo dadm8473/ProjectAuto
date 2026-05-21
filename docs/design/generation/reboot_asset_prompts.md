@@ -1063,6 +1063,22 @@ Postprocess: remove the green chroma-key to alpha with soft matte/despill, crop 
 Acceptance: the result reward area reads as a generated loot console with a clear icon socket and reward value plate; it no longer looks like a plain text strip or CSS card, and it remains legible on compact portrait result screens.
 ```
 
+## Runtime Prompt: Online Waiting Field Overlay
+
+```text
+Use case: stylized-concept
+Asset type: transparent-background full-canvas online matchmaking field overlay for a portrait Korean mobile cooperative tower-defense battle screen.
+Primary request: Create a premium generated co-op matchmaking field overlay for ProjectAuto. It appears only while the player waits for an online partner, before combat starts. It must turn the battlefield into an active relay-link scene instead of an idle empty map.
+Canvas/composition: portrait 780x1240 image on a perfectly flat solid #00ff00 chroma-key background. Compose one vertical sci-fi relay bridge with an upper partner gate, lower player gate, and a strong cyan signal beam connecting them. Leave transparent-safe negative space around the center path so the existing HUD and cancel command can overlay without losing readability. No readable text.
+Style: high-end Korean mobile cooperative tower-defense game art, dark graphite relay machinery, cyan/teal signal energy, restrained amber lock accents, polished 2.5D production rendering, crisp silhouettes at phone scale, consistent with ProjectAuto Signal Relay assets.
+Transparency/chroma constraints: background must be perfectly flat #00ff00 with no shadows, gradients, texture, reflections, floor plane, or lighting variation. Keep all relay pixels separated from the background. Do not use #00ff00 inside the subject.
+Avoid: words, letters, numbers, logos, watermark, browser modal, flat CSS panel, rectangular web card, plain spinner, dice/gacha/casino cues, copied existing games, over-bright center that blocks Korean waiting copy, full opaque background.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260522-online-waiting-field-chromakey-imagegen.png
+Runtime file: src/client/assets/generated/reboot-online-waiting-field-v1.png
+Postprocess: remove the green chroma-key to alpha with soft matte/despill, fit into a 780x1240 transparent runtime image, lightly boost contrast and sharpen for 390px portrait readability, then cover-draw over the battle canvas at partial alpha only during online waiting.
+Acceptance: online waiting reads as an active generated co-op relay scene with visible upper/lower gates and signal bridge; it does not imply bot partner presence, does not show playable first-summon cues, and the bottom cancel command remains visible on compact portrait screens.
+```
+
 ## Runtime Prompt: Partner Companion Standby Atlas
 
 ```text

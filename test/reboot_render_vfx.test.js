@@ -2569,6 +2569,7 @@ test('online waiting uses the partner link atlas cell without showing playable c
   const ctx = mockContext();
   const partnerStandbySigils = image(1024, 512);
   const firstCommandSpotlight = image(256, 128);
+  const onlineWaitingField = image(780, 1240);
 
   drawRebootBattle(
     ctx,
@@ -2592,6 +2593,7 @@ test('online waiting uses the partner link atlas cell without showing playable c
     {
       backdrop: image(390, 620),
       firstCommandSpotlight,
+      onlineWaitingField,
       playerBoardTray: image(780, 320),
       partnerStandbySigils
     },
@@ -2604,8 +2606,13 @@ test('online waiting uses the partner link atlas cell without showing playable c
       && command.args[1] === 512
   ));
   const cueDraws = ctx.commands.filter((command) => command.type === 'drawImage' && command.args[0] === firstCommandSpotlight);
+  const waitingFieldDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage' && command.args[0] === onlineWaitingField
+  ));
 
   assert.ok(waitingDraw, 'online waiting should show the generated partner link beacon on the empty partner board');
+  assert.ok(waitingFieldDraw, 'online waiting should draw a full generated matchmaking field over the battle map');
+  assert.equal(waitingFieldDraw.args[7] >= 390 && waitingFieldDraw.args[8] >= 620, true, 'online waiting field should fill the combat canvas');
   assert.equal(waitingDraw.args[7] >= 240 && waitingDraw.args[8] >= 88, true, 'online link beacon should be readable on phone scale');
   assert.equal(cueDraws.length, 0, 'online waiting must not show a playable first-summon cue');
   assert.equal(

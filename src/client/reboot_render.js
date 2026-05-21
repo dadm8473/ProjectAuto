@@ -153,6 +153,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     height: 512,
     source: 'imagegen'
   },
+  onlineWaitingField: {
+    src: '/src/client/assets/generated/reboot-online-waiting-field-v1.png?v=online-wait-field1',
+    width: 780,
+    height: 1240,
+    source: 'imagegen'
+  },
   crisisOverlays: {
     src: '/src/client/assets/generated/reboot-combat-crisis-overlays.png?v=combat-crisis-overlays',
     width: 780,
@@ -352,6 +358,8 @@ export function createRebootAssetImages() {
   partnerAssistPings.src = REBOOT_EFFECT_MANIFEST.partnerAssistPings.src;
   const partnerStandbySigils = new Image();
   partnerStandbySigils.src = REBOOT_EFFECT_MANIFEST.partnerStandbySigils.src;
+  const onlineWaitingField = new Image();
+  onlineWaitingField.src = REBOOT_EFFECT_MANIFEST.onlineWaitingField.src;
   const crisisOverlays = new Image();
   crisisOverlays.src = REBOOT_EFFECT_MANIFEST.crisisOverlays.src;
   const rewardPickups = new Image();
@@ -390,7 +398,7 @@ export function createRebootAssetImages() {
   openingThreatPreview.src = REBOOT_EFFECT_MANIFEST.openingThreatPreview.src;
   const signalCoreGates = new Image();
   signalCoreGates.src = REBOOT_EFFECT_MANIFEST.signalCoreGates.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, directiveBanner, partnerAssistPings, partnerStandbySigils, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, playerBoardBridge, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts, enemySpawnGates, openingThreatPreview, signalCoreGates };
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, directiveBanner, partnerAssistPings, partnerStandbySigils, onlineWaitingField, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, playerBoardBridge, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts, enemySpawnGates, openingThreatPreview, signalCoreGates };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -1124,6 +1132,13 @@ function drawPartnerStandbySigil(ctx, state, assets = {}, partnerId = 'p2', opti
   const drew = drawPartnerStandbySprite(ctx, assets.partnerStandbySigils, 0, 92, 26, 206, 92, alpha);
   if (!drew) return false;
   return true;
+}
+
+function drawOnlineWaitingField(ctx, state, assets = {}, options = {}) {
+  const image = assets.onlineWaitingField;
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const pulse = options.reducedMotion ? 0 : Math.sin((state.now ?? 0) * 3.2) * 0.05;
+  return drawImageCover(ctx, image, 0, 0, 390, 620, 0.7 + pulse);
 }
 
 function drawCosmeticSigilSprite(ctx, image, index, x, y, w, h, alpha = 1) {
@@ -1925,6 +1940,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
     drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);
     drawPlayerBoardBridge(ctx, assets, layout);
     drawBoard(ctx, state.boards[localBoardId], 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
+    if (options.onlineWaiting) drawOnlineWaitingField(ctx, state, assets, options);
     if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawPreSummonSocketCue(ctx, state, assets, localBoardId);
     if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawFirstSummonLandingBeacon(ctx, state, assets, localBoardId);
     drawFirstSummonIgnition(ctx, state, assets, localBoardId);

@@ -118,7 +118,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_action_ui.js?v=hud-meter1'",
     "from './reboot_audio.js?v=audio-safe1'",
     "from './reboot_hud.js?v=board-copy1'",
-    "from './reboot_render.js?v=partner-standby2'",
+    "from './reboot_render.js?v=online-wait-field1'",
     "from './reboot_result_ui.js?v=result-ui2'",
     "from './reboot_screens.js?v=meta-clarity1'",
     "from './reboot_online.js'"
@@ -423,8 +423,9 @@ test('online waiting state blocks combat until the second player arrives', async
 
 test('online waiting state turns the command dock into a generated matchmaking lock', async () => {
   const app = await readFile('src/client/app.js', 'utf8');
+  const render = await readFile('src/client/reboot_render.js', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
-  const source = `${app}\n${css}`;
+  const source = `${app}\n${render}\n${css}`;
 
   for (const marker of [
     "document.body.dataset.onlineWaiting = 'true';",
@@ -438,7 +439,13 @@ test('online waiting state turns the command dock into a generated matchmaking l
     "if (cancel) button.dataset.matchCancel = 'true';",
     'body[data-app-screen="battle"][data-online-waiting="true"] .primary-actions button',
     'opacity: 0;',
-    '파트너 매칭 중'
+    '파트너 매칭 중',
+    "onlineWaitingField: {",
+    "src: '/src/client/assets/generated/reboot-online-waiting-field-v1.png?v=online-wait-field1'",
+    'const onlineWaitingField = new Image();',
+    'onlineWaitingField.src = REBOOT_EFFECT_MANIFEST.onlineWaitingField.src;',
+    'if (options.onlineWaiting) drawOnlineWaitingField(ctx, state, assets, options);',
+    'function drawOnlineWaitingField(ctx, state, assets = {}, options = {})'
   ]) {
     assert.equal(source.includes(marker), true, marker);
   }
@@ -635,7 +642,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-reward-board1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=online-wait-field1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-reward-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-unified-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-reward-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-command-board1">'), false);
@@ -747,7 +755,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-standby2"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-wait-field1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-standby2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-ready-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shop-chips1"></script>'), false);
@@ -824,7 +833,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=partner-standby2'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=online-wait-field1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=partner-standby2'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=enemy-atlas3'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=opening-route1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=match-banner-cutin1'"), false);
@@ -899,7 +909,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=partner-standby2';",
+    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=online-wait-field1';",
     'function scheduleWarmRebootAssets()',
     'warmRebootAssets().catch(() => {});',
     'preloadCriticalRebootAssets().then(() => {\n  hideLoadingGate();\n  scheduleWarmRebootAssets();\n}, hideLoadingGate);',
@@ -1503,7 +1513,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=result-reward-board1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=online-wait-field1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=meta-unified-board1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=season-reward-board1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=mission-command-board1'), false);
@@ -1893,7 +1903,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=result-reward-board1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=online-wait-field1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2984,6 +2994,7 @@ test('combat renderer uses generated partner assist pings for bot co-op actions'
   for (const marker of [
     'function drawPartnerStandbySigil',
     "src: '/src/client/assets/generated/reboot-partner-standby-sigils-v2.png?v=partner-standby2'",
+    "src: '/src/client/assets/generated/reboot-online-waiting-field-v1.png?v=online-wait-field1'",
     'drawPartnerStandbySprite(ctx, assets.partnerStandbySigils, 0, 92, 26, 206, 92, alpha)',
     'drawPartnerStandbySprite(ctx, assets.partnerStandbySigils, 1, 72, 52, 246, 90',
     'partnerAssistPings',

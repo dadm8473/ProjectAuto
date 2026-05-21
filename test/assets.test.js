@@ -1002,6 +1002,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 300_000
   },
   {
+    path: 'src/client/assets/generated/reboot-online-waiting-field-v1.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260522-online-waiting-field-chromakey-imagegen.png',
+    width: 780,
+    height: 1240,
+    minRuntimeBytes: 850_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-reward-pickup-bursts.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-reward-pickup-bursts-chromakey-imagegen.png',
     width: 768,

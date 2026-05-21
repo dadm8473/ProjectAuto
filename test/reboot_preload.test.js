@@ -41,6 +41,7 @@ test('critical reboot preload blocks only first-paint splash and lobby assets', 
     '/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1',
     '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1',
     '/src/client/assets/generated/reboot-partner-standby-sigils-v2.png?v=partner-standby2',
+    '/src/client/assets/generated/reboot-online-waiting-field-v1.png?v=online-wait-field1',
     '/src/client/assets/generated/reboot-result-screen-lighting.png?v=screen-lighting1',
     '/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1',
     '/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1',
@@ -82,6 +83,7 @@ test('warmup preload includes generated meta combat mission and result assets', 
     '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1',
     '/src/client/assets/generated/reboot-combat-operation-badge-v1.png?v=combat-op-badge1',
     '/src/client/assets/generated/reboot-partner-standby-sigils-v2.png?v=partner-standby2',
+    '/src/client/assets/generated/reboot-online-waiting-field-v1.png?v=online-wait-field1',
     '/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1'
   ];
 
