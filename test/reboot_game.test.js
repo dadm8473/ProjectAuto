@@ -470,6 +470,21 @@ test('failed unavailable boss-window merge does not record a boss response', () 
   assert.equal(game.internal.greedDecision, false);
 });
 
+test('boss-window merge requires two material units instead of upgrading one unit repeatedly', () => {
+  const game = createRebootGame({ mode: 'online', seedName: 'boss_clutch', seed: 135 });
+  game.now = 96;
+  game.boss.active = true;
+  game.internal.bossSpawned = true;
+  const loneUnit = addUnit(game, 'p1', 'burst_pin', 2);
+
+  const merge = mergeToys(game, { playerId: 'p1' });
+
+  assert.equal(merge.ok, false);
+  assert.deepEqual(game.boards.p1.units.map((unit) => unit.id), [loneUnit.id]);
+  assert.equal(game.internal.bossChoice, null);
+  assert.equal(game.internal.bossResponseAt, null);
+});
+
 test('bot partner visibly contributes with scripted board actions', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1212 });
   advanceTo(game, 54);
@@ -612,6 +627,7 @@ test('boss_clutch distinguishes late summon, merge, and wait branches', () => {
     branch: 'merge'
   });
   prepareBossBranch(mergeBranch);
+  addUnit(mergeBranch, 'p1', 'spark_pin', 1);
   advanceTo(mergeBranch, 96);
   mergeToys(mergeBranch, { playerId: 'p1' });
   advanceTo(mergeBranch, 120);
@@ -660,6 +676,7 @@ test('boss_clutch accepts fractional last-second decisions until the boss spawns
     branch: 'merge'
   });
   prepareBossBranch(mergeBranch);
+  addUnit(mergeBranch, 'p1', 'spark_pin', 1);
   advanceTo(mergeBranch, 101.75);
   const mergeResult = mergeToys(mergeBranch, { playerId: 'p1' });
   assert.equal(mergeResult.ok, true);
@@ -672,6 +689,7 @@ test('boss_clutch accepts fractional last-second decisions until the boss spawns
 test('serialized mini boss exposes live hp for the battlefield vitality plate', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'boss_clutch', seed: 612, branch: 'merge' });
   prepareBossBranch(game);
+  addUnit(game, 'p1', 'spark_pin', 1);
   advanceTo(game, 96);
   mergeToys(game, { playerId: 'p1' });
   advanceTo(game, 108);
@@ -734,6 +752,7 @@ test('loss branches do not show boss reward pickup before defeat', () => {
 test('boss final-hit branches emit a mini boss reward burst for the renderer', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'boss_clutch', seed: 911, branch: 'merge' });
   prepareBossBranch(game);
+  addUnit(game, 'p1', 'spark_pin', 1);
   advanceTo(game, 96);
   mergeToys(game, { playerId: 'p1' });
   advanceTo(game, 120);

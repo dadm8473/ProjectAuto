@@ -143,7 +143,7 @@ function refreshActionState(game) {
 }
 
 function canBossMerge(game, board) {
-  return isBossDecisionWindow(game) && (board?.units?.length ?? 0) > 0;
+  return isBossDecisionWindow(game) && (board?.units?.length ?? 0) >= REBOOT_RULES.merge.requiredSameGrade;
 }
 
 function isBossDecisionWindow(game) {
