@@ -1046,6 +1046,24 @@ Postprocess: center-crop to 2:3 if needed, resize to 768x1152, boost color/contr
 Acceptance: the shop screen reads as one generated store display board instead of a banner stacked above web-like item cards; featured item pedestal, display cases, and purchase state labels remain readable at 390x844 and compact portrait widths.
 ```
 
+## Runtime Prompt: Partner Companion Standby Atlas
+
+```text
+Use case: stylized-concept
+Asset type: transparent-background sprite atlas for a portrait mobile cooperative tower-defense game battle screen
+Primary request: Create a premium Korean mobile game sci-fi/fantasy partner companion standby sprite atlas. The atlas should contain exactly two side-by-side cells on a perfectly flat solid #00ff00 chroma-key background for background removal.
+Canvas/composition: 1024x512 image, two equal cells of 512x512. Each cell centered with generous padding and no crop. No readable text.
+Cell 1 subject: friendly AI partner relay drone named "Lin" as a compact mechanical support companion, teal/cyan signal core, small gold accents, rounded sci-fi armor, hovering above a circular relay pedestal. It should read as a cooperative partner presence, not an enemy or shop item.
+Cell 2 subject: online partner link portal / empty partner slot beacon, a paired relay socket with two small connected signal pillars and a soft cyan bridge, inviting another player to join.
+Style: match high-end Korean mobile game production art, semi-realistic fantasy-tech metal/glass, teal cyan energy, dark gunmetal, gold trims, crisp silhouette readable at 80px, polished collectible game asset.
+Transparency/chroma constraints: background must be perfectly flat #00ff00 with no shadows, gradients, texture, reflections, floor plane, or lighting variation. Keep all subject pixels separated from the background. Do not use #00ff00 anywhere in the subjects.
+Avoid: words, letters, numbers, logos, watermark, dice, casino imagery, web UI cards, rectangular panel, human character, chibi mascot, blurry silhouette, black square background.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260522-partner-companion-standby-chromakey-imagegen.png
+Runtime file: src/client/assets/generated/reboot-partner-standby-sigils-v2.png
+Postprocess: split the generated source into two equal cells, remove the green chroma-key to alpha, crop each subject to its non-transparent bounds, fit into 512x512 cells on a 1024x512 transparent atlas, then lightly boost color/contrast for battle readability.
+Acceptance: bot mode shows a large generated partner companion on the upper partner board before the bot acts; online waiting shows the second link-beacon cell without implying the bot partner is present; both states read as cooperative presence, not empty UI.
+```
+
 ## 후처리 기준
 
 필수:

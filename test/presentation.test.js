@@ -118,7 +118,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_action_ui.js?v=hud-meter1'",
     "from './reboot_audio.js?v=audio-safe1'",
     "from './reboot_hud.js?v=board-copy1'",
-    "from './reboot_render.js?v=unit-pedestal1'",
+    "from './reboot_render.js?v=partner-standby2'",
     "from './reboot_result_ui.js?v=result-ui2'",
     "from './reboot_screens.js?v=meta-clarity1'",
     "from './reboot_online.js'"
@@ -746,7 +746,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=staged-preload1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-standby2"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-ready-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shop-chips1"></script>'), false);
@@ -823,7 +823,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=unit-pedestal1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=partner-standby2'"), true);
   assert.equal(app.includes("from './reboot_render.js?v=enemy-atlas3'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=opening-route1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=match-banner-cutin1'"), false);
@@ -898,7 +898,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=staged-preload1';",
+    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=partner-standby2';",
     'function scheduleWarmRebootAssets()',
     'warmRebootAssets().catch(() => {});',
     'preloadCriticalRebootAssets().then(() => {\n  hideLoadingGate();\n  scheduleWarmRebootAssets();\n}, hideLoadingGate);',
@@ -2976,7 +2976,9 @@ test('combat renderer uses generated partner assist pings for bot co-op actions'
 
   for (const marker of [
     'function drawPartnerStandbySigil',
-    "ctx.fillText('동료 준비', 195, 102);",
+    "src: '/src/client/assets/generated/reboot-partner-standby-sigils-v2.png?v=partner-standby2'",
+    'drawPartnerStandbySprite(ctx, assets.partnerStandbySigils, 0, 92, 26, 206, 92, alpha)',
+    'drawPartnerStandbySprite(ctx, assets.partnerStandbySigils, 1, 72, 52, 246, 90',
     'partnerAssistPings',
     "src: '/src/client/assets/generated/reboot-partner-assist-pings.png?v=partner-assist2'",
     'width: 640',

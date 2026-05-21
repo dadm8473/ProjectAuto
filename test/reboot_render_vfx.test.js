@@ -2521,7 +2521,7 @@ test('first summon landing beacon clears after the first player action', () => {
 
 test('bot partner standby sigil marks the empty partner board before bot acts', () => {
   const ctx = mockContext();
-  const partnerStandbySigils = image(512, 160);
+  const partnerStandbySigils = image(1024, 512);
 
   drawRebootBattle(
     ctx,
@@ -2553,11 +2553,65 @@ test('bot partner standby sigil marks the empty partner board before bot acts', 
 
   assert.ok(standbyDraw, 'expected generated bot partner standby sigil on the partner board');
   assert.equal(standbyDraw.args[1], 0, 'bot standby should use the first atlas cell');
-  assert.equal(standbyDraw.args[5] >= 110 && standbyDraw.args[5] <= 140, true, 'standby sigil should sit inside the partner board');
+  assert.equal(standbyDraw.args[3], 512, 'bot standby should slice one square atlas cell');
+  assert.equal(standbyDraw.args[4], 512, 'bot standby should slice the full atlas height');
+  assert.equal(standbyDraw.args[5] >= 88 && standbyDraw.args[5] <= 98, true, 'standby companion should start inside the partner board');
+  assert.equal(standbyDraw.args[6] >= 20 && standbyDraw.args[6] <= 34, true, 'standby companion should sit high on the partner board');
+  assert.equal(standbyDraw.args[7] >= 200 && standbyDraw.args[8] >= 90, true, 'standby companion should read as a partner object, not a tiny icon');
   assert.equal(
-    ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '동료 준비'),
-    true,
-    'bot standby should label the partner presence without adding another HUD button'
+    ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '린 대기'),
+    false,
+    'bot standby should avoid extra canvas copy because the HUD already names bot cooperation'
+  );
+});
+
+test('online waiting uses the partner link atlas cell without showing playable cues', () => {
+  const ctx = mockContext();
+  const partnerStandbySigils = image(1024, 512);
+  const firstCommandSpotlight = image(256, 128);
+
+  drawRebootBattle(
+    ctx,
+    {
+      mode: 'online',
+      now: 1.6,
+      players: [
+        { id: 'p1', bot: false },
+        { id: 'p2', bot: false }
+      ],
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      firstCommandSpotlight,
+      playerBoardTray: image(780, 320),
+      partnerStandbySigils
+    },
+    { onlineWaiting: true }
+  );
+
+  const waitingDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === partnerStandbySigils
+      && command.args[1] === 512
+  ));
+  const cueDraws = ctx.commands.filter((command) => command.type === 'drawImage' && command.args[0] === firstCommandSpotlight);
+
+  assert.ok(waitingDraw, 'online waiting should show the generated partner link beacon on the empty partner board');
+  assert.equal(waitingDraw.args[7] >= 240 && waitingDraw.args[8] >= 88, true, 'online link beacon should be readable on phone scale');
+  assert.equal(cueDraws.length, 0, 'online waiting must not show a playable first-summon cue');
+  assert.equal(
+    ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '린 대기'),
+    false,
+    'online waiting should not mislabel a human partner slot as the bot partner'
   );
 });
 

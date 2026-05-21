@@ -148,9 +148,9 @@ export const REBOOT_EFFECT_MANIFEST = {
     source: 'imagegen'
   },
   partnerStandbySigils: {
-    src: '/src/client/assets/generated/reboot-partner-standby-sigils.png?v=partner-standby1',
-    width: 512,
-    height: 160,
+    src: '/src/client/assets/generated/reboot-partner-standby-sigils-v2.png?v=partner-standby2',
+    width: 1024,
+    height: 512,
     source: 'imagegen'
   },
   crisisOverlays: {
@@ -1107,27 +1107,22 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
 }
 
 function drawPartnerStandbySigil(ctx, state, assets = {}, partnerId = 'p2', options = {}) {
-  if (options.onlineWaiting || options.matchmakingBannerVisible) return false;
   const partnerBoard = state.boards?.[partnerId];
   if (!partnerBoard || (partnerBoard.units?.length ?? 0) > 0) return false;
+
+  if (options.onlineWaiting || options.matchmakingBannerVisible) {
+    const pulse = Math.max(0, Math.sin((Number(state.now) || 0) * 3.2)) * 0.1;
+    return drawPartnerStandbySprite(ctx, assets.partnerStandbySigils, 1, 72, 52, 246, 90, 0.58 + pulse);
+  }
 
   const players = state.players ?? [];
   const partnerPlayer = players.find((player) => normalizeBoardId(player.id) === normalizeBoardId(partnerId));
   const isBotPartner = state.mode === 'bot' || partnerPlayer?.bot === true;
   if (!isBotPartner) return false;
   const pulse = Math.max(0, Math.sin((Number(state.now) || 0) * 3.8)) * 0.12;
-  const alpha = Math.min(0.86, 0.62 + pulse);
-  const drew = drawPartnerStandbySprite(ctx, assets.partnerStandbySigils, 0, 112, 64, 166, 66, alpha);
+  const alpha = Math.min(0.92, 0.72 + pulse);
+  const drew = drawPartnerStandbySprite(ctx, assets.partnerStandbySigils, 0, 92, 26, 206, 92, alpha);
   if (!drew) return false;
-  ctx.save();
-  ctx.globalAlpha *= alpha;
-  ctx.fillStyle = '#fff7dc';
-  ctx.shadowColor = '#071314';
-  ctx.shadowBlur = 5;
-  ctx.font = '900 12px system-ui';
-  ctx.textAlign = 'center';
-  ctx.fillText('동료 준비', 195, 102);
-  ctx.restore();
   return true;
 }
 

@@ -988,6 +988,13 @@ const IMAGEGEN_REBOOT_TRANSPARENT_EFFECTS = [
     minRuntimeBytes: 28_000
   },
   {
+    path: 'src/client/assets/generated/reboot-partner-standby-sigils-v2.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260522-partner-companion-standby-chromakey-imagegen.png',
+    width: 1024,
+    height: 512,
+    minRuntimeBytes: 300_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-reward-pickup-bursts.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-reward-pickup-bursts-chromakey-imagegen.png',
     width: 768,
