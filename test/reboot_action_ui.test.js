@@ -113,7 +113,7 @@ test('combat status prompt names the next useful action instead of only elapsed 
       actionState: { p1: { summon: false, merge: false, rescue: false } }
     },
     localBoardId: 'p1'
-  }), '충전 11초');
+  }), '충전 5초');
 
   assert.equal(buildCombatStatusPrompt({
     current: {
@@ -233,7 +233,7 @@ test('combat command labels show summon cooldown as charging time on the button'
     localBoardId: 'p1',
     actions: { summon: { enabled: false }, merge: { enabled: false }, rescue: { enabled: false } }
   }), {
-    summon: '소환 11초',
+    summon: '소환 5초',
     merge: '합성',
     rescue: '구원'
   });
@@ -256,7 +256,7 @@ test('combat command labels show summon cooldown as charging time on the button'
 test('summon cooldown state exposes mobile button sweep progress', () => {
   assert.deepEqual(buildSummonCooldownState({
     current: {
-      ...state({ now: 4 }),
+      ...state({ now: 1 }),
       resources: { p1: { summon: 0, rescue: 0 } },
       actionState: { p1: { summon: false, merge: false, rescue: false } }
     },
@@ -265,13 +265,13 @@ test('summon cooldown state exposes mobile button sweep progress', () => {
   }), {
     active: true,
     seconds: 4,
-    progress: 0.5,
+    progress: 0.2,
     phase: 'charging'
   });
 
   assert.deepEqual(buildSummonCooldownState({
     current: {
-      ...state({ now: 17 }),
+      ...state({ now: 27 }),
       resources: { p1: { summon: 0, rescue: 0 } },
       actionState: { p1: { summon: false, merge: false, rescue: false } }
     },
@@ -280,7 +280,7 @@ test('summon cooldown state exposes mobile button sweep progress', () => {
   }), {
     active: true,
     seconds: 3,
-    progress: 0.75,
+    progress: 0.81,
     phase: 'readying'
   });
 

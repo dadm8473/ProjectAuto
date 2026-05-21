@@ -150,14 +150,24 @@ function isBossDecisionWindow(game) {
   return game.now >= BOSS_DECISION_START && game.now < BOSS_DECISION_END;
 }
 
+function timedGrantKey(playerId, grant) {
+  return `${playerId}:${grant.at}`;
+}
+
 function applyTimedResources(game) {
   for (const grant of REBOOT_RULES.summon.grants) {
-    if (game.now >= grant.at && !game.internal.grantsApplied.includes(grant.at)) {
-      game.internal.grantsApplied.push(grant.at);
-      for (const resources of Object.values(game.resources)) {
-        resources.summon += grant.amount;
-      }
-      event(game, { type: 'summon_grant', amount: grant.amount });
+    if (game.now < grant.at) continue;
+    const awarded = [];
+    for (const [playerId, resources] of Object.entries(game.resources)) {
+      const key = timedGrantKey(playerId, grant);
+      if (game.internal.grantsApplied.includes(key)) continue;
+      game.internal.grantsApplied.push(key);
+      if ((game.internal.summonIndexes[playerId] ?? 0) <= 0) continue;
+      resources.summon += grant.amount;
+      awarded.push(playerId);
+    }
+    if (awarded.length) {
+      event(game, { type: 'summon_grant', amount: grant.amount, playerIds: awarded });
     }
   }
 

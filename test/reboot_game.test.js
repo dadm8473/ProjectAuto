@@ -160,6 +160,31 @@ test('first combat beat keeps enemies visible and the next summon close for mobi
   assert.equal(game.actionState.p1.summon, true);
 });
 
+test('opening combat restores summon before the first single-button moment feels idle', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1091 });
+
+  summonToy(game, { playerId: 'p1' });
+  advance(game, 5.5, 0.1);
+
+  assert.equal(game.resources.p1.summon >= 10, true, 'the first cooldown should be closer to a tap rhythm than a wait state');
+  assert.equal(game.actionState.p1.summon, true);
+});
+
+test('tutorial first scripted summon still creates a short readable cooldown beat', () => {
+  const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1092 });
+
+  advanceTo(game, 6);
+  summonToy(game, { playerId: 'p1' });
+
+  assert.equal(game.resources.p1.summon, 0);
+  assert.equal(game.actionState.p1.summon, false);
+
+  advanceTo(game, 14.25);
+
+  assert.equal(game.resources.p1.summon >= 10, true);
+  assert.equal(game.actionState.p1.summon, true);
+});
+
 test('merge consumes eligible grade-one units without deleting higher grade units', () => {
   const game = createRebootGame({ mode: 'bot', seedName: 'tutorial_success', seed: 102 });
   game.resources.p1.summon = 40;
