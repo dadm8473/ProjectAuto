@@ -230,6 +230,11 @@ function buildMetaProgress(kind, current, target, label) {
   return `<span class="meta-progress" data-progress-kind="${kind}" style="--progress-fill:${progressFillPercent(current, target)}%" role="progressbar" aria-valuemin="0" aria-valuemax="${target}" aria-valuenow="${valueNow}" aria-label="${label}"></span>`;
 }
 
+function objectiveReadout(current, target) {
+  const valueNow = Math.min(current, target);
+  return `<span class="objective-readout" aria-label="진행 ${valueNow}/${target}">${valueNow}/${target}</span>`;
+}
+
 const CARD_STATE_BADGES = {
   ready: '<span class="card-state-badge" data-card-state="ready" aria-hidden="true"></span>',
   owned: '<span class="card-state-badge" data-card-state="owned" aria-hidden="true"></span>',
@@ -821,6 +826,7 @@ export function buildMissionScreen(profile = {}) {
       <div class="card-copy">
         <span class="role-pill">미션</span>
         <strong>${mission.title}</strong>
+        ${objectiveReadout(progress, mission.target)}
         <p class="objective-detail">${mission.goal}</p>
         ${buildMetaProgress('mission', progress, mission.target, `미션 진행 ${progress}/${mission.target}`)}
         <span class="objective-cost shop-price">${rewardLabel}</span>
@@ -869,6 +875,7 @@ export function buildSeasonScreen(profile = {}) {
       <div class="card-copy">
         <span class="role-pill">시즌</span>
         <strong>${index + 1}단계 · ${rewardGrantCompactLabel(tier.grant)}</strong>
+        ${objectiveReadout(progress, tier.xp)}
         <p class="objective-detail">${progress}/${tier.xp} 경험치</p>
         ${buildMetaProgress('season', progress, tier.xp, `시즌 경험치 ${progress}/${tier.xp}`)}
         <span class="objective-cost shop-price">${tier.xp} 경험치</span>

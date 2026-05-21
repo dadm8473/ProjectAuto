@@ -120,7 +120,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_hud.js?v=board-copy1'",
     "from './reboot_render.js?v=battle-backdrop-v2'",
     "from './reboot_result_ui.js?v=result-ui2'",
-    "from './reboot_screens.js?v=objective-slots1'",
+    "from './reboot_screens.js?v=mission-season-density1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -642,7 +642,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-layout1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-season-density1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-meter-sockets-v2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-nameplates1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-command-board1">'), false);
@@ -759,7 +759,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-layout1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=mission-season-density1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter-sockets-v2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-nameplates1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-command-board1"></script>'), false);
@@ -868,7 +868,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=objective-slots1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=mission-season-density1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=board-copy1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=shop-chips1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=pending-copy1'"), false);
@@ -917,7 +917,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=meta-shelf-layout1';",
+    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=mission-season-density1';",
     'function scheduleWarmRebootAssets()',
     'warmRebootAssets().catch(() => {});',
     'preloadCriticalRebootAssets().then(() => {\n  hideLoadingGate();\n  scheduleWarmRebootAssets();\n}, hideLoadingGate);',
@@ -1521,7 +1521,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=meta-shelf-layout1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=mission-season-density1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=combat-meter-sockets-v2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=meta-shelf-nameplates1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-command-board1'), false);
@@ -1915,7 +1915,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-layout1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=mission-season-density1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -5020,8 +5020,8 @@ test('mission and season rows compress into reward-track slots instead of large 
   }
 
   const progressBlock = cssRuleBlock(css, '.meta-progress-board .meta-progress');
-  assert.equal(progressBlock.includes('width: min(100%, 132px);'), true);
-  assert.equal(progressBlock.includes('height: 14px;'), true);
+  assert.equal(progressBlock.includes('width: min(100%, 148px);'), true);
+  assert.equal(progressBlock.includes('height: 16px;'), true);
   assert.equal(season.includes('data-objective-current="true"'), true);
   assert.equal(season.includes('aria-current="step"'), true);
 });
@@ -5150,6 +5150,62 @@ test('mission screen reads as one generated command board instead of floating we
   const progressOverrideBlock = cssRuleBlock(css, '#missionsList .meta-progress-board[data-progress-board="missions"]');
   assert.equal(stampOverrideBlock.includes('background-image: none;'), true);
   assert.equal(progressOverrideBlock.includes('background-image: none;'), true);
+});
+
+test('mission command board fills the center with generated stamp sockets', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  const missionBoardBlock = cssRuleBlock(css, '#missionsList .mission-stamp-board');
+  for (const marker of [
+    'grid-template-columns: clamp(106px, 31vw, 128px) minmax(0, 1fr) clamp(78px, 22vw, 96px);',
+    'grid-template-areas:',
+    '"copy stamps command"',
+    '"copy stamps command"',
+    'min-height: clamp(194px, 52vw, 226px);'
+  ]) {
+    assert.equal(missionBoardBlock.includes(marker), true, marker);
+  }
+
+  const stampGridBlock = cssRuleBlock(css, '#missionsList .mission-stamp-grid');
+  for (const marker of [
+    'grid-column: auto;',
+    'align-self: center;',
+    'transform: none;',
+    'gap: clamp(5px, 1.8vw, 8px);'
+  ]) {
+    assert.equal(stampGridBlock.includes(marker), true, marker);
+  }
+
+  const stampSlotBlock = cssRuleBlock(css, '#missionsList .mission-stamp-slot');
+  assert.equal(stampSlotBlock.includes('min-height: clamp(54px, 15vw, 66px);'), true);
+});
+
+test('mission command board avoids stamp and command overlap on compact phones', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const compactStart = css.indexOf('@media (max-width: 350px)');
+  assert.notEqual(compactStart, -1, 'compact mission board media query is missing');
+  const compactCss = css.slice(compactStart);
+
+  const missionBoardBlock = cssRuleBlock(compactCss, '#missionsList .mission-stamp-board');
+  for (const marker of [
+    'grid-template-columns: minmax(0, 1fr) clamp(98px, 31vw, 104px);',
+    '"copy command"',
+    '"stamps stamps"'
+  ]) {
+    assert.equal(missionBoardBlock.includes(marker), true, marker);
+  }
+
+  const stampGridBlock = cssRuleBlock(compactCss, '#missionsList .mission-stamp-grid');
+  assert.equal(stampGridBlock.includes('grid-column: auto;'), true);
+  assert.equal(stampGridBlock.includes('grid-template-columns: repeat(3, minmax(0, 1fr));'), true);
+
+  const commandBlock = cssRuleBlock(compactCss, '#missionsList .mission-board-command');
+  assert.equal(commandBlock.includes('grid-template-columns: 34px minmax(58px, auto);'), true);
+  assert.equal(commandBlock.includes('gap: 4px;'), true);
+
+  const featuredActionBlock = cssRuleBlock(compactCss, '#missionsList .featured-objective-action');
+  assert.equal(featuredActionBlock.includes('min-width: 58px;'), true);
+  assert.equal(featuredActionBlock.includes('min-height: 44px;'), true);
 });
 
 test('collection and shop screens read as unified generated boards instead of stacked web fragments', async () => {
@@ -5445,6 +5501,50 @@ test('mission and season rows use generated objective status stamps instead of t
   assert.equal(claimButtonBlock.includes('min-height: 26px;'), false);
 });
 
+test('mission and season rows show compact generated progress readouts inside each slot', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const missions = buildMissionScreen({ processedRuns: [], claimedMissions: [] });
+  const season = buildSeasonScreen({ xp: 0, claimedPassTiers: [] });
+  const combined = `${css}\n${missions}\n${season}`;
+
+  for (const marker of [
+    'class="objective-readout"',
+    '0/1',
+    '0/60',
+    '.meta-progress-board .objective-readout',
+    'background-image: var(--meta-caption-plate);',
+    'background-size: 100% 100%;'
+  ]) {
+    assert.equal(combined.includes(marker), true, marker);
+  }
+
+  const copyBlock = cssRuleBlock(css, '.meta-progress-board .card-copy');
+  for (const marker of [
+    'position: relative;',
+    'z-index: 2;',
+    'justify-items: center;',
+    'grid-template-rows: minmax(30px, auto) minmax(20px, auto) 16px;'
+  ]) {
+    assert.equal(copyBlock.includes(marker), true, marker);
+  }
+
+  const readoutBlock = cssRuleBlock(css, '.meta-progress-board .objective-readout');
+  for (const marker of [
+    'display: inline-grid;',
+    'place-items: center;',
+    'min-width: 64px;',
+    'min-height: 20px;',
+    'background-image: var(--meta-caption-plate);',
+    'background-size: 100% 100%;'
+  ]) {
+    assert.equal(readoutBlock.includes(marker), true, marker);
+  }
+
+  const progressBlock = cssRuleBlock(css, '.meta-progress-board .meta-progress');
+  assert.equal(progressBlock.includes('height: 16px;'), true);
+  assert.equal(progressBlock.includes('width: min(100%, 148px);'), true);
+});
+
 test('combat resource HUD uses generated icons instead of text-only chips', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
@@ -5495,11 +5595,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=retry-context1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=objective-slots1'",
+    "from './reboot_screens.js?v=mission-season-density1'",
     "from './reboot_game.js?v=retry-context1'",
     "from '../shared/game.js?v=retry-context1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=objective-slots1',
+    '/src/client/reboot_screens.js?v=mission-season-density1',
     '/src/shared/game.js?v=retry-context1',
     '/src/shared/reboot_game.js?v=retry-context1'
   ]) {

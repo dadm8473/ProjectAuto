@@ -3391,6 +3391,15 @@ body[data-app-screen="season"] .app-screen::after {
 #missionsList .mission-stamp-board {
   background-image: none;
   filter: none;
+  min-height: clamp(194px, 52vw, 226px);
+  grid-template-columns: clamp(106px, 31vw, 128px) minmax(0, 1fr) clamp(78px, 22vw, 96px);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "copy stamps command"
+    "copy stamps command";
+  align-items: center;
+  padding: clamp(19px, 5.2vw, 24px) clamp(17px, 4.8vw, 22px) clamp(18px, 5vw, 24px);
+  gap: 6px;
 }
 
 #missionsList .meta-progress-board[data-progress-board="missions"] {
@@ -3709,6 +3718,72 @@ body[data-app-screen="season"] .app-screen::after {
   background-position: 100% 0;
   background-size: 300% 200%;
   filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.4));
+}
+
+#missionsList .mission-board-copy {
+  align-self: center;
+  max-width: clamp(106px, 31vw, 128px);
+}
+
+#missionsList .mission-stamp-grid {
+  grid-column: auto;
+  align-self: center;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(5px, 1.8vw, 8px);
+  transform: none;
+}
+
+#missionsList .mission-stamp-slot {
+  min-height: clamp(54px, 15vw, 66px);
+}
+
+#missionsList .mission-board-command {
+  align-self: center;
+  justify-self: end;
+  grid-template-columns: 42px minmax(58px, auto);
+  gap: 6px;
+}
+
+@media (max-width: 350px) {
+  #missionsList .mission-stamp-board {
+    grid-template-columns: minmax(0, 1fr) clamp(98px, 31vw, 104px);
+    grid-template-rows: minmax(76px, auto) minmax(56px, auto);
+    grid-template-areas:
+      "copy command"
+      "stamps stamps";
+  }
+
+  #missionsList .mission-board-copy {
+    max-width: 112px;
+  }
+
+  #missionsList .mission-stamp-grid {
+    grid-column: auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(8px, 3vw, 10px);
+  }
+
+  #missionsList .mission-stamp-slot {
+    min-height: clamp(50px, 15vw, 58px);
+  }
+
+  #missionsList .mission-board-command {
+    grid-template-columns: 34px minmax(58px, auto);
+    gap: 4px;
+  }
+
+  #missionsList .reward-token.board-feature-reward {
+    width: 34px;
+    height: 34px;
+    background-size: 136px 34px;
+  }
+
+  #missionsList .featured-objective-action {
+    min-width: 58px;
+    min-height: 44px;
+    padding: 0 7px 2px;
+    font-size: 11px;
+  }
 }
 
 .meta-showcase {
@@ -5083,8 +5158,14 @@ body[data-app-screen="season"] .app-screen::after {
 .meta-progress-board .reward-token[data-reward-icon="unlock_capsule"] { background-position: 100% 0; }
 
 .meta-progress-board .card-copy {
+  position: relative;
+  z-index: 2;
+  grid-template-rows: minmax(30px, auto) minmax(20px, auto) 16px;
+  justify-items: center;
+  align-content: center;
   gap: 2px;
   min-width: 0;
+  pointer-events: none;
 }
 
 .meta-progress-board .role-pill {
@@ -5121,6 +5202,23 @@ body[data-app-screen="season"] .app-screen::after {
   white-space: nowrap;
 }
 
+.meta-progress-board .objective-readout {
+  display: inline-grid;
+  place-items: center;
+  min-width: 64px;
+  min-height: 20px;
+  padding: 2px 11px 3px;
+  color: #bdfcff;
+  font-size: 11px;
+  font-weight: 1000;
+  line-height: 1;
+  background-image: var(--meta-caption-plate);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.45));
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.82), 0 0 10px rgba(88, 215, 255, 0.24);
+}
+
 .meta-progress-board .objective-detail,
 .meta-progress-board .objective-cost {
   position: absolute;
@@ -5135,8 +5233,8 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .meta-progress-board .meta-progress {
-  width: min(100%, 132px);
-  height: 14px;
+  width: min(100%, 148px);
+  height: 16px;
 }
 
 .meta-progress-board .shop-price {
