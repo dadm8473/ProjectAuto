@@ -75,6 +75,17 @@ const ROLE_LABELS = {
   rescue: '구원'
 };
 
+const ROLE_VALUE_LABELS = {
+  attack: '피해',
+  support: '증폭',
+  control: '감속',
+  rescue: '회복'
+};
+
+function unitRoleValueLabel(role) {
+  return ROLE_VALUE_LABELS[role] ?? '전력';
+}
+
 function resultMedalForReason(reason) {
   if (['partner_rescued', 'rescue_missed', 'save_rescue_for_partner_danger'].includes(reason)) return 'rescue';
   if (['boss_final_hit', 'boss_slowed', 'boss_leaked', 'boss_unfinished'].includes(reason)) return 'boss';
@@ -241,8 +252,9 @@ const CARD_STATE_BADGES = {
   locked: '<span class="card-state-badge" data-card-state="locked" aria-hidden="true"></span>'
 };
 const SHOP_PURPOSE_LABEL = '외형 전용';
-const SHOP_PURPOSE_BADGE = '외형';
+const SHOP_PURPOSE_BADGE = '외형만';
 const SHOP_NO_POWER_LABEL = '전투력 영향 없음';
+const SHOP_NO_POWER_BADGE = '전투력 0';
 const CLAIM_ACTION_LABEL = '받기';
 
 function cardStateBadge(state) {
@@ -545,6 +557,7 @@ function buildUnitFeaturedShowcase({ featuredUnit, profile, xp, unitLevels }) {
   const featuredCost = unitUpgradeCost(featuredLevel);
   const featuredState = unitFeatureState({ xp, cost: featuredCost });
   const roleLabel = ROLE_LABELS[featuredUnit.role] ?? featuredUnit.role;
+  const featuredRoleValue = unitRoleValueLabel(featuredUnit.role);
   const stateLabel = featuredState === 'ready' ? '강화 가능' : '경험치 부족';
   const previewExtra = '<span class="unit-feature-ring" aria-hidden="true"></span>';
   const action = `
@@ -556,7 +569,7 @@ function buildUnitFeaturedShowcase({ featuredUnit, profile, xp, unitLevels }) {
     kind: 'collection',
     label: '대표 유닛',
     title: featuredUnit.name,
-    detail: `${roleLabel} 유닛`,
+    detail: `${roleLabel} · ${featuredRoleValue}`,
     stats: [
       { text: `Lv.${featuredLevel}`, label: `레벨 ${featuredLevel}` },
       { text: `XP ${Math.min(xp, featuredCost)}/${featuredCost}`, label: `강화 경험치 ${Math.min(xp, featuredCost)}/${featuredCost}` }
@@ -565,7 +578,7 @@ function buildUnitFeaturedShowcase({ featuredUnit, profile, xp, unitLevels }) {
     spriteAttr: 'data-sprite',
     spriteValue: featuredUnit.spriteKey,
     extraClass: 'unit-feature-showcase',
-    attrs: ` data-featured-unit="${featuredUnit.id}" data-featured-state="${featuredState}" aria-label="대표 강화 ${featuredUnit.name} · ${roleLabel} · Lv.${featuredLevel} · 강화 비용 ${featuredCost} 경험치 · ${stateLabel}"`,
+    attrs: ` data-featured-unit="${featuredUnit.id}" data-featured-state="${featuredState}" aria-label="대표 강화 ${featuredUnit.name} · ${roleLabel} · ${featuredRoleValue} · Lv.${featuredLevel} · 강화 비용 ${featuredCost} 경험치 · ${stateLabel}"`,
     previewExtra,
     previewClass: 'unit-feature-pedestal',
     action
@@ -678,17 +691,18 @@ export function buildRebootCollection(profile = {}) {
     const cost = unitUpgradeCost(level);
     const ready = xp >= cost;
     const roleLabel = ROLE_LABELS[unit.role] ?? unit.role;
+    const roleValue = unitRoleValueLabel(unit.role);
     const unitStateLabel = ready ? '강화 가능' : '경험치 부족';
     const tileState = ready ? 'ready' : 'locked';
     const action = ready
       ? `<button type="button" data-unit-upgrade="${unit.id}" aria-label="${unit.name} 강화"><span class="unit-upgrade-label">강화</span></button>`
       : passiveCardState('경험치 부족', 'locked', '부족');
     return `
-    <article class="screen-card unit-card" data-unit-card="${unit.id}" data-role="${unit.role}" data-tile-state="${tileState}" aria-label="${unit.name} · ${roleLabel} · Lv.${level} · 강화 비용 ${cost} 경험치 · ${unitStateLabel}">
+    <article class="screen-card unit-card" data-unit-card="${unit.id}" data-role="${unit.role}" data-tile-state="${tileState}" aria-label="${unit.name} · ${roleLabel} · ${roleValue} · Lv.${level} · 강화 비용 ${cost} 경험치 · ${unitStateLabel}">
       ${cardStateBadge(ready ? 'ready' : 'locked')}
       <span class="sprite-token unit-sprite" data-sprite="${unit.spriteKey}"></span>
       <div class="card-copy">
-        <span class="role-pill">${roleLabel}</span>
+        <span class="role-pill" aria-label="${roleLabel} 역할 · ${roleValue}">${roleValue}</span>
         <strong>${unit.name}</strong>
         <p>등급 ${unit.grade} · <span class="unit-level">Lv.${level}</span></p>
         ${buildMetaProgress('training', Math.min(xp, cost), cost, `강화 경험치 ${Math.min(xp, cost)}/${cost}`)}
@@ -750,7 +764,7 @@ function buildShopFeaturedShowcase({ featuredItem, profile, unlocks, gems }) {
     detail: featuredItem.description,
     stats: [
       { text: SHOP_PURPOSE_BADGE, label: `${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL}` },
-      { text: `보유 ${gems}`, label: `보유 ${gems} 보석` }
+      { text: SHOP_NO_POWER_BADGE, label: SHOP_NO_POWER_LABEL }
     ],
     spriteClass: 'shop-cosmetic',
     spriteAttr: 'data-shop-cosmetic',
@@ -791,7 +805,7 @@ export function buildRebootShop(profile = {}) {
       <span class="cosmetic-equip-aura" data-cosmetic-effect="${item.id}" aria-hidden="true"></span>
       <span class="sprite-token shop-cosmetic" data-shop-cosmetic="${item.id}"></span>
       <div class="card-copy">
-        <span class="role-pill" aria-label="${SHOP_PURPOSE_LABEL}">${SHOP_PURPOSE_BADGE}</span>
+        <span class="role-pill" aria-label="${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL}">${SHOP_PURPOSE_BADGE}</span>
         <strong>${item.name}</strong>
         <p>${item.description}</p>
         <span class="shop-price" aria-label="해금 비용 ${price} 보석">${price}</span>

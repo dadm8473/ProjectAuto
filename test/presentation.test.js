@@ -120,7 +120,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_hud.js?v=board-copy1'",
     "from './reboot_render.js?v=battle-backdrop-v2'",
     "from './reboot_result_ui.js?v=result-ui2'",
-    "from './reboot_screens.js?v=mission-season-density1'",
+    "from './reboot_screens.js?v=role-value1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -642,7 +642,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-season-density1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-simplify1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-meter-sockets-v2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-nameplates1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-command-board1">'), false);
@@ -759,7 +759,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=mission-season-density1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=role-value1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter-sockets-v2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-nameplates1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-command-board1"></script>'), false);
@@ -868,7 +868,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=mission-season-density1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=role-value1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=board-copy1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=shop-chips1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=pending-copy1'"), false);
@@ -1521,7 +1521,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=mission-season-density1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=shelf-simplify1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=combat-meter-sockets-v2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=meta-shelf-nameplates1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-command-board1'), false);
@@ -1879,6 +1879,75 @@ test('collection and shop start with generated showcase stages instead of list-f
   assert.equal(showcaseBlock.includes('backdrop-filter'), false);
 });
 
+test('collection unit cards expose role value labels without adding extra commands', async () => {
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const collection = buildRebootCollection({ xp: 80, unitLevels: { spark_pin: 1 } });
+
+  for (const marker of [
+    'const ROLE_VALUE_LABELS = {',
+    'function unitRoleValueLabel(role)',
+    'const roleValue = unitRoleValueLabel(unit.role);',
+    'const featuredRoleValue = unitRoleValueLabel(featuredUnit.role);',
+    'detail: `${roleLabel} · ${featuredRoleValue}`',
+    '<span class="role-pill" aria-label="${roleLabel} 역할 · ${roleValue}">${roleValue}</span>',
+    '스파크 핀 · 공격 · 피해',
+    '톡톡 앰프 · 지원 · 증폭',
+    '느림 코일 · 제어 · 감속',
+    '구원 코일 · 구원 · 회복'
+  ]) {
+    assert.equal(`${screens}\n${collection}`.includes(marker), true, marker);
+  }
+
+  assert.equal(collection.includes('공격 유닛'), false);
+  assert.equal(collection.includes('data-role-value-action'), false, 'role value labels must not add more unit commands');
+});
+
+test('shop labels cosmetics as visual-only power-neutral purchases', async () => {
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const shop = buildRebootShop({ gems: 120, unlocks: [] });
+
+  for (const marker of [
+    "const SHOP_PURPOSE_BADGE = '외형만';",
+    "const SHOP_NO_POWER_BADGE = '전투력 0';",
+    "{ text: SHOP_PURPOSE_BADGE, label: `${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL}` }",
+    '{ text: SHOP_NO_POWER_BADGE, label: SHOP_NO_POWER_LABEL }',
+    '<span class="role-pill" aria-label="${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL}">${SHOP_PURPOSE_BADGE}</span>',
+    '외형만',
+    '전투력 0',
+    '전투력 영향 없음'
+  ]) {
+    assert.equal(`${screens}\n${shop}`.includes(marker), true, marker);
+  }
+
+  assert.equal(shop.includes('전투력 +'), false);
+  assert.equal(shop.includes('data-shop-purpose-action'), false, 'shop clarity labels must not add extra purchase buttons');
+});
+
+test('collection and shop shelf cards reduce secondary labels to one readable value lane', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '.meta-shelf-grid .unit-card .unit-cost',
+    'display: none;',
+    '.meta-shelf-grid .shop-card .role-pill',
+    '.meta-shelf-grid .shop-card .shop-price'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const unitCostBlock = cssRuleBlock(css, '.meta-shelf-grid .unit-card .unit-cost');
+  assert.equal(unitCostBlock.includes('display: none;'), true);
+  assert.equal(unitCostBlock.includes('position: absolute;'), false);
+
+  const shopRoleBlock = cssRuleBlock(css, '.meta-shelf-grid .shop-card .role-pill');
+  assert.equal(shopRoleBlock.includes('display: none;'), true);
+  assert.equal(shopRoleBlock.includes('position: absolute;'), false);
+
+  const shopPriceBlock = cssRuleBlock(css, '.meta-shelf-grid .shop-card .shop-price');
+  assert.equal(shopPriceBlock.includes('display: inline-flex;'), true);
+  assert.equal(shopPriceBlock.includes('position: static;'), true);
+});
+
 test('meta showcase stat chips use generated caption plates instead of css pills', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
@@ -1915,7 +1984,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=mission-season-density1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=shelf-simplify1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2296,16 +2365,8 @@ test('meta shelf cards use generated shelf nameplates for labels prices and stat
   }
 
   const shopRoleBlock = cssRuleBlock(css, '.meta-shelf-grid .shop-card .role-pill');
-  for (const marker of [
-    'display: inline-flex;',
-    'position: absolute;',
-    'right: 14px;',
-    'background-image: var(--meta-shelf-nameplates);',
-    'background-position: 66.666% 0;',
-    'pointer-events: none;'
-  ]) {
-    assert.equal(shopRoleBlock.includes(marker), true, marker);
-  }
+  assert.equal(shopRoleBlock.includes('display: none;'), true);
+  assert.equal(shopRoleBlock.includes('position: absolute;'), false);
 });
 
 test('meta shelf tiles use generated status overlays instead of catalog cells', async () => {
@@ -4821,10 +4882,10 @@ test('shop screen uses the active generated showcase stage', async () => {
     'data-showcase-kind="shop"',
     '추천 외형',
     "{ text: SHOP_PURPOSE_BADGE, label: `${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL}` }",
-    "{ text: `보유 ${gems}`, label: `보유 ${gems} 보석` }",
+    "{ text: SHOP_NO_POWER_BADGE, label: SHOP_NO_POWER_LABEL }",
     'data-shop-purpose="cosmetic-only"',
     '전투력 영향 없음',
-    '<span class="role-pill" aria-label="${SHOP_PURPOSE_LABEL}">${SHOP_PURPOSE_BADGE}</span>',
+    '<span class="role-pill" aria-label="${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL}">${SHOP_PURPOSE_BADGE}</span>',
     'class="meta-showcase-preview shop-feature-pedestal"',
     'class="sprite-token shop-cosmetic"'
   ]) {
@@ -4834,6 +4895,7 @@ test('shop screen uses the active generated showcase stage', async () => {
   assert.equal(css.includes('.meta-summary[data-summary-kind="shop"]'), false);
   assert.equal(css.includes('--shop-banner: url("/src/client/assets/generated/reboot-shop-banner.png")'), false);
   assert.equal(screens.includes("{ text: `가격 ${price}`, label: `가격 ${price} 보석` }"), false);
+  assert.equal(screens.includes("{ text: `보유 ${gems}`, label: `보유 ${gems} 보석` }"), false);
   assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="가격 90 보석">가격 90</span>'), false);
 });
 
@@ -5595,11 +5657,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=retry-context1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=mission-season-density1'",
+    "from './reboot_screens.js?v=role-value1'",
     "from './reboot_game.js?v=retry-context1'",
     "from '../shared/game.js?v=retry-context1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=mission-season-density1',
+    '/src/client/reboot_screens.js?v=role-value1',
     '/src/shared/game.js?v=retry-context1',
     '/src/shared/reboot_game.js?v=retry-context1'
   ]) {

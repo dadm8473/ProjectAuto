@@ -513,9 +513,10 @@ test('shop surfaces clarify cosmetic purchases do not sell combat power', () => 
   const shop = buildRebootShop({ gems: 90, unlocks: [] });
 
   assert.equal((shop.match(/data-shop-purpose="cosmetic-only"/g) ?? []).length, 6);
-  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="외형 전용 · 전투력 영향 없음">외형</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="외형 전용 · 전투력 영향 없음">외형만</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="전투력 영향 없음">전투력 0</span>'), true);
   assert.equal(shop.includes('<span class="meta-showcase-chip">외형 전용</span>'), false);
-  assert.equal((shop.match(/<span class="role-pill" aria-label="외형 전용">외형<\/span>/g) ?? []).length, 5);
+  assert.equal((shop.match(/<span class="role-pill" aria-label="외형 전용 · 전투력 영향 없음">외형만<\/span>/g) ?? []).length, 5);
   assert.equal(
     shop.includes('aria-label="추천 외형 신화 오라 · 코어 릴레이 오라 · 외형 전용 · 전투력 영향 없음 · 보유 90 보석 · 가격 90 보석 · 해금 가능"'),
     true
@@ -604,7 +605,9 @@ test('meta screens start with compact actionable status headers', () => {
   const shop = buildRebootShop({ gems: 100, unlocks: [] });
   assert.equal(shop.includes('meta-showcase'), true);
   assert.equal(shop.includes('추천 외형'), true);
-  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="보유 100 보석">보유 100</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="외형 전용 · 전투력 영향 없음">외형만</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="전투력 영향 없음">전투력 0</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="보유 100 보석">보유 100</span>'), false);
   assert.equal(shop.includes('class="shop-price shop-feature-price" aria-label="해금 비용 90 보석">90</span>'), true);
   assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="가격 90 보석">가격 90</span>'), false);
 
@@ -658,8 +661,9 @@ test('collection and shop showcases split numeric state into compact game badges
   assert.equal(collection.includes('Lv.1 · 0/40 경험치'), false);
 
   assert.equal(shop.includes('class="meta-showcase-stats"'), true);
-  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="외형 전용 · 전투력 영향 없음">외형</span>'), true);
-  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="보유 0 보석">보유 0</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="외형 전용 · 전투력 영향 없음">외형만</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="전투력 영향 없음">전투력 0</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="보유 0 보석">보유 0</span>'), false);
   assert.equal(shop.includes('<span class="meta-showcase-chip">외형 전용</span>'), false);
   assert.equal(shop.includes('<span class="meta-showcase-chip">보유 0 보석</span>'), false);
   assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="가격 90 보석">가격 90</span>'), false);
@@ -672,7 +676,8 @@ test('collection showcase names upgrade availability as game-state copy instead 
   const idleCollection = buildRebootCollection({ xp: 0, unitLevels: {} });
   const readyCollection = buildRebootCollection({ xp: 40, unitLevels: {} });
 
-  assert.equal(idleCollection.includes('<p>공격 유닛</p>'), true);
+  assert.equal(idleCollection.includes('<p>공격 · 피해</p>'), true);
+  assert.equal(idleCollection.includes('<p>공격 유닛</p>'), false);
   assert.equal(idleCollection.includes('공격 · 강화 대기'), false);
   assert.equal(idleCollection.includes('0명 강화 가능'), false);
   assert.equal(readyCollection.includes('8기 강화 가능'), false);
@@ -696,12 +701,12 @@ test('unit shelf cards expose compact roles and full accessible state', () => {
   });
 
   assert.equal(
-    collection.includes('aria-label="스파크 핀 · 공격 · Lv.1 · 강화 비용 40 경험치 · 강화 가능"'),
+    collection.includes('aria-label="스파크 핀 · 공격 · 피해 · Lv.1 · 강화 비용 40 경험치 · 강화 가능"'),
     true
   );
-  assert.equal(collection.includes('<span class="role-pill">공격</span>'), true);
+  assert.equal(collection.includes('<span class="role-pill" aria-label="공격 역할 · 피해">피해</span>'), true);
   assert.equal(collection.includes('data-role="support"'), true);
-  assert.equal(collection.includes('<span class="role-pill">지원</span>'), true);
+  assert.equal(collection.includes('<span class="role-pill" aria-label="지원 역할 · 증폭">증폭</span>'), true);
   assert.equal(collection.includes('data-unit-upgrade="spark_pin" aria-label="스파크 핀 강화"'), true);
   assert.equal(collection.includes('<span class="unit-upgrade-label">강화</span>'), true);
 });

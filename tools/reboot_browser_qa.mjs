@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v93');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v95');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=mission-season-density1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=mission-season-density1'))
+      '/src/client/styles.css?v=shelf-simplify1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=shelf-simplify1'))
         : false,
-      '/src/client/app.js?v=mission-season-density1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=mission-season-density1'))
+      '/src/client/app.js?v=role-value1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=role-value1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -156,8 +156,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_result_ui.js?v=result-ui2': cache
         ? Boolean(await cache.match('/src/client/reboot_result_ui.js?v=result-ui2'))
         : false,
-      '/src/client/reboot_screens.js?v=mission-season-density1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=mission-season-density1'))
+      '/src/client/reboot_screens.js?v=role-value1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=role-value1'))
         : false,
       '/src/shared/game.js?v=retry-context1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=retry-context1'))
@@ -238,7 +238,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v93', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v95', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -2340,7 +2340,7 @@ async function verifyShell(page, viewport) {
     collectionFeatureCopy,
     {
       label: '대표 유닛',
-      detail: '공격 유닛',
+      detail: '공격 · 피해',
       chips: [
         { text: 'Lv.1', label: '레벨 1' },
         { text: 'XP 0/40', label: '강화 경험치 0/40' }
@@ -2354,7 +2354,7 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#collectionList .unit-card .sprite-token.unit-sprite').count(), 8);
   assert.equal(await page.locator('#collectionList .meta-showcase .sprite-token.unit-sprite').count(), 1);
   await assertGeneratedCardSurface(page, '#collectionList .meta-shelf-grid .unit-card', 'collection shelf card', /reboot-meta-item-status-overlays/);
-  await assertGeneratedShelfNameplates(page, '#collectionList .meta-shelf-grid .card-copy strong, #collectionList .meta-shelf-grid .unit-cost, #collectionList .meta-shelf-grid .role-pill:visible, #collectionList .meta-shelf-grid .card-passive-state', 'collection shelf');
+  await assertGeneratedShelfNameplates(page, '#collectionList .meta-shelf-grid .card-copy strong, #collectionList .meta-shelf-grid .unit-card .role-pill:visible, #collectionList .meta-shelf-grid .card-passive-state', 'collection shelf');
   await assertGeneratedShelfCell(page, '#collectionList .meta-shelf-grid .role-pill:visible', '66.666%', 'collection role tag');
   await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await page.getByRole('button', { name: '상점' }).click();
@@ -2364,20 +2364,20 @@ async function verifyShell(page, viewport) {
   await page.locator('.shop-cosmetic').first().waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#shopScreen .meta-showcase-copy > span:first-child', 'shop', 1);
   await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'shop', 2);
-  assert.equal(await page.locator('#shopScreen .meta-showcase-chip').first().textContent(), '외형');
+  assert.equal(await page.locator('#shopScreen .meta-showcase-chip').first().textContent(), '외형만');
   assert.equal(
     await page.locator('#shopScreen .meta-showcase-chip').first().getAttribute('aria-label'),
     '외형 전용 · 전투력 영향 없음'
   );
+  assert.equal(await page.locator('#shopScreen .meta-showcase-chip').nth(1).textContent(), '전투력 0');
   await assertBannerOverlayClear(page, '#shopScreen .meta-showcase', 'shop showcase');
   await assertShopFeatureOffer(page, 'shop');
   await assertMetaListReachesDock(page, '#shopList', 'shop');
   assert.equal(await page.locator('#shopList .shop-card .sprite-token.shop-cosmetic').count(), 5);
   assert.equal(await page.locator('#shopList .meta-showcase .sprite-token.shop-cosmetic').count(), 1);
-  assert.equal(await page.locator('#shopList .shop-card .role-pill:visible', { hasText: '외형' }).count(), 5);
+  assert.equal(await page.locator('#shopList .shop-card .role-pill:visible').count(), 0);
   await assertGeneratedCardSurface(page, '#shopList .meta-shelf-grid .shop-card', 'shop shelf card', /reboot-meta-item-status-overlays/);
-  await assertGeneratedShelfNameplates(page, '#shopList .meta-shelf-grid .card-copy strong, #shopList .meta-shelf-grid .shop-price, #shopList .meta-shelf-grid .role-pill:visible, #shopList .meta-shelf-grid .card-passive-state', 'shop shelf');
-  await assertGeneratedShelfCell(page, '#shopList .meta-shelf-grid .role-pill:visible', '66.666%', 'shop role tag');
+  await assertGeneratedShelfNameplates(page, '#shopList .meta-shelf-grid .card-copy strong, #shopList .meta-shelf-grid .shop-price, #shopList .meta-shelf-grid .card-passive-state', 'shop shelf');
   await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await page.getByRole('button', { name: '미션', exact: true }).click();
   await assertActiveNavLabelPlate(page, '미션', 'missions');
@@ -2492,11 +2492,12 @@ async function verifyCompactMeta(page) {
   await assertMetaStationHeader(page, '#shopScreen', 'compact shop');
   await assertMetaUnifiedBoard(page, '#shopList', /reboot-shop-display-board-v1/, 'compact shop');
   await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'compact shop', 2);
-  assert.equal(await page.locator('#shopScreen .meta-showcase-chip').first().textContent(), '외형');
+  assert.equal(await page.locator('#shopScreen .meta-showcase-chip').first().textContent(), '외형만');
   assert.equal(
     await page.locator('#shopScreen .meta-showcase-chip').first().getAttribute('aria-label'),
     '외형 전용 · 전투력 영향 없음'
   );
+  assert.equal(await page.locator('#shopScreen .meta-showcase-chip').nth(1).textContent(), '전투력 0');
   await assertShopFeatureOffer(page, 'compact ready shop');
   await assertFeaturedShopPurchaseFlow(page, 'compact ready shop');
   await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
