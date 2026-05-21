@@ -2016,10 +2016,10 @@ test('player board uses a generated landing tray beneath summoned units', () => 
     command.type === 'drawImage'
       && command.args[0].naturalWidth === 1280
       && command.args[0].naturalHeight === 256
-      && command.args[7] >= 68
-      && command.args[7] <= 78
-      && command.args[8] >= 68
-      && command.args[8] <= 78
+      && command.args[7] >= 78
+      && command.args[7] <= 84
+      && command.args[8] >= 78
+      && command.args[8] <= 84
       && command.args[6] < 456
   ));
   const summonRevealIndex = combatRevealIndex(ctx.commands, 0);
@@ -2134,16 +2134,128 @@ test('player board anchors summoned units with a generated activation ring', () 
     command.type === 'drawImage'
       && command.args[0].naturalWidth === 1280
       && command.args[0].naturalHeight === 256
-      && command.args[7] >= 68
-      && command.args[7] <= 78
-      && command.args[8] >= 68
-      && command.args[8] <= 78
+      && command.args[7] >= 78
+      && command.args[7] <= 84
+      && command.args[8] >= 78
+      && command.args[8] <= 84
       && command.args[6] < 456
   ));
 
   assert.notEqual(ringIndex, -1, 'expected a generated unit activation ring under the summoned unit');
   assert.notEqual(unitIndex, -1, 'expected summoned unit to draw');
   assert.equal(ringIndex < unitIndex, true, 'activation ring should sit beneath the unit sprite');
+});
+
+test('player board gives summoned units a layered generated pedestal', () => {
+  const ctx = mockContext();
+  const unitActivationRing = image(512, 512);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 12,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      playerBoardTray: image(780, 320),
+      unitActivationRing
+    }
+  );
+
+  const pedestalDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === unitActivationRing
+      && command.args[3] >= 90
+      && command.args[4] >= 54
+  ));
+  const unitDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1280
+      && command.args[0].naturalHeight === 256
+      && command.args[7] >= 78
+      && command.args[8] >= 78
+  ));
+
+  assert.equal(pedestalDraws.length >= 2, true, 'summoned unit should sit on a layered generated pedestal, not a faint single mark');
+  assert.ok(unitDraw, 'summoned unit should be large enough to read as a placed board object');
+});
+
+test('full player board keeps enlarged generated unit pedestals separated', () => {
+  const ctx = mockContext();
+  const units = image(1280, 256);
+  const unitActivationRing = image(512, 512);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 38,
+      boards: {
+        p1: {
+          danger: 0,
+          units: [
+            { spriteKey: 'spark_pin' },
+            { spriteKey: 'toktok_amp' },
+            { spriteKey: 'slow_coil' },
+            { spriteKey: 'burst_pin' },
+            { spriteKey: 'rescue_coil' }
+          ]
+        },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units,
+      board: image(1280, 256),
+      playerBoardTray: image(780, 320),
+      unitActivationRing
+    }
+  );
+
+  const unitDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === units
+      && command.args[7] >= 58
+      && command.args[7] <= 62
+      && command.args[8] >= 58
+      && command.args[8] <= 62
+  ));
+  const widePedestalDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === unitActivationRing
+      && command.args[3] >= 60
+      && command.args[3] <= 62
+      && command.args[4] >= 42
+      && command.args[4] <= 44
+  ));
+  const drawRect = (command) => (
+    command.args.length >= 9
+      ? { x: command.args[5], width: command.args[7] }
+      : { x: command.args[1], width: command.args[3] }
+  );
+  const noHorizontalOverlap = (commands) => {
+    const rects = commands.map(drawRect).sort((a, b) => a.x - b.x);
+    return rects.slice(1).every((rect, index) => (
+      rects[index].x + rects[index].width <= rect.x
+    ));
+  };
+
+  assert.equal(unitDraws.length, 5, 'full player board should still draw all five unit sprites');
+  assert.equal(widePedestalDraws.length, 5, 'each full-board unit should keep one separated generated base pedestal');
+  assert.equal(noHorizontalOverlap(unitDraws), true, 'full-board unit sprite draw bounds should not overlap adjacent slots');
+  assert.equal(noHorizontalOverlap(widePedestalDraws), true, 'full-board pedestal draw bounds should not overlap adjacent slots');
 });
 
 test('player board marks two grade-one reboot units as merge ready', () => {

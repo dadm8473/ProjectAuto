@@ -89,7 +89,7 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v58');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v59');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
@@ -114,8 +114,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
         : false,
-      '/src/client/reboot_render.js?v=role-label1': cache
-        ? Boolean(await cache.match('/src/client/reboot_render.js?v=role-label1'))
+      '/src/client/reboot_render.js?v=unit-pedestal1': cache
+        ? Boolean(await cache.match('/src/client/reboot_render.js?v=unit-pedestal1'))
         : false,
       '/src/client/reboot_screens.js?v=retry-context1': cache
         ? Boolean(await cache.match('/src/client/reboot_screens.js?v=retry-context1'))
@@ -144,6 +144,12 @@ async function verifyInstallableShell(page) {
       '/src/client/assets/generated/reboot-unit-atlas.png': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-unit-atlas.png'))
         : false,
+      '/src/client/assets/generated/reboot-player-board-tray.png?v=player-tray': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-player-board-tray.png?v=player-tray'))
+        : false,
+      '/src/client/assets/generated/reboot-unit-activation-ring.png?v=unit-activation-ring1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-unit-activation-ring.png?v=unit-activation-ring1'))
+        : false,
       '/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2'))
         : false
@@ -160,7 +166,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v58', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v59', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }

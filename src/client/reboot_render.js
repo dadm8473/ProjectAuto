@@ -871,14 +871,20 @@ function drawPlayerBoardBridge(ctx, assets, layout) {
   return true;
 }
 
-function drawUnitActivationRing(ctx, assets, cx, cy, unitSize, alpha = 1) {
+function drawUnitActivationRing(ctx, assets, cx, cy, unitSize, alpha = 1, compact = false) {
   const image = assets?.unitActivationRing;
   if (!image?.complete || image.naturalWidth <= 0) return false;
-  const w = unitSize * 1.34;
-  const h = unitSize * 0.82;
+  const baseW = unitSize * (compact ? 1.02 : 1.56);
+  const baseH = unitSize * (compact ? 0.72 : 0.94);
+  const topW = unitSize * (compact ? 0.9 : 1.3);
+  const topH = unitSize * (compact ? 0.58 : 0.76);
+  ctx.save();
+  ctx.globalAlpha *= alpha * 0.42;
+  ctx.drawImage(image, cx - baseW / 2, cy + unitSize * 0.18 - baseH / 2, baseW, baseH);
+  ctx.restore();
   ctx.save();
   ctx.globalAlpha *= alpha;
-  ctx.drawImage(image, cx - w / 2, cy + unitSize * 0.16 - h / 2, w, h);
+  ctx.drawImage(image, cx - topW / 2, cy + unitSize * 0.13 - topH / 2, topW, topH);
   ctx.restore();
   return true;
 }
@@ -1053,6 +1059,8 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
       .filter(([grade, unitCount]) => Number(grade) < 2 && unitCount >= REBOOT_RULES.merge.requiredSameGrade)
       .map(([grade]) => grade)
   );
+  const occupiedSlots = board.units.filter(Boolean).length;
+  const densePlayerBoard = imageBackdrop && !compact && occupiedSlots >= 4;
   for (let i = 0; i < count; i += 1) {
     const sx = x + 12 + i * (size + gap);
     const sy = y + h - size - 12;
@@ -1071,11 +1079,11 @@ function drawBoard(ctx, board, x, y, w, h, title, compact = false, assets = {}, 
     const unit = board.units[i];
     if (!unit) continue;
     const unitLift = imageBackdrop && !compact ? -16 : 0;
-    const unitSize = size * (imageBackdrop && !compact ? 1.22 : 0.95);
+    const unitSize = size * (imageBackdrop && !compact ? (densePlayerBoard ? 1.05 : 1.38) : 0.95);
     const unitX = sx + size / 2;
     const unitY = sy + size / 2 + unitLift;
     if (imageBackdrop && !compact) {
-      drawUnitActivationRing(ctx, assets, unitX, unitY, unitSize, 0.72);
+      drawUnitActivationRing(ctx, assets, unitX, unitY, unitSize, 0.72, densePlayerBoard);
     }
     if (mergeReadyGrades.has(unit.grade)) {
       drawAtlasSprite(ctx, assets, 'board', 'merge_ready_frame', unitX, unitY, size * 1.16, 0.72);

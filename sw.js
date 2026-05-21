@@ -1,4 +1,4 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v58';
+const CACHE_NAME = 'projectauto-reboot-shell-v59';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
@@ -11,7 +11,7 @@ const APP_SHELL_URLS = [
   '/src/client/reboot_hud.js?v=retry-reminder1',
   '/src/client/reboot_playtest.js?v=playtest2',
   '/src/client/reboot_preload.js?v=shell-backdrop1',
-  '/src/client/reboot_render.js?v=role-label1',
+  '/src/client/reboot_render.js?v=unit-pedestal1',
   '/src/client/reboot_screens.js?v=retry-context1',
   '/src/client/reboot_online.js',
   '/src/shared/game.js?v=retry-context1',
@@ -49,6 +49,8 @@ const APP_SHELL_URLS = [
   '/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3',
   '/src/client/assets/generated/reboot-combat-hud-frame.png',
   '/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1',
+  '/src/client/assets/generated/reboot-player-board-tray.png?v=player-tray',
+  '/src/client/assets/generated/reboot-unit-activation-ring.png?v=unit-activation-ring1',
   '/src/client/assets/generated/reboot-player-board-bridge.png?v=player-board-bridge1'
 ];
 

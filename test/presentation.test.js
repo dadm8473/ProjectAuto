@@ -118,7 +118,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_action_ui.js?v=retry-reminder1'",
     "from './reboot_audio.js?v=audio-safe1'",
     "from './reboot_hud.js?v=retry-reminder1'",
-    "from './reboot_render.js?v=role-label1'",
+    "from './reboot_render.js?v=unit-pedestal1'",
     "from './reboot_screens.js?v=retry-context1'",
     "from './reboot_online.js'"
   ]) {
@@ -809,7 +809,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=role-label1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=unit-pedestal1'"), true);
   assert.equal(app.includes("from './reboot_render.js?v=enemy-atlas3'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=opening-route1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=match-banner-cutin1'"), false);
