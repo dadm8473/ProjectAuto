@@ -868,7 +868,8 @@ test('mission and season top boards keep large copy numeric while preserving ful
     missions.includes('class="mission-stamp-board" data-board-kind="missions" data-board-layout="contract-stamps" aria-label="미션 보드 · 수령 가능 1개 · 완료 목표 보상 전환"'),
     true
   );
-  assert.equal(missions.includes('<span>받을 보상</span>'), true);
+  assert.equal(missions.includes('<span>보상</span>'), true);
+  assert.equal(missions.includes('<span>받을 보상</span>'), false);
   assert.equal(missions.includes('<strong>1</strong>'), true);
   assert.equal(missions.includes('<p>받기</p>'), true);
   assert.equal(missions.includes('<p>수령 가능</p>'), false);
@@ -882,7 +883,8 @@ test('mission and season top boards keep large copy numeric while preserving ful
   );
   assert.equal(season.includes('<span>시즌 XP</span>'), true);
   assert.equal(season.includes('<strong>80</strong>'), true);
-  assert.equal(season.includes('<p>보상 없음</p>'), true);
+  assert.equal(season.includes('<p>대기</p>'), true);
+  assert.equal(season.includes('<p>보상 없음</p>'), false);
   assert.equal(season.includes('<span>시즌 점수</span>'), false);
   assert.equal(season.includes('<strong>80 경험치</strong>'), false);
   assert.equal(season.includes('<p>0개 보상 가능</p>'), false);
@@ -892,10 +894,12 @@ test('mission top board does not promise a reward claim when none are ready', ()
   const emptyMissions = buildMissionScreen({ processedRuns: [], claimedMissions: [] });
   const readyMissions = buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] });
 
-  assert.equal(emptyMissions.includes('<span>받을 보상</span>'), true);
+  assert.equal(emptyMissions.includes('<span>보상</span>'), true);
+  assert.equal(emptyMissions.includes('<span>받을 보상</span>'), false);
   assert.equal(emptyMissions.includes('<strong>0</strong>'), true);
   assert.equal(emptyMissions.includes('aria-label="미션 보드 · 대기 보상 없음 · 완료 목표 보상 전환"'), true);
-  assert.equal(emptyMissions.includes('<p>작전 진행</p>'), true);
+  assert.equal(emptyMissions.includes('<p>진행</p>'), true);
+  assert.equal(emptyMissions.includes('<p>작전 진행</p>'), false);
   assert.equal(emptyMissions.includes('<p>진행중</p>'), false);
   assert.equal(emptyMissions.includes('<p>수령 가능</p>'), false);
   assert.equal(readyMissions.includes('<p>받기</p>'), true);
@@ -907,7 +911,8 @@ test('season top board names empty reward state as no rewards instead of zero cl
   const readySeason = buildSeasonScreen({ xp: 80, claimedPassTiers: [] });
 
   assert.equal(emptySeason.includes('aria-label="시즌 보드 · 시즌 경험치 80 · 대기 보상 없음"'), true);
-  assert.equal(emptySeason.includes('<p>보상 없음</p>'), true);
+  assert.equal(emptySeason.includes('<p>대기</p>'), true);
+  assert.equal(emptySeason.includes('<p>보상 없음</p>'), false);
   assert.equal(emptySeason.includes('<p>보상 0개</p>'), false);
   assert.equal(readySeason.includes('aria-label="시즌 보드 · 시즌 경험치 80 · 보상 가능 1개"'), true);
   assert.equal(readySeason.includes('<p>받기</p>'), true);

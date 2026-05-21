@@ -364,7 +364,7 @@ function buildFeaturedMissionCommand(featuredMission) {
 
 function buildMissionStampBoard(profile = {}, claimed = new Set()) {
   const claimable = countClaimableMissions(profile);
-  const boardStatus = claimable > 0 ? CLAIM_ACTION_LABEL : '작전 진행';
+  const boardStatus = claimable > 0 ? CLAIM_ACTION_LABEL : '진행';
   const boardAriaState = claimable > 0 ? `수령 가능 ${claimable}개` : '대기 보상 없음';
   const missionStates = REBOOT_MISSIONS.map((mission) => {
     const progress = missionProgress(profile, mission);
@@ -384,7 +384,7 @@ function buildMissionStampBoard(profile = {}, claimed = new Set()) {
   return `
     <section class="mission-stamp-board" data-board-kind="missions" data-board-layout="contract-stamps" aria-label="미션 보드 · ${boardAriaState} · 완료 목표 보상 전환" data-featured-mission="${featuredMission?.id ?? ''}" data-board-state="${boardState}">
       <div class="mission-board-copy">
-        <span>받을 보상</span>
+        <span>보상</span>
         <strong>${claimable}</strong>
         <p>${boardStatus}</p>
       </div>
@@ -427,7 +427,7 @@ function buildFeaturedSeasonCommand(featuredTier) {
 function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
   const xp = profile.xp ?? 0;
   const claimable = countClaimablePassTiers(profile);
-  const rewardStatus = claimable > 0 ? CLAIM_ACTION_LABEL : '보상 없음';
+  const rewardStatus = claimable > 0 ? CLAIM_ACTION_LABEL : '대기';
   const rewardAriaState = claimable > 0 ? `보상 가능 ${claimable}개` : '대기 보상 없음';
   const tierStates = SHOP.pass.tiers.map((tier, index) => {
     const state = seasonState(xp, tier, index, claimed);
