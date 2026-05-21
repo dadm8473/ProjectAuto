@@ -344,6 +344,42 @@ test('result next-goal copy stays compact for generated result plates', () => {
   }
 });
 
+test('result next-goal exposes a generated tactical slot tone', () => {
+  const rescue = buildRebootResultModel({
+    result: { status: 'won', reason: 'partner_rescued', nextGoal: 'time_next_rescue' }
+  }).nextGoal;
+  const boss = buildRebootResultModel({
+    result: { status: 'lost', reason: 'boss_leaked', nextGoal: 'answer_boss_warning' }
+  }).nextGoal;
+  const tactics = buildRebootResultModel({
+    result: { status: 'lost', reason: 'merge_gap', nextGoal: 'protect_control_unit' }
+  }).nextGoal;
+  const fallback = buildRebootResultModel({
+    result: { status: 'lost', reason: 'bad_luck' }
+  }).nextGoal;
+
+  assert.deepEqual(rescue, {
+    label: '위험 80 직전 구원',
+    goal: 'time_next_rescue',
+    tone: 'rescue'
+  });
+  assert.deepEqual(boss, {
+    label: '보스 경고 때 합성',
+    goal: 'answer_boss_warning',
+    tone: 'boss'
+  });
+  assert.deepEqual(tactics, {
+    label: '느림 코일 생존',
+    goal: 'protect_control_unit',
+    tone: 'tactics'
+  });
+  assert.deepEqual(fallback, {
+    label: '핵심 타이밍 재도전',
+    goal: 'retry',
+    tone: 'tactics'
+  });
+});
+
 test('result reason copy stays compact for generated result plates', () => {
   const reasons = [
     'partner_rescued',

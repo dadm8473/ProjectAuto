@@ -5251,6 +5251,33 @@ body[data-app-screen="season"] .app-screen::after {
 
 #resultNextGoal {
   font-size: 12px;
+  justify-content: center;
+  gap: 6px;
+  color: #f3ffda;
+}
+
+#resultNextGoal::before {
+  content: "";
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  background-image: var(--result-medals);
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.62));
+}
+
+#resultNextGoal[data-result-goal-tone="rescue"]::before {
+  background-position: 0 0;
+}
+
+#resultNextGoal[data-result-goal-tone="boss"]::before {
+  background-position: 50% 0;
+}
+
+#resultNextGoal[data-result-goal-tone="tactics"]::before {
+  background-position: 100% 0;
 }
 
 #resultTitle,
@@ -5550,6 +5577,12 @@ body[data-app-screen="season"] .app-screen::after {
     min-height: 30px;
     padding: 3px 10px;
     font-size: 11px;
+  }
+
+  #resultNextGoal::before {
+    flex-basis: 20px;
+    width: 20px;
+    height: 20px;
   }
 
   .result-highlights span {

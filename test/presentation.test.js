@@ -117,9 +117,9 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_actions.js?v=combat-meter2'",
     "from './reboot_action_ui.js?v=retry-reminder1'",
     "from './reboot_audio.js?v=audio-safe1'",
-    "from './reboot_hud.js?v=retry-reminder1'",
+    "from './reboot_hud.js?v=result-goal1'",
     "from './reboot_render.js?v=unit-pedestal1'",
-    "from './reboot_screens.js?v=retry-context1'",
+    "from './reboot_screens.js?v=result-goal1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -633,7 +633,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=sound-toggle1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-goal1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
@@ -740,7 +740,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=retry-reminder1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-goal1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-identity1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
@@ -835,7 +835,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=retry-context1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=result-goal1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=reward-detail1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label2'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label1'"), false);
@@ -1479,7 +1479,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=sound-toggle1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-goal1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
@@ -1864,7 +1864,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=sound-toggle1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=result-goal1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2676,6 +2676,35 @@ test('result debrief copy plates protect text from generated finale effects', as
   assert.equal(detailStripBlock.includes('.result-reward'), false);
   assert.equal(copyBlock.includes('box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.52), 0 8px 16px rgba(0, 0, 0, 0.28);'), false);
   assert.equal(detailStripBlock.includes('box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.46), 0 6px 14px rgba(0, 0, 0, 0.24);'), false);
+});
+
+test('result next-goal renders as a generated tactical objective slot', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    'function resultGoalTone(goal)',
+    "tone: resultGoalTone(result?.nextGoal)",
+    "dom.resultNextGoal.dataset.resultGoalTone = model.nextGoal.tone;",
+    "dom.resultNextGoal.setAttribute('aria-label', `다음 목표 ${model.nextGoal.label}`);",
+    '#resultNextGoal::before',
+    'background-image: var(--result-medals);',
+    'background-size: 300% 100%;',
+    '#resultNextGoal[data-result-goal-tone="rescue"]::before',
+    '#resultNextGoal[data-result-goal-tone="boss"]::before',
+    '#resultNextGoal[data-result-goal-tone="tactics"]::before',
+    'nextGoal.beforeBackgroundImage',
+    'nextGoal.tone',
+    'nextGoal.ariaLabel'
+  ]) {
+    assert.equal(`${css}\n${app}\n${screens}\n${qa}`.includes(marker), true, marker);
+  }
+
+  const nextGoalBlock = css.slice(css.indexOf('#resultNextGoal {'), css.indexOf('#resultTitle,\n#resultReason,\n#resultNextGoal'));
+  assert.equal(nextGoalBlock.includes('linear-gradient'), false);
+  assert.equal(nextGoalBlock.includes('border:'), false);
 });
 
 test('browser QA covers generated result copy surfaces on short phones', async () => {
@@ -5084,11 +5113,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=retry-context1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=retry-context1'",
+    "from './reboot_screens.js?v=result-goal1'",
     "from './reboot_game.js?v=retry-context1'",
     "from '../shared/game.js?v=retry-context1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=retry-context1',
+    '/src/client/reboot_screens.js?v=result-goal1',
     '/src/shared/game.js?v=retry-context1',
     '/src/shared/reboot_game.js?v=retry-context1'
   ]) {

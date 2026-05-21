@@ -28,6 +28,25 @@ const GOAL_LABELS = {
   turn_bad_rolls_into_utility: '약한 유닛 활용'
 };
 
+const RESCUE_RESULT_GOALS = new Set([
+  'time_next_rescue',
+  'rescue_before_merge_greed',
+  'save_rescue_for_partner_danger'
+]);
+
+const BOSS_RESULT_GOALS = new Set([
+  'repeat_boss_timing',
+  'answer_boss_warning',
+  'focus_boss_damage',
+  'merge_before_boss'
+]);
+
+function resultGoalTone(goal) {
+  if (RESCUE_RESULT_GOALS.has(goal)) return 'rescue';
+  if (BOSS_RESULT_GOALS.has(goal)) return 'boss';
+  return 'tactics';
+}
+
 const HIGHLIGHT_LABELS = {
   bad_roll_recovered: { label: '약한 운 회복', medal: 'tactics' },
   partner_rescued: { label: '결정적 구원', medal: 'rescue' },
@@ -904,7 +923,11 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
     highlight: highlights[0],
     highlights,
     reason: { label: REASON_LABELS[reason] ?? '전투 완료', reason },
-    nextGoal: { label: GOAL_LABELS[result?.nextGoal] ?? '핵심 타이밍 재도전', goal: result?.nextGoal ?? 'retry' },
+    nextGoal: {
+      label: GOAL_LABELS[result?.nextGoal] ?? '핵심 타이밍 재도전',
+      goal: result?.nextGoal ?? 'retry',
+      tone: resultGoalTone(result?.nextGoal)
+    },
     rewards,
     ...resultRewardPresentation(reason, won),
     primaryAction,

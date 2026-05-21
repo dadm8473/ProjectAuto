@@ -5,7 +5,7 @@ import { REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=combat-meter2';
 import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildSummonCooldownState, isCriticalRebootAction } from './reboot_action_ui.js?v=retry-reminder1';
 import { createRebootAudio } from './reboot_audio.js?v=audio-safe1';
-import { updateCombatHudMeters } from './reboot_hud.js?v=retry-reminder1';
+import { updateCombatHudMeters } from './reboot_hud.js?v=result-goal1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
 import { preloadCriticalRebootAssets } from './reboot_preload.js?v=shell-backdrop1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=unit-pedestal1';
@@ -23,9 +23,8 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=retry-context1';
+} from './reboot_screens.js?v=result-goal1';
 import { createRebootOnlineClient } from './reboot_online.js';
-
 const qs = (selector) => document.querySelector(selector);
 const query = new URLSearchParams(location.search);
 const muted = query.get('mute') === '1';
@@ -762,6 +761,8 @@ function showResult(current) {
   dom.resultTitle.textContent = model.title;
   dom.resultReason.textContent = model.reason.label;
   dom.resultNextGoal.textContent = model.nextGoal.label;
+  dom.resultNextGoal.dataset.resultGoalTone = model.nextGoal.tone;
+  dom.resultNextGoal.setAttribute('aria-label', `다음 목표 ${model.nextGoal.label}`);
   dom.resultHighlights.innerHTML = resultHighlightMarkup(model);
   dom.resultReward.setAttribute('aria-label', `획득 ${formatResultRewards(model.rewards)}`);
   dom.resultReward.dataset.rewardTone = model.rewardTone;

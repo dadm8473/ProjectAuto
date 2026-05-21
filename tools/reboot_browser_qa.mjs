@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v59');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v60');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=sound-toggle1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=sound-toggle1'))
+      '/src/client/styles.css?v=result-goal1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=result-goal1'))
         : false,
-      '/src/client/app.js?v=retry-reminder1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=retry-reminder1'))
+      '/src/client/app.js?v=result-goal1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=result-goal1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -108,8 +108,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
         : false,
-      '/src/client/reboot_hud.js?v=retry-reminder1': cache
-        ? Boolean(await cache.match('/src/client/reboot_hud.js?v=retry-reminder1'))
+      '/src/client/reboot_hud.js?v=result-goal1': cache
+        ? Boolean(await cache.match('/src/client/reboot_hud.js?v=result-goal1'))
         : false,
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
@@ -117,8 +117,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_render.js?v=unit-pedestal1': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=unit-pedestal1'))
         : false,
-      '/src/client/reboot_screens.js?v=retry-context1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=retry-context1'))
+      '/src/client/reboot_screens.js?v=result-goal1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=result-goal1'))
         : false,
       '/src/shared/game.js?v=retry-context1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=retry-context1'))
@@ -166,7 +166,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v59', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v60', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -984,6 +984,23 @@ async function assertResultGeneratedCopySurfaces(page) {
     assert.equal(surface.left >= 0 && surface.right <= surface.viewportWidth, true, `result copy leaves viewport: ${JSON.stringify(surface)}`);
     assert.equal(surface.top >= 0 && surface.bottom <= surface.viewportHeight, true, `result copy leaves vertical viewport: ${JSON.stringify(surface)}`);
   }
+
+  const nextGoal = await page.locator('#resultNextGoal').evaluate((node) => {
+    const before = getComputedStyle(node, '::before');
+    return {
+      ariaLabel: node.getAttribute('aria-label'),
+      tone: node.dataset.resultGoalTone,
+      beforeBackgroundImage: before.backgroundImage,
+      beforeBackgroundSize: before.backgroundSize,
+      beforeWidth: before.width,
+      beforeHeight: before.height
+    };
+  });
+  assert.match(nextGoal.beforeBackgroundImage, /reboot-result-medals/, `result next goal lacks generated tactical medal: ${JSON.stringify(nextGoal)}`);
+  assert.equal(nextGoal.beforeBackgroundSize, '300% 100%', `result next goal medal sizing changed: ${JSON.stringify(nextGoal)}`);
+  assert.equal(['rescue', 'boss', 'tactics'].includes(nextGoal.tone), true, `result next goal tone is missing: ${JSON.stringify(nextGoal)}`);
+  assert.match(nextGoal.ariaLabel ?? '', /^다음 목표 /, `result next goal aria label is unclear: ${JSON.stringify(nextGoal)}`);
+  assert.equal(parseFloat(nextGoal.beforeWidth) >= 20 && parseFloat(nextGoal.beforeHeight) >= 20, true, `result next goal medal collapsed: ${JSON.stringify(nextGoal)}`);
 
   const highlightSurfaces = await page.locator('.result-highlights span').evaluateAll((nodes) => nodes.map((node) => {
     const rect = node.getBoundingClientRect();
