@@ -853,11 +853,11 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
   const highlights = resultHighlights(result, won);
   const nextAction = profile ? nextLobbyAction(profile) : null;
   const nextOperation = won ? operationAfterSeed(seedName) : null;
-  const retryAction = { label: '다시 도전', action: 'retry' };
+  const retryAction = { label: won ? '다시 방어' : '다시 도전', action: 'retry' };
   const homeAction = { label: '홈', action: 'home' };
   const nextOperationAction = nextOperation
     ? {
-        label: '다음 작전',
+        label: '다시 방어',
         action: 'retry',
         title: nextOperation.title,
         ariaLabel: `${nextOperation.title} 시작`
@@ -900,7 +900,7 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
   return {
     status: won ? 'won' : 'lost',
     code: won ? '작전 성공' : '작전 실패',
-    title: won ? '승리' : '패배',
+    title: won ? '같이 버텼다' : '거의 버텼다',
     highlight: highlights[0],
     highlights,
     reason: { label: REASON_LABELS[reason] ?? '전투 완료', reason },

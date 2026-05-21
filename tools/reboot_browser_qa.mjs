@@ -2038,13 +2038,13 @@ async function verifyFastPlaythrough(page) {
   }
 
   assert.equal(await page.locator('#resultTitle').isVisible(), true, `missing result: ${events.join(', ')}`);
-  assert.equal(await page.locator('#resultTitle').textContent(), '승리');
+  assert.equal(await page.locator('#resultTitle').textContent(), '같이 버텼다');
   assert.equal(await page.locator('#resultOverlay').getAttribute('data-result-status'), 'won');
   assert.equal(await page.locator('#resultOverlay').getAttribute('data-result-cta'), 'claim');
   assert.equal(await page.locator('#resultRetryButton span').textContent(), '미션 받기');
   assert.equal(await page.locator('#resultRetryButton').getAttribute('aria-label'), '받을 미션 보상 수령');
   assert.equal(await page.locator('#resultRetryButton').getAttribute('data-result-open'), 'claim-missions');
-  assert.equal(await page.locator('#resultLobbyButton span').textContent(), '다음 작전');
+  assert.equal(await page.locator('#resultLobbyButton span').textContent(), '다시 방어');
   assert.equal(await page.locator('#resultLobbyButton').getAttribute('data-result-open'), 'retry');
   await assertResultGeneratedCopySurfaces(page);
   assert.match(
@@ -2098,7 +2098,7 @@ async function verifyCompactResult(page) {
   }
 
   assert.equal(await page.locator('#resultTitle').isVisible(), true, 'compact result should be reached');
-  assert.equal(await page.locator('#resultTitle').textContent(), '승리');
+  assert.equal(await page.locator('#resultTitle').textContent(), '같이 버텼다');
   await assertResultGeneratedCopySurfaces(page);
 }
 

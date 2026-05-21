@@ -42,11 +42,11 @@ test('result model prioritizes reason, next goal, rewards, retry, and home', () 
 
   assert.equal(model.status, 'won');
   assert.equal(model.code, '작전 성공');
-  assert.equal(model.title, '승리');
+  assert.equal(model.title, '같이 버텼다');
   assert.equal(model.reason.reason, 'partner_rescued');
   assert.equal(model.nextGoal.goal, 'time_next_rescue');
   assert.deepEqual(model.rewards, [{ type: 'soft', amount: 20 }]);
-  assert.deepEqual(model.primaryAction, { label: '다시 도전', action: 'retry' });
+  assert.deepEqual(model.primaryAction, { label: '다시 방어', action: 'retry' });
   assert.deepEqual(model.secondaryAction, { label: '홈', action: 'home' });
   assert.deepEqual(model.forbiddenActions, []);
 });
@@ -69,7 +69,7 @@ test('result model promotes ready profile rewards and growth as the primary resu
   assert.equal(missionModel.primaryAction.title, '받을 미션 보상');
   assert.equal(missionModel.primaryAction.ariaLabel, '받을 미션 보상 수령');
   assert.deepEqual(missionModel.secondaryAction, {
-    label: '다음 작전',
+    label: '다시 방어',
     action: 'retry',
     title: '보스 막타 작전',
     ariaLabel: '보스 막타 작전 시작'
@@ -207,8 +207,11 @@ test('result model exposes loss status for generated result badges', () => {
 
   assert.equal(model.status, 'lost');
   assert.equal(model.code, '작전 실패');
-  assert.equal(model.title, '패배');
+  assert.equal(model.title, '거의 버텼다');
   assert.equal(model.highlight.kind, 'danger');
+  assert.deepEqual(model.primaryAction, { label: '다시 도전', action: 'retry' });
+  assert.deepEqual(model.secondaryAction, { label: '홈', action: 'home' });
+  assert.deepEqual(model.forbiddenActions, []);
 });
 
 test('result model maps the key run moment to a generated medal type', () => {
@@ -301,7 +304,7 @@ test('result primary action keeps the next authored operation as button context 
   }).primaryAction;
 
   assert.deepEqual(next, {
-    label: '다음 작전',
+    label: '다시 방어',
     action: 'retry',
     title: '보스 막타 작전',
     ariaLabel: '보스 막타 작전 시작'
