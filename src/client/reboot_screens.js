@@ -888,7 +888,7 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
   const nextAction = profile ? nextLobbyAction(profile) : null;
   const nextOperation = won ? operationAfterSeed(seedName) : null;
   const retryAction = { label: won ? '다시 방어' : '다시 도전', action: 'retry' };
-  const homeAction = { label: '홈', action: 'home' };
+  const homeAction = { label: '준비실', action: 'home' };
   const nextOperationAction = nextOperation
     ? {
         label: '다시 방어',

@@ -47,7 +47,7 @@ test('result model prioritizes reason, next goal, rewards, retry, and home', () 
   assert.equal(model.nextGoal.goal, 'time_next_rescue');
   assert.deepEqual(model.rewards, [{ type: 'soft', amount: 20 }]);
   assert.deepEqual(model.primaryAction, { label: '다시 방어', action: 'retry' });
-  assert.deepEqual(model.secondaryAction, { label: '홈', action: 'home' });
+  assert.deepEqual(model.secondaryAction, { label: '준비실', action: 'home' });
   assert.deepEqual(model.forbiddenActions, []);
 });
 
@@ -210,7 +210,7 @@ test('result model exposes loss status for generated result badges', () => {
   assert.equal(model.title, '거의 버텼다');
   assert.equal(model.highlight.kind, 'danger');
   assert.deepEqual(model.primaryAction, { label: '다시 도전', action: 'retry' });
-  assert.deepEqual(model.secondaryAction, { label: '홈', action: 'home' });
+  assert.deepEqual(model.secondaryAction, { label: '준비실', action: 'home' });
   assert.deepEqual(model.forbiddenActions, []);
 });
 
