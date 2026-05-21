@@ -29,6 +29,20 @@ function combatRevealIndex(commands, sourceX) {
   ));
 }
 
+function combatRevealDraw(commands, sourceX) {
+  return commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 1920
+      && command.args[0].naturalHeight === 512
+      && command.args[1] === sourceX
+  ));
+}
+
+function alphaBeforeCommand(commands, command) {
+  const commandIndex = commands.indexOf(command);
+  return commands.slice(0, commandIndex).findLast((item) => item.type === 'globalAlpha')?.value ?? 1;
+}
+
 function mockContext() {
   const commands = [];
   const ctx = {
@@ -1439,6 +1453,46 @@ test('random combat actions use generated reveal VFX without legacy action flash
   const legacyActionFlashes = [0, 256, 512].flatMap((sourceX) => actionFlashDraws(ctx.commands, sourceX));
   assert.notEqual(firstRevealIndex, -1, 'expected generated reveal VFX to draw');
   assert.deepEqual(legacyActionFlashes, [], 'generated reveal VFX should replace the old compact action flashes');
+});
+
+test('random combat reveal VFX holds alpha long enough for result payoff', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 12.68,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }, { spriteKey: 'burst_pin' }] },
+        p2: { danger: 18, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [],
+      events: [
+        { type: 'summon', at: 12.02, playerId: 'p1', highlight: true },
+        { type: 'merge', at: 12.08, playerId: 'p1', highlight: true },
+        { type: 'rescue', at: 12.12, playerId: 'p1', highlight: true }
+      ],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1282, 256),
+      board: image(1281, 256),
+      vfx: image(1280, 256),
+      combatRevealVfx: image(1920, 512),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  for (const [sourceX, label] of [[0, 'summon'], [480, 'merge'], [1440, 'rescue']]) {
+    const draw = combatRevealDraw(ctx.commands, sourceX);
+    assert.ok(draw, `expected ${label} generated reveal VFX`);
+    assert.equal(
+      alphaBeforeCommand(ctx.commands, draw) >= 0.55,
+      true,
+      `${label} reveal should remain readable after the immediate result frame`
+    );
+  }
 });
 
 test('combat action feedback falls back to generated action stamps while reveal VFX loads', () => {

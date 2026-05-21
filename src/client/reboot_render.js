@@ -9,6 +9,8 @@ const WAVE_DIRECTIVE_DURATION = 2.1;
 const WAVE_DIRECTIVE_FADE_SECONDS = 0.48;
 const ACTION_SURGE_DURATION = 2.0;
 const ACTION_SURGE_HOLD_SECONDS = 0.85;
+const COMBAT_REVEAL_DURATION = 1.16;
+const COMBAT_REVEAL_HOLD_SECONDS = 0.54;
 const MERGE_REWARD_SIGIL_DURATION = 1.9;
 const MERGE_REWARD_SIGIL_HOLD_SECONDS = 0.85;
 const FLOATING_DAMAGE_TTL = 0.62;
@@ -1330,6 +1332,13 @@ function sustainedEventAlpha(state, event, durationSeconds, holdSeconds) {
   return entrance * exit;
 }
 
+function combatRevealAlpha(state, event) {
+  return Math.min(0.96, Math.max(
+    eventAlpha(state, event, COMBAT_REVEAL_DURATION),
+    sustainedEventAlpha(state, event, COMBAT_REVEAL_DURATION, COMBAT_REVEAL_HOLD_SECONDS)
+  ) * 0.96);
+}
+
 function momentCalloutAlpha(state, event) {
   const elapsed = Math.max(0, state.now - event.at);
   const entrance = Math.min(1, elapsed / 0.12);
@@ -1530,22 +1539,22 @@ function drawCombatImpactVfx(ctx, state, assets = {}, localBoardId = 'p1', image
 }
 
 function drawCombatVfx(ctx, state, assets = {}, localBoardId = 'p1', imageBackdrop = true) {
-  for (const event of recentEvents(state, 'summon')) {
+  for (const event of recentEvents(state, 'summon', COMBAT_REVEAL_DURATION)) {
     const point = boardVfxPoint(state, event, localBoardId);
-    const alpha = eventAlpha(state, event);
+    const alpha = combatRevealAlpha(state, event);
     const drewReveal = drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 0, point.x, point.y + 2, 126, 112, alpha * 0.92);
     if (event.highlight && drewReveal) drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 2, point.x, point.y - 2, 128, 128, alpha * 0.78);
     if (!drewReveal) drawCombatActionFallbackStamp(ctx, assets, 'summon', point.x, point.y, alpha * 0.84);
   }
-  for (const event of recentEvents(state, 'merge')) {
+  for (const event of recentEvents(state, 'merge', COMBAT_REVEAL_DURATION)) {
     const point = boardVfxPoint(state, event, localBoardId);
-    const alpha = eventAlpha(state, event);
+    const alpha = combatRevealAlpha(state, event);
     const drewReveal = drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 1, point.x, point.y, 146, 132, alpha * 0.88);
     if (event.highlight && drewReveal) drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 2, point.x, point.y - 2, 132, 132, alpha * 0.74);
     if (!drewReveal) drawCombatActionFallbackStamp(ctx, assets, 'merge', point.x, point.y, alpha * 0.84);
   }
-  for (const event of recentEvents(state, 'rescue')) {
-    const alpha = eventAlpha(state, event);
+  for (const event of recentEvents(state, 'rescue', COMBAT_REVEAL_DURATION)) {
+    const alpha = combatRevealAlpha(state, event);
     const drewReveal = drawCombatRevealVfxSprite(ctx, assets.combatRevealVfx, 3, 195, 328, 156, 118, alpha * 0.9);
     if (!drewReveal) drawCombatActionFallbackStamp(ctx, assets, 'rescue', 195, 328, alpha * 0.84);
   }
