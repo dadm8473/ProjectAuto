@@ -41,6 +41,7 @@
   --nav-alert-badges: url("/src/client/assets/generated/reboot-nav-alert-badges.png?v=nav-alerts");
   --nav-button-glow-size: clamp(62px, 18vw, 76px);
   --title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png");
+  --title-wordmark: url("/src/client/assets/generated/reboot-title-wordmark-v1.png?v=title-wordmark1");
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2");
   --splash-title-plate: url("/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title");
   --loading-gate-plate: var(--splash-title-plate);
@@ -1826,38 +1827,58 @@ body[data-app-screen="season"] .app-screen::after {
 
 .splash-title-lockup {
   position: relative;
-  width: min(418px, calc(100vw - 8px));
-  min-height: clamp(156px, 42.79vw, 184px);
+  width: min(386px, calc(100vw - 4px));
+  min-height: clamp(178px, 47vw, 218px);
   align-self: center;
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 3px;
-  padding: clamp(40px, 11.16vw, 48px) clamp(38px, 10.56vw, 58px) clamp(25px, 7.44vw, 32px);
-  background-image: var(--splash-title-plate);
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
+  gap: 0;
+  padding: clamp(20px, 5.6vw, 26px) 0 0;
+  background-image: none;
   color: var(--ink);
   text-align: center;
   filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.62));
 }
 
-.splash-title-lockup strong {
+.splash-title-wordmark {
+  width: min(382px, 98vw);
   max-width: 100%;
-  font-size: clamp(29px, 8.55vw, 42px);
-  line-height: 0.95;
-  letter-spacing: 0;
+  aspect-ratio: 1920 / 819;
+  display: block;
+  background-image: var(--title-wordmark);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.6));
+  pointer-events: none;
+}
+
+.splash-title-lockup strong {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
   white-space: nowrap;
-  text-shadow: 0 5px 18px rgba(0, 0, 0, 0.72), 0 0 18px rgba(88, 215, 255, 0.28);
 }
 
 .splash-title-lockup p {
-  max-width: 270px;
+  display: inline-grid;
+  place-items: center;
+  max-width: 324px;
+  min-height: 34px;
+  margin-top: -5px;
+  padding: 5px 17px 6px;
   color: rgba(245, 240, 220, 0.82);
   font-size: clamp(12px, 3.49vw, 15px);
   font-weight: 800;
   line-height: 1.12;
   letter-spacing: 0;
+  background-image: var(--meta-caption-plate);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
   text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7);
 }
 
@@ -1872,21 +1893,6 @@ body[data-app-screen="season"] .app-screen::after {
   line-height: 1;
   letter-spacing: 0;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.72);
-}
-
-.splash-title-emblem {
-  position: absolute;
-  top: -20px;
-  left: 50%;
-  width: clamp(118px, 36vw, 154px);
-  aspect-ratio: 2 / 1;
-  transform: translateX(-50%);
-  background-image: var(--title-emblem);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.62));
-  pointer-events: none;
 }
 
 .splash-screen p,

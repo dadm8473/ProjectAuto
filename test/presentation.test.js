@@ -635,7 +635,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=title-wordmark1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
@@ -1494,7 +1495,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=hud-meter1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=title-wordmark1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=hud-meter1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
@@ -1879,7 +1881,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=title-wordmark1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -3977,21 +3979,27 @@ test('lobby next state chip uses generated caption plate instead of a css pill',
   }
 });
 
-test('splash uses a generated title emblem instead of plain text only branding', async () => {
+test('splash uses a generated title wordmark instead of plain text only branding', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
+    '--title-wordmark: url("/src/client/assets/generated/reboot-title-wordmark-v1.png?v=title-wordmark1")',
     '--title-emblem: url("/src/client/assets/generated/reboot-title-emblem.png")',
-    'class="splash-title-emblem"',
-    '.splash-title-emblem',
-    'background-image: var(--title-emblem)'
+    'class="splash-title-wordmark"',
+    'class="splash-title-wordmark" aria-hidden="true"',
+    '.splash-title-wordmark',
+    'background-image: var(--title-wordmark)',
+    '.splash-title-lockup strong',
+    'clip: rect(0 0 0 0);'
   ]) {
     assert.equal(`${html}\n${css}`.includes(marker), true, marker);
   }
+  assert.equal(html.includes('class="splash-title-emblem"'), false);
+  assert.equal(css.includes('.splash-title-emblem {'), false);
 });
 
-test('splash title copy sits inside a generated game title plate', async () => {
+test('splash title uses generated wordmark and generated subtitle plate', async () => {
   const html = await readFile('index.html', 'utf8');
   const css = await readFile('src/client/styles.css', 'utf8');
 
@@ -3999,9 +4007,11 @@ test('splash title copy sits inside a generated game title plate', async () => {
     '--splash-title-plate: url("/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title")',
     'class="splash-title-lockup"',
     'class="splash-season"',
+    'class="splash-title-wordmark"',
     '.splash-title-lockup',
-    'background-image: var(--splash-title-plate);',
-    'background-size: 100% 100%;',
+    'background-image: none;',
+    'background-image: var(--meta-caption-plate);',
+    '.splash-title-wordmark',
     '.splash-title-lockup strong',
     '.splash-title-lockup p',
     'letter-spacing: 0;',
@@ -4012,22 +4022,27 @@ test('splash title copy sits inside a generated game title plate', async () => {
 
   const splashStrongBlock = css.slice(css.indexOf('.splash-screen > strong'), css.indexOf('.splash-title-lockup'));
   assert.equal(splashStrongBlock.includes('font-size: 42px;'), false);
+  const lockupBlock = css.slice(css.indexOf('.splash-title-lockup'), css.indexOf('.splash-title-wordmark'));
+  assert.equal(lockupBlock.includes('background-repeat:'), false);
+  assert.equal(lockupBlock.includes('background-size:'), false);
 });
 
 test('splash title remains readable on 360px portrait screens', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
   const lockupBlock = css.slice(css.indexOf('.splash-title-lockup'), css.indexOf('.splash-title-lockup strong'));
+  const wordmarkBlock = css.slice(css.indexOf('.splash-title-wordmark'), css.indexOf('.splash-title-lockup strong'));
   const titleBlock = css.slice(css.indexOf('.splash-title-lockup strong'), css.indexOf('.splash-title-lockup p'));
   assert.equal(lockupBlock.includes('padding: clamp(40px, 11.16vw, 48px) 58px'), false);
   for (const marker of [
-    'width: min(418px, calc(100vw - 8px));',
-    'padding: clamp(40px, 11.16vw, 48px) clamp(38px, 10.56vw, 58px) clamp(25px, 7.44vw, 32px);',
-    'font-size: clamp(29px, 8.55vw, 42px);',
+    'width: min(386px, calc(100vw - 4px));',
+    'min-height: clamp(178px, 47vw, 218px);',
+    'width: min(382px, 98vw);',
+    'aspect-ratio: 1920 / 819;',
     'max-width: 100%;',
-    'white-space: nowrap;'
+    'overflow: hidden;'
   ]) {
-    assert.equal(`${lockupBlock}\n${titleBlock}`.includes(marker), true, marker);
+    assert.equal(`${lockupBlock}\n${wordmarkBlock}\n${titleBlock}`.includes(marker), true, marker);
   }
 });
 

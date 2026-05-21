@@ -52,6 +52,13 @@ const IMAGEGEN_REBOOT_OVERLAYS = [
     minRuntimeBytes: 30_000
   },
   {
+    path: 'src/client/assets/generated/reboot-title-wordmark-v1.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260519-title-wordmark-v1-chromakey-imagegen.png',
+    width: 1920,
+    height: 819,
+    minRuntimeBytes: 900_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-hero-squad-v2.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260519-hero-squad-v2-imagegen.png',
     width: 640,
@@ -1575,6 +1582,23 @@ test('reboot sound toggle is a transparent generated audio glyph', async () => {
   assert.equal(width >= 180 && height >= 180, true, `sound toggle silhouette is too weak: ${JSON.stringify(bounds)}`);
   assert.equal(Math.abs((bounds.minX + bounds.maxX) / 2 - 128) <= 8, true, `sound toggle is off-center: ${JSON.stringify(bounds)}`);
   assert.equal(greenFringeRatio < 0.002, true, `sound toggle keeps chroma-key green fringe: ${greenFringeRatio}`);
+});
+
+test('splash title wordmark is a transparent generated logo asset', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-title-wordmark-v1.png'));
+  const corners = [
+    alphaAt(image, 2, 2),
+    alphaAt(image, image.width - 3, 2),
+    alphaAt(image, 2, image.height - 3),
+    alphaAt(image, image.width - 3, image.height - 3)
+  ];
+  const bounds = alphaBounds(image, { x: 0, y: 0, width: image.width, height: image.height }, 24);
+  const magentaFringeRatio = colorRatio(image, { x: 0, y: 0, width: image.width, height: image.height }, (r, g, b) => r > 200 && g < 70 && b > 180);
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, `title wordmark has opaque corners: ${corners.join(',')}`);
+  assert.equal(bounds.maxX - bounds.minX >= 1700, true, `title wordmark is too narrow: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxY - bounds.minY >= 640, true, `title wordmark is too short: ${JSON.stringify(bounds)}`);
+  assert.equal(magentaFringeRatio < 0.001, true, `title wordmark keeps chroma-key magenta fringe: ${magentaFringeRatio}`);
 });
 
 test('reboot hero squad v2 is a transparent collectible character overlay', async () => {

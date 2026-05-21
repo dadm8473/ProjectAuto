@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v71');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v72');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=hud-meter1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=hud-meter1'))
+      '/src/client/styles.css?v=title-wordmark1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=title-wordmark1'))
         : false,
       '/src/client/app.js?v=online-ready-copy1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=online-ready-copy1'))
@@ -104,6 +104,12 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/assets/generated/reboot-sound-toggle.png?v=sound-toggle1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-sound-toggle.png?v=sound-toggle1'))
+        : false,
+      '/src/client/assets/generated/reboot-title-wordmark-v1.png?v=title-wordmark1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-title-wordmark-v1.png?v=title-wordmark1'))
+        : false,
+      '/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1'))
         : false,
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
@@ -169,7 +175,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v71', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v72', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
