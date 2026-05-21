@@ -1,16 +1,16 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v91';
+const CACHE_NAME = 'projectauto-reboot-shell-v92';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/src/client/styles.css?v=combat-meter-sockets-v2',
-  '/src/client/app.js?v=combat-meter-sockets-v2',
+  '/src/client/styles.css?v=meta-shelf-layout1',
+  '/src/client/app.js?v=meta-shelf-layout1',
   '/src/client/reboot_audio.js?v=audio-safe1',
   '/src/client/reboot_actions.js?v=combat-meter2',
   '/src/client/reboot_action_ui.js?v=hud-meter1',
   '/src/client/reboot_hud.js?v=board-copy1',
   '/src/client/reboot_playtest.js?v=playtest2',
-  '/src/client/reboot_preload.js?v=combat-meter-sockets-v2',
+  '/src/client/reboot_preload.js?v=meta-shelf-layout1',
   '/src/client/reboot_render.js?v=battle-backdrop-v2',
   '/src/client/reboot_result_ui.js?v=result-ui2',
   '/src/client/reboot_screens.js?v=objective-slots1',

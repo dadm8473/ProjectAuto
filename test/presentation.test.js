@@ -642,7 +642,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-meter-sockets-v2">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-layout1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-meter-sockets-v2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-nameplates1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-command-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-slots1">'), false);
@@ -758,7 +759,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter-sockets-v2"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-layout1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter-sockets-v2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-nameplates1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-command-board1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-backdrop-v2"></script>'), false);
@@ -915,7 +917,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=combat-meter-sockets-v2';",
+    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=meta-shelf-layout1';",
     'function scheduleWarmRebootAssets()',
     'warmRebootAssets().catch(() => {});',
     'preloadCriticalRebootAssets().then(() => {\n  hideLoadingGate();\n  scheduleWarmRebootAssets();\n}, hideLoadingGate);',
@@ -1519,7 +1521,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=combat-meter-sockets-v2'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=meta-shelf-layout1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=combat-meter-sockets-v2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=meta-shelf-nameplates1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-command-board1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=objective-slots1'), false);
@@ -1912,7 +1915,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=combat-meter-sockets-v2">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-layout1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -4926,7 +4929,7 @@ test('collection and shop use a generated display shelf instead of list-only row
   for (const marker of [
     'background: transparent;',
     'box-shadow: none;',
-    'grid-template-rows: minmax(68px, 1fr) auto 44px;'
+    'grid-template-rows: minmax(86px, 1fr) minmax(26px, auto) 44px;'
   ]) {
     assert.equal(shelfCardBlock.includes(marker), true, marker);
   }
@@ -5824,7 +5827,7 @@ test('meta shelf decorative sprites never block adjacent upgrade or shop taps', 
   const shelfCardBlock = css.slice(css.indexOf('.meta-shelf-grid .unit-card,'), css.indexOf('.meta-shelf-grid .unit-card::before,'));
 
   assert.equal(shelfBlock.includes('min-height: clamp(680px, 176vw, 760px);'), true);
-  assert.equal(shelfCardBlock.includes('grid-template-rows: minmax(68px, 1fr) auto 44px;'), true);
+  assert.equal(shelfCardBlock.includes('grid-template-rows: minmax(86px, 1fr) minmax(26px, auto) 44px;'), true);
 
   for (const selector of [
     '.meta-shelf-grid .sprite-token',
@@ -5844,4 +5847,61 @@ test('meta shelf decorative sprites never block adjacent upgrade or shop taps', 
   assert.equal(css.includes('top: 6px;'), true);
   assert.equal(css.includes('transform: translateX(-50%);'), true);
   assert.equal(css.includes('z-index: 2;'), true);
+});
+
+test('meta shelf art stays inside the display well instead of colliding with nameplates', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  const unitSpriteBlock = cssRuleBlock(css, '.meta-shelf-grid .unit-sprite');
+  for (const marker of [
+    'width: clamp(62px, 19.5vw, 76px);',
+    'height: clamp(62px, 19.5vw, 76px);',
+    'transform: translateY(-2px);'
+  ]) {
+    assert.equal(unitSpriteBlock.includes(marker), true, marker);
+  }
+
+  const shopCosmeticBlock = cssRuleBlock(css, '.meta-shelf-grid .shop-cosmetic');
+  for (const marker of [
+    'width: clamp(52px, 16.5vw, 64px);',
+    'height: clamp(52px, 16.5vw, 64px);',
+    'transform: translateY(-22px);'
+  ]) {
+    assert.equal(shopCosmeticBlock.includes(marker), true, marker);
+  }
+
+  const shelfCopyBlock = cssRuleBlock(css, '.meta-shelf-grid .card-copy');
+  for (const marker of [
+    'position: relative;',
+    'z-index: 5;',
+    'pointer-events: none;'
+  ]) {
+    assert.equal(shelfCopyBlock.includes(marker), true, marker);
+  }
+
+  const shelfNameBlock = cssRuleBlock(css, '.meta-shelf-grid .card-copy strong');
+  for (const marker of [
+    'width: min(100%, 124px);',
+    'min-height: 26px;',
+    'font-size: clamp(12px, 3.6vw, 15px);'
+  ]) {
+    assert.equal(shelfNameBlock.includes(marker), true, marker);
+  }
+});
+
+test('collection shelf reserves four generated rows for the full unit roster', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const collection = buildRebootCollection({});
+
+  assert.equal((collection.match(/class="screen-card unit-card"/g) ?? []).length, 8);
+  assert.equal(collection.includes('class="meta-shelf-grid" data-shelf-kind="collection"'), true);
+
+  const collectionShelfBlock = cssRuleBlock(css, '#collectionList .meta-shelf-grid[data-shelf-kind="collection"]');
+  for (const marker of [
+    'grid-template-rows: repeat(4, minmax(0, 1fr));',
+    'min-height: clamp(820px, 214vw, 900px);',
+    'padding-bottom: clamp(96px, 24vw, 112px);'
+  ]) {
+    assert.equal(collectionShelfBlock.includes(marker), true, marker);
+  }
 });

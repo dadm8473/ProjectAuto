@@ -4404,10 +4404,10 @@ body[data-app-screen="season"] .app-screen::after {
   min-height: 0;
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: minmax(68px, 1fr) auto 44px;
+  grid-template-rows: minmax(86px, 1fr) minmax(26px, auto) 44px;
   justify-items: center;
   align-items: end;
-  gap: 2px;
+  gap: 1px;
   padding: 7px 7px 9px;
   overflow: visible;
   border-color: transparent;
@@ -4778,10 +4778,11 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .meta-shelf-grid .unit-sprite {
-  width: clamp(76px, 23vw, 90px);
-  height: clamp(76px, 23vw, 90px);
+  width: clamp(62px, 19.5vw, 76px);
+  height: clamp(62px, 19.5vw, 76px);
   align-self: end;
   background-size: 800% 100%;
+  transform: translateY(-2px);
   filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.66));
 }
 
@@ -4795,10 +4796,11 @@ body[data-app-screen="season"] .app-screen::after {
 .meta-shelf-grid .unit-sprite[data-sprite="nova_mast"] { background-position: 100% 0; }
 
 .meta-shelf-grid .shop-cosmetic {
-  width: clamp(62px, 18vw, 74px);
-  height: clamp(62px, 18vw, 74px);
+  width: clamp(52px, 16.5vw, 64px);
+  height: clamp(52px, 16.5vw, 64px);
   align-self: end;
   background-size: 500% 100%;
+  transform: translateY(-22px);
   filter: drop-shadow(0 11px 17px rgba(0, 0, 0, 0.62));
 }
 
@@ -4822,23 +4824,26 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .meta-shelf-grid .card-copy {
+  position: relative;
+  z-index: 5;
   width: 100%;
   justify-items: center;
   text-align: center;
   gap: 1px;
+  pointer-events: none;
 }
 
 .meta-shelf-grid .card-copy strong {
   display: inline-grid;
-  width: min(100%, 138px);
-  min-height: 30px;
+  width: min(100%, 124px);
+  min-height: 26px;
   padding: 3px 18px 5px;
   align-items: center;
   justify-content: center;
   max-width: 100%;
   overflow: hidden;
   color: #f7f1d9;
-  font-size: clamp(15px, 4.3vw, 18px);
+  font-size: clamp(12px, 3.6vw, 15px);
   line-height: 1.05;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -5924,6 +5929,12 @@ body[data-app-screen="season"] .app-screen::after {
   padding: clamp(34px, 9vw, 42px) clamp(24px, 6.3vw, 30px) clamp(74px, 18vw, 88px);
   background-image: none;
   filter: none;
+}
+
+#collectionList .meta-shelf-grid[data-shelf-kind="collection"] {
+  min-height: clamp(820px, 214vw, 900px);
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  padding-bottom: clamp(96px, 24vw, 112px);
 }
 
 #collectionList .meta-shelf-grid .unit-card::before,
