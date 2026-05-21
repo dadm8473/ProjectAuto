@@ -29,6 +29,7 @@
   --result-outcome-auras: url("/src/client/assets/generated/reboot-result-outcome-auras.png?v=result-outcome-aura1");
   --result-reward-capsules: url("/src/client/assets/generated/reboot-result-reward-capsules.png?v=result-capsules1");
   --result-reward-board: url("/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1");
+  --result-command-board: url("/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1");
   --result-finale-bursts: url("/src/client/assets/generated/reboot-result-finale-bursts.png?v=result-finale");
   --result-medals: url("/src/client/assets/generated/reboot-result-medals.png?v=result-medals");
   --toast-callouts: url("/src/client/assets/generated/reboot-toast-callouts.png?v=toast-callouts");
@@ -5528,10 +5529,38 @@ body[data-app-screen="season"] .app-screen::after {
   gap: 8px;
 }
 
+.result-command-board {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 6px;
+  min-height: clamp(156px, calc(var(--result-panel-width) * 0.448), 176px);
+  padding: clamp(14px, calc(var(--result-panel-width) * 0.038), 16px) clamp(14px, calc(var(--result-panel-width) * 0.046), 18px) clamp(12px, calc(var(--result-panel-width) * 0.037), 15px);
+  isolation: isolate;
+  background-image: var(--result-command-board);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.48));
+}
+
+.result-command-board .result-reward {
+  align-self: stretch;
+  min-height: clamp(68px, calc(var(--result-panel-width) * 0.22), 86px);
+  filter: none;
+}
+
+.result-command-board .result-actions {
+  position: relative;
+  z-index: 2;
+  padding: 0 clamp(3px, calc(var(--result-panel-width) * 0.012), 5px) clamp(1px, calc(var(--result-panel-width) * 0.006), 3px);
+}
+
 .result-overlay .result-action-button {
   display: grid;
   place-items: center;
-  min-height: 48px;
+  min-height: clamp(42px, calc(var(--result-panel-width) * 0.122), 48px);
   padding: 0 8px;
   border-color: transparent;
   color: var(--ink);
@@ -5947,6 +5976,16 @@ body[data-app-screen="season"] .app-screen::after {
     grid-template-columns: 48px minmax(0, 1fr);
     gap: 3px;
     padding: 7px 14px 8px 12px;
+  }
+
+  .result-command-board {
+    min-height: 136px;
+    gap: 4px;
+    padding: 12px 12px 10px;
+  }
+
+  .result-command-board .result-reward {
+    min-height: 68px;
   }
 
   .result-reward::before {

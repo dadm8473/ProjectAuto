@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v88';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v89';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -41,13 +41,13 @@ test('service worker keeps the installable mobile game shell available after fir
     'event.request.mode === \'navigate\'',
     "caches.match('/index.html')",
     '/manifest.webmanifest',
-    '/src/client/styles.css?v=objective-slots1',
-    '/src/client/app.js?v=battle-backdrop-v2',
+    '/src/client/styles.css?v=result-command-board1',
+    '/src/client/app.js?v=result-command-board1',
     '/src/client/reboot_audio.js?v=audio-safe1',
     '/src/client/reboot_actions.js?v=combat-meter2',
     '/src/client/reboot_hud.js?v=board-copy1',
     '/src/client/reboot_playtest.js?v=playtest2',
-    '/src/client/reboot_preload.js?v=battle-backdrop-v2',
+    '/src/client/reboot_preload.js?v=result-command-board1',
     '/src/client/reboot_render.js?v=battle-backdrop-v2',
     '/src/client/reboot_result_ui.js?v=result-ui2',
     '/src/client/reboot_screens.js?v=objective-slots1',
@@ -62,6 +62,7 @@ test('service worker keeps the installable mobile game shell available after fir
     '/src/client/assets/generated/reboot-result-title-won-v1.png?v=result-title2',
     '/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2',
     '/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1',
+    '/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1',
     '/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1',
     '/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1',
     '/src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png?v=operation-title-plate1',
@@ -89,10 +90,14 @@ test('service worker keeps the installable mobile game shell available after fir
   ]) {
     assert.equal(sw.includes(marker), true, marker);
   }
+  assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v88';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v87';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v86';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v85';"), false);
+  assert.equal(sw.includes('/src/client/styles.css?v=objective-slots1'), false);
   assert.equal(sw.includes('/src/client/styles.css?v=result-reward-board1'), false);
+  assert.equal(sw.includes('/src/client/app.js?v=battle-backdrop-v2'), false);
+  assert.equal(sw.includes('/src/client/reboot_preload.js?v=battle-backdrop-v2'), false);
   assert.equal(sw.includes('/src/client/app.js?v=partner-standby2'), false);
   assert.equal(sw.includes('/src/client/reboot_preload.js?v=partner-standby2'), false);
   assert.equal(sw.includes('/src/client/reboot_render.js?v=partner-standby2'), false);
@@ -224,15 +229,15 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v88'",
+    "cacheName === 'projectauto-reboot-shell-v89'",
     "await cache.match('/index.html')",
-    "await cache.match('/src/client/styles.css?v=objective-slots1')",
-    "await cache.match('/src/client/app.js?v=battle-backdrop-v2')",
+    "await cache.match('/src/client/styles.css?v=result-command-board1')",
+    "await cache.match('/src/client/app.js?v=result-command-board1')",
     "await cache.match('/src/client/reboot_audio.js?v=audio-safe1')",
     "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
     "await cache.match('/src/client/reboot_hud.js?v=board-copy1')",
     "await cache.match('/src/client/reboot_playtest.js?v=playtest2')",
-    "await cache.match('/src/client/reboot_preload.js?v=battle-backdrop-v2')",
+    "await cache.match('/src/client/reboot_preload.js?v=result-command-board1')",
     "await cache.match('/src/client/reboot_render.js?v=battle-backdrop-v2')",
     "await cache.match('/src/client/reboot_result_ui.js?v=result-ui2')",
     "await cache.match('/src/client/reboot_screens.js?v=objective-slots1')",
@@ -245,6 +250,7 @@ test('browser QA verifies the runtime service worker cache activation', async ()
     "await cache.match('/src/client/assets/generated/reboot-result-title-won-v1.png?v=result-title2')",
     "await cache.match('/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2')",
     "await cache.match('/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1')",
+    "await cache.match('/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1')",
     "await cache.match('/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1')",
     "await cache.match('/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1')",
     "await cache.match('/src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png?v=operation-title-plate1')",
@@ -271,11 +277,15 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   ]) {
     assert.equal(qa.includes(marker), true, marker);
   }
+  assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v88'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v87'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v86'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v85'"), false);
   assert.equal(qa.includes("await cache.match('/src/client/app.js?v=partner-standby2')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_preload.js?v=partner-standby2')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/app.js?v=battle-backdrop-v2')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/reboot_preload.js?v=battle-backdrop-v2')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/styles.css?v=objective-slots1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_render.js?v=partner-standby2')"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v84'"), false);
   assert.equal(qa.includes("await cache.match('/src/client/styles.css?v=meta-unified-board1')"), false);

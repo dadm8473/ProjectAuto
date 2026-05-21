@@ -1097,6 +1097,23 @@ Postprocess: remove the green chroma-key to alpha with soft matte/despill, crop 
 Acceptance: the result reward area reads as a generated loot console with a clear icon socket and reward value plate; it no longer looks like a plain text strip or CSS card, and it remains legible on compact portrait result screens.
 ```
 
+## Runtime Prompt: Result Command Board
+
+```text
+Use case: stylized-concept
+Asset type: project-bound transparent-background post-battle command board for a portrait Korean mobile cooperative tower-defense result screen.
+Primary request: Create one unified premium post-battle command board for ProjectAuto. It must combine the reward payout bay, next-action command bay, and secondary return command bay into one shipped mobile game console so the result screen no longer reads like separate web cards.
+Canvas/layout: wide 1024x430 board on a perfectly flat solid #00ff00 chroma-key background. Top half contains a large horizontal reward payout bay with a left loot socket, central chip/value plate, and right capsule module. Bottom half contains two command bays: a larger gold primary action bay on the left and a smaller cyan secondary command bay on the right. Leave clean transparent-safe negative space inside each bay for overlaid Korean UI labels and buttons. Keep the silhouette compact enough for a 390px-wide portrait result panel.
+Style: high-end Korean mobile game result UI, dark graphite and gunmetal sci-fi relay console, cyan signal glass, warm amber/gold trim on primary action hardware, polished toy-board cooperative defense aesthetic, consistent with ProjectAuto Signal Relay style-lock assets.
+Lighting/mood: premium victory/after-action payoff, crisp bevels, readable phone-scale rim light, concentrated reward glow without noisy texture behind text.
+Transparency/chroma constraints: background must be one uniform #00ff00 with no shadows, gradients, texture, reflections, floor plane, or lighting variation. Keep board pixels separated from the background. Do not use #00ff00 inside the board.
+Avoid: words, letters, numbers, logos, watermark, fake text, browser card borders, flat CSS gradient panels, full opaque rectangular backdrop, dice/casino cues, copied existing games, clutter that blocks reward chips or action labels, purple-heavy palette.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260522-result-command-board-chromakey-imagegen.png
+Runtime file: src/client/assets/generated/reboot-result-command-board-v1.png
+Postprocess: remove the green chroma-key to alpha with soft matte/despill, crop to the board bounds while preserving glow padding, fit into a 1024x430 transparent runtime image, then lightly boost contrast, color, and sharpness for 390px portrait readability.
+Acceptance: the post-battle result area reads as one generated after-action console that visually connects earned rewards and the next command; retry/lobby actions feel embedded in game hardware instead of sitting below as generic web buttons.
+```
+
 ## Runtime Prompt: Online Waiting Field Overlay
 
 ```text

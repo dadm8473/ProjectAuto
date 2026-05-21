@@ -12,7 +12,7 @@
     <link rel="icon" href="/src/client/assets/generated/reboot-app-icon-192.png">
     <link rel="apple-touch-icon" href="/src/client/assets/generated/reboot-app-icon-192.png">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/src/client/styles.css?v=objective-slots1">
+    <link rel="stylesheet" href="/src/client/styles.css?v=result-command-board1">
   </head>
   <body data-app-screen="splash">
     <main class="shell">
@@ -116,10 +116,12 @@
             <p id="resultNextGoal">다음 판 목표</p>
           </div>
           <div id="resultHighlights" class="result-highlights"></div>
-          <div id="resultReward" class="result-reward" role="group"></div>
-          <div class="result-actions">
-            <button id="resultRetryButton" class="result-action-button result-action-primary"><span>다시 도전</span></button>
-            <button id="resultLobbyButton" class="result-action-button result-action-secondary"><span>준비실</span></button>
+          <div class="result-command-board" role="group" aria-label="전투 결과 보상과 다음 행동">
+            <div id="resultReward" class="result-reward" role="group"></div>
+            <div class="result-actions">
+              <button id="resultRetryButton" class="result-action-button result-action-primary"><span>다시 도전</span></button>
+              <button id="resultLobbyButton" class="result-action-button result-action-secondary"><span>준비실</span></button>
+            </div>
           </div>
         </div>
       </section>
@@ -147,6 +149,6 @@
         </div>
       </section>
     </main>
-    <script type="module" src="/src/client/app.js?v=battle-backdrop-v2"></script>
+    <script type="module" src="/src/client/app.js?v=result-command-board1"></script>
   </body>
 </html>

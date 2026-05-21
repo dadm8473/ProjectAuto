@@ -642,7 +642,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-slots1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-command-board1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-slots1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-reward-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-unified-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-reward-board1">'), false);
@@ -755,7 +756,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-backdrop-v2"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-command-board1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-backdrop-v2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-standby2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-ready-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-copy1"></script>'), false);
@@ -909,7 +911,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=battle-backdrop-v2';",
+    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=result-command-board1';",
     'function scheduleWarmRebootAssets()',
     'warmRebootAssets().catch(() => {});',
     'preloadCriticalRebootAssets().then(() => {\n  hideLoadingGate();\n  scheduleWarmRebootAssets();\n}, hideLoadingGate);',
@@ -1513,7 +1515,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=objective-slots1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-command-board1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=objective-slots1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=meta-unified-board1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=season-reward-board1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=mission-command-board1'), false);
@@ -1903,7 +1906,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=objective-slots1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=result-command-board1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2600,6 +2603,36 @@ test('result reward uses a generated claim capsule instead of a text strip', asy
     assert.equal(chipBlock.includes(marker), true, marker);
   }
   assert.equal(css.includes('.result-reward-chip[data-reward-kind="xp"]'), true);
+});
+
+test('result reward and actions sit inside one generated post-battle command board', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    'class="result-command-board" role="group" aria-label="전투 결과 보상과 다음 행동"',
+    '--result-command-board: url("/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1")',
+    '.result-command-board',
+    'background-image: var(--result-command-board);',
+    '.result-command-board .result-reward',
+    '.result-command-board .result-actions'
+  ]) {
+    assert.equal(`${html}\n${css}`.includes(marker), true, marker);
+  }
+
+  assert.equal(html.indexOf('class="result-command-board"') < html.indexOf('id="resultReward"'), true);
+  assert.equal(html.indexOf('id="resultReward"') < html.indexOf('class="result-actions"'), true);
+  assert.equal(html.indexOf('class="result-actions"') < html.indexOf('</div>\n        </div>\n      </section>'), true);
+
+  const boardBlock = cssRuleBlock(css, '.result-command-board');
+  for (const marker of [
+    'display: grid;',
+    'background-image: var(--result-command-board);',
+    'background-size: 100% 100%;',
+    'isolation: isolate;'
+  ]) {
+    assert.equal(boardBlock.includes(marker), true, marker);
+  }
 });
 
 test('result highlights use generated strip frames while reward uses a loot capsule', async () => {

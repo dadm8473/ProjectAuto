@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v88');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v89');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=objective-slots1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=objective-slots1'))
+      '/src/client/styles.css?v=result-command-board1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=result-command-board1'))
         : false,
-      '/src/client/app.js?v=battle-backdrop-v2': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=battle-backdrop-v2'))
+      '/src/client/app.js?v=result-command-board1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=result-command-board1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -116,6 +116,9 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1'))
+        : false,
+      '/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1'))
         : false,
       '/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1'))
@@ -138,8 +141,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
         : false,
-      '/src/client/reboot_preload.js?v=battle-backdrop-v2': cache
-        ? Boolean(await cache.match('/src/client/reboot_preload.js?v=battle-backdrop-v2'))
+      '/src/client/reboot_preload.js?v=result-command-board1': cache
+        ? Boolean(await cache.match('/src/client/reboot_preload.js?v=result-command-board1'))
         : false,
       '/src/client/reboot_render.js?v=battle-backdrop-v2': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=battle-backdrop-v2'))
@@ -229,7 +232,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v88', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v89', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1290,6 +1293,22 @@ async function assertResultGeneratedCopySurfaces(page) {
   assert.match(rewardSurface.beforeBackgroundImage, /reboot-result-reward-capsules/, `result reward lacks left generated capsule: ${JSON.stringify(rewardSurface)}`);
   assert.match(rewardSurface.afterBackgroundImage, /reboot-result-reward-capsules/, `result reward lacks right generated capsule: ${JSON.stringify(rewardSurface)}`);
   assert.equal(rewardSurface.width > 0 && rewardSurface.height >= 68, true, `result reward collapsed: ${JSON.stringify(rewardSurface)}`);
+
+  const commandBoard = await page.locator('.result-command-board').evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    return {
+      backgroundImage: style.backgroundImage,
+      backgroundSize: style.backgroundSize,
+      display: style.display,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    };
+  });
+  assert.match(commandBoard.backgroundImage, /reboot-result-command-board-v1/, `result command board should use generated post-battle console: ${JSON.stringify(commandBoard)}`);
+  assert.equal(commandBoard.backgroundSize, '100% 100%', `result command board sizing changed: ${JSON.stringify(commandBoard)}`);
+  assert.equal(commandBoard.display, 'grid', `result command board should remain a unified grid: ${JSON.stringify(commandBoard)}`);
+  assert.equal(commandBoard.width > 0 && commandBoard.height >= 128, true, `result command board collapsed: ${JSON.stringify(commandBoard)}`);
 }
 
 async function assertOperationCopyClearsProgressRail(page) {

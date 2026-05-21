@@ -340,6 +340,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 300_000
   },
   {
+    path: 'src/client/assets/generated/reboot-result-command-board-v1.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260522-result-command-board-chromakey-imagegen.png',
+    width: 1024,
+    height: 430,
+    minRuntimeBytes: 260_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-result-copy-plates.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-result-copy-plates-imagegen.png',
     width: 780,
@@ -2668,6 +2675,34 @@ test('result reward capsule cells stay transparent and read as collectible loot 
     assert.equal(bounds.minY >= 40, true, `reward capsule cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 41, true, `reward capsule cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
   }
+});
+
+test('result command board unifies reward payout and post-battle actions as generated console art', async () => {
+  const source = await readFile('docs/design/generation/source/reboot/style-lock/20260522-result-command-board-chromakey-imagegen.png');
+  const runtime = await readFile('src/client/assets/generated/reboot-result-command-board-v1.png');
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(runtime.readUInt32BE(16), 1024);
+  assert.equal(runtime.readUInt32BE(20), 430);
+  assert.equal(runtime.length > 260_000, true, 'result command board runtime is too small');
+
+  const image = parsePng(runtime);
+  const corners = [
+    alphaAt(image, 5, 5),
+    alphaAt(image, image.width - 6, 5),
+    alphaAt(image, 5, image.height - 6),
+    alphaAt(image, image.width - 6, image.height - 6)
+  ];
+  const rewardBay = alphaCoverage(image, { x: 70, y: 36, width: 884, height: 170 }, 48);
+  const primaryBay = alphaCoverage(image, { x: 86, y: 254, width: 410, height: 112 }, 48);
+  const secondaryBay = alphaCoverage(image, { x: 536, y: 254, width: 360, height: 112 }, 48);
+  const centerDarkGlass = colorRatio(image, { x: 250, y: 155, width: 524, height: 70 }, (r, g, b) => Math.max(r, g, b) < 22);
+
+  assert.equal(corners.every((alpha) => alpha < 16), true, `result command board has opaque corners: ${corners.join(',')}`);
+  assert.equal(rewardBay > 0.28, true, `result command board lacks reward bay chrome: ${rewardBay}`);
+  assert.equal(primaryBay > 0.3, true, `result command board lacks primary action bay: ${primaryBay}`);
+  assert.equal(secondaryBay > 0.24, true, `result command board lacks secondary action bay: ${secondaryBay}`);
+  assert.equal(centerDarkGlass < 0.32, true, `result command board has too much empty center void: ${centerDarkGlass}`);
 });
 
 test('result outcome stage cells stay transparent and readable behind the result medal', async () => {

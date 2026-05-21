@@ -27,6 +27,7 @@ export const REBOOT_WARMUP_ASSETS = [
   '/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console2',
   '/src/client/assets/generated/reboot-result-screen-lighting.png?v=screen-lighting1',
   '/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1',
+  '/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1',
   '/src/client/assets/generated/reboot-reward-reveal-payoff-stage.png?v=reward-payoff-stage1',
   '/src/client/assets/generated/reboot-collection-training-board-v1.png?v=collection-training-board1',
   '/src/client/assets/generated/reboot-shop-display-board-v1.png?v=shop-display-board1',
