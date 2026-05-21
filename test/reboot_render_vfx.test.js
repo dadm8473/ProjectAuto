@@ -799,6 +799,8 @@ test('opening threat preview remains after first summon until enemies serialize'
         p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
         p2: { danger: 0, units: [] }
       },
+      resources: { p1: { summon: 0, rescue: 0 }, p2: { summon: 10, rescue: 0 } },
+      actionState: { p1: { summon: false, merge: false, rescue: false }, p2: { summon: true, merge: false, rescue: false } },
       enemies: [],
       events: [{ type: 'summon', at: 0.62, playerId: 'p1' }],
       effects: []
@@ -928,6 +930,8 @@ test('early combat lulls keep a generated incoming-wave object on the track', ()
         p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
         p2: { danger: 0, units: [] }
       },
+      resources: { p1: { summon: 0, rescue: 0 }, p2: { summon: 10, rescue: 0 } },
+      actionState: { p1: { summon: false, merge: false, rescue: false }, p2: { summon: true, merge: false, rescue: false } },
       enemies: [],
       events: [{ type: 'summon', at: 0.62, playerId: 'p1' }],
       effects: []
@@ -954,6 +958,141 @@ test('early combat lulls keep a generated incoming-wave object on the track', ()
   assert.equal(previewDraw.args[7] >= 136, true, 'lull preview should be large enough to read on a phone battlefield');
   assert.equal(previewDraw.args[8] >= 68, true, 'lull preview should keep the generated threat object visibly grounded');
   assert.deepEqual(looseEnemyDraws, [], 'lull preview should use the generated warning object instead of a floating enemy sprite');
+});
+
+test('post-summon cooldown lulls keep generated route pressure across the lane', () => {
+  const ctx = mockContext();
+  const openingThreatPreview = image(512, 256);
+  const enemyTrackTrails = image(1024, 128);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 14.1,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      resources: { p1: { summon: 0, rescue: 0 }, p2: { summon: 10, rescue: 0 } },
+      actionState: { p1: { summon: false, merge: false, rescue: false }, p2: { summon: true, merge: false, rescue: false } },
+      enemies: [],
+      events: [{ type: 'summon', at: 0.62, playerId: 'p1' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      openingThreatPreview,
+      enemyTrackTrails,
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const previewDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === openingThreatPreview
+  ));
+  const routePressureMarks = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === enemyTrackTrails
+      && command.args[1] >= 256
+      && command.args[3] === 256
+      && command.args[7] >= 100
+      && command.args[8] >= 40
+  ));
+
+  assert.equal(previewDraws.length >= 2, true, 'cooldown lull should show repeated generated threat echoes along the lane');
+  assert.equal(routePressureMarks.length >= 3, true, 'cooldown lull should fill the S-lane with generated pressure marks');
+});
+
+test('summon-ready lulls do not keep cooldown-only route pressure on the lane', () => {
+  const ctx = mockContext();
+  const openingThreatPreview = image(512, 256);
+  const enemyTrackTrails = image(1024, 128);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 14.1,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      resources: { p1: { summon: 10, rescue: 0 }, p2: { summon: 10, rescue: 0 } },
+      actionState: { p1: { summon: true, merge: false, rescue: false }, p2: { summon: true, merge: false, rescue: false } },
+      enemies: [],
+      events: [{ type: 'summon', at: 0.62, playerId: 'p1' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      openingThreatPreview,
+      enemyTrackTrails,
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const previewDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === openingThreatPreview
+  ));
+  const routePressureMarks = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === enemyTrackTrails
+      && command.args[1] >= 256
+      && command.args[3] === 256
+      && command.args[7] >= 100
+      && command.args[8] >= 40
+  ));
+
+  assert.equal(previewDraws.length <= 1, true, 'ready summon should keep only the next-wave preview, not cooldown echoes');
+  assert.deepEqual(routePressureMarks, [], 'ready summon should not leave cooldown-only route pressure marks');
+});
+
+test('second player view uses local summon cooldown for route pressure', () => {
+  const ctx = mockContext();
+  const openingThreatPreview = image(512, 256);
+  const enemyTrackTrails = image(1024, 128);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 14.1,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [{ spriteKey: 'toktok_amp' }] }
+      },
+      resources: { p1: { summon: 10, rescue: 0 }, p2: { summon: 0, rescue: 0 } },
+      actionState: { p1: { summon: true, merge: false, rescue: false }, p2: { summon: false, merge: false, rescue: false } },
+      enemies: [],
+      events: [{ type: 'summon', at: 0.62, playerId: 'p2' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      openingThreatPreview,
+      enemyTrackTrails,
+      playerBoardTray: image(780, 320)
+    },
+    { localBoardId: 'p2' }
+  );
+
+  const routePressureMarks = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === enemyTrackTrails
+      && command.args[1] >= 256
+      && command.args[3] === 256
+      && command.args[7] >= 100
+      && command.args[8] >= 40
+  ));
+
+  assert.equal(routePressureMarks.length >= 3, true, 'second player cooldown should also keep the route visually pressured');
 });
 
 test('post-opening wave lulls preview the next spawn instead of leaving an empty track', () => {

@@ -631,6 +631,27 @@ function nextIncomingWave(now = 0) {
   return REBOOT_WAVES.find((wave) => wave.at > now);
 }
 
+function isLocalSummonCooldownActive(state = {}, localBoardId = 'p1') {
+  const selfId = normalizeBoardId(localBoardId);
+  if (state.result) return false;
+  const resources = state.resources?.[selfId];
+  if (!resources || !Number.isFinite(Number(resources.summon))) return false;
+  if (Number(resources.summon) >= REBOOT_RULES.summon.cost) return false;
+  if (state.actionState?.[selfId]?.summon === true) return false;
+  const now = Number(state.now) || 0;
+  return REBOOT_RULES.summon.grants.some((grant) => grant.at > now);
+}
+
+function shouldDrawCooldownLullPressure(state = {}, options = {}) {
+  const now = Number(state.now) || 0;
+  return hasFirstPlayerAction(state)
+    && hasBoardUnit(state)
+    && (state.enemies?.length ?? 0) === 0
+    && now > OPENING_THREAT_PREVIEW_END
+    && now <= EARLY_LULL_THREAT_PREVIEW_END
+    && isLocalSummonCooldownActive(state, options.localBoardId);
+}
+
 function nextWaveThreatPreviewAlpha(state = {}, options = {}) {
   const now = Number(state.now) || 0;
   if (options.onlineWaiting || options.matchmakingBannerVisible) return 0;
@@ -662,7 +683,7 @@ function openingThreatPreviewAlpha(state = {}, options = {}) {
     const continuityFloor = Math.max(0, 1 - Math.max(0, now - OPERATION_START_CUTIN_END) / 0.34) * 0.54;
     return Math.min(0.78, Math.max(continuityFloor, intro) * exit * 0.78);
   }
-  if (hasFirstPlayerAction(state) && now > OPENING_THREAT_PREVIEW_END && now <= EARLY_LULL_THREAT_PREVIEW_END) {
+  if (shouldDrawCooldownLullPressure(state, options)) {
     const exit = Math.min(1, Math.max(0, EARLY_LULL_THREAT_PREVIEW_END - now) / 1.4);
     const pulse = 0.62 + Math.max(0, Math.sin(now * 3.4)) * 0.08;
     return Math.max(pulse * exit, nextWaveAlpha);
@@ -685,6 +706,19 @@ function drawOpeningThreatPreview(ctx, state, assets = {}, options = {}, imageBa
     ctx.globalAlpha *= alpha;
     ctx.drawImage(preview, 0, 0, preview.naturalWidth, preview.naturalHeight, point.x - width * 0.38, point.y - height * 0.82, width, height);
     ctx.restore();
+    if (shouldDrawCooldownLullPressure(state, options)) {
+      [
+        { progress: 0.38, lane: -0.12, width: 132, height: 64, phase: 1.1 },
+        { progress: 0.69, lane: 0.16, width: 142, height: 68, phase: 2.3 }
+      ].forEach((echo) => {
+        const echoPoint = trackPointFromProgress(echo.progress + Math.sin(state.now * 1.8 + echo.phase) * 0.006, echo.lane, imageBackdrop);
+        const echoAlpha = Math.min(0.58, alpha * (0.42 + Math.max(0, Math.sin(state.now * 3.1 + echo.phase)) * 0.16));
+        ctx.save();
+        ctx.globalAlpha *= echoAlpha;
+        ctx.drawImage(preview, 0, 0, preview.naturalWidth, preview.naturalHeight, echoPoint.x - echo.width * 0.44, echoPoint.y - echo.height * 0.7, echo.width, echo.height);
+        ctx.restore();
+      });
+    }
     return true;
   }
 
@@ -700,7 +734,10 @@ function drawOpeningThreatPreview(ctx, state, assets = {}, options = {}, imageBa
 function drawOpeningRouteBeacons(ctx, state, assets = {}, options = {}, imageBackdrop = true) {
   const now = Number(state.now) || 0;
   if (options.onlineWaiting || options.matchmakingBannerVisible) return false;
-  if (hasFirstPlayerAction(state) || now < 1.2 || now > 10.8) return false;
+  const firstActionTaken = hasFirstPlayerAction(state);
+  const openingCue = !firstActionTaken && now >= 1.2 && now <= 10.8;
+  const cooldownLullCue = shouldDrawCooldownLullPressure(state, options);
+  if (!openingCue && !cooldownLullCue) return false;
   const image = assets?.enemyTrackTrails;
   if (!image?.complete || image.naturalWidth <= 0) return false;
 
@@ -708,9 +745,12 @@ function drawOpeningRouteBeacons(ctx, state, assets = {}, options = {}, imageBac
   const route = [0.17, 0.44, 0.73];
   route.forEach((progress, index) => {
     const point = trackPointFromProgress(progress + Math.sin(now * 2.4 + index) * 0.004, 0, imageBackdrop);
-    const alpha = Math.min(0.54, 0.26 + Math.max(0, Math.sin(now * 4.4 - index * 0.72)) * 0.2);
-    const width = index === 2 ? 84 : 74;
-    const height = index === 2 ? 34 : 30;
+    const pulse = Math.max(0, Math.sin(now * 4.4 - index * 0.72));
+    const alpha = cooldownLullCue
+      ? Math.min(0.78, 0.56 + pulse * 0.2)
+      : Math.min(0.54, 0.26 + pulse * 0.2);
+    const width = index === 2 ? (cooldownLullCue ? 124 : 84) : (cooldownLullCue ? 108 : 74);
+    const height = index === 2 ? (cooldownLullCue ? 48 : 34) : (cooldownLullCue ? 42 : 30);
     ctx.save();
     ctx.globalAlpha *= alpha;
     ctx.drawImage(image, cellWidth, 0, cellWidth, image.naturalHeight, point.x - width / 2, point.y + 7, width, height);
