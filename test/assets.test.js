@@ -325,6 +325,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 500_000
   },
   {
+    path: 'src/client/assets/generated/reboot-result-reward-board-v1.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260522-result-reward-board-chromakey-imagegen.png',
+    width: 1024,
+    height: 320,
+    minRuntimeBytes: 300_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-result-copy-plates.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-result-copy-plates-imagegen.png',
     width: 780,

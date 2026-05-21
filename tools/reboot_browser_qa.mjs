@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v84');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v85');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=meta-unified-board1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=meta-unified-board1'))
+      '/src/client/styles.css?v=result-reward-board1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=result-reward-board1'))
         : false,
       '/src/client/app.js?v=partner-standby2': cache
         ? Boolean(await cache.match('/src/client/app.js?v=partner-standby2'))
@@ -113,6 +113,9 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2'))
+        : false,
+      '/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1'))
         : false,
       '/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1'))
@@ -220,7 +223,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v84', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v85', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1276,7 +1279,7 @@ async function assertResultGeneratedCopySurfaces(page) {
       height: Math.round(rect.height)
     };
   });
-  assert.equal(rewardSurface.backgroundImage, 'none', `result reward should not reuse detail strip: ${JSON.stringify(rewardSurface)}`);
+  assert.match(rewardSurface.backgroundImage, /reboot-result-reward-board-v1/, `result reward should use generated command board: ${JSON.stringify(rewardSurface)}`);
   assert.equal(rewardSurface.boxShadow, 'none', `result reward still has css shadow surface: ${JSON.stringify(rewardSurface)}`);
   assert.match(rewardSurface.beforeBackgroundImage, /reboot-result-reward-capsules/, `result reward lacks left generated capsule: ${JSON.stringify(rewardSurface)}`);
   assert.match(rewardSurface.afterBackgroundImage, /reboot-result-reward-capsules/, `result reward lacks right generated capsule: ${JSON.stringify(rewardSurface)}`);

@@ -1046,6 +1046,23 @@ Postprocess: center-crop to 2:3 if needed, resize to 768x1152, boost color/contr
 Acceptance: the shop screen reads as one generated store display board instead of a banner stacked above web-like item cards; featured item pedestal, display cases, and purchase state labels remain readable at 390x844 and compact portrait widths.
 ```
 
+## Runtime Prompt: Result Reward Command Board
+
+```text
+Use case: stylized-concept
+Asset type: project-bound transparent-background reward command board for a portrait Korean mobile cooperative tower-defense game result screen.
+Primary request: Create one wide premium in-game reward command board for ProjectAuto. The board will sit behind the result screen reward icon, earned currency chips, and claim payoff copy. It must look like a shipped mobile game loot console, not a web card.
+Canvas/layout: one horizontal board on a perfectly flat solid #00ff00 chroma-key background. Compose as a single 1024x320 source with generous transparent-safe padding. Left side contains a large circular empty loot socket for a reward icon. Center/right contains a polished glass value plate with readable empty space for overlaid reward chips. Far right may include a small capsule/chest module and cyan power pipes.
+Style: high-end Korean mobile game UI, sci-fi toy-board cooperative tower defense, dark graphite metal, teal/cyan glass, warm gold trim, collectible reward-machine finish, crisp silhouette at phone scale, matching the existing ProjectAuto style-lock assets.
+Lighting/mood: concentrated cyan rim light and amber reward glow, strong bevels, premium chest-opening anticipation, no noisy texture behind overlaid text.
+Transparency/chroma constraints: background must be one uniform #00ff00 with no shadows, gradients, texture, reflections, floor plane, or lighting variation. Keep board pixels separated from the background. Do not use #00ff00 inside the board.
+Avoid: words, letters, numbers, logos, watermark, fake text, browser card borders, flat CSS gradient panels, full opaque rectangular backdrop, excessive purple, dice/gacha machine resemblance, clutter that blocks reward value text.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260522-result-reward-board-chromakey-imagegen.png
+Runtime file: src/client/assets/generated/reboot-result-reward-board-v1.png
+Postprocess: remove the green chroma-key to alpha with soft matte/despill, crop to the board bounds while preserving glow padding, fit into a 1024x320 transparent runtime image, then lightly boost contrast and sharpen for 390px portrait readability.
+Acceptance: the result reward area reads as a generated loot console with a clear icon socket and reward value plate; it no longer looks like a plain text strip or CSS card, and it remains legible on compact portrait result screens.
+```
+
 ## Runtime Prompt: Partner Companion Standby Atlas
 
 ```text

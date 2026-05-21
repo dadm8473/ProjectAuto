@@ -28,6 +28,7 @@
   --result-hero-stage: url("/src/client/assets/generated/reboot-result-hero-stage.png?v=result-hero-stage1");
   --result-outcome-auras: url("/src/client/assets/generated/reboot-result-outcome-auras.png?v=result-outcome-aura1");
   --result-reward-capsules: url("/src/client/assets/generated/reboot-result-reward-capsules.png?v=result-capsules1");
+  --result-reward-board: url("/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1");
   --result-finale-bursts: url("/src/client/assets/generated/reboot-result-finale-bursts.png?v=result-finale");
   --result-medals: url("/src/client/assets/generated/reboot-result-medals.png?v=result-medals");
   --toast-callouts: url("/src/client/assets/generated/reboot-toast-callouts.png?v=toast-callouts");
@@ -2248,7 +2249,8 @@ body[data-app-screen="season"] .app-screen::after {
 
 @media (prefers-reduced-motion: reduce) {
   body[data-app-screen="battle"][data-coach-cue="summon"] .primary-actions[data-open-count="1"]::after,
-  .bottom-dock button[data-nav-alert] .nav-alert-badge {
+  .bottom-dock button[data-nav-alert] .nav-alert-badge,
+  .result-reward::before {
     animation: none;
   }
 }
@@ -5637,28 +5639,32 @@ body[data-app-screen="season"] .app-screen::after {
 
 .result-reward {
   position: relative;
-  min-height: clamp(72px, calc(var(--result-panel-width) * 0.22), 88px);
+  min-height: clamp(94px, calc(var(--result-panel-width) * 0.285), 112px);
   display: grid;
-  grid-template-columns: clamp(48px, calc(var(--result-panel-width) * 0.145), 58px) minmax(0, 1fr);
+  grid-template-columns: clamp(58px, calc(var(--result-panel-width) * 0.17), 66px) minmax(0, 1fr);
   align-items: center;
   gap: 4px;
-  padding: 6px clamp(14px, calc(var(--result-panel-width) * 0.05), 20px) 7px;
+  padding: 10px clamp(18px, calc(var(--result-panel-width) * 0.052), 22px) 12px clamp(18px, calc(var(--result-panel-width) * 0.052), 22px);
   border: 0;
   border-radius: 0;
   overflow: visible;
   isolation: isolate;
   background: transparent;
-  background-image: none;
+  background-image: var(--result-reward-board);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
   box-shadow: none;
+  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.42));
 }
 
 .result-reward::before {
   content: "";
   position: absolute;
-  left: clamp(-6px, calc(var(--result-panel-width) * -0.015), 0px);
+  left: clamp(-12px, calc(var(--result-panel-width) * -0.025), -4px);
   top: 50%;
   z-index: 0;
-  width: clamp(104px, calc(var(--result-panel-width) * 0.31), 126px);
+  width: clamp(114px, calc(var(--result-panel-width) * 0.33), 134px);
   aspect-ratio: 1 / 1;
   transform: translateY(-50%);
   pointer-events: none;
@@ -5667,15 +5673,18 @@ body[data-app-screen="season"] .app-screen::after {
   background-size: 300% 100%;
   background-position: 0 0;
   filter: saturate(1.08) drop-shadow(0 12px 18px rgba(0, 0, 0, 0.54));
+  opacity: 0.42;
+  mix-blend-mode: screen;
+  animation: resultLootPulse 1.8s ease-in-out infinite;
 }
 
 .result-reward::after {
   content: "";
   position: absolute;
-  right: clamp(-8px, calc(var(--result-panel-width) * -0.018), 0px);
+  right: clamp(-12px, calc(var(--result-panel-width) * -0.024), -4px);
   top: 50%;
   z-index: 0;
-  width: clamp(82px, calc(var(--result-panel-width) * 0.24), 98px);
+  width: clamp(90px, calc(var(--result-panel-width) * 0.255), 106px);
   aspect-ratio: 1 / 1;
   transform: translateY(-50%);
   pointer-events: none;
@@ -5689,7 +5698,7 @@ body[data-app-screen="season"] .app-screen::after {
 
 .result-overlay[data-result-status="won"] .result-reward::after {
   background-position: 100% 0;
-  opacity: 0.92;
+  opacity: 0.78;
 }
 
 .result-overlay[data-result-status="lost"] .result-reward::after {
@@ -5723,7 +5732,7 @@ body[data-app-screen="season"] .app-screen::after {
   grid-row: 1 / span 2;
   justify-self: center;
   align-self: center;
-  width: clamp(48px, calc(var(--result-panel-width) * 0.145), 58px);
+  width: clamp(54px, calc(var(--result-panel-width) * 0.16), 62px);
   aspect-ratio: 1 / 1;
   pointer-events: none;
   background-image: url("/src/client/assets/generated/reboot-reward-icons.png");
@@ -5740,7 +5749,7 @@ body[data-app-screen="season"] .app-screen::after {
 .result-reward-label {
   align-self: end;
   color: var(--mint);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 1000;
   line-height: 1;
   white-space: nowrap;
@@ -5753,15 +5762,15 @@ body[data-app-screen="season"] .app-screen::after {
   gap: 0 4px;
   align-self: start;
   color: #fff4c2;
-  font-size: clamp(16px, calc(var(--result-panel-width) * 0.049), 19px);
+  font-size: clamp(16px, calc(var(--result-panel-width) * 0.046), 18px);
   line-height: 1.06;
 }
 
 .result-reward-chip {
   display: inline-grid;
-  min-height: 24px;
+  min-height: 25px;
   place-items: center;
-  padding: 2px 10px 4px;
+  padding: 2px 8px 3px;
   color: #fff2b4;
   background-image: var(--meta-command-ribbons);
   background-repeat: no-repeat;
@@ -5769,6 +5778,19 @@ body[data-app-screen="season"] .app-screen::after {
   background-position: 33.333% 0;
   filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.42));
   white-space: nowrap;
+}
+
+@keyframes resultLootPulse {
+  0%,
+  100% {
+    opacity: 0.34;
+    transform: translateY(-50%) scale(0.98);
+  }
+
+  50% {
+    opacity: 0.56;
+    transform: translateY(-50%) scale(1.02);
+  }
 }
 
 .result-reward-chip[data-reward-kind="xp"] {
@@ -5913,23 +5935,24 @@ body[data-app-screen="season"] .app-screen::after {
   }
 
   .result-reward {
-    min-height: 68px;
-    grid-template-columns: 42px minmax(0, 1fr);
-    padding: 5px 10px 6px;
+    min-height: 76px;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 3px;
+    padding: 7px 14px 8px 12px;
   }
 
   .result-reward::before {
-    left: -2px;
-    width: 78px;
+    left: -6px;
+    width: 86px;
   }
 
   .result-reward::after {
-    right: 0;
-    width: 58px;
+    right: -4px;
+    width: 64px;
   }
 
   .result-reward-icon {
-    width: 42px;
+    width: 48px;
   }
 
   .result-overlay[data-result-status="won"] .result-reward::after {

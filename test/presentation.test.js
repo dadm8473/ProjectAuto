@@ -635,7 +635,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-unified-board1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-reward-board1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-unified-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-reward-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-command-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter1">'), false);
@@ -1502,7 +1503,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=meta-unified-board1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-reward-board1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=meta-unified-board1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=season-reward-board1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=mission-command-board1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hud-meter1'), false);
@@ -1891,7 +1893,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=meta-unified-board1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=result-reward-board1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2434,9 +2436,9 @@ test('result debrief stays usable on short portrait phones', async () => {
     '#resultTitle::before {\n    width: min(190px, 92%);',
     '.result-panel p {\n    line-height: 1.12;',
     '.result-highlights span {\n    min-height: 44px;',
-    '.result-reward {\n    min-height: 68px;\n    grid-template-columns: 42px minmax(0, 1fr);\n    padding: 5px 10px 6px;',
-    '.result-reward::before {\n    left: -2px;\n    width: 78px;',
-    '.result-reward::after {\n    right: 0;\n    width: 58px;',
+    '.result-reward {\n    min-height: 76px;\n    grid-template-columns: 48px minmax(0, 1fr);\n    gap: 3px;\n    padding: 7px 14px 8px 12px;',
+    '.result-reward::before {\n    left: -6px;\n    width: 86px;',
+    '.result-reward::after {\n    right: -4px;\n    width: 64px;',
     '.result-overlay .result-action-button {\n    min-height: 44px;'
   ]) {
     assert.equal(css.includes(marker), true, marker);
@@ -2544,10 +2546,13 @@ test('result reward uses a generated claim capsule instead of a text strip', asy
 
   for (const marker of [
     '--result-reward-capsules: url("/src/client/assets/generated/reboot-result-reward-capsules.png?v=result-capsules1")',
+    '--result-reward-board: url("/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1")',
     '.result-reward-label',
     '.result-reward-value',
+    'background-image: var(--result-reward-board);',
     'background-image: var(--result-reward-capsules);',
     'background-size: 300% 100%;',
+    '@keyframes resultLootPulse',
     'display: flex;\n  flex-wrap: wrap;',
     '.result-reward-chip',
     'background-image: var(--meta-command-ribbons);',
@@ -2569,14 +2574,15 @@ test('result reward uses a generated claim capsule instead of a text strip', asy
   const rewardEnd = css.indexOf('\n}', rewardStart);
   const rewardBlock = css.slice(rewardStart, rewardEnd + 2);
   assert.equal(rewardBlock.includes('background-image: var(--result-detail-strips);'), false);
+  assert.equal(rewardBlock.includes('background-image: var(--result-reward-board);'), true);
   assert.equal(css.includes('.result-panel strong {\n  font-size: 30px;'), false);
   assert.equal(cssRuleBlock(css, '#resultTitle').includes('display: grid;'), true);
-  assert.equal(css.includes('font-size: clamp(16px, calc(var(--result-panel-width) * 0.049), 19px);'), true);
+  assert.equal(css.includes('font-size: clamp(16px, calc(var(--result-panel-width) * 0.046), 18px);'), true);
 
   const chipBlock = cssRuleBlock(css, '.result-reward-chip');
   for (const marker of [
     'display: inline-grid;',
-    'min-height: 24px;',
+    'min-height: 25px;',
     'background-image: var(--meta-command-ribbons);',
     'background-size: 400% 100%;',
     'filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.42));'
@@ -2612,7 +2618,8 @@ test('result highlights use generated strip frames while reward uses a loot caps
   assert.equal(sharedStripBlock.includes('.result-reward'), false);
   assert.equal(rewardBlock.includes('display: grid;'), true);
   assert.equal(rewardBlock.includes('background: transparent;'), true);
-  assert.equal(rewardBlock.includes('background-image: none;'), true);
+  assert.equal(rewardBlock.includes('background-image: var(--result-reward-board);'), true);
+  assert.equal(rewardBlock.includes('background-image: none;'), false);
   assert.equal(rewardBlock.includes('background-image: var(--result-detail-strips);'), false);
   assert.equal(rewardBlock.includes('box-shadow: none;'), true);
 });

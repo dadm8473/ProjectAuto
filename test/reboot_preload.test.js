@@ -42,6 +42,7 @@ test('critical reboot preload blocks only first-paint splash and lobby assets', 
     '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1',
     '/src/client/assets/generated/reboot-partner-standby-sigils-v2.png?v=partner-standby2',
     '/src/client/assets/generated/reboot-result-screen-lighting.png?v=screen-lighting1',
+    '/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1',
     '/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1',
     '/src/client/assets/generated/reboot-collection-training-board-v1.png?v=collection-training-board1',
     '/src/client/assets/generated/reboot-shop-display-board-v1.png?v=shop-display-board1'
@@ -71,6 +72,7 @@ test('warmup preload includes generated meta combat mission and result assets', 
     '/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1',
     '/src/client/assets/generated/reboot-meta-screen-lighting.png?v=screen-lighting1',
     '/src/client/assets/generated/reboot-result-screen-lighting.png?v=screen-lighting1',
+    '/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1',
     '/src/client/assets/generated/reboot-reward-reveal-payoff-stage.png?v=reward-payoff-stage1',
     '/src/client/assets/generated/reboot-collection-training-board-v1.png?v=collection-training-board1',
     '/src/client/assets/generated/reboot-shop-display-board-v1.png?v=shop-display-board1',
@@ -104,7 +106,8 @@ test('critical reboot preload follows generated polish css asset urls', async ()
     '--season-reward-board',
     '--lobby-operation-title-plate',
     '--meta-title-wordmarks',
-    '--meta-caption-plate'
+    '--meta-caption-plate',
+    '--result-reward-board'
   ];
 
   for (const variable of variables) {
