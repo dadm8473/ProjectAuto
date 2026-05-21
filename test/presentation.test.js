@@ -119,7 +119,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_audio.js?v=audio-safe1'",
     "from './reboot_hud.js?v=board-copy1'",
     "from './reboot_render.js?v=unit-pedestal1'",
-    "from './reboot_result_ui.js?v=result-ui1'",
+    "from './reboot_result_ui.js?v=result-ui2'",
     "from './reboot_screens.js?v=meta-clarity1'",
     "from './reboot_online.js'"
   ]) {
@@ -635,7 +635,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=title-wordmark1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-title2">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
@@ -645,6 +645,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=profile-plate1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-xp2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shell-backdrop1">'), false);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=title-wordmark1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=screen-lighting1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=loading-gate1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter-state1">'), false);
@@ -1497,7 +1498,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=title-wordmark1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-title2'), true);
   assert.equal(html.includes('/src/client/styles.css?v=hud-meter1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
@@ -1507,6 +1508,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   assert.equal(html.includes('/src/client/styles.css?v=profile-plate1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-xp2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-xp1'), false);
+  assert.equal(html.includes('/src/client/styles.css?v=title-wordmark1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-profile8'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-profile7'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-profile6'), false);
@@ -1883,7 +1885,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=title-wordmark1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=result-title2">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2407,7 +2409,8 @@ test('result debrief stays usable on short portrait phones', async () => {
     '--result-panel-top-pad: clamp(108px, calc(var(--result-panel-width) * 0.31), 128px);',
     '@media (max-height: 620px)',
     '.result-panel {\n    gap: 6px;',
-    '#resultTitle {\n    min-height: 52px;\n    font-size: 24px;',
+    '#resultTitle {\n    min-height: 58px;\n    padding: 0;',
+    '#resultTitle::before {\n    width: min(190px, 92%);',
     '.result-panel p {\n    line-height: 1.12;',
     '.result-highlights span {\n    min-height: 44px;',
     '.result-reward {\n    min-height: 68px;\n    grid-template-columns: 42px minmax(0, 1fr);\n    padding: 5px 10px 6px;',
@@ -2546,7 +2549,7 @@ test('result reward uses a generated claim capsule instead of a text strip', asy
   const rewardBlock = css.slice(rewardStart, rewardEnd + 2);
   assert.equal(rewardBlock.includes('background-image: var(--result-detail-strips);'), false);
   assert.equal(css.includes('.result-panel strong {\n  font-size: 30px;'), false);
-  assert.equal(css.includes('#resultTitle {\n  display: grid;'), true);
+  assert.equal(cssRuleBlock(css, '#resultTitle').includes('display: grid;'), true);
   assert.equal(css.includes('font-size: clamp(16px, calc(var(--result-panel-width) * 0.049), 19px);'), true);
 
   const chipBlock = cssRuleBlock(css, '.result-reward-chip');
@@ -2626,28 +2629,64 @@ test('result highlights use generated run medal badges instead of text-only call
   assert.equal(medalBlock.includes('border:'), false);
 });
 
-test('result title and guidance copy use generated plate frames', async () => {
+test('result title uses generated Korean wordmark art while preserving accessible copy', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const resultUi = await readFile('src/client/reboot_result_ui.js', 'utf8');
+
+  for (const marker of [
+    '<strong id="resultTitle"><span class="result-title-text">승리</span></strong>',
+    "? resultTitle.querySelector('.result-title-text')",
+    "resultTitle.removeAttribute === 'function'",
+    '--result-title-won: url("/src/client/assets/generated/reboot-result-title-won-v1.png?v=result-title2")',
+    '--result-title-lost: url("/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2")',
+    '#resultTitle {',
+    '#resultTitle::before',
+    'background-image: none;',
+    '.result-overlay[data-result-status="won"] #resultTitle::before',
+    'background-image: var(--result-title-won);',
+    'aspect-ratio: 860 / 327;',
+    '.result-overlay[data-result-status="lost"] #resultTitle::before',
+    'background-image: var(--result-title-lost);',
+    'aspect-ratio: 860 / 366;',
+    '.result-title-text',
+    'clip-path: inset(50%);',
+    '#resultTitle {\n    min-height: 58px;',
+    '#resultTitle::before {\n    width: min(190px, 92%);'
+  ]) {
+    assert.equal(`${html}\n${css}\n${resultUi}`.includes(marker), true, marker);
+  }
+
+  const titleBlock = cssRuleBlock(css, '#resultTitle');
+  const titleBeforeBlock = cssRuleBlock(css, '#resultTitle::before');
+  const wonTitleBlock = cssRuleBlock(css, '.result-overlay[data-result-status="won"] #resultTitle::before');
+  assert.equal(titleBlock.includes('background-image: var(--result-copy-plates);'), false);
+  assert.equal(titleBlock.includes('border:'), false);
+  assert.equal(titleBeforeBlock.includes('linear-gradient'), false);
+  assert.equal(titleBeforeBlock.includes('box-shadow'), false);
+  assert.equal(wonTitleBlock.includes('aspect-ratio'), false);
+  assert.equal(titleBlock.includes('color: transparent;'), false);
+});
+
+test('result guidance copy keeps generated plate frames below the image title', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
     '--result-copy-plates: url("/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy-alpha1")',
-    '#resultTitle',
+    '#resultReason,\n#resultNextGoal',
     'background-image: var(--result-copy-plates);',
     'background-size: 200% 100%;',
-    'background-position: 0 0;',
-    '#resultReason,\n#resultNextGoal',
     'background-position: 100% 0;',
     'min-height: 36px;',
     '#resultCode',
-    '#resultTitle {\n    min-height: 52px;',
     '#resultReason,\n  #resultNextGoal {\n    min-height: 30px;'
   ]) {
     assert.equal(css.includes(marker), true, marker);
   }
 
-  const copyBlock = css.slice(css.indexOf('#resultTitle'), css.indexOf('.result-actions'));
-  assert.equal(copyBlock.includes('border: 1px solid'), false);
-  assert.equal(copyBlock.includes('linear-gradient'), false);
+  const guidanceBlock = css.slice(css.indexOf('#resultReason,'), css.indexOf('#resultNextGoal::before'));
+  assert.equal(guidanceBlock.includes('border: 1px solid'), false);
+  assert.equal(guidanceBlock.includes('linear-gradient'), false);
 });
 
 test('result verdict copy is grouped inside one generated victory or loss ribbon', async () => {
@@ -2679,7 +2718,7 @@ test('result debrief copy plates protect text from generated finale effects', as
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '#resultTitle,\n#resultReason,\n#resultNextGoal',
+    '#resultReason,\n#resultNextGoal',
     'z-index: 3;',
     '-webkit-text-stroke: 1px rgba(0, 0, 0, 0.24);',
     'background-image: var(--result-copy-plates);',
@@ -2692,7 +2731,7 @@ test('result debrief copy plates protect text from generated finale effects', as
   const copyBlock = css.slice(css.indexOf('#resultTitle'), css.indexOf('.result-actions'));
   const copySurfaceBlock = cssRuleBlockAfter(
     css,
-    '#resultTitle,\n#resultReason,\n#resultNextGoal',
+    '#resultReason,\n#resultNextGoal',
     css.indexOf('#resultNextGoal {\n  font-size: 12px;')
   );
   const detailStripBlock = cssRuleBlockAfter(css, '.result-highlights span', css.indexOf('.result-highlights {'));
@@ -2742,6 +2781,12 @@ test('browser QA covers generated result copy surfaces on short phones', async (
     'async function verifyCompactResult(page)',
     "await page.goto(withParam(baseUrl, 'qaFast', '1'), { waitUntil: 'load' });",
     'await assertResultGeneratedCopySurfaces(page);',
+    'resultTitleArt.beforeBackgroundImage',
+    'lostTitleArt.beforeBackgroundImage',
+    'resultTitleHiddenText',
+    'result-title-text',
+    'reboot-result-title-won-v1',
+    'result title hidden text is not clipped',
     'result highlight should name the memorable rescue moment separately',
     'result highlight repeats the reason copy',
     'retry reminder should replay the result reason and next goal',

@@ -9,7 +9,7 @@ import { updateCombatHudMeters } from './reboot_hud.js?v=board-copy1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
 import { preloadCriticalRebootAssets } from './reboot_preload.js?v=shell-backdrop1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=unit-pedestal1';
-import { applyRebootResultView } from './reboot_result_ui.js?v=result-ui1';
+import { applyRebootResultView } from './reboot_result_ui.js?v=result-ui2';
 import {
   buildMetaNavAlerts,
   buildMissionScreen,

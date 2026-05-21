@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v73');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v75');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=title-wordmark1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=title-wordmark1'))
+      '/src/client/styles.css?v=result-title2': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=result-title2'))
         : false,
       '/src/client/app.js?v=meta-clarity1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=meta-clarity1'))
@@ -107,6 +107,12 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/assets/generated/reboot-title-wordmark-v1.png?v=title-wordmark1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-title-wordmark-v1.png?v=title-wordmark1'))
+        : false,
+      '/src/client/assets/generated/reboot-result-title-won-v1.png?v=result-title2': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-title-won-v1.png?v=result-title2'))
+        : false,
+      '/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2'))
         : false,
       '/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1'))
@@ -123,8 +129,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_render.js?v=unit-pedestal1': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=unit-pedestal1'))
         : false,
-      '/src/client/reboot_result_ui.js?v=result-ui1': cache
-        ? Boolean(await cache.match('/src/client/reboot_result_ui.js?v=result-ui1'))
+      '/src/client/reboot_result_ui.js?v=result-ui2': cache
+        ? Boolean(await cache.match('/src/client/reboot_result_ui.js?v=result-ui2'))
         : false,
       '/src/client/reboot_screens.js?v=meta-clarity1': cache
         ? Boolean(await cache.match('/src/client/reboot_screens.js?v=meta-clarity1'))
@@ -175,7 +181,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v73', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v75', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -966,7 +972,71 @@ async function assertBannerOverlayClear(page, selector, label) {
 }
 
 async function assertResultGeneratedCopySurfaces(page) {
-  const copySurfaces = await page.locator('#resultTitle, #resultReason, #resultNextGoal').evaluateAll((nodes) => nodes.map((node) => {
+  const resultTitleArt = await page.locator('#resultTitle').evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const before = getComputedStyle(node, '::before');
+    return {
+      text: node.textContent?.trim(),
+      ariaLabel: node.getAttribute('aria-label'),
+      beforeBackgroundImage: before.backgroundImage,
+      beforeBackgroundSize: before.backgroundSize,
+      beforeWidth: before.width,
+      beforeHeight: before.height,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      left: Math.round(rect.left),
+      right: Math.round(rect.right),
+      top: Math.round(rect.top),
+      bottom: Math.round(rect.bottom),
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight
+    };
+  });
+  const lostTitleArt = await page.locator('#resultOverlay').evaluate((overlay) => {
+    const previousStatus = overlay.dataset.resultStatus;
+    overlay.dataset.resultStatus = 'lost';
+    const title = document.querySelector('#resultTitle');
+    const before = getComputedStyle(title, '::before');
+    const result = {
+      beforeBackgroundImage: before.backgroundImage,
+      beforeBackgroundSize: before.backgroundSize,
+      beforeWidth: before.width,
+      beforeHeight: before.height
+    };
+    if (previousStatus) overlay.dataset.resultStatus = previousStatus;
+    else delete overlay.dataset.resultStatus;
+    return result;
+  });
+  const resultTitleHiddenText = await page.locator('#resultTitle .result-title-text').evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    return {
+      text: node.textContent?.trim(),
+      width: rect.width,
+      height: rect.height,
+      position: style.position,
+      overflow: style.overflow,
+      clipPath: style.clipPath,
+      whiteSpace: style.whiteSpace
+    };
+  });
+  assert.equal(resultTitleArt.text, '같이 버텼다', `result title accessible copy changed: ${JSON.stringify(resultTitleArt)}`);
+  assert.equal(resultTitleArt.ariaLabel, null, `result title should rely on hidden text instead of duplicate aria-label: ${JSON.stringify(resultTitleArt)}`);
+  assert.match(resultTitleArt.beforeBackgroundImage, /reboot-result-title-won-v1/, `result title lacks generated victory wordmark: ${JSON.stringify(resultTitleArt)}`);
+  assert.equal(resultTitleArt.beforeBackgroundSize, 'contain', `result title generated wordmark sizing changed: ${JSON.stringify(resultTitleArt)}`);
+  assert.match(lostTitleArt.beforeBackgroundImage, /reboot-result-title-lost-v1/, `lost result title lacks generated loss wordmark: ${JSON.stringify(lostTitleArt)}`);
+  assert.equal(lostTitleArt.beforeBackgroundSize, 'contain', `lost result title generated wordmark sizing changed: ${JSON.stringify(lostTitleArt)}`);
+  assert.equal(parseFloat(lostTitleArt.beforeWidth) >= 170 && parseFloat(lostTitleArt.beforeHeight) >= 64, true, `lost result title generated wordmark collapsed: ${JSON.stringify(lostTitleArt)}`);
+  assert.equal(resultTitleHiddenText.text, '같이 버텼다', `result title hidden text changed: ${JSON.stringify(resultTitleHiddenText)}`);
+  assert.equal(resultTitleHiddenText.position, 'absolute', `result title hidden text is not clipped: ${JSON.stringify(resultTitleHiddenText)}`);
+  assert.equal(resultTitleHiddenText.overflow, 'hidden', `result title hidden text is not clipped: ${JSON.stringify(resultTitleHiddenText)}`);
+  assert.equal(resultTitleHiddenText.clipPath, 'inset(50%)', `result title hidden text is not clipped: ${JSON.stringify(resultTitleHiddenText)}`);
+  assert.equal(resultTitleHiddenText.whiteSpace, 'nowrap', `result title hidden text can wrap: ${JSON.stringify(resultTitleHiddenText)}`);
+  assert.equal(parseFloat(resultTitleArt.beforeWidth) >= 180 && parseFloat(resultTitleArt.beforeHeight) >= 64, true, `result title generated wordmark collapsed: ${JSON.stringify(resultTitleArt)}`);
+  assert.equal(resultTitleArt.left >= 0 && resultTitleArt.right <= resultTitleArt.viewportWidth, true, `result title leaves viewport: ${JSON.stringify(resultTitleArt)}`);
+  assert.equal(resultTitleArt.top >= 0 && resultTitleArt.bottom <= resultTitleArt.viewportHeight, true, `result title leaves vertical viewport: ${JSON.stringify(resultTitleArt)}`);
+
+  const copySurfaces = await page.locator('#resultReason, #resultNextGoal').evaluateAll((nodes) => nodes.map((node) => {
     const rect = node.getBoundingClientRect();
     const style = getComputedStyle(node);
     return {
@@ -984,7 +1054,7 @@ async function assertResultGeneratedCopySurfaces(page) {
       viewportHeight: window.innerHeight
     };
   }));
-  assert.equal(copySurfaces.length, 3, `result copy surface count changed: ${JSON.stringify(copySurfaces)}`);
+  assert.equal(copySurfaces.length, 2, `result copy surface count changed: ${JSON.stringify(copySurfaces)}`);
   for (const surface of copySurfaces) {
     assert.match(surface.backgroundImage, /reboot-result-copy-plates/, `result copy lacks generated plate: ${JSON.stringify(surface)}`);
     assert.equal(surface.backgroundSize, '200% 100%', `result copy plate sizing changed: ${JSON.stringify(surface)}`);

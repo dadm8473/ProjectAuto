@@ -53,6 +53,8 @@ test('critical reboot preload includes generated meta and result screen lighting
   for (const asset of required) {
     assert.equal(CRITICAL_REBOOT_ASSETS.includes(asset), true, asset);
   }
+
+  assert.equal(CRITICAL_REBOOT_ASSETS.some((asset) => asset.includes('reboot-result-title-')), false);
 });
 
 test('critical reboot preload includes generated reward and meta polish overlays', () => {

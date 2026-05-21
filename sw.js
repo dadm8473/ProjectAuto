@@ -1,9 +1,9 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v73';
+const CACHE_NAME = 'projectauto-reboot-shell-v75';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/src/client/styles.css?v=title-wordmark1',
+  '/src/client/styles.css?v=result-title2',
   '/src/client/app.js?v=meta-clarity1',
   '/src/client/reboot_audio.js?v=audio-safe1',
   '/src/client/reboot_actions.js?v=combat-meter2',
@@ -12,7 +12,7 @@ const APP_SHELL_URLS = [
   '/src/client/reboot_playtest.js?v=playtest2',
   '/src/client/reboot_preload.js?v=shell-backdrop1',
   '/src/client/reboot_render.js?v=unit-pedestal1',
-  '/src/client/reboot_result_ui.js?v=result-ui1',
+  '/src/client/reboot_result_ui.js?v=result-ui2',
   '/src/client/reboot_screens.js?v=meta-clarity1',
   '/src/client/reboot_online.js',
   '/src/shared/game.js?v=retry-context1',
@@ -25,6 +25,8 @@ const APP_SHELL_URLS = [
   '/src/client/assets/generated/reboot-app-icon-512.png',
   '/src/client/assets/generated/reboot-sound-toggle.png?v=sound-toggle1',
   '/src/client/assets/generated/reboot-title-wordmark-v1.png?v=title-wordmark1',
+  '/src/client/assets/generated/reboot-result-title-won-v1.png?v=result-title2',
+  '/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2',
   '/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1',
   '/src/client/assets/generated/reboot-app-shell-backdrop.png',
   '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1',

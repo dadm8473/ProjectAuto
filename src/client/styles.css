@@ -22,6 +22,8 @@
   --result-action-buttons: url("/src/client/assets/generated/reboot-result-action-buttons.png?v=result-actions-alpha1");
   --result-detail-strips: url("/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail-alpha1");
   --result-copy-plates: url("/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy-alpha1");
+  --result-title-won: url("/src/client/assets/generated/reboot-result-title-won-v1.png?v=result-title2");
+  --result-title-lost: url("/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2");
   --result-verdict-ribbons: url("/src/client/assets/generated/reboot-result-verdict-ribbons.png?v=result-verdict1");
   --result-hero-stage: url("/src/client/assets/generated/reboot-result-hero-stage.png?v=result-hero-stage1");
   --result-outcome-auras: url("/src/client/assets/generated/reboot-result-outcome-auras.png?v=result-outcome-aura1");
@@ -5241,19 +5243,51 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 #resultTitle {
+  position: relative;
+  z-index: 3;
   display: grid;
-  align-items: center;
-  min-height: 64px;
-  padding: 0 18px;
-  color: var(--ink);
-  font-size: 30px;
+  place-items: center;
+  min-height: 82px;
+  padding: 0;
+  font-size: 0;
   background: transparent;
-  background-image: var(--result-copy-plates);
-  background-repeat: no-repeat;
-  background-size: 200% 100%;
-  background-position: 0 0;
   line-height: 1;
-  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.7);
+  overflow: visible;
+  -webkit-text-stroke: 0;
+}
+
+.result-title-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+#resultTitle::before {
+  content: "";
+  display: block;
+  width: min(238px, 96%);
+  aspect-ratio: 860 / 327;
+  background-image: none;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.62));
+  pointer-events: none;
+}
+
+.result-overlay[data-result-status="won"] #resultTitle::before {
+  background-image: var(--result-title-won);
+}
+
+.result-overlay[data-result-status="lost"] #resultTitle::before {
+  width: min(228px, 96%);
+  aspect-ratio: 860 / 366;
+  background-image: var(--result-title-lost);
 }
 
 #resultReason,
@@ -5307,7 +5341,6 @@ body[data-app-screen="season"] .app-screen::after {
   background-position: 100% 0;
 }
 
-#resultTitle,
 #resultReason,
 #resultNextGoal {
   position: relative;
@@ -5591,8 +5624,16 @@ body[data-app-screen="season"] .app-screen::after {
   }
 
   #resultTitle {
-    min-height: 52px;
-    font-size: 24px;
+    min-height: 58px;
+    padding: 0;
+  }
+
+  #resultTitle::before {
+    width: min(190px, 92%);
+  }
+
+  .result-overlay[data-result-status="lost"] #resultTitle::before {
+    width: min(182px, 90%);
   }
 
   .result-panel p {

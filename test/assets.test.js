@@ -725,6 +725,23 @@ const IMAGEGEN_REBOOT_RESULT_VERDICT_RIBBONS = {
   minRuntimeBytes: 55_000
 };
 
+const IMAGEGEN_REBOOT_RESULT_TITLE_WORDMARKS = [
+  {
+    path: 'src/client/assets/generated/reboot-result-title-won-v1.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260521-result-title-won-chromakey-imagegen.png',
+    width: 860,
+    height: 327,
+    minRuntimeBytes: 180_000
+  },
+  {
+    path: 'src/client/assets/generated/reboot-result-title-lost-v1.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260521-result-title-lost-chromakey-imagegen.png',
+    width: 860,
+    height: 366,
+    minRuntimeBytes: 180_000
+  }
+];
+
 const IMAGEGEN_REBOOT_META_OBJECTIVE_RAILS = {
   path: 'src/client/assets/generated/reboot-meta-objective-rails.png',
   source: 'docs/design/generation/source/reboot/style-lock/20260516-meta-objective-rails-chromakey-imagegen.png',
@@ -2262,6 +2279,49 @@ test('result verdict ribbon cells make result copy read as one generated game pa
     assert.equal(bounds.maxX <= cellWidth - 7, true, `verdict ribbon cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.minY >= 4, true, `verdict ribbon cell ${cell} touches top edge: ${JSON.stringify(bounds)}`);
     assert.equal(bounds.maxY <= image.height - 5, true, `verdict ribbon cell ${cell} touches bottom edge: ${JSON.stringify(bounds)}`);
+  }
+});
+
+test('result title wordmarks are transparent generated Korean payoff assets', async () => {
+  for (const asset of IMAGEGEN_REBOOT_RESULT_TITLE_WORDMARKS) {
+    const source = await readFile(asset.source);
+    const runtime = await readFile(asset.path);
+    assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.source);
+    assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', asset.path);
+    assert.equal(runtime[25], 6, `${asset.path} must be RGBA`);
+    assert.equal(runtime.readUInt32BE(16), asset.width, asset.path);
+    assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
+    assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
+
+    const image = parsePng(runtime);
+    const corners = [
+      alphaAt(image, 2, 2),
+      alphaAt(image, image.width - 3, 2),
+      alphaAt(image, 2, image.height - 3),
+      alphaAt(image, image.width - 3, image.height - 3)
+    ];
+    const bounds = alphaBounds(image, { x: 0, y: 0, width: image.width, height: image.height }, 32);
+    const centerCoverage = alphaCoverage(
+      image,
+      {
+        x: Math.round(image.width * 0.08),
+        y: Math.round(image.height * 0.22),
+        width: Math.round(image.width * 0.84),
+        height: Math.round(image.height * 0.56)
+      },
+      48
+    );
+    const magentaFringeRatio = colorRatio(image, { x: 0, y: 0, width: image.width, height: image.height }, (r, g, b) => (
+      r > 220 && b > 185 && g < 95
+    ));
+
+    assert.equal(corners.every((alpha) => alpha < 10), true, `${asset.path} keeps opaque chroma-key corners: ${corners.join(',')}`);
+    assert.equal(bounds.count > 75_000, true, `${asset.path} has too little readable generated title art: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.minX >= 8, true, `${asset.path} clips title art on the left: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= image.width - 9, true, `${asset.path} clips title art on the right: ${JSON.stringify(bounds)}`);
+    assert.equal(centerCoverage > 0.28, true, `${asset.path} lacks a dense Korean title center: ${centerCoverage}`);
+    assert.equal(centerCoverage < 0.94, true, `${asset.path} is an opaque slab instead of transparent wordmark art: ${centerCoverage}`);
+    assert.equal(magentaFringeRatio < 0.002, true, `${asset.path} still has visible chroma-key fringe: ${magentaFringeRatio}`);
   }
 });
 

@@ -44,7 +44,12 @@ export function applyRebootResultView({ dom, model, rewardClaimActions = new Set
   resultOverlay.dataset.resultStatus = model.status;
   resultOverlay.dataset.resultCta = rewardClaimActions.has(model.primaryAction.action) ? 'claim' : 'default';
   resultCode.textContent = model.code;
-  resultTitle.textContent = model.title;
+  const resultTitleText = typeof resultTitle.querySelector === 'function'
+    ? resultTitle.querySelector('.result-title-text')
+    : null;
+  if (resultTitleText) resultTitleText.textContent = model.title;
+  else resultTitle.textContent = model.title;
+  if (typeof resultTitle.removeAttribute === 'function') resultTitle.removeAttribute('aria-label');
   resultReason.textContent = model.reason.label;
   resultNextGoal.textContent = model.nextGoal.label;
   resultNextGoal.dataset.resultGoalTone = model.nextGoal.tone;
