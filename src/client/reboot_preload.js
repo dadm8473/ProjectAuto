@@ -42,6 +42,7 @@ export const REBOOT_WARMUP_ASSETS = [
   '/src/client/assets/generated/reboot-battle-backdrop-v2.png?v=battle-backdrop-v2',
   '/src/client/assets/generated/reboot-combat-hud-frame.png',
   '/src/client/assets/generated/reboot-combat-operation-badge-v1.png?v=combat-op-badge1',
+  '/src/client/assets/generated/reboot-combat-meter-sockets-v2.png?v=meter-sockets-v2',
   '/src/client/assets/generated/reboot-partner-standby-sigils-v2.png?v=partner-standby2',
   '/src/client/assets/generated/reboot-online-waiting-field-v1.png?v=online-wait-field1',
   '/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1',

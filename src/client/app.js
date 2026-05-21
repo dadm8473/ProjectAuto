@@ -7,7 +7,7 @@ import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabel
 import { createRebootAudio } from './reboot_audio.js?v=audio-safe1';
 import { updateCombatHudMeters } from './reboot_hud.js?v=board-copy1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
-import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=meta-shelf-nameplates1';
+import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=combat-meter-sockets-v2';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=battle-backdrop-v2';
 import { applyRebootResultView } from './reboot_result_ui.js?v=result-ui2';
 import {

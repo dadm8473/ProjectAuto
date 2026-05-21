@@ -256,6 +256,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 80_000
   },
   {
+    path: 'src/client/assets/generated/reboot-combat-meter-sockets-v2.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260522-combat-meter-sockets-v2-chromakey-imagegen.png',
+    width: 768,
+    height: 128,
+    minRuntimeBytes: 110_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-combat-status-plates.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-combat-status-plates-imagegen.png',
     width: 780,
@@ -644,6 +651,12 @@ const TRANSPARENT_UI_FRAME_ASSETS = [
     path: 'src/client/assets/generated/reboot-combat-status-plates.png',
     minSoftCoverage: 0.12,
     maxSoftCoverage: 0.24
+  },
+  {
+    path: 'src/client/assets/generated/reboot-combat-meter-sockets-v2.png',
+    minSoftCoverage: 0.22,
+    maxSoftCoverage: 0.5,
+    maxCornerAlpha: 24
   },
   {
     path: 'src/client/assets/generated/reboot-combat-directive-banner.png',

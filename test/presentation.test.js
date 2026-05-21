@@ -642,7 +642,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-nameplates1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-meter-sockets-v2">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-nameplates1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-command-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-slots1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-reward-board1">'), false);
@@ -757,7 +758,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-nameplates1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter-sockets-v2"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-nameplates1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-command-board1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-backdrop-v2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-standby2"></script>'), false);
@@ -913,7 +915,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=meta-shelf-nameplates1';",
+    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=combat-meter-sockets-v2';",
     'function scheduleWarmRebootAssets()',
     'warmRebootAssets().catch(() => {});',
     'preloadCriticalRebootAssets().then(() => {\n  hideLoadingGate();\n  scheduleWarmRebootAssets();\n}, hideLoadingGate);',
@@ -1517,7 +1519,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=meta-shelf-nameplates1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=combat-meter-sockets-v2'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=meta-shelf-nameplates1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-command-board1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=objective-slots1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=meta-unified-board1'), false);
@@ -1909,7 +1912,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-nameplates1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=combat-meter-sockets-v2">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -5443,7 +5446,7 @@ test('combat resource HUD uses generated icons instead of text-only chips', asyn
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
-    '--combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets")',
+    '--combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets-v2.png?v=meter-sockets-v2")',
     '#summonMeter::before',
     '#rescueMeter::before',
     '#dangerMeter::before',
@@ -5451,6 +5454,7 @@ test('combat resource HUD uses generated icons instead of text-only chips', asyn
     '.meters > span {\n  display: inline-flex;',
     'background-image: var(--combat-meter-sockets);',
     'background-size: 300% 100%;',
+    'min-height: clamp(28px, 8.37vw, 36px);',
     '#summonMeter::before { background-position: 0 0; }',
     '#rescueMeter::before { background-position: -36px 0; }',
     '#dangerMeter::before { background-position: -54px 0; }',

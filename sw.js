@@ -1,16 +1,16 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v90';
+const CACHE_NAME = 'projectauto-reboot-shell-v91';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/src/client/styles.css?v=meta-shelf-nameplates1',
-  '/src/client/app.js?v=meta-shelf-nameplates1',
+  '/src/client/styles.css?v=combat-meter-sockets-v2',
+  '/src/client/app.js?v=combat-meter-sockets-v2',
   '/src/client/reboot_audio.js?v=audio-safe1',
   '/src/client/reboot_actions.js?v=combat-meter2',
   '/src/client/reboot_action_ui.js?v=hud-meter1',
   '/src/client/reboot_hud.js?v=board-copy1',
   '/src/client/reboot_playtest.js?v=playtest2',
-  '/src/client/reboot_preload.js?v=meta-shelf-nameplates1',
+  '/src/client/reboot_preload.js?v=combat-meter-sockets-v2',
   '/src/client/reboot_render.js?v=battle-backdrop-v2',
   '/src/client/reboot_result_ui.js?v=result-ui2',
   '/src/client/reboot_screens.js?v=objective-slots1',
@@ -67,6 +67,7 @@ const APP_SHELL_URLS = [
   '/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3',
   '/src/client/assets/generated/reboot-combat-hud-frame.png',
   '/src/client/assets/generated/reboot-combat-operation-badge-v1.png?v=combat-op-badge1',
+  '/src/client/assets/generated/reboot-combat-meter-sockets-v2.png?v=meter-sockets-v2',
   '/src/client/assets/generated/reboot-partner-standby-sigils-v2.png?v=partner-standby2',
   '/src/client/assets/generated/reboot-online-waiting-field-v1.png?v=online-wait-field1',
   '/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1',

@@ -110,7 +110,7 @@
   --combat-coach-cues: url("/src/client/assets/generated/reboot-combat-coach-cues.png?v=combat-coach");
   --online-matchmaking-panels: url("/src/client/assets/generated/reboot-online-matchmaking-panels.png?v=online-matchmaking");
   --online-partner-link: url("/src/client/assets/generated/reboot-online-partner-link.png?v=partner-link2");
-  --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets.png?v=meter-sockets");
+  --combat-meter-sockets: url("/src/client/assets/generated/reboot-combat-meter-sockets-v2.png?v=meter-sockets-v2");
   --combat-status-plates: url("/src/client/assets/generated/reboot-combat-status-plates.png?v=status-plates-alpha1");
   --combat-hud-row: clamp(72px, 22.33vw, 96px);
   --combat-action-row: clamp(132px, 34.42vw, 148px);
@@ -615,7 +615,7 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   position: relative;
   align-items: center;
   justify-content: center;
-  min-height: clamp(24px, 7.44vw, 32px);
+  min-height: clamp(28px, 8.37vw, 36px);
   min-width: 0;
   gap: 4px;
   color: #fff7dc;

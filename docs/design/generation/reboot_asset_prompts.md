@@ -835,6 +835,22 @@ Runtime files:
 - src/client/assets/generated/reboot-combat-operation-badge-v1.png
 ```
 
+## Runtime Prompt: Combat Meter Sockets V2
+
+```text
+Use case: stylized-concept
+Asset type: project-bound transparent-background three-cell combat resource meter socket atlas for ProjectAuto battle HUD.
+Primary request: Create three premium mobile game HUD meter sockets that replace small web-like resource chips in the portrait battle screen. They must look like generated in-game hardware modules fitted into the combat HUD, not CSS pills.
+Canvas/layout: three side-by-side horizontal meter sockets on a perfectly flat solid #00ff00 chroma-key background. Each socket must be separated with generous padding and have a dark readable glass center area for overlaid Korean labels and values. Cell 1 represents amber electric charge/energy. Cell 2 represents cyan rescue/link capacity. Cell 3 represents coral danger/threat. No readable text inside the art.
+Style: high-end Korean mobile game sci-fi toy-board UI, dark graphite metal, cyan glass, amber/coral signal cores, small bevel details, compact commercial-game readability at 390px portrait width, consistent with ProjectAuto battle backdrop, combat operation badge, and command console assets.
+Transparency/chroma constraints: background must be one uniform #00ff00 with no shadows, gradients, texture, reflections, floor plane, or lighting variation. Keep socket pixels separated from the background. Do not use #00ff00 inside the sockets.
+Avoid: words, letters, numbers, logos, watermark, flat browser badges, CSS pills, SaaS dashboard meters, full opaque rectangular panels, dice/casino cues, copied existing games, noisy fake text, unreadable thin linework.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260522-combat-meter-sockets-v2-chromakey-imagegen.png
+Runtime file: src/client/assets/generated/reboot-combat-meter-sockets-v2.png
+Postprocess: remove the green chroma-key to alpha with soft matte/despill, crop each socket to its non-transparent bounds, fit into a 768x128 transparent atlas with three 256x128 cells, and preserve dark glass fill areas under each frame for Korean label/value readability.
+Acceptance: the top battle HUD `전력`, `구원`, and `위험` meters read as compact generated combat hardware sockets; they remain legible at 320px, 375px, 390px, and 430px portrait widths and no longer look like HTML status chips.
+```
+
 ## Runtime Prompt: Dual Crisis Cutin
 
 ```text
