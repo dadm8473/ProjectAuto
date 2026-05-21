@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v89');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v90');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=result-command-board1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=result-command-board1'))
+      '/src/client/styles.css?v=meta-shelf-nameplates1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=meta-shelf-nameplates1'))
         : false,
-      '/src/client/app.js?v=result-command-board1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=result-command-board1'))
+      '/src/client/app.js?v=meta-shelf-nameplates1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=meta-shelf-nameplates1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -120,6 +120,9 @@ async function verifyInstallableShell(page) {
       '/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1'))
         : false,
+      '/src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png?v=meta-shelf-nameplates1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png?v=meta-shelf-nameplates1'))
+        : false,
       '/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1'))
         : false,
@@ -141,8 +144,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
         : false,
-      '/src/client/reboot_preload.js?v=result-command-board1': cache
-        ? Boolean(await cache.match('/src/client/reboot_preload.js?v=result-command-board1'))
+      '/src/client/reboot_preload.js?v=meta-shelf-nameplates1': cache
+        ? Boolean(await cache.match('/src/client/reboot_preload.js?v=meta-shelf-nameplates1'))
         : false,
       '/src/client/reboot_render.js?v=battle-backdrop-v2': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=battle-backdrop-v2'))
@@ -232,7 +235,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v89', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v90', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1020,6 +1023,40 @@ async function assertGeneratedCardSurface(page, selector, label, framePattern) {
     assert.match(surface.beforeBackgroundImage, framePattern, `${label} lacks generated card frame: ${JSON.stringify(surface)}`);
     assert.equal(surface.beforeBackgroundSize.endsWith('100%'), true, `${label} generated frame not fitted: ${JSON.stringify(surface)}`);
     assert.equal(surface.width > 0 && surface.height > 0, true, `${label} card surface collapsed: ${JSON.stringify(surface)}`);
+  }
+}
+
+async function assertGeneratedShelfNameplates(page, selector, label) {
+  const plates = await page.locator(selector).evaluateAll((nodes) => nodes.map((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    return {
+      backgroundImage: style.backgroundImage,
+      backgroundSize: style.backgroundSize,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      text: node.textContent?.trim() ?? ''
+    };
+  }));
+  assert.equal(plates.length > 0, true, `${label} has no generated shelf nameplates`);
+  for (const plate of plates) {
+    assert.match(plate.backgroundImage, /reboot-meta-shelf-nameplates-v1/, `${label} uses a non-generated label plate: ${JSON.stringify(plate)}`);
+    assert.equal(plate.backgroundSize.includes('400%'), true, `${label} nameplate atlas is not sliced: ${JSON.stringify(plate)}`);
+    assert.equal(plate.width > 0 && plate.height >= 18, true, `${label} nameplate collapsed: ${JSON.stringify(plate)}`);
+    assert.equal(plate.text.length > 0, true, `${label} nameplate has no readable value: ${JSON.stringify(plate)}`);
+  }
+}
+
+async function assertGeneratedShelfCell(page, selector, expectedPosition, label) {
+  const cells = await page.locator(selector).evaluateAll((nodes) => nodes.map((node) => ({
+    backgroundImage: getComputedStyle(node).backgroundImage,
+    backgroundPosition: getComputedStyle(node).backgroundPosition,
+    text: node.textContent?.trim() ?? ''
+  })));
+  assert.equal(cells.length > 0, true, `${label} has no shelf nameplate cell`);
+  for (const cell of cells) {
+    assert.match(cell.backgroundImage, /reboot-meta-shelf-nameplates-v1/, `${label} is not using the generated shelf atlas: ${JSON.stringify(cell)}`);
+    assert.equal(cell.backgroundPosition.includes(expectedPosition), true, `${label} selects the wrong generated shelf atlas cell: ${JSON.stringify(cell)}`);
   }
 }
 
@@ -2314,6 +2351,8 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#collectionList .unit-card .sprite-token.unit-sprite').count(), 8);
   assert.equal(await page.locator('#collectionList .meta-showcase .sprite-token.unit-sprite').count(), 1);
   await assertGeneratedCardSurface(page, '#collectionList .meta-shelf-grid .unit-card', 'collection shelf card', /reboot-meta-item-status-overlays/);
+  await assertGeneratedShelfNameplates(page, '#collectionList .meta-shelf-grid .card-copy strong, #collectionList .meta-shelf-grid .unit-cost, #collectionList .meta-shelf-grid .role-pill:visible, #collectionList .meta-shelf-grid .card-passive-state', 'collection shelf');
+  await assertGeneratedShelfCell(page, '#collectionList .meta-shelf-grid .role-pill:visible', '66.666%', 'collection role tag');
   await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await page.getByRole('button', { name: '상점' }).click();
   await assertActiveNavLabelPlate(page, '상점', 'shop');
@@ -2334,6 +2373,8 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#shopList .meta-showcase .sprite-token.shop-cosmetic').count(), 1);
   assert.equal(await page.locator('#shopList .shop-card .role-pill:visible', { hasText: '외형' }).count(), 5);
   await assertGeneratedCardSurface(page, '#shopList .meta-shelf-grid .shop-card', 'shop shelf card', /reboot-meta-item-status-overlays/);
+  await assertGeneratedShelfNameplates(page, '#shopList .meta-shelf-grid .card-copy strong, #shopList .meta-shelf-grid .shop-price, #shopList .meta-shelf-grid .role-pill:visible, #shopList .meta-shelf-grid .card-passive-state', 'shop shelf');
+  await assertGeneratedShelfCell(page, '#shopList .meta-shelf-grid .role-pill:visible', '66.666%', 'shop role tag');
   await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await page.getByRole('button', { name: '미션', exact: true }).click();
   await assertActiveNavLabelPlate(page, '미션', 'missions');

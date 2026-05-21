@@ -1,16 +1,16 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v89';
+const CACHE_NAME = 'projectauto-reboot-shell-v90';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/src/client/styles.css?v=result-command-board1',
-  '/src/client/app.js?v=result-command-board1',
+  '/src/client/styles.css?v=meta-shelf-nameplates1',
+  '/src/client/app.js?v=meta-shelf-nameplates1',
   '/src/client/reboot_audio.js?v=audio-safe1',
   '/src/client/reboot_actions.js?v=combat-meter2',
   '/src/client/reboot_action_ui.js?v=hud-meter1',
   '/src/client/reboot_hud.js?v=board-copy1',
   '/src/client/reboot_playtest.js?v=playtest2',
-  '/src/client/reboot_preload.js?v=result-command-board1',
+  '/src/client/reboot_preload.js?v=meta-shelf-nameplates1',
   '/src/client/reboot_render.js?v=battle-backdrop-v2',
   '/src/client/reboot_result_ui.js?v=result-ui2',
   '/src/client/reboot_screens.js?v=objective-slots1',
@@ -46,6 +46,7 @@ const APP_SHELL_URLS = [
   '/src/client/assets/generated/reboot-meta-screen-lighting.png?v=screen-lighting1',
   '/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console2',
   '/src/client/assets/generated/reboot-meta-showcase-copy-plates.png?v=showcase-nameplate1',
+  '/src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png?v=meta-shelf-nameplates1',
   '/src/client/assets/generated/reboot-result-screen-lighting.png?v=screen-lighting1',
   '/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1',
   '/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1',

@@ -83,6 +83,7 @@
   --meta-showcase-stage: url("/src/client/assets/generated/reboot-meta-showcase-stage.png?v=showcase-stage");
   --meta-showcase-copy-plates: url("/src/client/assets/generated/reboot-meta-showcase-copy-plates.png?v=showcase-nameplate1");
   --meta-shelf-grid: url("/src/client/assets/generated/reboot-meta-shelf-grid.png?v=meta-shelf-grid1");
+  --meta-shelf-nameplates: url("/src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png?v=meta-shelf-nameplates1");
   --meta-progress-board: url("/src/client/assets/generated/reboot-meta-progress-board.png?v=meta-progress-board1");
   --meta-action-buttons: url("/src/client/assets/generated/reboot-meta-action-buttons.png?v=meta-actions-alpha1");
   --meta-command-ribbons: url("/src/client/assets/generated/reboot-meta-command-ribbons.png?v=meta-command-ribbons1");
@@ -4841,7 +4842,7 @@ body[data-app-screen="season"] .app-screen::after {
   line-height: 1.05;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background-image: var(--meta-command-ribbons);
+  background-image: var(--meta-shelf-nameplates);
   background-repeat: no-repeat;
   background-size: 400% 100%;
   background-position: 0 0;
@@ -4875,10 +4876,10 @@ body[data-app-screen="season"] .app-screen::after {
   padding: 2px 7px 2px 21px;
   color: var(--mint);
   font-size: 10px;
-  background-image: var(--meta-command-ribbons);
+  background-image: var(--meta-shelf-nameplates);
   background-repeat: no-repeat;
   background-size: 400% 100%;
-  background-position: 0 0;
+  background-position: 66.666% 0;
   filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.46));
   pointer-events: none;
 }
@@ -4912,10 +4913,10 @@ body[data-app-screen="season"] .app-screen::after {
   padding: 2px 7px 2px 21px;
   color: #fff0a8;
   font-size: 10px;
-  background-image: var(--meta-command-ribbons);
+  background-image: var(--meta-shelf-nameplates);
   background-repeat: no-repeat;
   background-size: 400% 100%;
-  background-position: 100% 0;
+  background-position: 66.666% 0;
   filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.46));
   pointer-events: none;
 }
@@ -4943,7 +4944,7 @@ body[data-app-screen="season"] .app-screen::after {
   padding: 3px 8px 3px 22px;
   color: #fff0a8;
   font-size: 10px;
-  background-image: var(--meta-command-ribbons);
+  background-image: var(--meta-shelf-nameplates);
   background-repeat: no-repeat;
   background-size: 400% 100%;
   background-position: 33.333% 0;
@@ -4996,7 +4997,7 @@ body[data-app-screen="season"] .app-screen::after {
   padding: 0 9px 1px;
   color: rgba(245, 240, 220, 0.82);
   font-size: 10px;
-  background-image: var(--meta-command-ribbons);
+  background-image: var(--meta-shelf-nameplates);
   background-repeat: no-repeat;
   background-size: 400% 100%;
   background-position: 100% 0;

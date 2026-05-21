@@ -642,7 +642,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-command-board1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-nameplates1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-command-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-slots1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-reward-board1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-unified-board1">'), false);
@@ -756,7 +757,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-command-board1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-nameplates1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-command-board1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=battle-backdrop-v2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-standby2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=online-ready-copy1"></script>'), false);
@@ -911,7 +913,7 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=result-command-board1';",
+    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=meta-shelf-nameplates1';",
     'function scheduleWarmRebootAssets()',
     'warmRebootAssets().catch(() => {});',
     'preloadCriticalRebootAssets().then(() => {\n  hideLoadingGate();\n  scheduleWarmRebootAssets();\n}, hideLoadingGate);',
@@ -1515,7 +1517,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=result-command-board1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=meta-shelf-nameplates1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-command-board1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=objective-slots1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=meta-unified-board1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=season-reward-board1'), false);
@@ -1906,7 +1909,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=result-command-board1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-nameplates1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2111,7 +2114,7 @@ test('meta shelf passive chips show short labels instead of empty slots', async 
     'width: auto;',
     'min-width: 58px;',
     'font-size: 10px;',
-    'background-image: var(--meta-command-ribbons);'
+    'background-image: var(--meta-shelf-nameplates);'
   ]) {
     assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
   }
@@ -2222,13 +2225,14 @@ test('meta row actions use generated state buttons instead of generic web button
   assert.equal(actionBlock.includes('background-image: var(--screen-chrome);'), false);
 });
 
-test('meta shelf cards use generated command ribbons for labels prices and states', async () => {
+test('meta shelf cards use generated shelf nameplates for labels prices and states', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
 
   for (const marker of [
     '--meta-command-ribbons: url("/src/client/assets/generated/reboot-meta-command-ribbons.png?v=meta-command-ribbons1")',
+    '--meta-shelf-nameplates: url("/src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png?v=meta-shelf-nameplates1")',
     '.meta-shelf-grid .card-copy strong',
-    'background-image: var(--meta-command-ribbons)',
+    'background-image: var(--meta-shelf-nameplates)',
     '.meta-shelf-grid .unit-cost,',
     '.meta-shelf-grid .shop-price',
     '.meta-shelf-grid .unit-card .card-copy p',
@@ -2266,7 +2270,8 @@ test('meta shelf cards use generated command ribbons for labels prices and state
   for (const marker of [
     'display: inline-flex;',
     'position: absolute;',
-    'background-image: var(--meta-command-ribbons);',
+    'background-image: var(--meta-shelf-nameplates);',
+    'background-position: 66.666% 0;',
     'pointer-events: none;'
   ]) {
     assert.equal(unitRoleBlock.includes(marker), true, marker);
@@ -2289,7 +2294,8 @@ test('meta shelf cards use generated command ribbons for labels prices and state
     'display: inline-flex;',
     'position: absolute;',
     'right: 14px;',
-    'background-image: var(--meta-command-ribbons);',
+    'background-image: var(--meta-shelf-nameplates);',
+    'background-position: 66.666% 0;',
     'pointer-events: none;'
   ]) {
     assert.equal(shopRoleBlock.includes(marker), true, marker);
@@ -4925,6 +4931,11 @@ test('collection and shop use a generated display shelf instead of list-only row
   const shelfFrameBlock = css.slice(css.indexOf('.meta-shelf-grid .unit-card::before,'), css.indexOf('.meta-shelf-grid .card-state-badge'));
   assert.equal(shelfFrameBlock.includes('background-image: var(--meta-item-status-overlays);'), true);
   assert.equal(shelfFrameBlock.includes('background-size: 400% 100%;'), true);
+
+  const shelfNameplateBlock = cssRuleBlock(css, '.meta-shelf-grid .card-copy strong');
+  assert.equal(shelfNameplateBlock.includes('background-image: var(--meta-shelf-nameplates);'), true);
+  assert.equal(shelfNameplateBlock.includes('background-size: 400% 100%;'), true);
+  assert.equal(shelfNameplateBlock.includes('background-position: 0 0;'), true);
 
   const shelfActionBlock = css.slice(css.indexOf('.meta-shelf-grid .unit-card button,'), css.indexOf('.meta-shelf-grid .card-passive-state'));
   assert.equal(shelfActionBlock.includes('min-height: 44px;'), true);

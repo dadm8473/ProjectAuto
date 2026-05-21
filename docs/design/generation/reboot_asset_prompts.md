@@ -1097,6 +1097,22 @@ Postprocess: remove the green chroma-key to alpha with soft matte/despill, crop 
 Acceptance: the result reward area reads as a generated loot console with a clear icon socket and reward value plate; it no longer looks like a plain text strip or CSS card, and it remains legible on compact portrait result screens.
 ```
 
+## Runtime Prompt: Meta Shelf Nameplates
+
+```text
+Use case: stylized-concept
+Asset type: project-bound transparent-background four-cell nameplate atlas for ProjectAuto collection/shop shelf labels, prices, roles, and passive states.
+Primary request: Create four premium mobile game UI nameplates that replace web-like text ribbons on unit and shop shelf cards. They must read as in-game hardware labels fitted into a generated shop/collection shelf, not CSS badges.
+Canvas/layout: four side-by-side horizontal plaques on a perfectly flat solid #00ff00 chroma-key background. Each plaque must have generous padding, crisp transparent-safe silhouette, and a dark readable inner glass area for overlaid Korean text. Cell 1 is a teal silver item-name plate. Cell 2 is a gold currency-price plate with a gem socket. Cell 3 is a compact cyan role tag with a relay emblem. Cell 4 is a dark locked/owned passive-state plate with a lock module.
+Style: high-end Korean mobile game sci-fi toy-board UI, dark graphite metal, cyan glass, restrained amber/gold trim, small bevel details, readable at phone size, consistent with ProjectAuto Signal Relay meta shelf assets.
+Transparency/chroma constraints: background must be one uniform #00ff00 with no shadows, gradients, texture, reflections, floor plane, or lighting variation. Keep plaque pixels separated from the background. Do not use #00ff00 in the plaques.
+Avoid: words, letters, numbers, logos, watermark, browser pill badges, flat CSS gradients, full rectangular black boxes, dice/casino cues, copied existing games, noisy fake text, thin unreadable ornaments.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260522-meta-shelf-nameplates-chromakey-imagegen.png
+Runtime file: src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png
+Postprocess: remove the green chroma-key to alpha with soft matte/despill, crop each plaque to its non-transparent bounds, fit into a 1024x256 transparent atlas with four 256x256 cells, and preserve dark glass fill areas under each frame for Korean text readability.
+Acceptance: collection and shop card names, prices, roles, and passive states use generated nameplates with transparent surroundings; buttons still use command ribbons, while shelf labels no longer look like generic web badges.
+```
+
 ## Runtime Prompt: Result Command Board
 
 ```text

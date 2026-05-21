@@ -508,6 +508,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 40_000
   },
   {
+    path: 'src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260522-meta-shelf-nameplates-chromakey-imagegen.png',
+    width: 1024,
+    height: 256,
+    minRuntimeBytes: 90_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-splash-title-plate.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-splash-title-plate-imagegen.png',
     width: 430,
@@ -653,6 +660,12 @@ const TRANSPARENT_UI_FRAME_ASSETS = [
     path: 'src/client/assets/generated/reboot-meta-command-ribbons.png',
     minSoftCoverage: 0.16,
     maxSoftCoverage: 0.36,
+    maxCornerAlpha: 24
+  },
+  {
+    path: 'src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png',
+    minSoftCoverage: 0.16,
+    maxSoftCoverage: 0.42,
     maxCornerAlpha: 24
   },
   {
@@ -2703,6 +2716,44 @@ test('result command board unifies reward payout and post-battle actions as gene
   assert.equal(primaryBay > 0.3, true, `result command board lacks primary action bay: ${primaryBay}`);
   assert.equal(secondaryBay > 0.24, true, `result command board lacks secondary action bay: ${secondaryBay}`);
   assert.equal(centerDarkGlass < 0.32, true, `result command board has too much empty center void: ${centerDarkGlass}`);
+});
+
+test('meta shelf nameplates are transparent generated game plaques for item labels and states', async () => {
+  const source = await readFile('docs/design/generation/source/reboot/style-lock/20260522-meta-shelf-nameplates-chromakey-imagegen.png');
+  const runtime = await readFile('src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png');
+  assert.equal(source.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(runtime.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(runtime.readUInt32BE(16), 1024);
+  assert.equal(runtime.readUInt32BE(20), 256);
+  assert.equal(runtime.length > 90_000, true, 'meta shelf nameplate runtime is too small');
+
+  const image = parsePng(runtime);
+  const cellWidth = image.width / 4;
+  for (let cell = 0; cell < 4; cell += 1) {
+    const x0 = cell * cellWidth;
+    const corners = [
+      alphaAt(image, x0 + 3, 3),
+      alphaAt(image, x0 + cellWidth - 4, 3),
+      alphaAt(image, x0 + 3, image.height - 4),
+      alphaAt(image, x0 + cellWidth - 4, image.height - 4)
+    ];
+    const plateCoverage = alphaCoverage(
+      image,
+      {
+        x: x0 + Math.round(cellWidth * 0.12),
+        y: Math.round(image.height * 0.28),
+        width: Math.round(cellWidth * 0.76),
+        height: Math.round(image.height * 0.42)
+      },
+      48
+    );
+    const bounds = alphaBounds(image, { x: x0, y: 0, width: cellWidth, height: image.height }, 32);
+
+    assert.equal(corners.every((alpha) => alpha < 18), true, `meta shelf nameplate cell ${cell} has opaque corners: ${corners.join(',')}`);
+    assert.equal(plateCoverage > 0.2, true, `meta shelf nameplate cell ${cell} lacks a readable center plaque: ${plateCoverage}`);
+    assert.equal(bounds.minX >= 12, true, `meta shelf nameplate cell ${cell} touches left edge: ${JSON.stringify(bounds)}`);
+    assert.equal(bounds.maxX <= cellWidth - 13, true, `meta shelf nameplate cell ${cell} touches right edge: ${JSON.stringify(bounds)}`);
+  }
 });
 
 test('result outcome stage cells stay transparent and readable behind the result medal', async () => {
