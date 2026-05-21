@@ -1,4 +1,4 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v69';
+const CACHE_NAME = 'projectauto-reboot-shell-v70';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',

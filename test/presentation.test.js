@@ -1667,7 +1667,7 @@ test('browser QA verifies first combat tap removes routine status copy', async (
   const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
 
   for (const marker of [
-    "await page.getByRole('button', { name: '로비로 돌아가기' }).click();",
+    "await page.getByRole('button', { name: '준비실로 돌아가기' }).click();",
     'async function assertFirstSummonTapFeedback(page)',
     "await page.getByRole('button', { name: '소환' }).click();",
     "meter?.querySelector('.meter-value')?.textContent === '0'",
@@ -2099,7 +2099,7 @@ test('meta screen titles use generated header plates instead of browser default 
 
   for (const marker of [
     '--meta-title-plate: url("/src/client/assets/generated/reboot-meta-title-plate.png?v=meta-title")',
-    '<button class="screen-back" data-open-screen="lobby" data-nav-icon="home" aria-label="로비로 돌아가기">홈</button>',
+    '<button class="screen-back" data-open-screen="lobby" data-nav-icon="home" aria-label="준비실로 돌아가기">준비실</button>',
     '<h1 data-title-icon="collection" data-station-kind="collection"><span>정비실</span><strong>유닛</strong></h1>',
     '<h1 data-title-icon="shop" data-station-kind="shop"><span>보급소</span><strong>상점</strong></h1>',
     '<h1 data-title-icon="missions" data-station-kind="missions"><span>작전판</span><strong>미션</strong></h1>',
@@ -2137,6 +2137,8 @@ test('meta screen titles use generated header plates instead of browser default 
   assert.equal(titleBlock.includes('linear-gradient'), false);
   assert.equal(titleBlock.includes('.hub-screen h1[data-station-kind="shop"] { --station-title-banner: var(--shop-banner); }'), false);
   assert.equal(html.includes('<h1 data-title-icon="collection">유닛 강화</h1>'), false);
+  assert.equal((html.match(/class="screen-back" data-open-screen="lobby" data-nav-icon="home" aria-label="준비실로 돌아가기">준비실<\/button>/g) ?? []).length, 4);
+  assert.equal(html.includes('class="screen-back" data-open-screen="lobby" data-nav-icon="home" aria-label="로비로 돌아가기">홈</button>'), false);
   const hubBackBlock = cssRuleBlock(css, '.hub-screen .screen-back::before');
   assert.equal(hubBackBlock.includes('opacity: 0;'), false);
   const backGlowBlock = cssRuleBlock(css, '.hub-screen .screen-back::after');

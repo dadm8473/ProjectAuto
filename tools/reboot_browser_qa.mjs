@@ -89,7 +89,7 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v69');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v70');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
@@ -169,7 +169,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v69', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v70', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1913,7 +1913,7 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#collectionList .unit-card .sprite-token.unit-sprite').count(), 8);
   assert.equal(await page.locator('#collectionList .meta-showcase .sprite-token.unit-sprite').count(), 1);
   await assertGeneratedCardSurface(page, '#collectionList .meta-shelf-grid .unit-card', 'collection shelf card', /reboot-meta-item-status-overlays/);
-  await page.getByRole('button', { name: '로비로 돌아가기' }).click();
+  await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await page.getByRole('button', { name: '상점' }).click();
   await assertActiveNavLabelPlate(page, '상점', 'shop');
   await assertMetaStationHeader(page, '#shopScreen', 'shop');
@@ -1932,7 +1932,7 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#shopList .meta-showcase .sprite-token.shop-cosmetic').count(), 1);
   assert.equal(await page.locator('#shopList .shop-card .role-pill:visible', { hasText: '외형' }).count(), 5);
   await assertGeneratedCardSurface(page, '#shopList .meta-shelf-grid .shop-card', 'shop shelf card', /reboot-meta-item-status-overlays/);
-  await page.getByRole('button', { name: '로비로 돌아가기' }).click();
+  await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await page.getByRole('button', { name: '미션', exact: true }).click();
   await assertActiveNavLabelPlate(page, '미션', 'missions');
   await assertMetaStationHeader(page, '#missionsScreen', 'missions');
@@ -1944,7 +1944,7 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#missionsList .mission-stamp-slot').count(), 3);
   assert.equal(await page.locator('#missionsList .mission-card').count(), 3);
   await assertGeneratedCardSurface(page, '#missionsList .mission-card', 'mission row card', /reboot-meta-objective-rails/);
-  await page.getByRole('button', { name: '로비로 돌아가기' }).click();
+  await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await page.getByRole('button', { name: '시즌', exact: true }).click();
   await assertActiveNavLabelPlate(page, '시즌', 'season');
   await assertMetaStationHeader(page, '#seasonScreen', 'season');
@@ -1970,7 +1970,7 @@ async function verifyShell(page, viewport) {
   assert.equal(currentSeasonMarker.afterOpacity > 0.3, true, `season current marker art is too faint: ${JSON.stringify(currentSeasonMarker)}`);
   assert.equal(await page.locator('#seasonList .season-card').count(), 4);
   await assertGeneratedCardSurface(page, '#seasonList .season-card', 'season row card', /reboot-meta-objective-rails/);
-  await page.getByRole('button', { name: '로비로 돌아가기' }).click();
+  await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
 
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });
@@ -2021,7 +2021,7 @@ async function verifyCompactMeta(page) {
   await assertMetaShowcaseChips(page, '#collectionScreen .meta-showcase-chip', 'compact collection', 2);
   await assertUnitFeatureOffer(page, 'compact ready collection');
   await assertFeaturedUnitUpgradeFlow(page, 'compact ready collection');
-  await page.getByRole('button', { name: '로비로 돌아가기' }).click();
+  await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await assertLobbyNextActionShop(page, 'compact shop-only priority');
   await assertMetaStationHeader(page, '#shopScreen', 'compact shop');
   await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'compact shop', 2);
@@ -2032,11 +2032,11 @@ async function verifyCompactMeta(page) {
   );
   await assertShopFeatureOffer(page, 'compact ready shop');
   await assertFeaturedShopPurchaseFlow(page, 'compact ready shop');
-  await page.getByRole('button', { name: '로비로 돌아가기' }).click();
+  await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await page.getByRole('button', { name: '미션', exact: true }).click();
   await page.locator('#missionsList .mission-stamp-board').waitFor({ state: 'visible' });
   await assertMetaStationHeader(page, '#missionsScreen', 'compact missions');
-  await page.getByRole('button', { name: '로비로 돌아가기' }).click();
+  await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await page.getByRole('button', { name: '시즌', exact: true }).click();
   await page.locator('#seasonList .season-track-board').waitFor({ state: 'visible' });
   await assertMetaStationHeader(page, '#seasonScreen', 'compact season');
@@ -2059,7 +2059,7 @@ async function verifyCompactRewardBoards(page) {
   await assertObjectiveBoardCommand(page, '#missionsList .mission-stamp-board', 'compact ready mission board', 'ready');
   await assertFeaturedMissionClaimFlow(page, 'compact ready mission board');
 
-  await page.getByRole('button', { name: '로비로 돌아가기' }).click();
+  await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await page.getByRole('button', { name: '시즌', exact: true }).click();
   await page.locator('#seasonList .season-track-board[data-board-state="ready"]').waitFor({ state: 'visible' });
   await assertObjectiveBoardCommand(page, '#seasonList .season-track-board', 'compact ready season board', 'ready');
