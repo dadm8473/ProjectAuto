@@ -608,7 +608,7 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   background-repeat: no-repeat;
   background-size: 300% 100%;
   white-space: nowrap;
-  overflow: visible;
+  overflow: hidden;
   isolation: isolate;
   text-shadow: 0 2px 7px rgba(0, 0, 0, 0.68);
 }
@@ -624,6 +624,7 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 }
 
 #dangerMeter .meter-label {
+  max-width: 24px;
   color: rgba(255, 183, 132, 0.92);
 }
 

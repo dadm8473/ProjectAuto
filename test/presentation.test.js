@@ -115,9 +115,9 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from '../shared/game.js?v=retry-context1'",
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_action_ui.js?v=retry-reminder1'",
+    "from './reboot_action_ui.js?v=hud-meter1'",
     "from './reboot_audio.js?v=audio-safe1'",
-    "from './reboot_hud.js?v=result-goal1'",
+    "from './reboot_hud.js?v=hud-meter1'",
     "from './reboot_render.js?v=unit-pedestal1'",
     "from './reboot_result_ui.js?v=result-ui1'",
     "from './reboot_screens.js?v=result-goal1'",
@@ -634,7 +634,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-source1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-banner2">'), false);
@@ -741,7 +741,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=reward-source1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-meter1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-identity1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
@@ -1324,7 +1324,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
   assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::before'), false);
 
   for (const marker of [
-    "from './reboot_action_ui.js?v=retry-reminder1'",
+    "from './reboot_action_ui.js?v=hud-meter1'",
     'buildCombatCoachCue',
     'buildCombatCommandLabels',
     'buildCombatStatusPrompt',
@@ -1480,7 +1480,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=reward-source1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=hud-meter1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-banner2'), false);
@@ -1865,7 +1865,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=reward-source1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -5303,12 +5303,18 @@ test('first combat command state covers empty dock sockets with a generated one-
 
 test('combat HUD keeps three resource meters bounded on compact phones', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
 
   for (const marker of [
     '.hud {\n  gap: 4px;',
     'flex: 0 0 clamp(220px, 60vw, 258px);',
     'grid-template-columns: repeat(3, minmax(0, 1fr));',
     'white-space: nowrap;',
+    'overflow: hidden;',
+    '#dangerMeter .meter-label {\n  max-width: 24px;',
+    'assertCombatHudMeterBounds(page)',
+    'await assertCombatHudMeterBounds(page, \'compact battle\');',
+    'HUD meter value escapes generated socket',
     '@media (max-width: 360px)',
     '.brand span {\n    display: none;',
     '.meters > span {\n    gap: 2px;',
@@ -5322,7 +5328,7 @@ test('combat HUD keeps three resource meters bounded on compact phones', async (
     '#rescueMeter::before { background-position: -28px 0; }',
     '#dangerMeter::before { background-position: -42px 0; }'
   ]) {
-    assert.equal(css.includes(marker), true, marker);
+    assert.equal(`${css}\n${qa}`.includes(marker), true, marker);
   }
 });
 
@@ -5339,7 +5345,7 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     'id="dangerMeter" data-meter-kind="danger" aria-label="파트너 위험도 0"',
     '<span class="meter-label">전력</span>',
     '<span class="meter-label">구원</span>',
-    '<span class="meter-label">동료 위험</span>',
+    '<span class="meter-label">위험</span>',
     '<span class="meter-value">10</span>',
     '<span class="meter-value">0%</span>',
     '<span class="meter-value">0</span>',
@@ -5353,7 +5359,7 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     'setMeterValue(\n    dom.dangerMeter,',
     'partnerDangerAriaLabel(current, partner, partnerDanger)',
     'partnerDangerMeterLabel(current, partner)',
-    "return '동료 위험';",
+    "return '위험';",
     "return label === '파트너' ? `파트너 위험도 ${danger}` : `파트너 ${label}의 위험도 ${danger}`;",
     '.meter-label',
     '.meter-value',
@@ -5368,7 +5374,6 @@ test('combat HUD meter labels explain values through icon sockets and accessibil
     '소환 에너지',
     '>구원 0%<',
     '>위험 0<',
-    '<span class="meter-label">위험</span>',
     '<span class="meter-label">린 위험</span>',
     '<span class="meter-label">동료</span>',
     '<span class="meter-label">동료위험</span>',

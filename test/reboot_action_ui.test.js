@@ -28,7 +28,7 @@ test('partner danger meter uses role-first visible copy while keeping the partne
     players: [{ id: 'p1', name: '나' }, { id: 'p2', name: '린', bot: true }]
   };
 
-  assert.equal(partnerDangerMeterLabel(current, 'p2'), '동료 위험');
+  assert.equal(partnerDangerMeterLabel(current, 'p2'), '위험');
   assert.equal(partnerDangerAriaLabel(current, 'p2', 72), '파트너 린의 위험도 72');
 });
 
@@ -40,11 +40,11 @@ test('partner danger meter uses role-first label regardless of partner identity'
     players: [{ id: 'p1', name: '나' }, { id: 'p2', name: '나리' }]
   };
 
-  assert.equal(partnerDangerMeterLabel(current, 'p2'), '동료 위험');
+  assert.equal(partnerDangerMeterLabel(current, 'p2'), '위험');
   assert.equal(partnerDangerAriaLabel(current, 'p2', 41), '파트너 긴이름파트너의 위험도 41');
-  assert.equal(partnerDangerMeterLabel(twoLetterPartner, 'p2'), '동료 위험');
+  assert.equal(partnerDangerMeterLabel(twoLetterPartner, 'p2'), '위험');
   assert.equal(partnerDangerAriaLabel(twoLetterPartner, 'p2', 41), '파트너 나리의 위험도 41');
-  assert.equal(partnerDangerMeterLabel({}, 'p2'), '동료 위험');
+  assert.equal(partnerDangerMeterLabel({}, 'p2'), '위험');
   assert.equal(partnerDangerAriaLabel({}, 'p2', 10), '파트너 위험도 10');
 });
 

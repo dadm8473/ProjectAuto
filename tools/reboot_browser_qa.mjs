@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v62');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v63');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=reward-source1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=reward-source1'))
+      '/src/client/styles.css?v=hud-meter1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=hud-meter1'))
         : false,
-      '/src/client/app.js?v=reward-source1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=reward-source1'))
+      '/src/client/app.js?v=hud-meter1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=hud-meter1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -108,8 +108,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
         : false,
-      '/src/client/reboot_hud.js?v=result-goal1': cache
-        ? Boolean(await cache.match('/src/client/reboot_hud.js?v=result-goal1'))
+      '/src/client/reboot_hud.js?v=hud-meter1': cache
+        ? Boolean(await cache.match('/src/client/reboot_hud.js?v=hud-meter1'))
         : false,
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
@@ -129,8 +129,8 @@ async function verifyInstallableShell(page) {
       '/src/shared/reboot_game.js?v=retry-context1': cache
         ? Boolean(await cache.match('/src/shared/reboot_game.js?v=retry-context1'))
         : false,
-      '/src/client/reboot_action_ui.js?v=retry-reminder1': cache
-        ? Boolean(await cache.match('/src/client/reboot_action_ui.js?v=retry-reminder1'))
+      '/src/client/reboot_action_ui.js?v=hud-meter1': cache
+        ? Boolean(await cache.match('/src/client/reboot_action_ui.js?v=hud-meter1'))
         : false,
       '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1'))
@@ -169,7 +169,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v62', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v63', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1284,6 +1284,38 @@ async function assertCombatDockSafeArea(page) {
   );
 }
 
+async function assertCombatHudMeterBounds(page, label = 'combat battle') {
+  const geometry = await page.locator('.hud').evaluate((hud) => {
+    const hudRect = hud.getBoundingClientRect();
+    return [...document.querySelectorAll('.meters > span')].map((meter) => {
+      const meterRect = meter.getBoundingClientRect();
+      const label = meter.querySelector('.meter-label')?.getBoundingClientRect();
+      const value = meter.querySelector('.meter-value')?.getBoundingClientRect();
+      return {
+        id: meter.id,
+        labelText: meter.querySelector('.meter-label')?.textContent ?? '',
+        meterLeft: Math.round(meterRect.left),
+        meterRight: Math.round(meterRect.right),
+        hudLeft: Math.round(hudRect.left),
+        hudRight: Math.round(hudRect.right),
+        labelLeft: Math.round(label?.left ?? 0),
+        labelRight: Math.round(label?.right ?? 0),
+        valueLeft: Math.round(value?.left ?? 0),
+        valueRight: Math.round(value?.right ?? 0),
+        overflow: getComputedStyle(meter).overflow
+      };
+    });
+  });
+  assert.equal(geometry.length, 3, `${label} HUD should expose exactly three meter sockets: ${JSON.stringify(geometry)}`);
+  for (const meter of geometry) {
+    assert.equal(meter.overflow, 'hidden', `${label} HUD meter socket should clip generated effects: ${JSON.stringify(meter)}`);
+    assert.equal(meter.meterLeft >= meter.hudLeft, true, `${label} HUD meter escapes generated socket row: ${JSON.stringify(meter)}`);
+    assert.equal(meter.meterRight <= meter.hudRight, true, `${label} HUD meter escapes generated socket row: ${JSON.stringify(meter)}`);
+    assert.equal(meter.valueLeft >= meter.meterLeft && meter.valueRight <= meter.meterRight, true, `${label} HUD meter value escapes generated socket: ${JSON.stringify(meter)}`);
+    assert.equal(meter.labelLeft >= meter.meterLeft && meter.labelRight <= meter.meterRight, true, `${label} HUD meter label escapes generated socket: ${JSON.stringify(meter)}`);
+  }
+}
+
 async function assertActionDockGeneratedConsoleSurface(page) {
   const surface = await page.locator('.action-panel').evaluate(async (node) => {
     async function analyzeGeneratedDockImage(backgroundImage) {
@@ -1943,6 +1975,7 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#bossMeter').isVisible(), false);
   assert.notEqual(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await assertCombatDockSafeArea(page);
+  await assertCombatHudMeterBounds(page);
   await assertActionDockGeneratedConsoleSurface(page);
   await assertActionDockRenderedBoundaryScreenshot(page);
   await assertBattleLowerBridgeRendered(page);
@@ -2109,6 +2142,7 @@ async function verifyCompactResult(page) {
   await page.getByRole('button', { name: '시작' }).click();
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });
+  await assertCombatHudMeterBounds(page, 'compact battle');
 
   async function tryTap(locator) {
     if (!(await locator.isVisible()) || !(await locator.isEnabled())) return false;

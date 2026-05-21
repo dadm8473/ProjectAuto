@@ -59,7 +59,7 @@ export function partnerDisplayName(current, partnerBoardId) {
 }
 
 export function partnerDangerMeterLabel(current, partnerBoardId) {
-  return '동료 위험';
+  return '위험';
 }
 
 export function partnerDangerAriaLabel(current, partnerBoardId, danger) {
