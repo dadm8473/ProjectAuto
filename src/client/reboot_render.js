@@ -1,4 +1,4 @@
-import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js';
+import { REBOOT_RULES, REBOOT_UNITS, REBOOT_WAVES } from '../shared/reboot_content.js';
 
 const OPERATION_START_CUTIN_END = 0.6;
 const OPERATION_START_CUTIN_FADE = 0.16;
@@ -11,6 +11,8 @@ const ACTION_SURGE_DURATION = 2.0;
 const ACTION_SURGE_HOLD_SECONDS = 0.85;
 const COMBAT_REVEAL_DURATION = 1.16;
 const COMBAT_REVEAL_HOLD_SECONDS = 0.54;
+const NEXT_WAVE_PREVIEW_LEAD_SECONDS = 6.4;
+const NEXT_WAVE_PREVIEW_FADE_IN_SECONDS = 0.72;
 const MERGE_REWARD_SIGIL_DURATION = 1.9;
 const MERGE_REWARD_SIGIL_HOLD_SECONDS = 0.85;
 const FLOATING_DAMAGE_TTL = 0.62;
@@ -625,10 +627,31 @@ function hasFirstPlayerAction(state = {}) {
   ));
 }
 
+function nextIncomingWave(now = 0) {
+  return REBOOT_WAVES.find((wave) => wave.at > now);
+}
+
+function nextWaveThreatPreviewAlpha(state = {}, options = {}) {
+  const now = Number(state.now) || 0;
+  if (options.onlineWaiting || options.matchmakingBannerVisible) return 0;
+  if ((state.enemies?.length ?? 0) > 0) return 0;
+  if (!hasFirstPlayerAction(state)) return 0;
+  if (recentWaveDirective(state)) return 0;
+  const wave = nextIncomingWave(now);
+  if (!wave) return 0;
+  const timeUntil = wave.at - now;
+  if (timeUntil < 0 || timeUntil > NEXT_WAVE_PREVIEW_LEAD_SECONDS) return 0;
+  const entrance = Math.min(1, (NEXT_WAVE_PREVIEW_LEAD_SECONDS - timeUntil) / NEXT_WAVE_PREVIEW_FADE_IN_SECONDS);
+  const urgency = Math.min(1, (NEXT_WAVE_PREVIEW_LEAD_SECONDS - timeUntil) / NEXT_WAVE_PREVIEW_LEAD_SECONDS);
+  const pulse = 0.52 + urgency * 0.12 + Math.max(0, Math.sin(now * 4.1)) * 0.08;
+  return Math.min(0.78, entrance * pulse);
+}
+
 function openingThreatPreviewAlpha(state = {}, options = {}) {
   const now = Number(state.now) || 0;
   if (options.onlineWaiting || options.matchmakingBannerVisible) return 0;
   if ((state.enemies?.length ?? 0) > 0) return 0;
+  const nextWaveAlpha = nextWaveThreatPreviewAlpha(state, options);
   if (now >= 0 && now < OPERATION_START_CUTIN_END && !hasFirstPlayerAction(state)) {
     const intro = Math.min(1, now / OPERATION_START_CUTIN_FADE);
     return Math.min(0.56, intro * 0.56);
@@ -642,8 +665,9 @@ function openingThreatPreviewAlpha(state = {}, options = {}) {
   if (hasFirstPlayerAction(state) && now > OPENING_THREAT_PREVIEW_END && now <= EARLY_LULL_THREAT_PREVIEW_END) {
     const exit = Math.min(1, Math.max(0, EARLY_LULL_THREAT_PREVIEW_END - now) / 1.4);
     const pulse = 0.62 + Math.max(0, Math.sin(now * 3.4)) * 0.08;
-    return pulse * exit;
+    return Math.max(pulse * exit, nextWaveAlpha);
   }
+  if (nextWaveAlpha > 0) return nextWaveAlpha;
   return 0;
 }
 

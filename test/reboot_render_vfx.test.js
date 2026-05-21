@@ -956,6 +956,103 @@ test('early combat lulls keep a generated incoming-wave object on the track', ()
   assert.deepEqual(looseEnemyDraws, [], 'lull preview should use the generated warning object instead of a floating enemy sprite');
 });
 
+test('post-opening wave lulls preview the next spawn instead of leaving an empty track', () => {
+  const ctx = mockContext();
+  const enemies = image(1024, 256);
+  const openingThreatPreview = image(512, 256);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 17.72,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }, { spriteKey: 'toktok_amp' }] },
+        p2: { danger: 0, units: [{ spriteKey: 'spark_pin' }] }
+      },
+      enemies: [],
+      events: [
+        { type: 'summon', at: 0.62, playerId: 'p1' },
+        { type: 'summon', at: 10, playerId: 'p2' }
+      ],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies,
+      board: image(1280, 256),
+      openingThreatPreview
+    }
+  );
+
+  const previewDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === openingThreatPreview
+  ));
+  const previewDraw = previewDraws.at(0);
+  const previewAlpha = previewDraw
+    ? ctx.commands.slice(0, ctx.commands.indexOf(previewDraw)).findLast((command) => command.type === 'globalAlpha')?.value ?? 0
+    : 0;
+  const looseEnemyDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === enemies
+  ));
+
+  assert.equal(previewDraws.length >= 1, true, 'next wave should be visible before the post-opening spawn arrives');
+  assert.equal(previewAlpha >= 0.44, true, `next-wave preview should be readable in an empty lull: ${previewAlpha}`);
+  assert.deepEqual(looseEnemyDraws, [], 'next-wave preview should not fall back to floating enemy atlas sprites');
+});
+
+test('early lull preview blends into next-wave preview before it fades out', () => {
+  const openingThreatPreview = image(512, 256);
+  const samples = [16.95, 17.2, 17.45, 17.7].map((now) => {
+    const ctx = mockContext();
+    drawRebootBattle(
+      ctx,
+      {
+        now,
+        boards: {
+          p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }, { spriteKey: 'toktok_amp' }] },
+          p2: { danger: 0, units: [{ spriteKey: 'spark_pin' }] }
+        },
+        enemies: [],
+        events: [
+          { type: 'summon', at: 0.62, playerId: 'p1' },
+          { type: 'summon', at: 10, playerId: 'p2' }
+        ],
+        effects: []
+      },
+      { width: 390, height: 620 },
+      {
+        backdrop: image(390, 620),
+        units: image(1280, 256),
+        board: image(1280, 256),
+        openingThreatPreview
+      }
+    );
+    const previewDraw = ctx.commands.find((command) => (
+      command.type === 'drawImage' && command.args[0] === openingThreatPreview
+    ));
+    const alpha = previewDraw
+      ? ctx.commands.slice(0, ctx.commands.indexOf(previewDraw)).findLast((command) => command.type === 'globalAlpha')?.value ?? 0
+      : 0;
+    return { now, alpha };
+  });
+
+  for (let index = 1; index < samples.length; index += 1) {
+    const previous = samples[index - 1];
+    const current = samples[index];
+    assert.equal(
+      current.alpha >= 0.34,
+      true,
+      `next-wave handoff should keep the warning object readable: ${JSON.stringify(samples)}`
+    );
+    assert.equal(
+      current.alpha >= previous.alpha - 0.16,
+      true,
+      `next-wave handoff should not visibly pop down: ${JSON.stringify(samples)}`
+    );
+  }
+});
+
 test('signal core gate anchors the protected end of the track before enemies arrive', () => {
   const ctx = mockContext();
   const signalCoreGates = image(512, 192);

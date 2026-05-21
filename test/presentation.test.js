@@ -1726,7 +1726,7 @@ test('combat board renderer uses generated merge and danger accent frames', asyn
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
   for (const marker of [
-    "import { REBOOT_RULES, REBOOT_UNITS } from '../shared/reboot_content.js';",
+    "import { REBOOT_RULES, REBOOT_UNITS, REBOOT_WAVES } from '../shared/reboot_content.js';",
     'mergeReadyGrades',
     'Number(grade) < 2',
     'unitCount >= REBOOT_RULES.merge.requiredSameGrade',
