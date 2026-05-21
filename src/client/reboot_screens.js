@@ -236,6 +236,7 @@ const CARD_STATE_BADGES = {
   locked: '<span class="card-state-badge" data-card-state="locked" aria-hidden="true"></span>'
 };
 const SHOP_PURPOSE_LABEL = '외형 전용';
+const SHOP_PURPOSE_BADGE = '외형';
 const SHOP_NO_POWER_LABEL = '전투력 영향 없음';
 
 function cardStateBadge(state) {
@@ -286,6 +287,14 @@ export function buildMetaNavAlerts(profile = {}) {
   };
 }
 
+function showcaseStatBadge(stat) {
+  if (typeof stat === 'object' && stat !== null) {
+    const label = stat.label ? ` aria-label="${stat.label}"` : '';
+    return `<span class="meta-showcase-chip"${label}>${stat.text}</span>`;
+  }
+  return `<span class="meta-showcase-chip">${stat}</span>`;
+}
+
 function buildMetaShowcase({
   kind,
   label,
@@ -304,7 +313,7 @@ function buildMetaShowcase({
 }) {
   const className = extraClass ? `meta-showcase ${extraClass}` : 'meta-showcase';
   const previewClassName = previewClass ? `meta-showcase-preview ${previewClass}` : 'meta-showcase-preview';
-  const statBadges = (stats ?? (chip ? [chip] : [])).map((stat) => `<span class="meta-showcase-chip">${stat}</span>`).join('');
+  const statBadges = (stats ?? (chip ? [chip] : [])).map((stat) => showcaseStatBadge(stat)).join('');
   return `
     <section class="${className}" data-showcase-kind="${kind}" data-summary-kind="${kind}"${attrs}>
       <div class="${previewClassName}">
@@ -734,12 +743,16 @@ function buildShopFeaturedShowcase({ featuredItem, profile, unlocks, gems }) {
     label: '추천 외형',
     title: featuredItem.name,
     detail: featuredItem.description,
-    stats: [SHOP_PURPOSE_LABEL, `보유 ${gems} 보석`, `가격 ${featuredItem.price?.gems ?? 0} 보석`],
+    stats: [
+      { text: SHOP_PURPOSE_BADGE, label: `${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL}` },
+      { text: `보유 ${gems}`, label: `보유 ${gems} 보석` },
+      { text: `가격 ${price}`, label: `가격 ${price} 보석` }
+    ],
     spriteClass: 'shop-cosmetic',
     spriteAttr: 'data-shop-cosmetic',
     spriteValue: featuredItem.id,
     extraClass: 'shop-feature-showcase',
-    attrs: ` data-featured-shop="${featuredItem.id}" data-featured-state="${featuredState}" data-shop-purpose="cosmetic-only" aria-label="추천 외형 ${featuredItem.name} · ${featuredItem.description} · ${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL} · ${price} 보석 · ${stateLabel}"`,
+    attrs: ` data-featured-shop="${featuredItem.id}" data-featured-state="${featuredState}" data-shop-purpose="cosmetic-only" aria-label="추천 외형 ${featuredItem.name} · ${featuredItem.description} · ${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL} · 보유 ${gems} 보석 · 가격 ${price} 보석 · ${stateLabel}"`,
     previewExtra,
     previewClass: 'shop-feature-pedestal',
     action
@@ -774,7 +787,7 @@ export function buildRebootShop(profile = {}) {
       <span class="cosmetic-equip-aura" data-cosmetic-effect="${item.id}" aria-hidden="true"></span>
       <span class="sprite-token shop-cosmetic" data-shop-cosmetic="${item.id}"></span>
       <div class="card-copy">
-        <span class="role-pill">${SHOP_PURPOSE_LABEL}</span>
+        <span class="role-pill" aria-label="${SHOP_PURPOSE_LABEL}">${SHOP_PURPOSE_BADGE}</span>
         <strong>${item.name}</strong>
         <p>${item.description}</p>
         <span class="shop-price" aria-label="해금 비용 ${price} 보석">${price}</span>

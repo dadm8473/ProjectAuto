@@ -513,11 +513,11 @@ test('shop surfaces clarify cosmetic purchases do not sell combat power', () => 
   const shop = buildRebootShop({ gems: 90, unlocks: [] });
 
   assert.equal((shop.match(/data-shop-purpose="cosmetic-only"/g) ?? []).length, 6);
-  assert.equal(shop.includes('<span class="meta-showcase-chip">외형 전용</span>'), true);
-  assert.equal((shop.match(/<span class="role-pill">외형 전용<\/span>/g) ?? []).length, 5);
-  assert.equal(shop.includes('<span class="role-pill">외형</span>'), false);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="외형 전용 · 전투력 영향 없음">외형</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip">외형 전용</span>'), false);
+  assert.equal((shop.match(/<span class="role-pill" aria-label="외형 전용">외형<\/span>/g) ?? []).length, 5);
   assert.equal(
-    shop.includes('aria-label="추천 외형 신화 오라 · 코어 릴레이 오라 · 외형 전용 · 전투력 영향 없음 · 90 보석 · 해금 가능"'),
+    shop.includes('aria-label="추천 외형 신화 오라 · 코어 릴레이 오라 · 외형 전용 · 전투력 영향 없음 · 보유 90 보석 · 가격 90 보석 · 해금 가능"'),
     true
   );
   assert.equal(
@@ -604,8 +604,8 @@ test('meta screens start with compact actionable status headers', () => {
   const shop = buildRebootShop({ gems: 100, unlocks: [] });
   assert.equal(shop.includes('meta-showcase'), true);
   assert.equal(shop.includes('추천 외형'), true);
-  assert.equal(shop.includes('보유 100 보석'), true);
-  assert.equal(shop.includes('가격 90 보석'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="보유 100 보석">보유 100</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="가격 90 보석">가격 90</span>'), true);
 
   const missions = buildMissionScreen({
     processedRuns: ['run-1'],
@@ -655,9 +655,12 @@ test('collection and shop showcases split numeric state into compact game badges
   assert.equal(collection.includes('Lv.1 · 0/40 경험치'), false);
 
   assert.equal(shop.includes('class="meta-showcase-stats"'), true);
-  assert.equal(shop.includes('<span class="meta-showcase-chip">외형 전용</span>'), true);
-  assert.equal(shop.includes('<span class="meta-showcase-chip">보유 0 보석</span>'), true);
-  assert.equal(shop.includes('<span class="meta-showcase-chip">가격 90 보석</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="외형 전용 · 전투력 영향 없음">외형</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="보유 0 보석">보유 0</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip" aria-label="가격 90 보석">가격 90</span>'), true);
+  assert.equal(shop.includes('<span class="meta-showcase-chip">외형 전용</span>'), false);
+  assert.equal(shop.includes('<span class="meta-showcase-chip">보유 0 보석</span>'), false);
+  assert.equal(shop.includes('<span class="meta-showcase-chip">가격 90 보석</span>'), false);
   assert.equal(shop.includes('0 보석 보유 · 90 보석'), false);
   assert.equal(shop.includes('젬'), false);
 });
