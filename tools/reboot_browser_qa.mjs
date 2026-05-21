@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v82');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v83');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=season-reward-board1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=season-reward-board1'))
+      '/src/client/styles.css?v=meta-unified-board1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=meta-unified-board1'))
         : false,
       '/src/client/app.js?v=staged-preload1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=staged-preload1'))
@@ -162,6 +162,12 @@ async function verifyInstallableShell(page) {
       '/src/client/assets/generated/reboot-meta-showcase-copy-plates.png?v=showcase-nameplate1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-showcase-copy-plates.png?v=showcase-nameplate1'))
         : false,
+      '/src/client/assets/generated/reboot-collection-training-board-v1.png?v=collection-training-board1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-collection-training-board-v1.png?v=collection-training-board1'))
+        : false,
+      '/src/client/assets/generated/reboot-shop-display-board-v1.png?v=shop-display-board1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-shop-display-board-v1.png?v=shop-display-board1'))
+        : false,
       '/src/client/assets/generated/reboot-shop-banner-v2.png?v=shop-banner2': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-shop-banner-v2.png?v=shop-banner2'))
         : false,
@@ -211,7 +217,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v82', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v83', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -579,7 +585,7 @@ async function assertUnitFeatureOffer(page, label) {
       viewportWidth: window.innerWidth
     };
   });
-  assert.match(geometry.backgroundImage, /reboot-training-banner/, `${label} feature lacks training banner: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.backgroundImage, 'none', `${label} feature should sit on the unified collection board: ${JSON.stringify(geometry)}`);
   assert.equal(geometry.pedestalBackground, 'none', `${label} feature still uses a pasted rectangular pedestal: ${JSON.stringify(geometry)}`);
   assert.match(geometry.ringBackground, /reboot-unit-activation-ring/, `${label} feature lacks generated unit pedestal ring: ${JSON.stringify(geometry)}`);
   assert.match(geometry.state, /^(ready|locked)$/, `${label} unknown feature state: ${JSON.stringify(geometry)}`);
@@ -877,7 +883,7 @@ async function assertShopFeatureOffer(page, label) {
       viewportWidth: window.innerWidth
     };
   });
-  assert.match(geometry.backgroundImage, /reboot-shop-banner/, `${label} feature lacks shop banner: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.backgroundImage, 'none', `${label} feature should sit on the unified shop board: ${JSON.stringify(geometry)}`);
   assert.equal(geometry.pedestalBackground, 'none', `${label} feature still uses a pasted rectangular pedestal: ${JSON.stringify(geometry)}`);
   assert.match(geometry.auraBackground, /reboot-cosmetic-equip-aura/, `${label} feature lacks generated cosmetic aura: ${JSON.stringify(geometry)}`);
   assert.match(geometry.state, /^(ready|locked|owned|equipped)$/, `${label} unknown feature state: ${JSON.stringify(geometry)}`);
@@ -1016,6 +1022,34 @@ async function assertBannerOverlayClear(page, selector, label) {
   assert.equal(overlay.backgroundImage, 'none', `${label} banner overlay still has css image/gradient: ${JSON.stringify(overlay)}`);
   assert.equal(overlay.backdropFilter, 'none', `${label} banner overlay still uses backdrop filter: ${JSON.stringify(overlay)}`);
   assert.equal(overlay.webkitBackdropFilter, 'none', `${label} banner overlay still uses webkit backdrop filter: ${JSON.stringify(overlay)}`);
+}
+
+async function assertMetaUnifiedBoard(page, selector, expectedPattern, label) {
+  const board = await page.locator(selector).evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const before = getComputedStyle(node, '::before');
+    const feature = node.querySelector('.unit-feature-showcase, .shop-feature-showcase');
+    const shelf = node.querySelector('.meta-shelf-grid');
+    const featureStyle = feature ? getComputedStyle(feature) : null;
+    const shelfStyle = shelf ? getComputedStyle(shelf) : null;
+    return {
+      backgroundImage: before.backgroundImage,
+      backgroundSize: before.backgroundSize,
+      pointerEvents: before.pointerEvents,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      featureBackgroundImage: featureStyle?.backgroundImage ?? '',
+      shelfBackgroundImage: shelfStyle?.backgroundImage ?? ''
+    };
+  });
+  assert.match(board.backgroundImage, expectedPattern, `${label} lacks unified generated board: ${JSON.stringify(board)}`);
+  assert.equal(board.backgroundSize, '100% 100%', `${label} board is not fitted: ${JSON.stringify(board)}`);
+  assert.equal(board.pointerEvents, 'none', `${label} board blocks taps: ${JSON.stringify(board)}`);
+  const minWidth = label.includes('compact') ? 280 : 300;
+  const minHeight = label.includes('compact') ? 320 : 560;
+  assert.equal(board.width >= minWidth && board.height >= minHeight, true, `${label} board collapsed: ${JSON.stringify(board)}`);
+  assert.equal(board.featureBackgroundImage, 'none', `${label} feature fragment still covers unified board: ${JSON.stringify(board)}`);
+  assert.equal(board.shelfBackgroundImage, 'none', `${label} shelf fragment still covers unified board: ${JSON.stringify(board)}`);
 }
 
 async function assertMissionCommandBoard(page, label = 'missions') {
@@ -2219,6 +2253,7 @@ async function verifyShell(page, viewport) {
   await page.getByRole('button', { name: '유닛' }).click();
   await assertActiveNavLabelPlate(page, '유닛', 'collection');
   await assertMetaStationHeader(page, '#collectionScreen', 'collection');
+  await assertMetaUnifiedBoard(page, '#collectionList', /reboot-collection-training-board-v1/, 'collection');
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#collectionScreen .meta-showcase-copy > span:first-child', 'collection', 1);
   await assertMetaShowcaseChips(page, '#collectionScreen .meta-showcase-chip', 'collection', 2);
@@ -2252,6 +2287,7 @@ async function verifyShell(page, viewport) {
   await page.getByRole('button', { name: '상점' }).click();
   await assertActiveNavLabelPlate(page, '상점', 'shop');
   await assertMetaStationHeader(page, '#shopScreen', 'shop');
+  await assertMetaUnifiedBoard(page, '#shopList', /reboot-shop-display-board-v1/, 'shop');
   await page.locator('.shop-cosmetic').first().waitFor({ state: 'visible' });
   await assertMetaCaptionPlates(page, '#shopScreen .meta-showcase-copy > span:first-child', 'shop', 1);
   await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'shop', 2);
@@ -2371,12 +2407,14 @@ async function verifyCompactMeta(page) {
   await page.getByRole('button', { name: '유닛' }).click();
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
   await assertMetaStationHeader(page, '#collectionScreen', 'compact collection');
+  await assertMetaUnifiedBoard(page, '#collectionList', /reboot-collection-training-board-v1/, 'compact collection');
   await assertMetaShowcaseChips(page, '#collectionScreen .meta-showcase-chip', 'compact collection', 2);
   await assertUnitFeatureOffer(page, 'compact ready collection');
   await assertFeaturedUnitUpgradeFlow(page, 'compact ready collection');
   await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await assertLobbyNextActionShop(page, 'compact shop-only priority');
   await assertMetaStationHeader(page, '#shopScreen', 'compact shop');
+  await assertMetaUnifiedBoard(page, '#shopList', /reboot-shop-display-board-v1/, 'compact shop');
   await assertMetaShowcaseChips(page, '#shopScreen .meta-showcase-chip', 'compact shop', 2);
   assert.equal(await page.locator('#shopScreen .meta-showcase-chip').first().textContent(), '외형');
   assert.equal(

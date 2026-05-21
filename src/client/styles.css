@@ -64,7 +64,9 @@
   --lobby-launch-console: url("/src/client/assets/generated/reboot-lobby-launch-console.png?v=launch-console1");
   --lobby-launch-bay: url("/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1");
   --launch-buttons: url("/src/client/assets/generated/reboot-launch-buttons.png?v=gold-cta-alpha1");
+  --collection-training-board: url("/src/client/assets/generated/reboot-collection-training-board-v1.png?v=collection-training-board1");
   --training-banner: url("/src/client/assets/generated/reboot-training-banner.png");
+  --shop-display-board: url("/src/client/assets/generated/reboot-shop-display-board-v1.png?v=shop-display-board1");
   --shop-banner: url("/src/client/assets/generated/reboot-shop-banner-v2.png?v=shop-banner2");
   --missions-banner: url("/src/client/assets/generated/reboot-missions-banner.png");
   --mission-command-board: url("/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1");
@@ -5776,6 +5778,98 @@ body[data-app-screen="season"] .app-screen::after {
 
 .result-reward-chip[data-reward-kind="generic"] {
   background-position: 100% 0;
+}
+
+#collectionList,
+#shopList {
+  position: relative;
+  isolation: isolate;
+  grid-auto-rows: auto;
+  gap: 0;
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 100% 100%;
+}
+
+#collectionList {
+  background-image: var(--collection-training-board);
+}
+
+#shopList {
+  background-image: var(--shop-display-board);
+}
+
+#collectionList::before,
+#shopList::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 100% 100%;
+  opacity: 0.98;
+  pointer-events: none;
+}
+
+#collectionList::before {
+  background-image: var(--collection-training-board);
+  filter: saturate(1.18) brightness(1.18) contrast(1.06) drop-shadow(0 18px 30px rgba(0, 0, 0, 0.5));
+}
+
+#shopList::before {
+  background-image: var(--shop-display-board);
+  filter: saturate(1.16) brightness(1.16) contrast(1.06) drop-shadow(0 18px 30px rgba(0, 0, 0, 0.5));
+}
+
+#collectionList > *,
+#shopList > * {
+  position: relative;
+  z-index: 2;
+}
+
+#collectionList .unit-feature-showcase,
+#shopList .shop-feature-showcase {
+  min-height: clamp(228px, 59vw, 264px);
+  padding: clamp(14px, 3.8vw, 18px) clamp(18px, 5vw, 22px) clamp(10px, 2.6vw, 13px);
+  background-image: none;
+  filter: none;
+}
+
+#collectionList .unit-feature-pedestal,
+#shopList .shop-feature-pedestal {
+  min-height: clamp(168px, 43vw, 198px);
+}
+
+#collectionList .unit-feature-showcase .meta-showcase-copy,
+#shopList .shop-feature-showcase .meta-showcase-copy {
+  align-self: center;
+}
+
+#collectionList .unit-feature-command,
+#shopList .shop-feature-command {
+  align-self: center;
+  transform: translateY(-5px);
+}
+
+#collectionList .unit-feature-showcase .unit-cost,
+#shopList .shop-feature-showcase .shop-price {
+  transform: translateX(-4px);
+}
+
+#collectionList .meta-shelf-grid,
+#shopList .meta-shelf-grid {
+  min-height: clamp(604px, 156vw, 692px);
+  margin-top: -4px;
+  padding: clamp(34px, 9vw, 42px) clamp(24px, 6.3vw, 30px) clamp(74px, 18vw, 88px);
+  background-image: none;
+  filter: none;
+}
+
+#collectionList .meta-shelf-grid .unit-card::before,
+#shopList .meta-shelf-grid .shop-card::before {
+  opacity: 0.38;
+  filter: saturate(1.02) brightness(1.02) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.38));
 }
 
 @media (max-height: 620px) {

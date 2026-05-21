@@ -1014,6 +1014,38 @@ Postprocess: crop the generated 1024x1536 source to the central board area `(74,
 Acceptance: the mission screen reads as one generated operation board instead of floating HTML fragments; mission reward, three contract rows, and action sockets remain readable at 390x844 and compact portrait widths.
 ```
 
+## Runtime Prompt: Collection Training Board
+
+```text
+Use case: stylized-concept
+Asset type: project-bound mobile game UI background board for ProjectAuto collection / unit upgrade screen, final runtime crop is portrait 768x1152, no text.
+Primary request: Create a polished Korean mobile game unit training and upgrade board for a vertical cooperative tower defense app. It must look like one shipped mobile game screen panel, not a web page.
+Scene/backdrop: dark teal-black sci-fi toy workshop command room, glossy graphite metal, teal glass energy tubes, warm amber gold accents, compact premium game UI.
+Composition: portrait 2:3. Upper 34% contains one large hero unit upgrade pedestal on the left and a clean empty nameplate / command socket area on the right. Middle has a strong mechanical divider. Lower 55% contains a 2-column by 3-row unit roster shelf with six empty toy-unit sockets / display wells, each with small status gem space and tiny cost socket areas. Leave the bottom 12% calmer/darker so an app navigation dock can sit over it. No text, no numbers, no letters, no logos.
+Style: high-end 2.5D mobile game UI art, glossy painted toy-mech metal, crisp bevels, readable silhouettes at phone size, consistent with ProjectAuto Signal Relay assets, teal/cyan energy plus restrained amber reward glow.
+Avoid: HTML cards, flat vector UI, browser dashboard layout, random fantasy, dice, copied existing games, text, words, labels, watermarks, overly busy noise, black rectangular card backgrounds.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260521-collection-training-board-imagegen.png
+Runtime file: src/client/assets/generated/reboot-collection-training-board-v1.png
+Postprocess: center-crop to 2:3 if needed, resize to 768x1152, boost color/contrast/brightness for phone-scale readability, apply light unsharp mask, and use as a single fitted background behind the featured unit and roster shelf.
+Acceptance: the collection screen reads as one generated training board instead of a banner stacked above a web-like catalog; featured unit pedestal, roster sockets, and action/cost labels remain readable at 390x844 and compact portrait widths.
+```
+
+## Runtime Prompt: Shop Display Board
+
+```text
+Use case: stylized-concept
+Asset type: project-bound mobile game UI background board for ProjectAuto cosmetic shop screen, final runtime crop is portrait 768x1152, no text.
+Primary request: Create a polished Korean mobile game cosmetic shop display board for a vertical cooperative tower defense app. It must look like one shipped mobile game shop screen panel, not a web page.
+Scene/backdrop: premium sci-fi toy store inside a dark teal command room, glossy graphite metal, cyan glass, amber gold trim, collectible capsule lights, clean display-case depth.
+Composition: portrait 2:3. Upper 34% contains one large featured cosmetic display pedestal on the left and a clean empty product nameplate / purchase socket area on the right. Middle has a mechanical counter divider. Lower 55% contains a 2-column by 3-row shop shelf with six empty display cases / item pedestals, each with small gem-price socket and status gem space. Leave the bottom 12% darker and calmer for an app navigation dock overlay. No text, no numbers, no letters, no logos.
+Style: high-end 2.5D mobile game UI art, premium Korean mobile shop screen, glossy metal and glass, crisp bevels, readable at phone size, teal/cyan energy with restrained amber reward glow, consistent with ProjectAuto Signal Relay assets.
+Avoid: HTML cards, flat vector UI, browser dashboard layout, real-money symbols, dollar signs, random fantasy, dice, copied existing games, text, words, labels, watermarks, overly busy noise, black rectangular card backgrounds.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260521-shop-display-board-imagegen.png
+Runtime file: src/client/assets/generated/reboot-shop-display-board-v1.png
+Postprocess: center-crop to 2:3 if needed, resize to 768x1152, boost color/contrast/brightness for phone-scale readability, apply light unsharp mask, and use as a single fitted background behind the featured cosmetic and shop shelf.
+Acceptance: the shop screen reads as one generated store display board instead of a banner stacked above web-like item cards; featured item pedestal, display cases, and purchase state labels remain readable at 390x844 and compact portrait widths.
+```
+
 ## 후처리 기준
 
 필수:

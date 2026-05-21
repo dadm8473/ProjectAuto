@@ -41,7 +41,9 @@ test('critical reboot preload blocks only first-paint splash and lobby assets', 
     '/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1',
     '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1',
     '/src/client/assets/generated/reboot-result-screen-lighting.png?v=screen-lighting1',
-    '/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1'
+    '/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1',
+    '/src/client/assets/generated/reboot-collection-training-board-v1.png?v=collection-training-board1',
+    '/src/client/assets/generated/reboot-shop-display-board-v1.png?v=shop-display-board1'
   ]) {
     assert.equal(CRITICAL_REBOOT_ASSETS.includes(deferred), false, `${deferred} should be staged after first paint`);
   }
@@ -69,6 +71,8 @@ test('warmup preload includes generated meta combat mission and result assets', 
     '/src/client/assets/generated/reboot-meta-screen-lighting.png?v=screen-lighting1',
     '/src/client/assets/generated/reboot-result-screen-lighting.png?v=screen-lighting1',
     '/src/client/assets/generated/reboot-reward-reveal-payoff-stage.png?v=reward-payoff-stage1',
+    '/src/client/assets/generated/reboot-collection-training-board-v1.png?v=collection-training-board1',
+    '/src/client/assets/generated/reboot-shop-display-board-v1.png?v=shop-display-board1',
     '/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1',
     '/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1',
     '/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console2',
@@ -92,6 +96,8 @@ test('critical reboot preload follows generated polish css asset urls', async ()
     '--meta-lower-console',
     '--splash-season-badge',
     '--combat-operation-badge',
+    '--collection-training-board',
+    '--shop-display-board',
     '--mission-command-board',
     '--season-reward-board',
     '--lobby-operation-title-plate',

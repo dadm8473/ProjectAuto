@@ -125,6 +125,22 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 70_000
   },
   {
+    path: 'src/client/assets/generated/reboot-collection-training-board-v1.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260521-collection-training-board-imagegen.png',
+    width: 768,
+    height: 1152,
+    minRuntimeBytes: 400_000,
+    requiresAlpha: false
+  },
+  {
+    path: 'src/client/assets/generated/reboot-shop-display-board-v1.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260521-shop-display-board-imagegen.png',
+    width: 768,
+    height: 1152,
+    minRuntimeBytes: 400_000,
+    requiresAlpha: false
+  },
+  {
     path: 'src/client/assets/generated/reboot-meta-showcase-stage.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260513-meta-backdrop-imagegen.png',
     width: 430,
