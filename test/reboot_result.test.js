@@ -159,7 +159,7 @@ test('lobby operation advances through authored combat beats after runs', () => 
     {
       seedName: 'tutorial_success',
       title: '첫 구원 작전',
-      detail: '파트너 구원 · 보스 저지',
+      detail: '동료 구원',
       cta: '출격',
       launchAriaLabel: '첫 구원 작전 출격'
     }
@@ -1108,7 +1108,7 @@ test('lobby operation card shows the next authored combat beat', () => {
   });
 
   assert.equal(lobby.includes('<strong>보스 막타 작전</strong>'), true);
-  assert.equal(lobby.includes('<p>막판 소환 · 결정타</p>'), true);
+  assert.equal(lobby.includes('<p>소환 · 결정타</p>'), true);
   assert.equal(lobby.includes('data-operation-poster="boss"'), true);
   assert.equal(lobby.includes('reboot-lobby-operation-posters.png?v=operation-posters1'), true);
   assert.equal(lobby.includes('class="operation-progress" aria-label="작전 진행 2/4"'), true);
@@ -1249,7 +1249,7 @@ test('lobby next action uses compact game-state chips while preserving meaning f
   assert.equal(battleLobby.includes('data-next-beacon="battle"'), false);
   assert.equal(battleLobby.includes('class="lobby-next-state" aria-label="다음 작전">준비</span>'), false);
   assert.equal(battleLobby.includes('<strong>첫 구원 작전</strong>'), true);
-  assert.equal(battleLobby.includes('<p>파트너 구원 · 보스 저지</p>'), true);
+  assert.equal(battleLobby.includes('<p>동료 구원</p>'), true);
   assert.equal(battleLobby.includes('<span>다음 작전</span>'), false);
 });
 

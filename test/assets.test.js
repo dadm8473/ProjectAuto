@@ -97,6 +97,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 240_000
   },
   {
+    path: 'src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260521-lobby-operation-title-plate-chromakey-imagegen.png',
+    width: 768,
+    height: 200,
+    minRuntimeBytes: 160_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-splash-bottom-deck.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260515-splash-bottom-deck-imagegen.png',
     width: 430,
@@ -1653,6 +1660,24 @@ test('reboot lobby UI scene art is promoted from imagegen sources', async () => 
     assert.equal(runtime.readUInt32BE(20), asset.height, asset.path);
     assert.equal(runtime.length > asset.minRuntimeBytes, true, asset.path);
   }
+});
+
+test('lobby operation title plate is transparent generated game chrome', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png'));
+  const corners = [
+    alphaAt(image, 1, 1),
+    alphaAt(image, image.width - 2, 1),
+    alphaAt(image, 1, image.height - 2),
+    alphaAt(image, image.width - 2, image.height - 2)
+  ];
+  const bounds = alphaBounds(image, { x: 0, y: 0, width: image.width, height: image.height }, 18);
+  const centerPanelCoverage = alphaCoverage(image, { x: 180, y: 70, width: 408, height: 64 }, 180);
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, `operation title plate has opaque corners: ${corners.join(',')}`);
+  assert.equal(bounds.count > 55_000, true, `operation title plate is too sparse: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.minX >= 4, true, `operation title plate touches left edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxX <= image.width - 5, true, `operation title plate touches right edge: ${JSON.stringify(bounds)}`);
+  assert.equal(centerPanelCoverage > 0.9, true, `operation title center panel is not solid enough for Korean text: ${centerPanelCoverage}`);
 });
 
 test('splash title plate has transparent corners instead of an opaque web banner', async () => {

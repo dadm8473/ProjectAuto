@@ -154,7 +154,7 @@ const LOBBY_OPERATION_SEQUENCE = [
     seedName: 'tutorial_success',
     title: '첫 구원 작전',
     hudTitle: '첫 구원',
-    detail: '파트너 구원 · 보스 저지',
+    detail: '동료 구원',
     cta: '출격',
     poster: 'first',
     threatLabel: '보스 저지'
@@ -163,7 +163,7 @@ const LOBBY_OPERATION_SEQUENCE = [
     seedName: 'lucky_clutch',
     title: '보스 막타 작전',
     hudTitle: '보스 막타',
-    detail: '막판 소환 · 결정타',
+    detail: '소환 · 결정타',
     cta: '출격',
     poster: 'boss',
     threatLabel: '보스 막타'
@@ -172,7 +172,7 @@ const LOBBY_OPERATION_SEQUENCE = [
     seedName: 'bad_recoverable',
     title: '역전 구원 작전',
     hudTitle: '역전 구원',
-    detail: '나쁜 운 회복 · 구원',
+    detail: '회복 소환',
     cta: '출격',
     poster: 'recovery',
     threatLabel: '역전 구원'

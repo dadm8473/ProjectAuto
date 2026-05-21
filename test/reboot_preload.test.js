@@ -15,6 +15,7 @@ test('critical reboot preload list starts with generated game identity and first
     '/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2',
     '/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title',
     '/src/client/assets/generated/reboot-lobby-backdrop.png',
+    '/src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png?v=operation-title-plate1',
     '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',
     '/src/client/assets/generated/reboot-unit-atlas.png',
     '/src/client/assets/generated/reboot-battle-backdrop.png?v=reboot-action-ready1',
@@ -74,6 +75,7 @@ test('critical reboot preload follows generated polish css asset urls', async ()
   const variables = [
     '--reward-reveal-payoff-stage',
     '--meta-lower-console',
+    '--lobby-operation-title-plate',
     '--meta-title-wordmarks',
     '--meta-caption-plate'
   ];

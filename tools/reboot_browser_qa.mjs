@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v76');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v77');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=meta-title-wordmark1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=meta-title-wordmark1'))
+      '/src/client/styles.css?v=operation-title-plate1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=operation-title-plate1'))
         : false,
       '/src/client/app.js?v=meta-clarity1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=meta-clarity1'))
@@ -119,6 +119,9 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1'))
+        : false,
+      '/src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png?v=operation-title-plate1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png?v=operation-title-plate1'))
         : false,
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
@@ -184,7 +187,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v76', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v77', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1165,7 +1168,7 @@ async function assertResultGeneratedCopySurfaces(page) {
 
 async function assertOperationCopyClearsProgressRail(page) {
   const geometry = await page.evaluate(() => {
-    const copyNodes = [...document.querySelectorAll('#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p')];
+    const copyNodes = [...document.querySelectorAll('#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy strong, #lobbyScreen .operation-copy p')];
     const progress = document.querySelector('#lobbyScreen .operation-progress');
     if (!copyNodes.length || !progress) {
       return { missing: true };
@@ -1181,22 +1184,87 @@ async function assertOperationCopyClearsProgressRail(page) {
       };
     });
     const progressRect = progress.getBoundingClientRect();
-    const copyRight = Math.max(...copyRects.map((rect) => rect.right));
+    const overlappingRects = copyRects.filter((rect) => rect.bottom > progressRect.top && rect.top < progressRect.bottom);
+    const copyRight = overlappingRects.length ? Math.max(...overlappingRects.map((rect) => rect.right)) : 0;
     return {
       viewportWidth: window.innerWidth,
       copyRects,
+      progressTop: Math.round(progressRect.top),
+      progressBottom: Math.round(progressRect.bottom),
+      overlappingRects,
       copyRight,
       progressLeft: Math.round(progressRect.left),
       progressRight: Math.round(progressRect.right),
-      gap: Math.round(progressRect.left - copyRight)
+      gap: overlappingRects.length ? Math.round(progressRect.left - copyRight) : null
     };
   });
   assert.equal(geometry.missing, undefined, `operation copy/progress geometry unavailable: ${JSON.stringify(geometry)}`);
   assert.equal(
-    geometry.gap >= 8,
+    geometry.gap === null || geometry.gap >= 8,
     true,
     `operation copy overlaps progress rail on portrait lobby: ${JSON.stringify(geometry)}`
   );
+}
+
+async function assertOperationTitlePlate(page, label, expectedTitle = '') {
+  const title = await page.locator('#lobbyScreen .operation-copy strong').evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    return {
+      text: node.textContent?.trim(),
+      backgroundImage: style.backgroundImage,
+      backgroundSize: style.backgroundSize,
+      borderRadius: style.borderTopLeftRadius,
+      boxShadow: style.boxShadow,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      scrollWidth: node.scrollWidth,
+      clientWidth: node.clientWidth,
+      left: Math.round(rect.left),
+      right: Math.round(rect.right),
+      viewportWidth: window.innerWidth
+    };
+  });
+  assert.equal(title.text.length > 0, true, `${label} operation title is empty: ${JSON.stringify(title)}`);
+  if (expectedTitle) assert.equal(title.text, expectedTitle, `${label} operation title changed: ${JSON.stringify(title)}`);
+  assert.match(title.backgroundImage, /reboot-lobby-operation-title-plate-v1/, `${label} operation title lacks generated plate: ${JSON.stringify(title)}`);
+  assert.equal(title.backgroundSize, '100% 100%', `${label} operation title plate is not fitted: ${JSON.stringify(title)}`);
+  assert.equal(title.borderRadius, '0px', `${label} operation title still uses css card radius: ${JSON.stringify(title)}`);
+  assert.equal(title.boxShadow, 'none', `${label} operation title still uses css box shadow: ${JSON.stringify(title)}`);
+  const minWidth = label.includes('compact') ? 164 : 188;
+  assert.equal(title.width >= minWidth && title.height >= 52, true, `${label} operation title plate too small: ${JSON.stringify(title)}`);
+  assert.equal(title.scrollWidth <= title.clientWidth + 1, true, `${label} operation title text overflows: ${JSON.stringify(title)}`);
+  assert.equal(title.left >= 0 && title.right <= title.viewportWidth, true, `${label} operation title leaves viewport: ${JSON.stringify(title)}`);
+}
+
+async function assertCompactOperationTitleVariants(page) {
+  const variants = [
+    { processedRuns: [], title: '첫 구원 작전' },
+    { processedRuns: ['run-1'], title: '보스 막타 작전' },
+    { processedRuns: ['run-1', 'run-2'], title: '역전 구원 작전' },
+    { processedRuns: ['run-1', 'run-2', 'run-3'], title: '보스 대응 작전' }
+  ];
+
+  for (const variant of variants) {
+    await page.goto(baseUrl, { waitUntil: 'load' });
+    await page.evaluate(({ key, processedRuns }) => {
+      localStorage.setItem(key, JSON.stringify({
+        version: 1,
+        gems: 0,
+        xp: 0,
+        processedRuns,
+        claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic'],
+        claimedPassTiers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+        unlocks: ['mythic-aura', 'founder-board', 'merge-effect', 'rescue-effect', 'profile-frame'],
+        unitLevels: { spark_pin: 20 }
+      }));
+    }, { key: profileStorageKey, processedRuns: variant.processedRuns });
+    await page.reload({ waitUntil: 'load' });
+    await page.locator('#loadingGate').waitFor({ state: 'hidden' });
+    await page.getByRole('button', { name: '시작' }).click();
+    await page.locator('#lobbyScreen .operation-copy strong').waitFor({ state: 'visible' });
+    await assertOperationTitlePlate(page, `compact lobby ${variant.title}`, variant.title);
+  }
 }
 
 async function assertOperationIntelClearsPreviewSprites(page) {
@@ -1993,6 +2061,7 @@ async function verifyShell(page, viewport) {
   await assertLobbyProfilePlate(page, 'lobby', 'Lv.1');
   await assertLobbyLaunchCommandConsole(page, 'lobby');
   await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'lobby operation copy', 2);
+  await assertOperationTitlePlate(page, 'lobby');
   await assertOperationCopyClearsProgressRail(page);
   await assertOperationIntelClearsPreviewSprites(page);
   await assertBattleReadyLobbyStaysFocused(page);
@@ -2127,9 +2196,11 @@ async function verifyCompactLobby(page) {
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).waitFor({ state: 'visible' });
   await assertLobbyProfilePlate(page, 'compact lobby', 'Lv.1');
   await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'compact lobby operation copy', 2);
+  await assertOperationTitlePlate(page, 'compact lobby');
   await assertOperationCopyClearsProgressRail(page);
   await assertOperationIntelClearsPreviewSprites(page);
   await assertBattleReadyLobbyStaysFocused(page);
+  await assertCompactOperationTitleVariants(page);
 }
 
 async function verifyCompactMeta(page) {

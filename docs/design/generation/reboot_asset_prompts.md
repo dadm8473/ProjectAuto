@@ -774,6 +774,21 @@ Runtime files:
 - src/client/assets/generated/reboot-lobby-operation-posters.png
 ```
 
+## Runtime Prompt: Lobby Operation Title Plate
+
+```text
+Use case: stylized-concept
+Asset type: transparent mobile game UI nameplate for ProjectAuto lobby operation cards.
+Primary request: Create a single horizontal Korean mobile game operation-title nameplate with no text, on a perfectly flat solid #00ff00 chroma-key background for background removal.
+Composition: one centered ornate sci-fi/fantasy metal title frame, wide landscape ratio about 4:1, generous alpha-safe padding, dark teal glass center panel with high contrast for overlaid Korean operation titles. No decorative object may cross the central text-safe zone.
+Style/medium: polished shipped Korean mobile game UI, teal energy glass, brushed gunmetal, gold trim, small orange/blue gem lights, crisp bevels, painterly rendered PNG game asset. Match the ProjectAuto rescue relay tower-defense art set.
+Constraints: no letters, numbers, symbols, placeholder text, watermark, logo, cast shadow, reflection, floor plane, website card, or casino UI. Keep the chroma background perfectly flat and do not use #00ff00 inside the subject.
+Postprocess: remove chroma key with soft matte, trim to alpha bounds, add transparent padding, and resize to 768x200 RGBA runtime PNG.
+Runtime files:
+- docs/design/generation/source/reboot/style-lock/20260521-lobby-operation-title-plate-chromakey-imagegen.png
+- src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png
+```
+
 ## Runtime Prompt: Dual Crisis Cutin
 
 ```text

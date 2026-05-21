@@ -635,7 +635,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-title-wordmark1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=operation-title-plate1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
@@ -1498,7 +1498,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=meta-title-wordmark1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=operation-title-plate1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=hud-meter1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
@@ -1885,7 +1885,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=meta-title-wordmark1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=operation-title-plate1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -3641,6 +3641,7 @@ test('lobby operation card uses a dedicated generated mission poster', async () 
 
   for (const marker of [
     '--lobby-operation-posters: url("/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1")',
+    '--lobby-operation-title-plate: url("/src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png?v=operation-title-plate1")',
     'class="operation-card"',
     'data-operation-poster="${operation.poster}"',
     'class="operation-poster-frame"',
@@ -3703,6 +3704,7 @@ test('lobby operation poster copy uses generated caption plates over the artwork
   const captionBlock = cssRuleBlock(css, '.operation-copy span,\n.operation-copy p');
   for (const marker of [
     'display: inline-grid;',
+    'box-sizing: border-box;',
     'background-image: var(--meta-caption-plate);',
     'background-size: 100% 100%;',
     'min-height: 24px;'
@@ -3718,6 +3720,33 @@ test('lobby operation poster copy uses generated caption plates over the artwork
     'backdrop-filter'
   ]) {
     assert.equal(captionBlock.includes(forbidden), false, forbidden);
+  }
+});
+
+test('lobby operation title uses a generated game nameplate instead of floating text', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  const titleBlock = cssRuleBlock(css, '.operation-copy strong');
+  for (const marker of [
+    'display: inline-grid;',
+    'width: min(214px, 100%);',
+    'min-height: 56px;',
+    'background-image: var(--lobby-operation-title-plate);',
+    'background-size: 100% 100%;',
+    'font-size: 20px;',
+    'white-space: nowrap;'
+  ]) {
+    assert.equal(titleBlock.includes(marker), true, marker);
+  }
+  for (const forbidden of [
+    'background-color:',
+    'background: rgba(',
+    'border-radius:',
+    'box-shadow:',
+    'linear-gradient',
+    'backdrop-filter'
+  ]) {
+    assert.equal(titleBlock.includes(forbidden), false, forbidden);
   }
 });
 
