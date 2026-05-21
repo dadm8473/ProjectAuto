@@ -76,6 +76,18 @@ function nextGoalForReason(reason) {
   }[reason] ?? 'retry_first_120_seconds';
 }
 
+function normalizeRetryContext(context) {
+  if (!context || typeof context !== 'object') return null;
+  const reason = typeof context.reason === 'string' ? context.reason : null;
+  const nextGoal = typeof context.nextGoal === 'string' ? context.nextGoal : nextGoalForReason(reason);
+  if (!reason && !nextGoal) return null;
+  return {
+    status: context.status === 'won' ? 'won' : 'lost',
+    reason: reason ?? 'retry',
+    nextGoal: nextGoal ?? 'retry_first_120_seconds'
+  };
+}
+
 function player(game, playerId) {
   return game.boards[playerId] ? playerId : 'p1';
 }
@@ -548,7 +560,8 @@ export function createRebootGame({
     { id: 'p1', name: '플레이어', bot: false },
     { id: 'p2', name: '린', bot: true }
   ],
-  branch = 'wait'
+  branch = 'wait',
+  retryContext = null
 } = {}) {
   const runId = `reboot-${nextRunId++}`;
   const game = {
@@ -574,6 +587,7 @@ export function createRebootGame({
     won: false,
     events: [],
     effects: [],
+    retryContext: normalizeRetryContext(retryContext),
     actionState: {
       p1: { summon: true, merge: false, rescue: false },
       p2: { summon: true, merge: false, rescue: false }
@@ -730,6 +744,7 @@ export function serializeRebootState(game) {
     enemies: game.enemies.map((enemy) => serializeEnemy(game, enemy)),
     resources: clone(game.resources),
     result: clone(game.result),
+    retryContext: clone(game.retryContext ?? null),
     events: clone(game.events),
     effects: clone(game.effects),
     actionState: clone(game.actionState),

@@ -134,6 +134,28 @@ test('combat status prompt names the next useful action instead of only elapsed 
   }), '구원 가능');
 });
 
+test('combat status replays the retry reason and next goal once during the opening', () => {
+  assert.equal(buildCombatStatusPrompt({
+    current: {
+      ...state({ now: 4 }),
+      retryContext: { status: 'lost', reason: 'boss_leaked', nextGoal: 'answer_boss_warning' },
+      resources: { p1: { summon: 10, rescue: 0 } },
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    localBoardId: 'p1'
+  }), '보스 돌파 · 경고 합성');
+
+  assert.equal(buildCombatStatusPrompt({
+    current: {
+      ...state({ now: 9 }),
+      retryContext: { status: 'lost', reason: 'boss_leaked', nextGoal: 'answer_boss_warning' },
+      resources: { p1: { summon: 10, rescue: 0 } },
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    localBoardId: 'p1'
+  }), '첫 유닛 배치');
+});
+
 test('combat status prioritizes rescue preparation over extra summoning during partner danger', () => {
   assert.equal(buildCombatStatusPrompt({
     current: {

@@ -1,4 +1,4 @@
-import { createGame } from '../shared/game.js?v=partner-identity1';
+import { createGame } from '../shared/game.js?v=retry-context1';
 import { SHOP } from '../shared/content.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js';
 
@@ -926,6 +926,13 @@ export function startRebootRetry({ previousGame, action }) {
     mode: previousGame.mode,
     seedName: nextSeedName,
     seed: Number.isFinite(previousGame.seed) ? previousGame.seed + 1 : Date.now(),
-    branch: shouldRotateSeed ? undefined : previousGame.branch
+    branch: shouldRotateSeed ? undefined : previousGame.branch,
+    retryContext: previousGame.result
+      ? {
+          status: previousGame.result.status,
+          reason: previousGame.result.reason,
+          nextGoal: previousGame.result.nextGoal
+        }
+      : null
   });
 }

@@ -417,6 +417,21 @@ test('retry repeats a failed authored bot operation instead of advancing the seq
   assert.notEqual(retry.runId, failedBoss.runId);
 });
 
+test('retry carries the previous result reason and next goal into the fresh run', () => {
+  const failedBoss = createGame({ mode: 'bot', seedName: 'boss_clutch', seed: 60, branch: 'wait' });
+  failedBoss.result = { status: 'lost', reason: 'boss_leaked', nextGoal: 'answer_boss_warning' };
+  const retry = startRebootRetry({ previousGame: failedBoss, action: { action: 'retry' } });
+  const serialized = serializeState(retry);
+
+  assert.deepEqual(retry.retryContext, {
+    status: 'lost',
+    reason: 'boss_leaked',
+    nextGoal: 'answer_boss_warning'
+  });
+  assert.deepEqual(serialized.retryContext, retry.retryContext);
+  assert.equal(retry.result, null);
+});
+
 test('reboot shop renders earned-gem cosmetic purchases with owned and locked states', () => {
   const shop = buildRebootShop({ gems: 90, unlocks: ['founder-board'] });
 

@@ -1,11 +1,11 @@
-import { castLinkPulse, createGame, mergeRelays, serializeState, supplyRelay, tickGame } from '../shared/game.js?v=partner-identity1';
+import { castLinkPulse, createGame, mergeRelays, serializeState, supplyRelay, tickGame } from '../shared/game.js?v=retry-context1';
 import { SHOP } from '../shared/content.js';
 import { createMetaProfile, normalizeMetaProfile } from '../shared/meta.js';
 import { REBOOT_UNITS } from '../shared/reboot_content.js?v=unit-roster1';
 import { buildRebootActionState, commandForRebootAction } from './reboot_actions.js?v=combat-meter2';
-import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildSummonCooldownState, isCriticalRebootAction } from './reboot_action_ui.js?v=role-label1';
+import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabels, buildSummonCooldownState, isCriticalRebootAction } from './reboot_action_ui.js?v=retry-reminder1';
 import { createRebootAudio } from './reboot_audio.js?v=audio-safe1';
-import { updateCombatHudMeters } from './reboot_hud.js?v=role-label1';
+import { updateCombatHudMeters } from './reboot_hud.js?v=retry-reminder1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
 import { preloadCriticalRebootAssets } from './reboot_preload.js?v=shell-backdrop1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=role-label1';
@@ -23,7 +23,7 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=role-label1';
+} from './reboot_screens.js?v=retry-context1';
 import { createRebootOnlineClient } from './reboot_online.js';
 
 const qs = (selector) => document.querySelector(selector);

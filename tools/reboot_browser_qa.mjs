@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v57');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v58');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
       '/src/client/styles.css?v=sound-toggle1': cache
         ? Boolean(await cache.match('/src/client/styles.css?v=sound-toggle1'))
         : false,
-      '/src/client/app.js?v=audio-safe1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=audio-safe1'))
+      '/src/client/app.js?v=retry-reminder1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=retry-reminder1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -108,8 +108,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
         : false,
-      '/src/client/reboot_hud.js?v=role-label1': cache
-        ? Boolean(await cache.match('/src/client/reboot_hud.js?v=role-label1'))
+      '/src/client/reboot_hud.js?v=retry-reminder1': cache
+        ? Boolean(await cache.match('/src/client/reboot_hud.js?v=retry-reminder1'))
         : false,
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
@@ -117,17 +117,17 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_render.js?v=role-label1': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=role-label1'))
         : false,
-      '/src/client/reboot_screens.js?v=role-label1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=role-label1'))
+      '/src/client/reboot_screens.js?v=retry-context1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=retry-context1'))
         : false,
-      '/src/shared/game.js?v=partner-identity1': cache
-        ? Boolean(await cache.match('/src/shared/game.js?v=partner-identity1'))
+      '/src/shared/game.js?v=retry-context1': cache
+        ? Boolean(await cache.match('/src/shared/game.js?v=retry-context1'))
         : false,
-      '/src/shared/reboot_game.js?v=partner-identity1': cache
-        ? Boolean(await cache.match('/src/shared/reboot_game.js?v=partner-identity1'))
+      '/src/shared/reboot_game.js?v=retry-context1': cache
+        ? Boolean(await cache.match('/src/shared/reboot_game.js?v=retry-context1'))
         : false,
-      '/src/client/reboot_action_ui.js?v=role-label1': cache
-        ? Boolean(await cache.match('/src/client/reboot_action_ui.js?v=role-label1'))
+      '/src/client/reboot_action_ui.js?v=retry-reminder1': cache
+        ? Boolean(await cache.match('/src/client/reboot_action_ui.js?v=retry-reminder1'))
         : false,
       '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1'))
@@ -160,7 +160,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v57', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v58', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -2099,7 +2099,29 @@ async function verifyCompactResult(page) {
 
   assert.equal(await page.locator('#resultTitle').isVisible(), true, 'compact result should be reached');
   assert.equal(await page.locator('#resultTitle').textContent(), '같이 버텼다');
+  const resultReason = await page.locator('#resultReason').textContent();
   await assertResultGeneratedCopySurfaces(page);
+
+  const retryReminderByResultReason = {
+    '파트너 구원 성공': '구원 성공 · 80 구원',
+    '보스 막타 성공': '보스 막타 · 경고 선택',
+    '보스 둔화 성공': '보스 둔화 · 제어 보호'
+  };
+  const expectedRetryReminder = retryReminderByResultReason[resultReason] ?? '구원 성공 · 80 구원';
+  await page.locator('#resultLobbyButton').click();
+  await page.locator('#summonButton').waitFor({ state: 'visible' });
+  await page.waitForFunction(
+    (expected) => document.querySelector('#timeMeter')?.textContent === expected,
+    expectedRetryReminder,
+    { polling: 10, timeout: 1000 }
+  );
+  assert.equal(await page.locator('#timeMeter').textContent(), expectedRetryReminder, 'retry reminder should replay the result reason and next goal');
+  await page.waitForFunction(
+    (expected) => document.querySelector('#timeMeter')?.textContent !== expected,
+    expectedRetryReminder,
+    { polling: 10, timeout: 1000 }
+  );
+  assert.notEqual(await page.locator('#timeMeter').textContent(), expectedRetryReminder, 'retry reminder should replay only once during the opening window');
 }
 
 async function main() {

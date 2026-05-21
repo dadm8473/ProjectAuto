@@ -112,14 +112,14 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
 
   assert.equal(lines <= 880, true, `app.js line budget exceeded: ${lines}`);
   for (const marker of [
-    "from '../shared/game.js?v=partner-identity1'",
+    "from '../shared/game.js?v=retry-context1'",
     "from '../shared/reboot_content.js?v=unit-roster1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_action_ui.js?v=role-label1'",
+    "from './reboot_action_ui.js?v=retry-reminder1'",
     "from './reboot_audio.js?v=audio-safe1'",
-    "from './reboot_hud.js?v=role-label1'",
+    "from './reboot_hud.js?v=retry-reminder1'",
     "from './reboot_render.js?v=role-label1'",
-    "from './reboot_screens.js?v=role-label1'",
+    "from './reboot_screens.js?v=retry-context1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -740,7 +740,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=audio-safe1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=retry-reminder1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-identity1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
@@ -835,7 +835,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=role-label1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=retry-context1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=reward-detail1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label2'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=result-action-label1'"), false);
@@ -1323,7 +1323,7 @@ test('combat action buttons use generated icons instead of text-only web buttons
   assert.equal(css.includes('body[data-app-screen="battle"][data-coach-cue="rescue"] .primary-actions::before'), false);
 
   for (const marker of [
-    "from './reboot_action_ui.js?v=role-label1'",
+    "from './reboot_action_ui.js?v=retry-reminder1'",
     'buildCombatCoachCue',
     'buildCombatCommandLabels',
     'buildCombatStatusPrompt',
@@ -2687,6 +2687,7 @@ test('browser QA covers generated result copy surfaces on short phones', async (
     'await assertResultGeneratedCopySurfaces(page);',
     'result highlight should name the memorable rescue moment separately',
     'result highlight repeats the reason copy',
+    'retry reminder should replay the result reason and next goal',
     "await page.setViewportSize({ width: 320, height: 568 });",
     'await verifyCompactResult(page);'
   ]) {
@@ -5081,15 +5082,15 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     '`전력 ${resources.summon}`',
     "reason: actions.summon ? '소환 가능' : '전력 부족'",
     "return { ok: false, reason: '전력이 부족합니다.' };",
-    "from '../shared/game.js?v=partner-identity1'",
+    "from '../shared/game.js?v=retry-context1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=role-label1'",
-    "from './reboot_game.js?v=partner-identity1'",
-    "from '../shared/game.js?v=partner-identity1'",
+    "from './reboot_screens.js?v=retry-context1'",
+    "from './reboot_game.js?v=retry-context1'",
+    "from '../shared/game.js?v=retry-context1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=role-label1',
-    '/src/shared/game.js?v=partner-identity1',
-    '/src/shared/reboot_game.js?v=partner-identity1'
+    '/src/client/reboot_screens.js?v=retry-context1',
+    '/src/shared/game.js?v=retry-context1',
+    '/src/shared/reboot_game.js?v=retry-context1'
   ]) {
     assert.equal(`${html}\n${app}\n${hud}\n${actions}\n${rebootGame}\n${sharedGame}\n${screens}\n${sw}`.includes(marker), true, marker);
   }

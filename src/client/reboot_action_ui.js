@@ -5,10 +5,37 @@ const BOSS_DECISION_END = 102;
 const RESCUE_DANGER_CUE = 70;
 const SUMMON_COACH_END = 16;
 const MERGE_COACH_END = 64;
+const RETRY_REMINDER_START = 1.2;
+const RETRY_REMINDER_END = 7.5;
 const BASE_COMMAND_LABELS = {
   summon: '소환',
   merge: '합성',
   rescue: '구원'
+};
+const RETRY_REASON_LABELS = {
+  partner_rescued: '구원 성공',
+  boss_final_hit: '보스 막타',
+  boss_slowed: '보스 둔화',
+  greed: '욕심 실패',
+  rescue_missed: '구원 지연',
+  boss_leaked: '보스 돌파',
+  boss_unfinished: '보스 미처치',
+  signal_overrun: '신호 위험',
+  merge_gap: '합성 지연',
+  bad_luck: '약한 조합'
+};
+const RETRY_GOAL_LABELS = {
+  time_next_rescue: '80 구원',
+  repeat_boss_timing: '경고 선택',
+  protect_control_unit: '제어 보호',
+  rescue_before_merge_greed: '위험 구원',
+  save_rescue_for_partner_danger: '구원 보존',
+  answer_boss_warning: '경고 합성',
+  focus_boss_damage: '보스 집중',
+  protect_signal_core: '초반 방어',
+  merge_before_boss: '보스 전 합성',
+  turn_bad_rolls_into_utility: '약한 운 활용',
+  retry_first_120_seconds: '초반 재도전'
 };
 
 function hasMergePotential(board) {
@@ -102,9 +129,19 @@ export function buildCombatCoachCue({ current, localBoardId, actions }) {
   return '';
 }
 
+function retryReminderPrompt(current = {}) {
+  const context = current.retryContext;
+  if (!context || current.now < RETRY_REMINDER_START || current.now > RETRY_REMINDER_END) return '';
+  const reason = RETRY_REASON_LABELS[context.reason] ?? '직전 결과';
+  const goal = RETRY_GOAL_LABELS[context.nextGoal] ?? '다음 목표';
+  return `${reason} · ${goal}`;
+}
+
 export function buildCombatStatusPrompt({ current, localBoardId, onlineWaiting = false }) {
   if (current.result) return '전투 완료';
   if (onlineWaiting) return '파트너 대기';
+  const retryPrompt = retryReminderPrompt(current);
+  if (retryPrompt) return retryPrompt;
   const actions = current.actionState?.[localBoardId] ?? {};
   const resources = current.resources?.[localBoardId] ?? { summon: 0, rescue: 0 };
   const board = current.boards?.[localBoardId] ?? current.boards?.p1 ?? { units: [] };

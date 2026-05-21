@@ -17,7 +17,7 @@ import {
   serializeRebootState,
   summonToy,
   tickRebootGame
-} from './reboot_game.js?v=partner-identity1';
+} from './reboot_game.js?v=retry-context1';
 
 let nextId = 1;
 let nextRunId = 1;
@@ -728,8 +728,8 @@ export function computeActiveLinks(board, now = 0) {
   return links;
 }
 
-export function createGame({ mode = 'bot', seed = Date.now(), seedName, branch, players } = {}) {
-  if (seedName) return createRebootGame({ mode, seedName, seed, branch, players });
+export function createGame({ mode = 'bot', seed = Date.now(), seedName, branch, players, retryContext } = {}) {
+  if (seedName) return createRebootGame({ mode, seedName, seed, branch, players, retryContext });
 
   nextId = 1;
   return {
