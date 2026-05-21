@@ -454,6 +454,13 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 90_000
   },
   {
+    path: 'src/client/assets/generated/reboot-splash-season-badge-v1.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260521-splash-season-badge-chromakey-imagegen.png',
+    width: 512,
+    height: 150,
+    minRuntimeBytes: 90_000
+  },
+  {
     path: 'src/client/assets/generated/reboot-splash-footer-shroud.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260514-splash-footer-shroud-imagegen.png',
     width: 430,
@@ -1690,6 +1697,24 @@ test('splash title plate has transparent corners instead of an opaque web banner
   ];
   assert.equal(corners.every((alpha) => alpha < 10), true, 'splash title plate must not render as a black rectangle');
   assert.equal(alphaAt(image, Math.floor(image.width / 2), Math.floor(image.height / 2)) > 220, true);
+});
+
+test('splash season badge is transparent generated chrome for overlaid Korean text', async () => {
+  const image = parsePng(await readFile('src/client/assets/generated/reboot-splash-season-badge-v1.png'));
+  const corners = [
+    alphaAt(image, 1, 1),
+    alphaAt(image, image.width - 2, 1),
+    alphaAt(image, 1, image.height - 2),
+    alphaAt(image, image.width - 2, image.height - 2)
+  ];
+  const bounds = alphaBounds(image, { x: 0, y: 0, width: image.width, height: image.height }, 18);
+  const centerPanelCoverage = alphaCoverage(image, { x: 104, y: 46, width: 304, height: 58 }, 180);
+
+  assert.equal(corners.every((alpha) => alpha < 10), true, `splash season badge has opaque corners: ${corners.join(',')}`);
+  assert.equal(bounds.count > 50_000, true, `splash season badge is too sparse: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.minX >= 4, true, `splash season badge touches left edge: ${JSON.stringify(bounds)}`);
+  assert.equal(bounds.maxX <= image.width - 5, true, `splash season badge touches right edge: ${JSON.stringify(bounds)}`);
+  assert.equal(centerPanelCoverage > 0.9, true, `splash season badge center panel is not solid enough for Korean text: ${centerPanelCoverage}`);
 });
 
 test('bottom navigation selector pads use transparent imagegen cells instead of black rectangles', async () => {

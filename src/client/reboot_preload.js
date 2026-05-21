@@ -7,6 +7,7 @@ export const CRITICAL_REBOOT_ASSETS = [
   '/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1',
   '/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2',
   '/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title',
+  '/src/client/assets/generated/reboot-splash-season-badge-v1.png?v=splash-season-badge1',
   '/src/client/assets/generated/reboot-splash-bottom-deck.png?v=splash-bottom-deck2',
   '/src/client/assets/generated/reboot-lobby-backdrop.png',
   '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1',

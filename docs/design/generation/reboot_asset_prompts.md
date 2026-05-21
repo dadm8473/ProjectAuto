@@ -789,6 +789,21 @@ Runtime files:
 - src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png
 ```
 
+## Runtime Prompt: Splash Season Badge
+
+```text
+Use case: stylized-concept
+Asset type: transparent mobile game UI badge for ProjectAuto splash screen.
+Primary request: Create one compact premium season badge frame with no text, on a perfectly flat solid #00ff00 chroma-key background for background removal.
+Composition: horizontal badge ratio about 3:1, centered ornate sci-fi/fantasy metal badge, transparent-safe padding, dark teal glass center panel sized for overlaid Korean text "시즌 01". The frame must feel like shipped Korean mobile game UI chrome, not a website label.
+Style/medium: polished ProjectAuto rescue relay toy-board tower-defense UI, graphite metal, gold trim, teal inner glow, crisp bevels, small amber/blue gem lights, painterly rendered PNG game asset. Match the splash title plate and lobby operation title plate.
+Constraints: no letters, numbers, symbols, placeholder text, watermark, logo, cast shadow, reflection, floor plane, website card, casino UI, or flat CSS pill. Keep the chroma background perfectly flat and do not use #00ff00 inside the subject.
+Postprocess: remove chroma key with soft matte, trim to alpha bounds, add transparent padding, and resize to 512x150 RGBA runtime PNG.
+Runtime files:
+- docs/design/generation/source/reboot/style-lock/20260521-splash-season-badge-chromakey-imagegen.png
+- src/client/assets/generated/reboot-splash-season-badge-v1.png
+```
+
 ## Runtime Prompt: Dual Crisis Cutin
 
 ```text

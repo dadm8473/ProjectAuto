@@ -635,7 +635,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=operation-title-plate1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=splash-season-badge1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-meter1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-purpose1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shop-title1">'), false);
@@ -1498,7 +1498,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=operation-title-plate1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=splash-season-badge1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=hud-meter1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-purpose1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=shop-title1'), false);
@@ -1885,7 +1885,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=operation-title-plate1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=splash-season-badge1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -4096,6 +4096,7 @@ test('splash title uses generated wordmark and generated subtitle plate', async 
 
   for (const marker of [
     '--splash-title-plate: url("/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title")',
+    '--splash-season-badge: url("/src/client/assets/generated/reboot-splash-season-badge-v1.png?v=splash-season-badge1")',
     'class="splash-title-lockup"',
     'class="splash-season"',
     'class="splash-title-wordmark"',
@@ -4105,6 +4106,8 @@ test('splash title uses generated wordmark and generated subtitle plate', async 
     '.splash-title-wordmark',
     '.splash-title-lockup strong',
     '.splash-title-lockup p',
+    'background-image: var(--splash-season-badge);',
+    'background-size: 100% 100%;',
     'letter-spacing: 0;',
     '.splash-screen > strong'
   ]) {
@@ -4116,6 +4119,36 @@ test('splash title uses generated wordmark and generated subtitle plate', async 
   const lockupBlock = css.slice(css.indexOf('.splash-title-lockup'), css.indexOf('.splash-title-wordmark'));
   assert.equal(lockupBlock.includes('background-repeat:'), false);
   assert.equal(lockupBlock.includes('background-size:'), false);
+});
+
+test('splash season marker uses generated badge art instead of a floating web label', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const html = await readFile('index.html', 'utf8');
+  const seasonBlock = css.slice(css.indexOf('.splash-season {'), css.indexOf('.splash-screen p,'));
+
+  for (const marker of [
+    '<span class="splash-season">시즌 01</span>',
+    '--splash-season-badge: url("/src/client/assets/generated/reboot-splash-season-badge-v1.png?v=splash-season-badge1")',
+    'background-image: var(--splash-season-badge);',
+    'background-repeat: no-repeat;',
+    'background-position: center;',
+    'background-size: 100% 100%;',
+    'aspect-ratio: 512 / 150;'
+  ]) {
+    assert.equal(`${html}\n${css}\n${seasonBlock}`.includes(marker), true, marker);
+  }
+
+  for (const forbidden of [
+    'background:',
+    'background-color:',
+    'linear-gradient',
+    'border:',
+    'box-shadow:',
+    'font-size: clamp(',
+    'min-height: clamp('
+  ]) {
+    assert.equal(seasonBlock.includes(forbidden), false, forbidden);
+  }
 });
 
 test('splash title remains readable on 360px portrait screens', async () => {

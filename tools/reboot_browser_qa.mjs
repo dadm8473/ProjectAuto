@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v77');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v78');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=operation-title-plate1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=operation-title-plate1'))
+      '/src/client/styles.css?v=splash-season-badge1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=splash-season-badge1'))
         : false,
       '/src/client/app.js?v=meta-clarity1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=meta-clarity1'))
@@ -122,6 +122,9 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png?v=operation-title-plate1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png?v=operation-title-plate1'))
+        : false,
+      '/src/client/assets/generated/reboot-splash-season-badge-v1.png?v=splash-season-badge1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-splash-season-badge-v1.png?v=splash-season-badge1'))
         : false,
       '/src/client/reboot_actions.js?v=combat-meter2': cache
         ? Boolean(await cache.match('/src/client/reboot_actions.js?v=combat-meter2'))
@@ -187,7 +190,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v77', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v78', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1428,6 +1431,39 @@ async function assertSplashCtaClearsBottomDeck(page) {
   );
 }
 
+async function assertSplashSeasonBadge(page, label) {
+  const badge = await page.locator('.splash-season').evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    return {
+      text: node.textContent?.trim(),
+      backgroundImage: style.backgroundImage,
+      backgroundSize: style.backgroundSize,
+      borderRadius: style.borderTopLeftRadius,
+      boxShadow: style.boxShadow,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      rawWidth: rect.width,
+      rawHeight: rect.height,
+      scrollWidth: node.scrollWidth,
+      clientWidth: node.clientWidth,
+      top: Math.round(rect.top),
+      left: Math.round(rect.left),
+      right: Math.round(rect.right),
+      viewportWidth: window.innerWidth
+    };
+  });
+  assert.equal(badge.text, '시즌 01', `${label} splash season copy changed: ${JSON.stringify(badge)}`);
+  assert.match(badge.backgroundImage, /reboot-splash-season-badge-v1/, `${label} splash season badge lacks generated art: ${JSON.stringify(badge)}`);
+  assert.equal(badge.backgroundSize, '100% 100%', `${label} splash season badge art not fitted: ${JSON.stringify(badge)}`);
+  assert.equal(badge.borderRadius, '0px', `${label} splash season badge still uses css pill radius: ${JSON.stringify(badge)}`);
+  assert.equal(badge.boxShadow, 'none', `${label} splash season badge still uses css shadow surface: ${JSON.stringify(badge)}`);
+  assert.equal(badge.width >= 104 && badge.height >= 31, true, `${label} splash season badge too small: ${JSON.stringify(badge)}`);
+  assert.equal(Math.abs(badge.rawWidth / badge.rawHeight - 512 / 150) < 0.03, true, `${label} splash season badge distorts generated art ratio: ${JSON.stringify(badge)}`);
+  assert.equal(badge.scrollWidth <= badge.clientWidth + 1, true, `${label} splash season badge text overflows: ${JSON.stringify(badge)}`);
+  assert.equal(badge.left >= 0 && badge.right <= badge.viewportWidth, true, `${label} splash season badge leaves viewport: ${JSON.stringify(badge)}`);
+}
+
 async function assertCombatDockSafeArea(page) {
   const geometry = await page.locator('.action-panel').evaluate((node) => {
     const panel = node.getBoundingClientRect();
@@ -2054,6 +2090,7 @@ async function verifyShell(page, viewport) {
   });
   assert.equal(shell.width <= Math.min(viewport.width, 430), true, `shell width ${shell.width}`);
   assert.equal(shell.scrollWidth <= shell.clientWidth, true, 'horizontal overflow');
+  await assertSplashSeasonBadge(page, 'splash');
   await assertSplashCtaClearsBottomDeck(page);
 
   await page.getByRole('button', { name: '시작' }).click();
@@ -2192,6 +2229,7 @@ async function verifyCompactLobby(page) {
   await page.locator('#loadingGate').waitFor({ state: 'hidden' });
   await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
   assert.equal(await page.locator('audio, video').count(), 0);
+  await assertSplashSeasonBadge(page, 'compact splash');
   await page.getByRole('button', { name: '시작' }).click();
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).waitFor({ state: 'visible' });
   await assertLobbyProfilePlate(page, 'compact lobby', 'Lv.1');

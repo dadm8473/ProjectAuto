@@ -46,6 +46,7 @@
   --title-wordmark: url("/src/client/assets/generated/reboot-title-wordmark-v1.png?v=title-wordmark1");
   --hero-squad: url("/src/client/assets/generated/reboot-hero-squad-v2.png?v=hero-squad-v2");
   --splash-title-plate: url("/src/client/assets/generated/reboot-splash-title-plate.png?v=splash-title");
+  --splash-season-badge: url("/src/client/assets/generated/reboot-splash-season-badge-v1.png?v=splash-season-badge1");
   --loading-gate-plate: var(--splash-title-plate);
   --loading-gate-emblem: var(--title-emblem);
   --loading-gate-meter: url("/src/client/assets/generated/reboot-loading-gate-meter.png?v=loading-meter1");
@@ -1888,15 +1889,29 @@ body[data-app-screen="season"] .app-screen::after {
 
 .splash-season {
   position: absolute;
-  top: clamp(22px, 6.51vw, 28px);
+  top: clamp(14px, 4.65vw, 20px);
   left: 50%;
+  z-index: 2;
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: clamp(106px, 31vw, 124px);
+  aspect-ratio: 512 / 150;
+  min-height: 0;
+  padding: 4px 18px 5px;
   transform: translateX(-50%);
-  color: var(--mint);
-  font-size: clamp(10px, 3.02vw, 13px);
+  background-image: var(--splash-season-badge);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  color: #fff2c7;
+  font-size: 12px;
   font-weight: 1000;
   line-height: 1;
   letter-spacing: 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.72);
+  white-space: nowrap;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.78);
+  filter: drop-shadow(0 7px 13px rgba(0, 0, 0, 0.54));
 }
 
 .splash-screen p,
