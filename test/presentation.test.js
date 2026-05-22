@@ -51,6 +51,7 @@ function fakeRebootAssets(overrides = {}) {
     hitBeam: fakeImage(320, 64),
     hitBolts: fakeImage(768, 128),
     actionStamps: fakeImage(768, 128),
+    momentCallouts: fakeImage(1170, 144),
     partnerAssistPings: fakeImage(640, 100),
     crisisOverlays: fakeImage(780, 160),
     rewardPickups: fakeImage(768, 128),
@@ -118,7 +119,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_action_ui.js?v=hud-meter1'",
     "from './reboot_audio.js?v=audio-safe1'",
     "from './reboot_hud.js?v=board-copy1'",
-    "from './reboot_render.js?v=opening-placement1'",
+    "from './reboot_render.js?v=moment-scenes1'",
     "from './reboot_result_ui.js?v=result-hook1'",
     "from './reboot_screens.js?v=objective-route1'",
     "from './reboot_online.js'"
@@ -765,7 +766,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=opening-placement1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=moment-scenes1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready-compact1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=defense-pressure1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shelf-select1"></script>'), false);
@@ -852,7 +853,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=opening-placement1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=moment-scenes1'"), true);
   assert.equal(app.includes("from './reboot_render.js?v=partner-ready-compact1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=first-payoff1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=partner-ready1'"), false);
@@ -3129,31 +3130,38 @@ test('equipped cosmetics appear in battle as generated expression sigils only', 
   assert.equal(signatureBlock.includes('fillText'), false);
 });
 
-test('combat renderer uses compact generated action stamps for successful actions', async () => {
+test('combat renderer uses generated moment scenes for successful actions', async () => {
   const render = await readFile('src/client/reboot_render.js', 'utf8');
 
   for (const marker of [
+    'momentCallouts',
+    "src: '/src/client/assets/generated/reboot-combat-moment-callouts.png?v=moment-callouts1'",
+    'const momentCallouts = new Image();',
+    'momentCallouts.src = REBOOT_EFFECT_MANIFEST.momentCallouts.src;',
     'actionStamps',
     "src: '/src/client/assets/generated/reboot-combat-action-stamps.png?v=action-stamps1'",
     'drawCombatMomentCallout',
-    'drawActionStampPanel',
+    'drawMomentCalloutPanel',
     'const MOMENT_CALLOUT_DURATION = 1.85;',
     'const MOMENT_CALLOUT_FADE_SECONDS = 0.5;',
     'function momentCalloutAlpha(state, event)',
     "recentEvents(state, 'summon', MOMENT_CALLOUT_DURATION)",
     "recentEvents(state, 'merge', MOMENT_CALLOUT_DURATION)",
     "recentEvents(state, 'rescue', MOMENT_CALLOUT_DURATION)",
-    'if (!assets.actionStamps?.complete || assets.actionStamps.naturalWidth <= 0) return;',
-    'drawActionStampPanel(ctx, assets.actionStamps, meta.index, x, y, w, h, alpha);',
+    'const drewMomentCallout = drawMomentCalloutPanel(ctx, assets.momentCallouts, meta.index, x, y, w, h, alpha);',
+    'if (!drewMomentCallout && !drawActionStampPanel(ctx, assets.actionStamps, meta.index, x, y, w, h, alpha)) return;',
     'const alpha = momentCalloutAlpha(state, event);',
-    'const h = 74;',
-    'const w = 252;',
-    'const y = 326 - rise;',
+    'const h = 116;',
+    'const w = 314;',
+    "function momentCalloutBaseY(state, localBoardId = 'p1')",
+    'return bossWarning || partnerDanger ? 340 : 284;',
+    'const y = momentCalloutBaseY(state, localBoardId) - rise;',
+    'drawCombatMomentCallout(ctx, state, assets, localBoardId);',
     'MOMENT_CALLOUTS',
     'UNIT_ROLE_LABELS',
     'UNIT_ROLE_VALUE_LABELS',
     'momentCalloutDetail(event, meta)',
-    'ctx.fillText(detail, x + 82, y + 58);',
+    'ctx.fillText(detail, x + 124, y + 76);',
     'REBOOT_UNITS[event.unitIdResult ?? event.unitId]',
     'const value = UNIT_ROLE_VALUE_LABELS[unit.role] ?? role;',
     'return `${unit.name} · ${role}/${value}`;',
@@ -3165,9 +3173,8 @@ test('combat renderer uses compact generated action stamps for successful action
   }
 
   const calloutBlock = render.slice(render.indexOf('function drawCombatMomentCallout'), render.indexOf('function drawPartnerAssistPing'));
-  assert.equal(render.includes('momentCallouts'), false);
-  assert.equal(calloutBlock.includes('assets.momentCallouts'), false);
-  assert.equal(calloutBlock.includes('drawMomentCalloutPanel'), false);
+  assert.equal(calloutBlock.includes('if (!drewMomentCallout && !drawActionStampPanel(ctx, assets.actionStamps'), true);
+  assert.equal(calloutBlock.includes('drawMomentCalloutPanel(ctx, assets.momentCallouts'), true);
 });
 
 test('combat renderer uses generated partner assist pings for bot co-op actions', async () => {

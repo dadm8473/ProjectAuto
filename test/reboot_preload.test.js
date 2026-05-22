@@ -115,6 +115,7 @@ test('warmup preload includes generated meta combat mission and result assets', 
     '/src/client/assets/generated/reboot-combat-meter-sockets-v2.png?v=meter-sockets-v2',
     '/src/client/assets/generated/reboot-partner-standby-sigils-v2.png?v=partner-standby2',
     '/src/client/assets/generated/reboot-online-waiting-field-v1.png?v=online-wait-field1',
+    '/src/client/assets/generated/reboot-combat-moment-callouts.png?v=moment-callouts1',
     '/src/client/assets/generated/reboot-combat-action-dock.png?v=command-console1'
   ];
 

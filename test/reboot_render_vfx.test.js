@@ -1895,13 +1895,6 @@ test('combat action feedback falls back to generated action stamps while reveal 
     }
   );
 
-  const stampDraw = ctx.commands.find((command) => (
-    command.type === 'drawImage'
-      && command.args[0] === actionStamps
-      && command.args[1] === 512
-      && command.args[7] >= 240
-      && command.args[8] >= 70
-  ));
   const compactFallbacks = ctx.commands.filter((command) => (
     command.type === 'drawImage'
       && command.args[0] === actionStamps
@@ -1911,7 +1904,6 @@ test('combat action feedback falls back to generated action stamps while reveal 
   ));
   const compactSources = compactFallbacks.map((command) => command.args[1]);
 
-  assert.ok(stampDraw, 'expected generated action stamp fallback for the latest rescue action');
   assert.equal(compactSources.includes(0), true, 'missing compact generated summon fallback stamp');
   assert.equal(compactSources.includes(256), true, 'missing compact generated merge fallback stamp');
   assert.equal(compactSources.includes(512), true, 'missing compact generated rescue fallback stamp');
@@ -3089,6 +3081,95 @@ test('first summon payoff keeps generated ignition after the reveal flash clears
   assert.ok(spotlightDraw, 'first summon should keep a generated payoff spotlight after reveal fades');
 });
 
+test('successful combat actions use generated moment scenes for premium payoff callouts', () => {
+  const ctx = mockContext();
+  const momentCallouts = image(1170, 144);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 1.08,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard' }],
+      events: [{ type: 'summon', at: 0.64, playerId: 'p1', unitIdResult: 'spark_pin' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      combatRevealVfx: image(1920, 512),
+      summonIgnition: image(768, 256),
+      firstCommandSpotlight: image(256, 128),
+      playerBoardTray: image(780, 320),
+      momentCallouts
+    }
+  );
+
+  const calloutScene = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === momentCallouts
+      && command.args[1] === 0
+      && command.args[3] === 390
+      && command.args[4] === 144
+      && command.args[7] >= 300
+      && command.args[8] >= 108
+  ));
+
+  assert.ok(calloutScene, 'expected the summon success callout to use the generated moment scene atlas');
+});
+
+test('combat moment callout falls back to generated action stamps while scene art loads', () => {
+  const ctx = mockContext();
+  const actionStamps = image(768, 128);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 1.08,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard' }],
+      events: [{ type: 'summon', at: 0.64, playerId: 'p1', unitIdResult: 'spark_pin' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      combatRevealVfx: image(1920, 512),
+      summonIgnition: image(768, 256),
+      firstCommandSpotlight: image(256, 128),
+      playerBoardTray: image(780, 320),
+      actionStamps
+    }
+  );
+
+  const fallbackCallout = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === actionStamps
+      && command.args[1] === 0
+      && command.args[7] >= 300
+      && command.args[8] >= 108
+  ));
+
+  assert.ok(fallbackCallout, 'expected success callout to keep an action-stamp panel while moment scene art is unavailable');
+  assert.equal(
+    ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '스파크 핀 · 공격/피해'),
+    true,
+    'fallback callout should preserve the same action result text'
+  );
+});
+
 test('second online player gets first summon premium VFX on their own lower board', () => {
   const ctx = mockContext();
   drawRebootBattle(
@@ -3575,8 +3656,9 @@ test('first player action clears the operation start cutin so combat feedback st
   assert.deepEqual(actionFlashDraws(ctx.commands, 0), [], 'first action should no longer render the old compact summon flash');
 });
 
-test('compact combat action stamp stays readable long enough after the first summon', () => {
+test('combat moment scene stays readable long enough after the first summon', () => {
   const ctx = mockContext();
+  const momentCallouts = image(1170, 144);
   drawRebootBattle(
     ctx,
     {
@@ -3596,27 +3678,28 @@ test('compact combat action stamp stays readable long enough after the first sum
       enemies: image(1024, 256),
       board: image(1280, 256),
       vfx: image(1280, 256),
-      actionStamps: image(768, 128),
+      momentCallouts,
       playerBoardTray: image(780, 320)
     }
   );
 
-  const stampDraw = ctx.commands.find((command) => (
+  const sceneDraw = ctx.commands.find((command) => (
     command.type === 'drawImage'
-      && command.args[0].naturalWidth === 768
-      && command.args[0].naturalHeight === 128
+      && command.args[0] === momentCallouts
+      && command.args[0].naturalWidth === 1170
+      && command.args[0].naturalHeight === 144
   ));
-  assert.ok(stampDraw, 'expected compact summon action stamp to remain visible after the action feedback');
-  assert.equal(stampDraw.args[6] >= 320, true, `action stamp should sit below the center track: ${stampDraw.args[6]}`);
-  assert.equal(stampDraw.args[8] <= 78, true, `action stamp should stay compact: ${stampDraw.args[8]}`);
-  const stampIndex = ctx.commands.indexOf(stampDraw);
-  const stampAlpha = ctx.commands
-    .slice(0, stampIndex)
+  assert.ok(sceneDraw, 'expected summon moment scene to remain visible after the action feedback');
+  assert.equal(sceneDraw.args[6] >= 270, true, `moment scene should sit below the center track: ${sceneDraw.args[6]}`);
+  assert.equal(sceneDraw.args[8] >= 108, true, `moment scene should use the premium generated callout height: ${sceneDraw.args[8]}`);
+  const sceneIndex = ctx.commands.indexOf(sceneDraw);
+  const sceneAlpha = ctx.commands
+    .slice(0, sceneIndex)
     .findLast((command) => command.type === 'globalAlpha')?.value ?? 0;
-  assert.equal(stampAlpha >= 0.82, true, `action stamp should remain legible while the unit lands: ${stampAlpha}`);
+  assert.equal(sceneAlpha >= 0.82, true, `moment scene should remain legible while the unit lands: ${sceneAlpha}`);
 });
 
-test('summon action stamp names the revealed unit and role', () => {
+test('summon moment scene names the revealed unit and role', () => {
   const ctx = mockContext();
   drawRebootBattle(
     ctx,
@@ -3637,7 +3720,7 @@ test('summon action stamp names the revealed unit and role', () => {
       enemies: image(1024, 256),
       board: image(1280, 256),
       vfx: image(1280, 256),
-      actionStamps: image(768, 128),
+      momentCallouts: image(1170, 144),
       playerBoardTray: image(780, 320)
     }
   );
@@ -3645,14 +3728,14 @@ test('summon action stamp names the revealed unit and role', () => {
   assert.equal(
     ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '스파크 핀 · 공격/피해'),
     true,
-    'summon reward stamp should reveal the unit identity and combat value without opening a separate web panel'
+    'summon moment scene should reveal the unit identity and combat value without opening a separate web panel'
   );
   const detailIndex = ctx.commands.findIndex((command) => command.type === 'fillText' && command.args[0] === '스파크 핀 · 공격/피해');
   const detailFont = ctx.commands.slice(0, detailIndex).findLast((command) => command.type === 'font')?.value ?? '';
-  assert.match(detailFont, /12px/, 'unit identity should stay readable on a phone-scale action stamp');
+  assert.match(detailFont, /12px/, 'unit identity should stay readable on a phone-scale action scene');
 });
 
-test('summon action stamp explains control units as slow value, not only role taxonomy', () => {
+test('summon moment scene explains control units as slow value, not only role taxonomy', () => {
   const ctx = mockContext();
   drawRebootBattle(
     ctx,
@@ -3673,7 +3756,7 @@ test('summon action stamp explains control units as slow value, not only role ta
       enemies: image(1024, 256),
       board: image(1280, 256),
       vfx: image(1280, 256),
-      actionStamps: image(768, 128),
+      momentCallouts: image(1170, 144),
       playerBoardTray: image(780, 320)
     }
   );
@@ -3685,8 +3768,9 @@ test('summon action stamp explains control units as slow value, not only role ta
   );
 });
 
-test('rescue action stamp stays below boss warning copy during crisis timing', () => {
+test('rescue moment scene stays below boss warning copy during crisis timing', () => {
   const ctx = mockContext();
+  const momentCallouts = image(1170, 144);
   drawRebootBattle(
     ctx,
     {
@@ -3706,42 +3790,41 @@ test('rescue action stamp stays below boss warning copy during crisis timing', (
       enemies: image(1024, 256),
       board: image(1280, 256),
       vfx: image(1280, 256),
-	      bossCutin: image(390, 128),
-	      actionSurges: image(780, 620),
-	      actionStamps: image(768, 128),
+      bossCutin: image(390, 128),
+      actionSurges: image(780, 620),
+      momentCallouts,
       playerBoardTray: image(780, 320),
       bossAuras: image(768, 192),
       crisisOverlays: image(780, 320)
     }
   );
 
-	  const bossTitleIndex = ctx.commands.findIndex((command) => (
-	    command.type === 'fillText' && command.args[0] === '보스 접근'
-	  ));
-	  const actionSurgeIndex = ctx.commands.findIndex((command) => (
-	    command.type === 'drawImage'
-	      && command.args[0].naturalWidth === 780
-	      && command.args[0].naturalHeight === 620
-	  ));
-	  const rescueStampDraw = ctx.commands.find((command) => (
+  const bossTitleIndex = ctx.commands.findIndex((command) => (
+    command.type === 'fillText' && command.args[0] === '보스 접근'
+  ));
+  const actionSurgeIndex = ctx.commands.findIndex((command) => (
     command.type === 'drawImage'
-      && command.args[0].naturalWidth === 768
-      && command.args[0].naturalHeight === 128
-      && command.args[1] === 512
+      && command.args[0].naturalWidth === 780
+      && command.args[0].naturalHeight === 620
+  ));
+  const rescueSceneDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === momentCallouts
+      && command.args[1] === 780
       && command.args[7] >= 240
   ));
-	  assert.notEqual(bossTitleIndex, -1, 'expected boss warning title to render during crisis timing');
-	  assert.notEqual(actionSurgeIndex, -1, 'expected rescue action surge to render during crisis timing');
-	  assert.equal(actionSurgeIndex < bossTitleIndex, true, 'full-canvas action surge should stay below boss warning copy');
-	  assert.ok(rescueStampDraw, 'expected compact rescue action stamp to render during crisis timing');
-  const stampIndex = ctx.commands.indexOf(rescueStampDraw);
-  assert.equal(stampIndex > bossTitleIndex, true, 'action stamp should be layered after the boss warning art');
-  assert.equal(rescueStampDraw.args[6] >= 320, true, `rescue stamp should stay below boss warning copy: ${rescueStampDraw.args[6]}`);
-  assert.equal(rescueStampDraw.args[8] <= 78, true, `rescue stamp should stay compact: ${rescueStampDraw.args[8]}`);
-  const stampAlpha = ctx.commands
-    .slice(0, stampIndex)
+  assert.notEqual(bossTitleIndex, -1, 'expected boss warning title to render during crisis timing');
+  assert.notEqual(actionSurgeIndex, -1, 'expected rescue action surge to render during crisis timing');
+  assert.equal(actionSurgeIndex < bossTitleIndex, true, 'full-canvas action surge should stay below boss warning copy');
+  assert.ok(rescueSceneDraw, 'expected rescue moment scene to render during crisis timing');
+  const sceneIndex = ctx.commands.indexOf(rescueSceneDraw);
+  assert.equal(sceneIndex > bossTitleIndex, true, 'moment scene should be layered after the boss warning art');
+  assert.equal(rescueSceneDraw.args[6] >= 334, true, `rescue moment scene should start below the boss warning panel: ${rescueSceneDraw.args[6]}`);
+  assert.equal(rescueSceneDraw.args[8] >= 108, true, `rescue moment scene should keep premium generated height: ${rescueSceneDraw.args[8]}`);
+  const sceneAlpha = ctx.commands
+    .slice(0, sceneIndex)
     .findLast((command) => command.type === 'globalAlpha')?.value ?? 0;
-  assert.equal(stampAlpha >= 0.82, true, `rescue stamp should remain legible during boss warning: ${stampAlpha}`);
+  assert.equal(sceneAlpha >= 0.82, true, `rescue moment scene should remain legible during boss warning: ${sceneAlpha}`);
 });
 
 test('playable partner danger overrides boss cutin with a generated dual crisis banner', () => {

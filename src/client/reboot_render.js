@@ -141,6 +141,12 @@ export const REBOOT_EFFECT_MANIFEST = {
     height: 128,
     source: 'imagegen'
   },
+  momentCallouts: {
+    src: '/src/client/assets/generated/reboot-combat-moment-callouts.png?v=moment-callouts1',
+    width: 1170,
+    height: 144,
+    source: 'imagegen'
+  },
   directiveBanner: {
     src: '/src/client/assets/generated/reboot-combat-directive-banner.png?v=directive-banner1',
     width: 768,
@@ -361,6 +367,8 @@ export function createRebootAssetImages() {
   hitBolts.src = REBOOT_EFFECT_MANIFEST.hitBolts.src;
   const actionStamps = new Image();
   actionStamps.src = REBOOT_EFFECT_MANIFEST.actionStamps.src;
+  const momentCallouts = new Image();
+  momentCallouts.src = REBOOT_EFFECT_MANIFEST.momentCallouts.src;
   const directiveBanner = new Image();
   directiveBanner.src = REBOOT_EFFECT_MANIFEST.directiveBanner.src;
   const partnerAssistPings = new Image();
@@ -407,7 +415,7 @@ export function createRebootAssetImages() {
   openingThreatPreview.src = REBOOT_EFFECT_MANIFEST.openingThreatPreview.src;
   const signalCoreGates = new Image();
   signalCoreGates.src = REBOOT_EFFECT_MANIFEST.signalCoreGates.src;
-  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, directiveBanner, partnerAssistPings, partnerStandbySigils, onlineWaitingField, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, playerBoardBridge, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts, enemySpawnGates, openingThreatPreview, signalCoreGates };
+  return { ...atlases, backdrop, startCutin, bossCutin, rescueCutin, dualCrisisCutin, killBurst, hitBeam, hitBolts, actionStamps, momentCallouts, directiveBanner, partnerAssistPings, partnerStandbySigils, onlineWaitingField, crisisOverlays, rewardPickups, bossAuras, fieldFinaleBursts, cosmeticSigils, playerBoardTray, playerBoardBridge, unitActivationRing, actionSurges, boardLabelPlates, firstCommandSpotlight, firstSummonBeacon, combatRevealVfx, summonIgnition, enemyTrackTrails, enemyImpactBursts, enemySpawnGates, openingThreatPreview, signalCoreGates };
 }
 
 function cellFromManifest(group, spriteKey) {
@@ -474,6 +482,16 @@ function drawImageCover(ctx, image, x, y, w, h, alpha = 1) {
 }
 
 function drawActionStampPanel(ctx, image, index, x, y, w, h, alpha = 1) {
+  if (!image?.complete || image.naturalWidth <= 0) return false;
+  const cellWidth = image.naturalWidth / 3;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, x, y, w, h);
+  ctx.restore();
+  return true;
+}
+
+function drawMomentCalloutPanel(ctx, image, index, x, y, w, h, alpha = 1) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const cellWidth = image.naturalWidth / 3;
   ctx.save();
@@ -1869,7 +1887,13 @@ function hasRecentLocalPlayerActionSurge(state, localBoardId = 'p1') {
   ));
 }
 
-function drawCombatMomentCallout(ctx, state, assets = {}) {
+function momentCalloutBaseY(state, localBoardId = 'p1') {
+  const bossWarning = state.now >= 92 && state.now < 102;
+  const partnerDanger = partnerDangerActive(state, localBoardId);
+  return bossWarning || partnerDanger ? 340 : 284;
+}
+
+function drawCombatMomentCallout(ctx, state, assets = {}, localBoardId = 'p1') {
   const moments = [
     ...recentEvents(state, 'summon', MOMENT_CALLOUT_DURATION),
     ...recentEvents(state, 'merge', MOMENT_CALLOUT_DURATION),
@@ -1881,28 +1905,28 @@ function drawCombatMomentCallout(ctx, state, assets = {}) {
 
   const alpha = momentCalloutAlpha(state, event);
   const rise = (1 - alpha) * 6;
-  const x = 68;
-  const w = 252;
-  const h = 74;
-  const y = 326 - rise;
+  const x = 38;
+  const w = 314;
+  const h = 116;
+  const y = momentCalloutBaseY(state, localBoardId) - rise;
 
-  if (!assets.actionStamps?.complete || assets.actionStamps.naturalWidth <= 0) return;
+  const drewMomentCallout = drawMomentCalloutPanel(ctx, assets.momentCallouts, meta.index, x, y, w, h, alpha);
+  if (!drewMomentCallout && !drawActionStampPanel(ctx, assets.actionStamps, meta.index, x, y, w, h, alpha)) return;
   ctx.save();
-  drawActionStampPanel(ctx, assets.actionStamps, meta.index, x, y, w, h, alpha);
-  drawAtlasSprite(ctx, assets, 'ui', meta.icon, x + 44, y + 38, 32, alpha);
+  drawAtlasSprite(ctx, assets, 'ui', meta.icon, x + 82, y + 58, 34, alpha);
   ctx.globalAlpha *= alpha;
   ctx.fillStyle = '#fff7dc';
   ctx.shadowColor = meta.index === 1 ? '#f4c95d' : '#58d7ff';
-  ctx.shadowBlur = 13;
-  ctx.font = '900 16px system-ui';
-  ctx.fillText(meta.title, x + 82, y + 43);
+  ctx.shadowBlur = 15;
+  ctx.font = '950 18px system-ui';
+  ctx.fillText(meta.title, x + 124, y + 57);
   const detail = momentCalloutDetail(event, meta);
   if (detail) {
     ctx.shadowColor = '#071314';
-    ctx.shadowBlur = 5;
+    ctx.shadowBlur = 6;
     ctx.fillStyle = 'rgba(255, 248, 218, 0.94)';
     ctx.font = '850 12px system-ui';
-    ctx.fillText(detail, x + 82, y + 58);
+    ctx.fillText(detail, x + 124, y + 76);
   }
   ctx.restore();
 }
@@ -2080,5 +2104,5 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
   }
   drawPartnerReadyPing(ctx, state, assets, localBoardId, options);
   drawPartnerAssistPing(ctx, state, assets, localBoardId);
-  drawCombatMomentCallout(ctx, state, assets);
+  drawCombatMomentCallout(ctx, state, assets, localBoardId);
 }
