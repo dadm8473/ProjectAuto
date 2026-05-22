@@ -24,7 +24,7 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=objective-route1';
+} from './reboot_screens.js?v=objective-slot-label1';
 import { createRebootOnlineClient } from './reboot_online.js';
 const qs = (selector) => document.querySelector(selector);
 const query = new URLSearchParams(location.search);

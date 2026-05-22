@@ -1,9 +1,9 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v119';
+const CACHE_NAME = 'projectauto-reboot-shell-v120';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/src/client/styles.css?v=objective-route1',
+  '/src/client/styles.css?v=objective-slot-label1',
   '/src/client/app.js?v=moment-scenes1',
   '/src/client/reboot_audio.js?v=audio-safe1',
   '/src/client/reboot_actions.js?v=combat-meter2',
@@ -13,7 +13,7 @@ const APP_SHELL_URLS = [
   '/src/client/reboot_preload.js?v=lobby-defer1',
   '/src/client/reboot_render.js?v=moment-scenes1',
   '/src/client/reboot_result_ui.js?v=result-hook1',
-  '/src/client/reboot_screens.js?v=objective-route1',
+  '/src/client/reboot_screens.js?v=objective-slot-label1',
   '/src/client/reboot_online.js',
   '/src/shared/game.js?v=retry-context1',
   '/src/shared/reboot_game.js?v=retry-context1',

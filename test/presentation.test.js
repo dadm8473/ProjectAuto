@@ -121,7 +121,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_hud.js?v=board-copy1'",
     "from './reboot_render.js?v=moment-scenes1'",
     "from './reboot_result_ui.js?v=result-hook1'",
-    "from './reboot_screens.js?v=objective-route1'",
+    "from './reboot_screens.js?v=objective-slot-label1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -643,7 +643,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-route1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-slot-label1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-defer1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-select1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), false);
@@ -885,7 +885,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=route-core1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=objective-route1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=objective-slot-label1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=shelf-select1'"), false);
   assert.equal(app.includes("from './reboot_result_ui.js?v=result-ui2'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), false);
@@ -1545,7 +1545,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=objective-route1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=objective-slot-label1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-defer1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=objective-stamps1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=reward-flow1'), false);
@@ -2011,7 +2011,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=objective-route1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=objective-slot-label1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -5814,7 +5814,7 @@ test('mission and season rows show compact generated progress readouts inside ea
     assert.equal(copyBlock.includes(marker), true, marker);
   }
   const stampDensityBlock = cssRuleBlock(css, '.meta-progress-board[data-intel-density="stamp"] .card-copy');
-  assert.equal(stampDensityBlock.includes('grid-template-rows: minmax(22px, auto) 16px;'), true);
+  assert.equal(stampDensityBlock.includes('grid-template-rows: 18px minmax(20px, auto) 16px;'), true);
   assert.equal(missions.includes('data-intel-density="stamp"'), true);
   assert.equal(season.includes('data-intel-density="stamp"'), true);
 
@@ -5833,6 +5833,30 @@ test('mission and season rows show compact generated progress readouts inside ea
   const progressBlock = cssRuleBlock(css, '.meta-progress-board .meta-progress');
   assert.equal(progressBlock.includes('height: 16px;'), true);
   assert.equal(progressBlock.includes('width: min(100%, 148px);'), true);
+});
+
+test('mission and season rows use compact visible slot labels without adding extra controls', async () => {
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const missions = buildMissionScreen({ processedRuns: [], unitLevels: {}, unlocks: [], claimedMissions: [] });
+  const season = buildSeasonScreen({ xp: 0, claimedPassTiers: [] });
+
+  for (const marker of [
+    'class="objective-slot-title" aria-hidden="true"',
+    'missionSlotTitle(mission)',
+    'seasonSlotTitle(tier, index)',
+    '.meta-progress-board .objective-slot-title',
+    '<span class="objective-slot-title" aria-hidden="true">첫 작전 완료</span>',
+    '<span class="objective-slot-title" aria-hidden="true">1단계 · 20보석</span>'
+  ]) {
+    assert.equal(`${screens}\n${css}\n${missions}\n${season}`.includes(marker), true, marker);
+  }
+
+  const titleBlock = cssRuleBlock(css, '.meta-progress-board .objective-slot-title');
+  assert.equal(titleBlock.includes('text-overflow: ellipsis;'), true);
+  assert.equal(titleBlock.includes('white-space: nowrap;'), true);
+  assert.equal(titleBlock.includes('letter-spacing: 0;'), true);
+  assert.equal(titleBlock.includes('pointer-events: none;'), true);
 });
 
 test('combat resource HUD uses generated icons instead of text-only chips', async () => {
@@ -5885,11 +5909,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=retry-context1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=objective-route1'",
+    "from './reboot_screens.js?v=objective-slot-label1'",
     "from './reboot_game.js?v=retry-context1'",
     "from '../shared/game.js?v=retry-context1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=objective-route1',
+    '/src/client/reboot_screens.js?v=objective-slot-label1',
     '/src/shared/game.js?v=retry-context1',
     '/src/shared/reboot_game.js?v=retry-context1'
   ]) {

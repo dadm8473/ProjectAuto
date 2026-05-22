@@ -5310,6 +5310,26 @@ body[data-app-screen="season"] .app-screen::after {
   border: 0;
 }
 
+.meta-progress-board .objective-slot-title {
+  display: inline-grid;
+  place-items: center;
+  max-width: min(100%, 150px);
+  min-height: 18px;
+  overflow: hidden;
+  color: #fff7dc;
+  font-size: clamp(11px, 3.2vw, 13px);
+  font-weight: 1000;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow:
+    0 2px 5px rgba(0, 0, 0, 0.92),
+    0 0 10px rgba(88, 215, 255, 0.3);
+}
+
 .meta-progress-board .card-copy p {
   overflow: hidden;
   font-size: clamp(12px, 3.7vw, 15px);
@@ -5343,8 +5363,8 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .meta-progress-board[data-intel-density="stamp"] .card-copy {
-  grid-template-rows: minmax(22px, auto) 16px;
-  gap: 3px;
+  grid-template-rows: 18px minmax(20px, auto) 16px;
+  gap: 2px;
 }
 
 .meta-progress-board .objective-detail,

@@ -906,6 +906,7 @@ export function buildMissionScreen(profile = {}) {
       <span class="reward-token mission-reward-token" data-reward-icon="${rewardIconForGrant(mission.reward, 'mission')}"></span>
       <div class="card-copy">
         <strong class="objective-title-sr">${mission.title}</strong>
+        <span class="objective-slot-title" aria-hidden="true">${missionSlotTitle(mission)}</span>
         ${objectiveReadout(progress, mission.target)}
         <p class="objective-detail">${mission.goal}</p>
         ${buildMetaProgress('mission', progress, mission.target, `미션 진행 ${progress}/${mission.target}`)}
@@ -927,6 +928,14 @@ function rewardIconForGrant(grant = {}, source = 'mission') {
   if (grant.gems && source === 'season') return 'season_progress';
   if (grant.gems) return 'soft_currency';
   return 'unlock_capsule';
+}
+
+function missionSlotTitle(mission) {
+  return mission?.title ?? '미션';
+}
+
+function seasonSlotTitle(tier, index) {
+  return `${index + 1}단계 · ${rewardGrantCompactLabel(tier.grant)}`;
 }
 
 export function buildSeasonScreen(profile = {}) {
@@ -957,6 +966,7 @@ export function buildSeasonScreen(profile = {}) {
       <span class="reward-token season-reward-token" data-reward-icon="${rewardIconForGrant(tier.grant, 'season')}"></span>
       <div class="card-copy">
         <strong class="objective-title-sr">${index + 1}단계 · ${rewardGrantCompactLabel(tier.grant)}</strong>
+        <span class="objective-slot-title" aria-hidden="true">${seasonSlotTitle(tier, index)}</span>
         ${objectiveReadout(progress, tier.xp)}
         <p class="objective-detail">${progress}/${tier.xp} 경험치</p>
         ${buildMetaProgress('season', progress, tier.xp, `시즌 경험치 ${progress}/${tier.xp}`)}

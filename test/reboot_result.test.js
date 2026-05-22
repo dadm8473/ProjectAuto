@@ -1111,6 +1111,16 @@ test('mission and season lower objective rows collapse into passive intel stamps
   assert.equal(season.includes('class="card-passive-state objective-passive-icon" data-passive-state="locked" aria-label="진행중"></span>'), true);
 });
 
+test('mission and season objective rows show compact visual slot labels inside generated boards', () => {
+  const missions = buildMissionScreen({ processedRuns: [], unitLevels: {}, unlocks: [], claimedMissions: [] });
+  const season = buildSeasonScreen({ xp: 0, claimedPassTiers: [] });
+
+  assert.equal(missions.includes('<span class="objective-slot-title" aria-hidden="true">첫 작전 완료</span>'), true);
+  assert.equal(missions.includes('<span class="objective-slot-title" aria-hidden="true">유닛 강화</span>'), true);
+  assert.equal(season.includes('<span class="objective-slot-title" aria-hidden="true">1단계 · 20보석</span>'), true);
+  assert.equal(season.includes('<span class="objective-slot-title" aria-hidden="true">2단계 · 외형</span>'), true);
+});
+
 test('meta progression surfaces render compact visual progress bars', () => {
   const collection = buildRebootCollection({ xp: 20, unitLevels: {} });
   const missions = buildMissionScreen({ processedRuns: ['run-1'], unitLevels: {}, unlocks: [], claimedMissions: [] });
