@@ -1951,9 +1951,9 @@ body[data-app-screen="season"] .app-screen::after {
 .launch-command-console {
   position: relative;
   align-self: stretch;
-  min-height: clamp(96px, 25vw, 112px);
+  min-height: clamp(102px, 26.5vw, 120px);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(82px, 22vw, 96px);
+  grid-template-columns: minmax(0, 1fr) clamp(72px, 19vw, 86px);
   align-items: center;
   gap: clamp(6px, 1.8vw, 8px);
   padding: clamp(10px, 2.8vw, 12px) clamp(18px, 5vw, 22px);
@@ -1968,6 +1968,10 @@ body[data-app-screen="season"] .app-screen::after {
 .launch-command-console > .match-button {
   width: 100%;
   min-width: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 2px;
   background-image: none;
   border-color: transparent;
   box-shadow: none;
@@ -1983,32 +1987,9 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .launch-command-console > .play-button {
-  min-height: clamp(68px, 18vw, 78px);
+  min-height: clamp(76px, 20vw, 90px);
   grid-column: 1;
   justify-self: stretch;
-}
-
-.launch-command-console > .play-button::after {
-  content: "추천";
-  position: absolute;
-  right: clamp(18px, 5vw, 24px);
-  top: 8px;
-  z-index: 2;
-  min-width: 42px;
-  min-height: 20px;
-  display: grid;
-  place-items: center;
-  padding: 2px 8px 3px;
-  color: #fff6bf;
-  background-image: var(--meta-caption-plate);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 100%;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.48));
-  font-size: 10px;
-  line-height: 1;
-  pointer-events: none;
-  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.72);
 }
 
 .play-button {
@@ -2040,7 +2021,13 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .launch-command-console .launch-button-frame {
-  opacity: 0;
+  opacity: 1;
+  filter: saturate(1.08) brightness(1.04) drop-shadow(0 9px 14px rgba(0, 0, 0, 0.42));
+}
+
+.launch-command-console > .match-button .launch-button-frame {
+  opacity: 0.84;
+  filter: saturate(0.92) brightness(0.92) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.36));
 }
 
 .play-button:focus-visible .launch-button-frame,
@@ -2057,11 +2044,34 @@ body[data-app-screen="season"] .app-screen::after {
   word-break: keep-all;
 }
 
-.match-button > span {
+.launch-button-kicker {
+  position: relative;
+  z-index: 1;
+  display: block;
+  color: rgba(255, 247, 220, 0.82);
+  font-size: clamp(9px, 2.6vw, 11px);
+  font-weight: 1000;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.7);
+}
+
+.launch-command-console > .play-button > span {
+  font-size: clamp(25px, 7vw, 32px);
+  line-height: 0.96;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.78), 0 0 17px rgba(88, 215, 255, 0.28);
+}
+
+.launch-command-console > .match-button > span {
   max-width: 3em;
-  font-size: clamp(12px, 3.4vw, 14px);
-  line-height: 1.04;
+  font-size: clamp(13px, 3.6vw, 15px);
+  line-height: 1;
   white-space: normal;
+}
+
+.launch-command-console > .match-button .launch-button-kicker {
+  color: rgba(255, 247, 220, 0.68);
+  font-size: clamp(8px, 2.2vw, 10px);
 }
 
 .bottom-dock {

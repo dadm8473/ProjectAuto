@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v97');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v98');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=hud-values1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=hud-values1'))
+      '/src/client/styles.css?v=lobby-cta2': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=lobby-cta2'))
         : false,
       '/src/client/app.js?v=objective-focus1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=objective-focus1'))
@@ -238,7 +238,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v97', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v98', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1567,11 +1567,21 @@ async function assertLobbyLaunchCommandConsole(page, label) {
       const node = document.querySelector(selector);
       const rect = node?.getBoundingClientRect();
       const frame = node?.querySelector('.launch-button-frame');
+      const label = node?.querySelector(':scope > span');
+      const kicker = node?.querySelector('.launch-button-kicker');
+      const labelRect = label?.getBoundingClientRect();
+      const kickerRect = kicker?.getBoundingClientRect();
       return rect && {
-        text: node.textContent.trim(),
+        text: label?.textContent.trim() ?? node.textContent.trim(),
+        kicker: kicker?.textContent.trim() ?? '',
         ariaLabel: node.getAttribute('aria-label'),
+        priority: node.getAttribute('data-launch-priority'),
         width: Math.round(rect.width),
         height: Math.round(rect.height),
+        labelFontSize: label ? parseFloat(getComputedStyle(label).fontSize) : 0,
+        kickerFontSize: kicker ? parseFloat(getComputedStyle(kicker).fontSize) : 0,
+        labelTop: labelRect ? Math.round(labelRect.top - rect.top) : -1,
+        kickerBottom: kickerRect ? Math.round(kickerRect.bottom - rect.top) : -1,
         backgroundImage: getComputedStyle(node).backgroundImage,
         frameSrc: frame?.getAttribute('src') ?? ''
       };
@@ -1584,11 +1594,18 @@ async function assertLobbyLaunchCommandConsole(page, label) {
     };
   });
   assert.equal(surface.bot?.text, '출격', `${label} primary launch label changed: ${JSON.stringify(surface)}`);
+  assert.equal(surface.bot?.kicker, '봇 동료', `${label} primary launch should explain bot play: ${JSON.stringify(surface)}`);
+  assert.equal(surface.bot?.priority, 'primary', `${label} primary launch priority missing: ${JSON.stringify(surface)}`);
   assert.equal(surface.online?.text, '협동', `${label} online launch should read as co-op entry: ${JSON.stringify(surface)}`);
+  assert.equal(surface.online?.kicker, '온라인', `${label} online launch should explain network play: ${JSON.stringify(surface)}`);
+  assert.equal(surface.online?.priority, 'secondary', `${label} online launch priority missing: ${JSON.stringify(surface)}`);
   assert.equal(surface.online?.ariaLabel, '온라인 협동 출격', `${label} online aria should describe co-op launch: ${JSON.stringify(surface)}`);
-  assert.equal(surface.online?.width >= 82, true, `${label} online launch is still a tiny web button: ${JSON.stringify(surface)}`);
+  assert.equal(surface.online?.width >= 72, true, `${label} online launch is still a tiny web button: ${JSON.stringify(surface)}`);
   assert.equal(surface.online?.height >= 58, true, `${label} online launch touch target is too short: ${JSON.stringify(surface)}`);
-  assert.equal(surface.bot?.width > surface.online?.width, true, `${label} primary launch should remain dominant: ${JSON.stringify(surface)}`);
+  assert.equal(surface.bot?.width >= surface.online?.width * 2, true, `${label} primary launch should strongly dominate secondary entry: ${JSON.stringify(surface)}`);
+  assert.equal(surface.bot?.height >= surface.online?.height + 14, true, `${label} primary launch height should dominate secondary entry: ${JSON.stringify(surface)}`);
+  assert.equal(surface.bot?.labelFontSize >= surface.online?.labelFontSize + 7, true, `${label} primary label should be visibly larger: ${JSON.stringify(surface)}`);
+  assert.equal(surface.bot?.kickerBottom <= surface.bot?.labelTop + 1, true, `${label} primary launch kicker overlaps main label: ${JSON.stringify(surface)}`);
   assert.match(surface.bot?.frameSrc ?? '', /reboot-launch-primary/, `${label} primary launch lost generated frame: ${JSON.stringify(surface)}`);
   assert.match(surface.online?.frameSrc ?? '', /reboot-launch-secondary/, `${label} online launch lost generated frame: ${JSON.stringify(surface)}`);
   await assertTouchableHitTarget(page, page.locator('#launchOnlineButton'), `${label} online launch`);

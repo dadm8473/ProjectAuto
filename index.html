@@ -12,7 +12,7 @@
     <link rel="icon" href="/src/client/assets/generated/reboot-app-icon-192.png">
     <link rel="apple-touch-icon" href="/src/client/assets/generated/reboot-app-icon-192.png">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/src/client/styles.css?v=hud-values1">
+    <link rel="stylesheet" href="/src/client/styles.css?v=lobby-cta2">
   </head>
   <body data-app-screen="splash">
     <main class="shell">
@@ -61,12 +61,14 @@
         <div id="lobbyScreen" class="app-screen lobby-screen" data-screen-panel="lobby" hidden>
           <div id="lobbyContent"></div>
           <div class="launch-command-console" data-launch-console="operation">
-            <button id="launchBotButton" class="play-button" data-launch-action="bot" aria-label="첫 구원 작전 출격">
+            <button id="launchBotButton" class="play-button" data-launch-action="bot" data-launch-priority="primary" aria-label="첫 구원 작전 출격">
               <img class="launch-button-frame" src="/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1" alt="" aria-hidden="true">
+              <small class="launch-button-kicker">봇 동료</small>
               <span>출격</span>
             </button>
-            <button id="launchOnlineButton" class="match-button" data-launch-action="online" aria-label="온라인 협동 출격">
+            <button id="launchOnlineButton" class="match-button" data-launch-action="online" data-launch-priority="secondary" aria-label="온라인 협동 출격">
               <img class="launch-button-frame" src="/src/client/assets/generated/reboot-launch-secondary.png?v=gold-cta-alpha1" alt="" aria-hidden="true">
+              <small class="launch-button-kicker">온라인</small>
               <span>협동</span>
             </button>
           </div>

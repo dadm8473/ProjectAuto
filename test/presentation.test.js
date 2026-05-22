@@ -642,7 +642,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-values1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-cta2">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-meter-sockets-v2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-nameplates1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-command-board1">'), false);
@@ -698,6 +698,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-room-banners1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive-icon1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-cta1">'), false);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-values1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-focus1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-claim-primary1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-disabled1">'), false);
@@ -1521,7 +1522,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=hud-values1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-cta2'), true);
   assert.equal(html.includes('/src/client/styles.css?v=combat-meter-sockets-v2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=meta-shelf-nameplates1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-command-board1'), false);
@@ -1984,7 +1985,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=hud-values1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=lobby-cta2">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -3684,12 +3685,16 @@ test('lobby launch actions use dedicated generated button frames', async () => {
 
   for (const marker of [
     '<span>출격</span>',
-    '<button id="launchBotButton" class="play-button" data-launch-action="bot" aria-label="첫 구원 작전 출격">',
-    '<button id="launchOnlineButton" class="match-button" data-launch-action="online" aria-label="온라인 협동 출격">',
+    '<button id="launchBotButton" class="play-button" data-launch-action="bot" data-launch-priority="primary" aria-label="첫 구원 작전 출격">',
+    '<button id="launchOnlineButton" class="match-button" data-launch-action="online" data-launch-priority="secondary" aria-label="온라인 협동 출격">',
+    '<small class="launch-button-kicker">봇 동료</small>',
+    '<small class="launch-button-kicker">온라인</small>',
     '<span>협동</span>',
     '<div class="launch-command-console" data-launch-console="operation">',
     'data-launch-action="bot"',
     'data-launch-action="online"',
+    'data-launch-priority="primary"',
+    'data-launch-priority="secondary"',
     '--lobby-launch-bay: url("/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1")',
     '--lobby-online-button-height: 58px;',
     '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',
@@ -3697,16 +3702,16 @@ test('lobby launch actions use dedicated generated button frames', async () => {
     'class="launch-button-frame"',
     '.launch-button-frame',
     '.launch-command-console .launch-button-frame',
-    'opacity: 0;',
+    'opacity: 1;',
     '.launch-command-console > .play-button,\n.launch-command-console > .match-button',
     'background-image: none;',
     '.launch-command-console > .match-button {',
     'min-height: var(--lobby-online-button-height);',
     'grid-column: 2;',
     'border-radius: 999px;',
-    '.launch-command-console > .play-button::after',
-    'content: "추천";',
-    'background-image: var(--meta-caption-plate);',
+    '.launch-button-kicker',
+    '.launch-command-console > .play-button > span',
+    '.launch-command-console > .match-button > span',
     '.screen-overlay .play-button,\n.screen-overlay .match-button {\n  background: transparent;',
     '.screen-overlay .play-button::before,\n.screen-overlay .match-button::before {\n  background-image: none;',
     '.screen-overlay .launch-command-console > .play-button,\n.screen-overlay .launch-command-console > .match-button',
@@ -3718,6 +3723,7 @@ test('lobby launch actions use dedicated generated button frames', async () => {
   }
 
   assert.equal(css.includes('.play-button {\n  background: linear-gradient'), false);
+  assert.equal(css.includes('content: "추천";'), false);
 });
 
 test('lobby launch actions sit inside one generated command console', async () => {
@@ -3726,13 +3732,13 @@ test('lobby launch actions sit inside one generated command console', async () =
 
   for (const marker of [
     '<div class="launch-command-console" data-launch-console="operation">',
-    '<button id="launchBotButton" class="play-button" data-launch-action="bot" aria-label="첫 구원 작전 출격">',
-    '<button id="launchOnlineButton" class="match-button" data-launch-action="online" aria-label="온라인 협동 출격">',
+    '<button id="launchBotButton" class="play-button" data-launch-action="bot" data-launch-priority="primary" aria-label="첫 구원 작전 출격">',
+    '<button id="launchOnlineButton" class="match-button" data-launch-action="online" data-launch-priority="secondary" aria-label="온라인 협동 출격">',
     '.launch-command-console {',
-    'grid-template-columns: minmax(0, 1fr) clamp(82px, 22vw, 96px);',
+    'grid-template-columns: minmax(0, 1fr) clamp(72px, 19vw, 86px);',
     'background-image: var(--lobby-launch-bay);',
     'background-size: 100% 100%;',
-    'min-height: clamp(96px, 25vw, 112px);',
+    'min-height: clamp(102px, 26.5vw, 120px);',
     'padding: clamp(10px, 2.8vw, 12px) clamp(18px, 5vw, 22px);'
   ]) {
     assert.equal(`${html}\n${css}`.includes(marker), true, marker);
@@ -3955,7 +3961,7 @@ test('lobby portrait layout budget keeps poster actions and dock from overlappin
     { width: 320, height: 720 },
     { width: 390, height: 844 }
   ]) {
-    const launchConsoleHeight = clampPx(96, viewport.width * 0.25, 112);
+    const launchConsoleHeight = clampPx(102, viewport.width * 0.265, 120);
     const stackHeight = fixedStackHeight + launchConsoleHeight;
     const stackBottom = viewport.height - layout.bottomPad;
     const stackTop = stackBottom - stackHeight;
@@ -3964,7 +3970,7 @@ test('lobby portrait layout budget keeps poster actions and dock from overlappin
 
     assert.ok(stackTop >= layout.topPad + 104, `${viewport.width} stack starts too high: ${stackTop}`);
     assert.ok(dockGap >= 32, `${viewport.width} dock overlaps lobby actions: ${dockGap}`);
-    assert.ok(launchConsoleHeight >= 96, `${viewport.width} launch console lost touch height`);
+    assert.ok(launchConsoleHeight >= 102, `${viewport.width} launch console lost touch height`);
     assert.ok(layout.launch >= 54, `${viewport.width} launch action hit zone lost touch height`);
     assert.ok(layout.onlineLaunch >= 58, `${viewport.width} online option lost co-op touch height`);
     assert.ok(layout.dockButton >= 64, `${viewport.width} dock buttons lost touch height`);
