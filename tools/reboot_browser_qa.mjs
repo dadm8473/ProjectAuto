@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v98');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v99');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=lobby-cta2': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=lobby-cta2'))
+      '/src/client/styles.css?v=result-fit1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=result-fit1'))
         : false,
       '/src/client/app.js?v=objective-focus1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=objective-focus1'))
@@ -238,7 +238,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v98', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v99', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1336,19 +1336,45 @@ async function assertResultGeneratedCopySurfaces(page) {
 
   const commandBoard = await page.locator('.result-command-board').evaluate((node) => {
     const rect = node.getBoundingClientRect();
+    const panel = document.querySelector('.result-panel')?.getBoundingClientRect();
     const style = getComputedStyle(node);
     return {
       backgroundImage: style.backgroundImage,
       backgroundSize: style.backgroundSize,
       display: style.display,
       width: Math.round(rect.width),
-      height: Math.round(rect.height)
+      height: Math.round(rect.height),
+      top: Math.round(rect.top),
+      bottom: Math.round(rect.bottom),
+      panelTop: Math.round(panel?.top ?? 0),
+      panelBottom: Math.round(panel?.bottom ?? 0),
+      viewportHeight: window.innerHeight
     };
   });
   assert.match(commandBoard.backgroundImage, /reboot-result-command-board-v1/, `result command board should use generated post-battle console: ${JSON.stringify(commandBoard)}`);
   assert.equal(commandBoard.backgroundSize, '100% 100%', `result command board sizing changed: ${JSON.stringify(commandBoard)}`);
   assert.equal(commandBoard.display, 'grid', `result command board should remain a unified grid: ${JSON.stringify(commandBoard)}`);
   assert.equal(commandBoard.width > 0 && commandBoard.height >= 128, true, `result command board collapsed: ${JSON.stringify(commandBoard)}`);
+  assert.equal(commandBoard.top >= commandBoard.panelTop, true, `result command board escapes panel top: ${JSON.stringify(commandBoard)}`);
+  assert.equal(commandBoard.bottom <= commandBoard.panelBottom - 8, true, `result command board clips under panel frame: ${JSON.stringify(commandBoard)}`);
+
+  const actionButtons = await page.locator('.result-action-button').evaluateAll((nodes) => nodes.map((node) => {
+    const rect = node.getBoundingClientRect();
+    const panel = document.querySelector('.result-panel')?.getBoundingClientRect();
+    return {
+      text: node.textContent?.trim(),
+      top: Math.round(rect.top),
+      bottom: Math.round(rect.bottom),
+      height: Math.round(rect.height),
+      panelBottom: Math.round(panel?.bottom ?? 0),
+      viewportHeight: window.innerHeight
+    };
+  }));
+  assert.equal(actionButtons.length, 2, `result actions changed: ${JSON.stringify(actionButtons)}`);
+  for (const button of actionButtons) {
+    assert.equal(button.height >= 42, true, `result action lost touch height: ${JSON.stringify(actionButtons)}`);
+    assert.equal(button.bottom <= button.panelBottom - 10, true, `result action is clipped by the panel: ${JSON.stringify(actionButtons)}`);
+  }
 }
 
 async function assertOperationCopyClearsProgressRail(page) {

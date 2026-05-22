@@ -5444,7 +5444,8 @@ body[data-app-screen="season"] .app-screen::after {
   z-index: 1;
   align-self: center;
   width: var(--result-panel-width);
-  aspect-ratio: 39 / 56;
+  height: min(calc(100dvh - 52px), 560px);
+  aspect-ratio: auto;
   justify-self: center;
   padding: var(--result-panel-top-pad) clamp(16px, calc(var(--result-panel-width) * 0.056), 22px) clamp(16px, calc(var(--result-panel-width) * 0.056), 22px);
   display: grid;
