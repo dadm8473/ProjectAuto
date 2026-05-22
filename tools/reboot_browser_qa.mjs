@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v127');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v128');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=hud-icon-meters1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=hud-icon-meters1'))
+      '/src/client/styles.css?v=splash-start-frame1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=splash-start-frame1'))
         : false,
       '/src/client/app.js?v=start-cutin-focus1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=start-cutin-focus1'))
@@ -247,7 +247,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v127', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v128', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1481,7 +1481,7 @@ async function assertCompactOperationTitleVariants(page) {
     }, { key: profileStorageKey, processedRuns: variant.processedRuns });
     await page.reload({ waitUntil: 'load' });
     await page.locator('#loadingGate').waitFor({ state: 'hidden' });
-    await page.getByRole('button', { name: '시작' }).click();
+    await page.locator('#splashStartButton').click();
     await page.locator('#lobbyScreen .operation-copy strong').waitFor({ state: 'visible' });
     await assertOperationTitlePlate(page, `compact lobby ${variant.title}`, variant.title);
   }
@@ -1697,6 +1697,35 @@ async function assertSplashCtaClearsBottomDeck(page) {
     true,
     `splash CTA is visually buried by bottom deck: ${JSON.stringify(geometry)}`
   );
+}
+
+async function assertSplashStartCtaGeneratedFrame(page) {
+  const surface = await page.locator('#splashStartButton').evaluate((button) => {
+    const frame = button.querySelector('.launch-button-frame');
+    const rect = button.getBoundingClientRect();
+    const frameRect = frame?.getBoundingClientRect();
+    const style = getComputedStyle(button);
+    const before = getComputedStyle(button, '::before');
+    return {
+      text: button.textContent?.trim(),
+      ariaLabel: button.getAttribute('aria-label'),
+      frameSrc: frame?.getAttribute('src') ?? '',
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      frameWidth: Math.round(frameRect?.width ?? 0),
+      frameHeight: Math.round(frameRect?.height ?? 0),
+      backgroundImage: style.backgroundImage,
+      beforeContent: before.content,
+      beforeBackgroundImage: before.backgroundImage
+    };
+  });
+  assert.equal(surface.text, '시작', `splash start CTA copy changed: ${JSON.stringify(surface)}`);
+  assert.equal(surface.ariaLabel, '게임 시작', `splash start CTA aria label should be explicit: ${JSON.stringify(surface)}`);
+  assert.match(surface.frameSrc, /reboot-launch-primary/, `splash start CTA lost generated frame: ${JSON.stringify(surface)}`);
+  assert.equal(surface.frameWidth >= surface.width - 2 && surface.frameHeight >= surface.height - 2, true, `splash start frame does not fill CTA: ${JSON.stringify(surface)}`);
+  assert.equal(surface.backgroundImage, 'none', `splash start CTA still relies on css button fill: ${JSON.stringify(surface)}`);
+  assert.equal(surface.beforeContent === 'none' || surface.beforeContent === 'normal', true, `splash start CTA still uses generic screen chrome pseudo-frame: ${JSON.stringify(surface)}`);
+  assert.equal(surface.beforeBackgroundImage, 'none', `splash start CTA pseudo-frame still draws generic chrome: ${JSON.stringify(surface)}`);
 }
 
 async function assertSplashSeasonBadge(page, label) {
@@ -2422,7 +2451,7 @@ async function assertPostRescueCommandCollapse(page) {
 async function verifyShell(page, viewport) {
   await page.goto(baseUrl, { waitUntil: 'load' });
   await page.locator('#loadingGate').waitFor({ state: 'hidden' });
-  await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
+  await page.locator('#splashStartButton').waitFor({ state: 'visible' });
   assert.equal(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   assert.equal(await page.locator('audio, video').count(), 0);
   const shell = await page.locator('.shell').evaluate((node) => {
@@ -2438,8 +2467,9 @@ async function verifyShell(page, viewport) {
   assert.equal(shell.scrollWidth <= shell.clientWidth, true, 'horizontal overflow');
   await assertSplashSeasonBadge(page, 'splash');
   await assertSplashCtaClearsBottomDeck(page);
+  await assertSplashStartCtaGeneratedFrame(page);
 
-  await page.getByRole('button', { name: '시작' }).click();
+  await page.locator('#splashStartButton').click();
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).waitFor({ state: 'visible' });
   await assertLobbyProfilePlate(page, 'lobby', 'Lv.1');
   await assertLobbyLaunchCommandConsole(page, 'lobby');
@@ -2584,10 +2614,10 @@ async function verifyShell(page, viewport) {
 async function verifyCompactLobby(page) {
   await page.goto(baseUrl, { waitUntil: 'load' });
   await page.locator('#loadingGate').waitFor({ state: 'hidden' });
-  await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
+  await page.locator('#splashStartButton').waitFor({ state: 'visible' });
   assert.equal(await page.locator('audio, video').count(), 0);
   await assertSplashSeasonBadge(page, 'compact splash');
-  await page.getByRole('button', { name: '시작' }).click();
+  await page.locator('#splashStartButton').click();
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).waitFor({ state: 'visible' });
   await assertLobbyProfilePlate(page, 'compact lobby', 'Lv.1');
   await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'compact lobby operation copy', 2);
@@ -2605,9 +2635,9 @@ async function verifyCompactMeta(page) {
   }, { key: profileStorageKey, profile: collectionReadyProfile });
   await page.reload({ waitUntil: 'load' });
   await page.locator('#loadingGate').waitFor({ state: 'hidden' });
-  await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
+  await page.locator('#splashStartButton').waitFor({ state: 'visible' });
   assert.equal(await page.locator('audio, video').count(), 0);
-  await page.getByRole('button', { name: '시작' }).click();
+  await page.locator('#splashStartButton').click();
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).waitFor({ state: 'visible' });
   await page.getByRole('button', { name: '유닛' }).click();
   await page.locator('.unit-sprite').first().waitFor({ state: 'visible' });
@@ -2648,9 +2678,9 @@ async function verifyCompactRewardBoards(page) {
   }, { key: profileStorageKey, profile: rewardReadyProfile });
   await page.reload({ waitUntil: 'load' });
   await page.locator('#loadingGate').waitFor({ state: 'hidden' });
-  await page.getByRole('button', { name: '시작' }).waitFor({ state: 'visible' });
+  await page.locator('#splashStartButton').waitFor({ state: 'visible' });
   assert.equal(await page.locator('audio, video').count(), 0);
-  await page.getByRole('button', { name: '시작' }).click();
+  await page.locator('#splashStartButton').click();
   await page.getByRole('button', { name: '미션', exact: true }).waitFor({ state: 'visible' });
 
   await page.getByRole('button', { name: '미션', exact: true }).click();
@@ -2668,7 +2698,7 @@ async function verifyCompactRewardBoards(page) {
 
 async function verifyFastPlaythrough(page) {
   await page.goto(withParam(baseUrl, 'qaFast', '1'), { waitUntil: 'load' });
-  await page.getByRole('button', { name: '시작' }).click();
+  await page.locator('#splashStartButton').click();
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });
 
@@ -2779,7 +2809,7 @@ async function verifyFastPlaythrough(page) {
 async function verifyCompactResult(page) {
   await page.setViewportSize({ width: 320, height: 568 });
   await page.goto(withParam(baseUrl, 'qaFast', '1'), { waitUntil: 'load' });
-  await page.getByRole('button', { name: '시작' }).click();
+  await page.locator('#splashStartButton').click();
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });
   await assertCombatViewportLocked(page, 'compact battle');

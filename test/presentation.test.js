@@ -643,7 +643,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-icon-meters1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=splash-start-frame1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-icon-meters1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-poster-crop1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-defer1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-select1">'), false);
@@ -1550,7 +1551,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=hud-icon-meters1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=splash-start-frame1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=hud-icon-meters1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-poster-crop1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-defer1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=objective-stamps1'), false);
@@ -2017,7 +2019,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=hud-icon-meters1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=splash-start-frame1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -4495,6 +4497,32 @@ test('splash uses a generated bottom deck instead of an empty lower web footer',
   assert.equal(capBlock.includes('var(--splash-floor-cap)'), false);
   assert.equal(capBlock.includes('rgba(255, 0, 0'), false);
   assert.equal(css.includes('content: "";\n  display: none;\n  position: absolute;\n  inset: -1px;'), false);
+});
+
+test('splash start CTA uses the generated launch button frame instead of generic screen chrome', async () => {
+  const html = await readFile('index.html', 'utf8');
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    '<button id="splashStartButton" aria-label="게임 시작">',
+    '<img class="launch-button-frame splash-start-frame" src="/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1" alt="" aria-hidden="true">',
+    '<span>시작</span>',
+    '#splashStartButton {',
+    'background-image: none;',
+    '#splashStartButton::before {\n  content: none;',
+    '#splashStartButton::before {\n  content: none;\n  background-image: none;',
+    '#splashStartButton .launch-button-frame',
+    '#splashStartButton > span',
+    'assertSplashStartCtaGeneratedFrame(page)',
+    'splash start CTA lost generated frame'
+  ]) {
+    assert.equal(`${html}\n${css}\n${qa}`.includes(marker), true, marker);
+  }
+
+  const startBlock = cssRuleBlock(css, '#splashStartButton');
+  assert.equal(startBlock.includes('linear-gradient'), false);
+  assert.equal(startBlock.includes('background-color:'), false);
 });
 
 test('client settles result rewards into profile and wires shop purchases', async () => {

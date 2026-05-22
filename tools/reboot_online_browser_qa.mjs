@@ -48,7 +48,7 @@ async function waitForServer(child) {
 async function enterOnline(page, baseUrl) {
   await page.goto(`${baseUrl}/?mute=1`, { waitUntil: 'load' });
   await page.locator('#loadingGate').waitFor({ state: 'hidden' });
-  await page.getByRole('button', { name: '시작' }).click();
+  await page.locator('#splashStartButton').click();
   await page.getByRole('button', { name: '온라인 협동' }).click();
   await page.locator('body[data-app-screen="battle"]').waitFor({ state: 'attached' });
 }
