@@ -8,7 +8,7 @@ import { createRebootAudio } from './reboot_audio.js?v=audio-safe1';
 import { updateCombatHudMeters } from './reboot_hud.js?v=board-copy1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
 import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=lobby-defer1';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=moment-scenes1';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=operation-combat-cutin1';
 import { applyRebootResultView } from './reboot_result_ui.js?v=result-hook1';
 import {
   buildMetaNavAlerts,
@@ -20,6 +20,7 @@ import {
   buildSeasonScreen,
   missionProgress,
   nextLobbyOperation,
+  operationForSeedName,
   postRewardRoute,
   REBOOT_MISSIONS,
   startRebootRetry,
@@ -95,11 +96,7 @@ const SCREEN_TRANSITION_MS = 280;
 const ONLINE_CONNECT_FALLBACK_MS = 2600;
 const MATCH_BANNER_FLASH_MS = 1500;
 const rewardClaimActions = new Set(['claim-missions', 'claim-season']);
-const ACTION_LABELS = {
-  summon: '소환',
-  merge: '합성',
-  rescue: '구원'
-};
+const ACTION_LABELS = { summon: '소환', merge: '합성', rescue: '구원' };
 let appScreen = 'splash';
 let game = createGame({ mode: 'bot', seedName: 'tutorial_success', seed: 1 });
 let localBoardId = 'p1';
@@ -823,6 +820,7 @@ function loop(now) {
     reducedMotion: reduceMotion.matches,
     localBoardId,
     onlineWaiting,
+    operation: operationForSeedName(current.seedName),
     matchmakingBannerVisible: appScreen === 'battle' && !dom.matchmakingBanner.hidden
   });
   updateCombatHudMeters({ dom, current, localBoardId, appScreen, onlineWaiting });

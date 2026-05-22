@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v122');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v123');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
       '/src/client/styles.css?v=operation-poster-map1': cache
         ? Boolean(await cache.match('/src/client/styles.css?v=operation-poster-map1'))
         : false,
-      '/src/client/app.js?v=operation-poster-map1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=operation-poster-map1'))
+      '/src/client/app.js?v=operation-combat-cutin1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=operation-combat-cutin1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -153,8 +153,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_preload.js?v=lobby-defer1': cache
         ? Boolean(await cache.match('/src/client/reboot_preload.js?v=lobby-defer1'))
         : false,
-      '/src/client/reboot_render.js?v=moment-scenes1': cache
-        ? Boolean(await cache.match('/src/client/reboot_render.js?v=moment-scenes1'))
+      '/src/client/reboot_render.js?v=operation-combat-cutin1': cache
+        ? Boolean(await cache.match('/src/client/reboot_render.js?v=operation-combat-cutin1'))
         : false,
       '/src/client/reboot_result_ui.js?v=result-hook1': cache
         ? Boolean(await cache.match('/src/client/reboot_result_ui.js?v=result-hook1'))
@@ -247,7 +247,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v122', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v123', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }

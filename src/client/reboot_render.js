@@ -1306,11 +1306,21 @@ function drawPartnerDangerCutin(ctx, state, assets = {}, localBoardId = 'p1') {
   return true;
 }
 
-function drawCombatStartCutin(ctx, state, assets = {}) {
+function combatStartOperationCopy(operation = {}) {
+  const title = String(operation.hudTitle || operation.title || '작전 시작').trim() || '작전 시작';
+  const subtitle = String(operation.threatLabel || operation.detail || '협동 방어').trim() || '협동 방어';
+  return {
+    title: title.slice(0, 8),
+    subtitle: subtitle.slice(0, 12)
+  };
+}
+
+function drawCombatStartCutin(ctx, state, assets = {}, operationMeta = {}) {
   if (state.now >= OPERATION_START_CUTIN_END) return false;
   if (hasFirstPlayerAction(state)) return false;
   const image = assets?.startCutin;
   if (!image?.complete || image.naturalWidth <= 0) return false;
+  const operation = combatStartOperationCopy(operationMeta);
   const introIn = Math.min(1, state.now / OPERATION_START_CUTIN_FADE);
   const introOut = Math.min(1, Math.max(0, OPERATION_START_CUTIN_END - state.now) / OPERATION_START_CUTIN_FADE);
   const alpha = Math.min(introIn, introOut) * 0.82;
@@ -1324,8 +1334,12 @@ function drawCombatStartCutin(ctx, state, assets = {}) {
   ctx.shadowColor = '#58d7ff';
   ctx.shadowBlur = 18;
   ctx.font = '900 18px system-ui';
-  ctx.strokeText?.('작전 시작', 116, 221);
-  ctx.fillText('작전 시작', 116, 221);
+  ctx.strokeText?.(operation.title, 116, 216);
+  ctx.fillText(operation.title, 116, 216);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(245, 240, 220, 0.86)';
+  ctx.font = '800 11px system-ui';
+  ctx.fillText(operation.subtitle, 116, 235);
   ctx.restore();
   return true;
 }
@@ -2076,7 +2090,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
     drawTrack(ctx, state, assets, imageBackdrop, options);
   });
   drawWaveDirectiveBanner(ctx, state, assets);
-  if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawCombatStartCutin(ctx, state, assets);
+  if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawCombatStartCutin(ctx, state, assets, options.operation);
   drawCombatCrisisOverlays(ctx, state, assets, localBoardId);
   drawShaken(() => {
     drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);

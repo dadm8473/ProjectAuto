@@ -747,6 +747,42 @@ test('opening combat shows the generated threat during the operation intro', () 
   assert.equal(previewDraw.args[7] >= 116, true, 'intro threat should be large enough to register behind the start cue');
 });
 
+test('operation intro cutin uses the selected operation title instead of generic start copy', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 0.24,
+      seedName: 'lucky_clutch',
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      openingThreatPreview: image(512, 256),
+      startCutin: image(390, 112)
+    },
+    {
+      operation: { hudTitle: '보스 막타', threatLabel: '보스 막타' }
+    }
+  );
+
+  const labels = ctx.commands
+    .filter((command) => command.type === 'fillText')
+    .map((command) => command.args[0]);
+
+  assert.equal(labels.includes('보스 막타'), true, `operation title missing from intro cutin: ${labels.join(' / ')}`);
+  assert.equal(labels.includes('작전 시작'), false, 'intro cutin should not collapse every operation to generic start copy');
+});
+
 test('opening threat preview stays continuous when the operation intro clears', () => {
   const openingThreatPreview = image(512, 256);
   const samples = [0.55, 0.56, 0.57].map((now) => {

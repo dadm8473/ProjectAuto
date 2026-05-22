@@ -119,7 +119,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_action_ui.js?v=hud-meter1'",
     "from './reboot_audio.js?v=audio-safe1'",
     "from './reboot_hud.js?v=board-copy1'",
-    "from './reboot_render.js?v=moment-scenes1'",
+    "from './reboot_render.js?v=operation-combat-cutin1'",
     "from './reboot_result_ui.js?v=result-hook1'",
     "from './reboot_screens.js?v=operation-poster-map1'",
     "from './reboot_online.js'"
@@ -766,7 +766,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=operation-poster-map1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=operation-combat-cutin1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready-compact1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=defense-pressure1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shelf-select1"></script>'), false);
@@ -853,7 +853,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=moment-scenes1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=operation-combat-cutin1'"), true);
   assert.equal(app.includes("from './reboot_render.js?v=partner-ready-compact1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=first-payoff1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=partner-ready1'"), false);
@@ -3112,7 +3112,7 @@ test('equipped cosmetics appear in battle as generated expression sigils only', 
     'function drawBattleCosmeticSignature',
     'options.equippedCosmetic',
     'drawBattleCosmeticSignature(ctx, assets, options.equippedCosmetic, state.now, options.reducedMotion);',
-    'if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawCombatStartCutin(ctx, state, assets);',
+    'if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawCombatStartCutin(ctx, state, assets, options.operation);',
     'drawRebootBattle(ctx, current, { width: dom.canvas.width, height: dom.canvas.height }, rebootAssets, {',
     'equippedCosmetic: profile.equippedCosmetic',
     'reducedMotion: reduceMotion.matches',
@@ -3445,6 +3445,7 @@ test('boss warning uses a dedicated generated combat cutin', async () => {
 
 test('combat starts with a generated operation cutin instead of a silent canvas spawn', async () => {
   const render = await readFile('src/client/reboot_render.js', 'utf8');
+  const app = await readFile('src/client/app.js', 'utf8');
 
   for (const marker of [
     'const OPERATION_START_CUTIN_END = 0.6;',
@@ -3457,17 +3458,23 @@ test('combat starts with a generated operation cutin instead of a silent canvas 
     'OPERATION_START_CUTIN_END',
     'if (state.now >= OPERATION_START_CUTIN_END) return false;',
     'OPERATION_START_CUTIN_END - state.now',
+    'function combatStartOperationCopy(operation = {})',
+    'const operation = combatStartOperationCopy(operationMeta);',
     'drawImageCover(ctx, image, 0, 180, 390, 86',
     'const alpha = Math.min(introIn, introOut) * 0.82;',
     "ctx.strokeStyle = 'rgba(2, 6, 7, 0.78)';",
-    "ctx.strokeText?.('작전 시작'",
-    "ctx.fillText('작전 시작'",
-    'drawCombatStartCutin(ctx, state, assets)'
+    'ctx.strokeText?.(operation.title',
+    'ctx.fillText(operation.title',
+    'ctx.fillText(operation.subtitle',
+    'drawCombatStartCutin(ctx, state, assets, options.operation)',
+    'operationForSeedName,',
+    'operation: operationForSeedName(current.seedName),'
   ]) {
-    assert.equal(render.includes(marker), true, marker);
+    assert.equal(`${render}\n${app}`.includes(marker), true, marker);
   }
 
   assert.equal(render.includes("ctx.fillText('소환 준비'"), false);
+  assert.equal(render.includes("ctx.fillText('작전 시작'"), false);
   assert.equal(render.includes('if (state.now >= 3.25) return false;'), false);
   assert.equal(render.includes('if (state.now >= 0.82) return false;'), false);
   assert.equal(render.includes('drawImageCover(ctx, image, 0, 238, 390, 112'), false);
