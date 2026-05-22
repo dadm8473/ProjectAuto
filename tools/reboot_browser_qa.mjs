@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v108');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v112');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=result-hook1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=result-hook1'))
+      '/src/client/styles.css?v=lobby-defer1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=lobby-defer1'))
         : false,
-      '/src/client/app.js?v=result-hook1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=result-hook1'))
+      '/src/client/app.js?v=lobby-defer1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=lobby-defer1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -147,8 +147,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_playtest.js?v=playtest2': cache
         ? Boolean(await cache.match('/src/client/reboot_playtest.js?v=playtest2'))
         : false,
-      '/src/client/reboot_preload.js?v=mission-season-density1': cache
-        ? Boolean(await cache.match('/src/client/reboot_preload.js?v=mission-season-density1'))
+      '/src/client/reboot_preload.js?v=lobby-defer1': cache
+        ? Boolean(await cache.match('/src/client/reboot_preload.js?v=lobby-defer1'))
         : false,
       '/src/client/reboot_render.js?v=defense-pressure1': cache
         ? Boolean(await cache.match('/src/client/reboot_render.js?v=defense-pressure1'))
@@ -156,8 +156,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_result_ui.js?v=result-hook1': cache
         ? Boolean(await cache.match('/src/client/reboot_result_ui.js?v=result-hook1'))
         : false,
-      '/src/client/reboot_screens.js?v=result-hook1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=result-hook1'))
+      '/src/client/reboot_screens.js?v=lobby-defer1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=lobby-defer1'))
         : false,
       '/src/shared/game.js?v=retry-context1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=retry-context1'))
@@ -219,6 +219,9 @@ async function verifyInstallableShell(page) {
       '/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1'))
         : false,
+      '/src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1'))
+        : false,
       '/src/client/assets/generated/reboot-lobby-operation-progress-rail.png?v=operation-progress1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-lobby-operation-progress-rail.png?v=operation-progress1'))
         : false,
@@ -238,7 +241,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v108', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v112', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1478,49 +1481,58 @@ async function assertCompactOperationTitleVariants(page) {
   }
 }
 
-async function assertOperationIntelClearsPreviewSprites(page) {
+async function assertOperationDioramaStaysReadable(page) {
   const geometry = await page.evaluate(() => {
     const intel = document.querySelector('#lobbyScreen .operation-intel-board');
-    const sprites = [...document.querySelectorAll('#lobbyScreen .lobby-preview-enemy')];
-    if (!intel || !sprites.length) {
+    const card = document.querySelector('#lobbyScreen .operation-card');
+    const diorama = document.querySelector('#lobbyScreen .operation-coop-diorama');
+    if (!intel || !card || !diorama) {
       return { missing: true };
     }
     const intelRect = intel.getBoundingClientRect();
-    const spriteRects = sprites.map((node) => {
-      const rect = node.getBoundingClientRect();
-      const id = node.getAttribute('data-enemy-sprite');
-      const overlaps = !(
-        rect.left >= intelRect.right + 2
-        || rect.right <= intelRect.left - 2
-        || rect.top >= intelRect.bottom + 2
-        || rect.bottom <= intelRect.top - 2
-      );
-      return {
-        id,
-        left: Math.round(rect.left),
-        right: Math.round(rect.right),
-        top: Math.round(rect.top),
-        bottom: Math.round(rect.bottom),
-        overlaps
-      };
-    });
+    const cardRect = card.getBoundingClientRect();
+    const dioramaRect = diorama.getBoundingClientRect();
     return {
       viewportWidth: window.innerWidth,
+      card: {
+        width: Math.round(cardRect.width),
+        height: Math.round(cardRect.height),
+        left: Math.round(cardRect.left),
+        right: Math.round(cardRect.right),
+        top: Math.round(cardRect.top),
+        bottom: Math.round(cardRect.bottom),
+        backgroundImage: getComputedStyle(card).backgroundImage
+      },
+      diorama: {
+        width: Math.round(dioramaRect.width),
+        height: Math.round(dioramaRect.height),
+        left: Math.round(dioramaRect.left),
+        right: Math.round(dioramaRect.right),
+        top: Math.round(dioramaRect.top),
+        bottom: Math.round(dioramaRect.bottom),
+        src: diorama.getAttribute('src'),
+        complete: diorama.complete,
+        naturalWidth: diorama.naturalWidth,
+        naturalHeight: diorama.naturalHeight
+      },
       intel: {
         left: Math.round(intelRect.left),
         right: Math.round(intelRect.right),
         top: Math.round(intelRect.top),
-        bottom: Math.round(intelRect.bottom)
-      },
-      spriteRects
+        bottom: Math.round(intelRect.bottom),
+        width: Math.round(intelRect.width)
+      }
     };
   });
-  assert.equal(geometry.missing, undefined, `operation intel/preview geometry unavailable: ${JSON.stringify(geometry)}`);
-  assert.deepEqual(
-    geometry.spriteRects.filter((rect) => rect.overlaps),
-    [],
-    `operation intel overlaps generated preview enemies on compact lobby: ${JSON.stringify(geometry)}`
-  );
+  assert.equal(geometry.missing, undefined, `operation diorama geometry unavailable: ${JSON.stringify(geometry)}`);
+  assert.match(geometry.card.backgroundImage, /reboot-lobby-coop-diorama-preview\.jpg/);
+  assert.match(geometry.diorama.src, /reboot-lobby-coop-diorama\.png\?v=lobby-coop-diorama1/);
+  assert.equal(geometry.diorama.complete, true, `operation diorama did not load: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.diorama.naturalWidth >= 1024, true, `operation diorama source is too small: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.diorama.left <= geometry.card.left + 1, true, `operation diorama leaves card left edge: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.diorama.right >= geometry.card.right - 1, true, `operation diorama leaves card right edge: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.diorama.height >= geometry.card.height - 1, true, `operation diorama does not fill card height: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.intel.width <= geometry.card.width * 0.72, true, `operation intel covers too much diorama: ${JSON.stringify(geometry)}`);
 }
 
 async function assertLobbyProfilePlate(page, label, expectedLevel) {
@@ -2395,7 +2407,7 @@ async function verifyShell(page, viewport) {
   await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'lobby operation copy', 2);
   await assertOperationTitlePlate(page, 'lobby');
   await assertOperationCopyClearsProgressRail(page);
-  await assertOperationIntelClearsPreviewSprites(page);
+  await assertOperationDioramaStaysReadable(page);
   await assertBattleReadyLobbyStaysFocused(page);
   assert.equal(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
   await page.getByRole('button', { name: '유닛' }).click();
@@ -2542,7 +2554,7 @@ async function verifyCompactLobby(page) {
   await assertMetaCaptionPlates(page, '#lobbyScreen .operation-copy span, #lobbyScreen .operation-copy p', 'compact lobby operation copy', 2);
   await assertOperationTitlePlate(page, 'compact lobby');
   await assertOperationCopyClearsProgressRail(page);
-  await assertOperationIntelClearsPreviewSprites(page);
+  await assertOperationDioramaStaysReadable(page);
   await assertBattleReadyLobbyStaysFocused(page);
   await assertCompactOperationTitleVariants(page);
 }

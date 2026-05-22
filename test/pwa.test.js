@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v108';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v112';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -41,16 +41,16 @@ test('service worker keeps the installable mobile game shell available after fir
     'event.request.mode === \'navigate\'',
     "caches.match('/index.html')",
     '/manifest.webmanifest',
-    '/src/client/styles.css?v=result-hook1',
-    '/src/client/app.js?v=result-hook1',
+    '/src/client/styles.css?v=lobby-defer1',
+    '/src/client/app.js?v=lobby-defer1',
     '/src/client/reboot_audio.js?v=audio-safe1',
     '/src/client/reboot_actions.js?v=combat-meter2',
     '/src/client/reboot_hud.js?v=board-copy1',
     '/src/client/reboot_playtest.js?v=playtest2',
-    '/src/client/reboot_preload.js?v=mission-season-density1',
+    '/src/client/reboot_preload.js?v=lobby-defer1',
     '/src/client/reboot_render.js?v=defense-pressure1',
     '/src/client/reboot_result_ui.js?v=result-hook1',
-    '/src/client/reboot_screens.js?v=result-hook1',
+    '/src/client/reboot_screens.js?v=lobby-defer1',
     '/src/client/reboot_action_ui.js?v=hud-meter1',
     '/src/client/reboot_online.js',
     '/src/shared/game.js?v=retry-context1',
@@ -76,6 +76,7 @@ test('service worker keeps the installable mobile game shell available after fir
     '/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1',
     '/src/client/assets/generated/reboot-meta-objective-command-slots-v1.png?v=objective-slots1',
     '/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1',
+    '/src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1',
     '/src/client/assets/generated/reboot-lobby-operation-progress-rail.png?v=operation-progress1',
     '/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1',
     '/src/client/assets/generated/reboot-unit-atlas.png',
@@ -117,6 +118,8 @@ test('service worker keeps the installable mobile game shell available after fir
   assert.equal(sw.includes('/src/client/styles.css?v=shelf-select1'), false);
   assert.equal(sw.includes('/src/client/reboot_result_ui.js?v=result-ui2'), false);
   assert.equal(sw.includes('/src/client/reboot_screens.js?v=shelf-select1'), false);
+  assert.equal(sw.includes('/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1'), false);
+  assert.equal(sw.includes('/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1'), false);
   assert.equal(sw.includes('/src/client/styles.css?v=objective-stamps1'), false);
   assert.equal(sw.includes('/src/client/reboot_screens.js?v=objective-stamps1'), false);
   assert.equal(sw.includes('/src/client/reboot_preload.js?v=battle-backdrop-v2'), false);
@@ -256,18 +259,18 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v108'",
+    "cacheName === 'projectauto-reboot-shell-v112'",
     "await cache.match('/index.html')",
-    "await cache.match('/src/client/styles.css?v=result-hook1')",
-    "await cache.match('/src/client/app.js?v=result-hook1')",
+    "await cache.match('/src/client/styles.css?v=lobby-defer1')",
+    "await cache.match('/src/client/app.js?v=lobby-defer1')",
     "await cache.match('/src/client/reboot_audio.js?v=audio-safe1')",
     "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
     "await cache.match('/src/client/reboot_hud.js?v=board-copy1')",
     "await cache.match('/src/client/reboot_playtest.js?v=playtest2')",
-    "await cache.match('/src/client/reboot_preload.js?v=mission-season-density1')",
+    "await cache.match('/src/client/reboot_preload.js?v=lobby-defer1')",
     "await cache.match('/src/client/reboot_render.js?v=defense-pressure1')",
     "await cache.match('/src/client/reboot_result_ui.js?v=result-hook1')",
-    "await cache.match('/src/client/reboot_screens.js?v=result-hook1')",
+    "await cache.match('/src/client/reboot_screens.js?v=lobby-defer1')",
     "await cache.match('/src/shared/game.js?v=retry-context1')",
     "await cache.match('/src/shared/reboot_game.js?v=retry-context1')",
     "await cache.match('/src/client/reboot_action_ui.js?v=hud-meter1')",
@@ -291,6 +294,7 @@ test('browser QA verifies the runtime service worker cache activation', async ()
     "await cache.match('/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1')",
     "await cache.match('/src/client/assets/generated/reboot-meta-objective-command-slots-v1.png?v=objective-slots1')",
     "await cache.match('/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1')",
+    "await cache.match('/src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1')",
     "await cache.match('/src/client/assets/generated/reboot-lobby-operation-progress-rail.png?v=operation-progress1')",
     "await cache.match('/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1')",
     "await cache.match('/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3')",
@@ -332,6 +336,8 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   assert.equal(qa.includes("await cache.match('/src/client/styles.css?v=shelf-select1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_result_ui.js?v=result-ui2')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_screens.js?v=shelf-select1')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/styles.css?v=objective-stamps1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_preload.js?v=battle-backdrop-v2')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_render.js?v=battle-backdrop-v2')"), false);

@@ -58,7 +58,7 @@
   --meta-footer-shroud: url("/src/client/assets/generated/reboot-meta-footer-shroud.png?v=meta-footer-shroud");
   --meta-lower-console: url("/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console2");
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
-  --lobby-operation-posters: url("/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1");
+  --lobby-coop-diorama-preview: url("/src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1");
   --lobby-operation-title-plate: url("/src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png?v=operation-title-plate1");
   --lobby-operation-progress-rail: url("/src/client/assets/generated/reboot-lobby-operation-progress-rail.png?v=operation-progress1");
   --lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1");
@@ -2416,38 +2416,39 @@ body[data-app-screen="season"] .app-screen::after {
   overflow: hidden;
   isolation: isolate;
   padding: 0;
-  background-image: var(--lobby-operation-posters);
+  background-image: var(--lobby-coop-diorama-preview);
   background-repeat: no-repeat;
-  background-size: 400% 100%;
-  background-position: 0 0;
-  --operation-poster-x: 0%;
+  background-size: cover;
+  background-position: var(--operation-diorama-x) var(--operation-diorama-y);
+  --operation-diorama-x: 50%;
+  --operation-diorama-y: 50%;
 }
 
-.operation-poster-frame {
+.operation-coop-diorama {
   position: absolute;
   inset: 0;
   z-index: 0;
-  width: 400%;
+  width: 100%;
   height: 100%;
-  max-width: none;
-  object-fit: fill;
-  transform: translate3d(var(--operation-poster-x), 0, 0);
+  object-fit: cover;
+  object-position: var(--operation-diorama-x) var(--operation-diorama-y);
+  filter: saturate(1.08) contrast(1.05);
   pointer-events: none;
 }
 
 .operation-card[data-operation-poster="boss"] {
-  --operation-poster-x: -25%;
-  background-position: 33.333% 0;
+  --operation-diorama-x: 58%;
+  --operation-diorama-y: 46%;
 }
 
 .operation-card[data-operation-poster="recovery"] {
-  --operation-poster-x: -50%;
-  background-position: 66.666% 0;
+  --operation-diorama-x: 46%;
+  --operation-diorama-y: 54%;
 }
 
 .operation-card[data-operation-poster="response"] {
-  --operation-poster-x: -75%;
-  background-position: 100% 0;
+  --operation-diorama-x: 62%;
+  --operation-diorama-y: 52%;
 }
 
 .operation-progress {
@@ -2556,115 +2557,6 @@ body[data-app-screen="season"] .app-screen::after {
   background-size: 300% 100%;
   background-position: 0 0;
   filter: saturate(1.1) brightness(1.1) drop-shadow(0 4px 7px rgba(88, 215, 255, 0.28));
-}
-
-.lobby-toy-preview {
-  position: absolute;
-  inset: 8px 8px 10px 44%;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.lobby-preview-unit,
-.lobby-preview-enemy,
-.lobby-preview-reward {
-  position: absolute;
-  margin: 0;
-  pointer-events: none;
-}
-
-.lobby-preview-unit {
-  width: 76px;
-  height: 76px;
-  background-image: url("/src/client/assets/generated/reboot-unit-atlas.png");
-  background-repeat: no-repeat;
-  background-size: 608px 76px;
-  transform-origin: 50% 82%;
-  filter: saturate(1.14) drop-shadow(0 11px 18px rgba(0, 0, 0, 0.58));
-}
-
-.lobby-preview-unit[data-sprite="spark_pin"] { background-position: 0 0; }
-.lobby-preview-unit[data-sprite="slow_coil"] { background-position: -152px 0; }
-.lobby-preview-unit[data-sprite="rescue_coil"] { background-position: -304px 0; }
-
-.lobby-preview-unit[data-preview-slot="front"] {
-  right: 74px;
-  bottom: 14px;
-  transform: scale(0.72);
-}
-
-.lobby-preview-unit[data-preview-slot="control"] {
-  right: 34px;
-  bottom: 24px;
-  transform: scale(0.64);
-}
-
-.lobby-preview-unit[data-preview-slot="rescue"] {
-  right: -4px;
-  bottom: 10px;
-  transform: scale(0.7);
-}
-
-.lobby-preview-enemy {
-  width: 46px;
-  height: 46px;
-  background-image: url("/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3");
-  background-repeat: no-repeat;
-  background-size: 400% 100%;
-  filter: saturate(1.08) drop-shadow(0 9px 13px rgba(0, 0, 0, 0.56));
-}
-
-.lobby-preview-enemy[data-enemy-sprite="quick_noise"] {
-  left: 0;
-  top: 38px;
-  background-position: 33.333% 0;
-  transform: scale(0.72) rotate(-5deg);
-}
-
-.lobby-preview-enemy[data-enemy-sprite="heavy_noise"] {
-  left: 42px;
-  top: 46px;
-  background-position: 66.666% 0;
-  transform: scale(0.88) rotate(4deg);
-}
-
-.lobby-preview-reward {
-  right: 8px;
-  top: 10px;
-  width: 42px;
-  height: 42px;
-  background-size: 400% 100%;
-  transform: rotate(6deg);
-  filter: saturate(1.2) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.54));
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .lobby-preview-unit,
-  .lobby-preview-enemy,
-  .lobby-preview-reward {
-    animation: lobbyPreviewFloat 2.8s ease-in-out infinite;
-  }
-
-  .lobby-preview-unit[data-preview-slot="control"],
-  .lobby-preview-enemy[data-enemy-sprite="heavy_noise"] {
-    animation-delay: -0.7s;
-  }
-
-  .lobby-preview-unit[data-preview-slot="rescue"],
-  .lobby-preview-reward {
-    animation-delay: -1.35s;
-  }
-}
-
-@keyframes lobbyPreviewFloat {
-  0%,
-  100% {
-    translate: 0 0;
-  }
-
-  50% {
-    translate: 0 -3px;
-  }
 }
 
 .operation-copy {

@@ -695,18 +695,6 @@ function operationIntelMarkup(operation) {
       </div>`;
 }
 
-function lobbyToyPreviewMarkup() {
-  return `
-      <div class="lobby-toy-preview" aria-hidden="true">
-        <span class="lobby-preview-unit" data-sprite="spark_pin" data-preview-slot="front"></span>
-        <span class="lobby-preview-unit" data-sprite="slow_coil" data-preview-slot="control"></span>
-        <span class="lobby-preview-unit" data-sprite="rescue_coil" data-preview-slot="rescue"></span>
-        <span class="lobby-preview-enemy" data-enemy-sprite="quick_noise"></span>
-        <span class="lobby-preview-enemy" data-enemy-sprite="heavy_noise"></span>
-        <span class="lobby-preview-reward reward-token" data-reward-icon="unlock_capsule"></span>
-      </div>`;
-}
-
 function lobbyProfileModel(profile = {}) {
   const xp = Number.isFinite(profile.xp) ? Math.max(0, Math.floor(profile.xp)) : 0;
   const completedRuns = Array.isArray(profile.processedRuns) ? profile.processedRuns.length : 0;
@@ -737,9 +725,8 @@ export function buildRebootLobby(model = {}) {
   const operation = nextLobbyOperation(model);
   return `
     ${buildLobbyProfilePlate(model)}
-    <section class="operation-card" data-operation-poster="${operation.poster}">
-      <img class="operation-poster-frame" src="/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1" alt="" aria-hidden="true">
-      ${lobbyToyPreviewMarkup()}
+    <section class="operation-card" data-operation-poster="${operation.poster}" data-operation-scene="coop-defense">
+      <img class="operation-coop-diorama" src="/src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1" data-full-src="/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1" alt="" aria-hidden="true" decoding="async" loading="lazy">
       ${operationProgressMarkup(operation)}
       ${operationIntelMarkup(operation)}
       <div class="operation-copy">

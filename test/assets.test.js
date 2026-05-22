@@ -105,6 +105,14 @@ const IMAGEGEN_REBOOT_UI_SCENES = [
     minRuntimeBytes: 240_000
   },
   {
+    path: 'src/client/assets/generated/reboot-lobby-coop-diorama.png',
+    source: 'docs/design/generation/source/reboot/style-lock/20260522-lobby-coop-diorama-imagegen.png',
+    width: 1024,
+    height: 682,
+    minRuntimeBytes: 1_000_000,
+    requiresAlpha: false
+  },
+  {
     path: 'src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png',
     source: 'docs/design/generation/source/reboot/style-lock/20260521-lobby-operation-title-plate-chromakey-imagegen.png',
     width: 768,

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { access, readFile } from 'node:fs/promises';
+import { access, readFile, stat } from 'node:fs/promises';
 import { test } from 'node:test';
 
 import * as rebootPreload from '../src/client/reboot_preload.js';
@@ -25,6 +25,7 @@ test('critical reboot preload blocks only first-paint splash and lobby assets', 
     '/src/client/assets/generated/reboot-splash-bottom-deck.png?v=splash-bottom-deck2',
     '/src/client/assets/generated/reboot-lobby-backdrop.png',
     '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1',
+    '/src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1',
     '/src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png?v=operation-title-plate1',
     '/src/client/assets/generated/reboot-lobby-launch-bay.png?v=lobby-launch-bay1',
     '/src/client/assets/generated/reboot-launch-primary.png?v=gold-cta-alpha1',
@@ -39,6 +40,8 @@ test('critical reboot preload blocks only first-paint splash and lobby assets', 
 
   for (const deferred of [
     '/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1',
+    '/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1',
+    '/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1',
     '/src/client/assets/generated/reboot-battle-backdrop-v2.png?v=battle-backdrop-v2',
     '/src/client/assets/generated/reboot-meta-objective-command-slots-v1.png?v=objective-slots1',
     '/src/client/assets/generated/reboot-partner-standby-sigils-v2.png?v=partner-standby2',
@@ -56,6 +59,26 @@ test('critical reboot preload blocks only first-paint splash and lobby assets', 
 
   assert.equal(CRITICAL_REBOOT_ASSETS.length <= 20, true, `critical preload is too heavy: ${CRITICAL_REBOOT_ASSETS.length}`);
   assert.equal(CRITICAL_REBOOT_ASSETS.every((asset) => asset.startsWith('/src/client/assets/generated/')), true);
+});
+
+test('critical reboot preload stays within a mobile first-paint byte budget', async () => {
+  const totalBytes = (await Promise.all(
+    CRITICAL_REBOOT_ASSETS.map(async (asset) => {
+      const pathname = asset.slice(1).split('?')[0];
+      return (await stat(pathname)).size;
+    })
+  )).reduce((sum, bytes) => sum + bytes, 0);
+
+  assert.equal(
+    CRITICAL_REBOOT_ASSETS.includes('/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1'),
+    false,
+    'full lobby diorama must not block first paint'
+  );
+  assert.equal(
+    totalBytes <= 6_000_000,
+    true,
+    `critical preload byte budget exceeded: ${totalBytes}`
+  );
 });
 
 test('critical reboot preload includes generated lobby navigation dock assets', () => {
@@ -85,6 +108,7 @@ test('warmup preload includes generated meta combat mission and result assets', 
     '/src/client/assets/generated/reboot-mission-command-board-v1.png?v=mission-command-board1',
     '/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1',
     '/src/client/assets/generated/reboot-meta-objective-command-slots-v1.png?v=objective-slots1',
+    '/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1',
     '/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console2',
     '/src/client/assets/generated/reboot-battle-backdrop-v2.png?v=battle-backdrop-v2',
     '/src/client/assets/generated/reboot-combat-operation-badge-v1.png?v=combat-op-badge1',
@@ -116,6 +140,7 @@ test('critical reboot preload follows generated polish css asset urls', async ()
     '--season-reward-board',
     '--meta-objective-command-slots',
     '--lobby-operation-title-plate',
+    '--lobby-coop-diorama-preview',
     '--meta-title-wordmarks',
     '--meta-caption-plate',
     '--meta-shelf-nameplates',

@@ -7,7 +7,7 @@ import { buildCombatActionExposure, buildCombatCoachCue, buildCombatCommandLabel
 import { createRebootAudio } from './reboot_audio.js?v=audio-safe1';
 import { updateCombatHudMeters } from './reboot_hud.js?v=board-copy1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
-import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=mission-season-density1';
+import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=lobby-defer1';
 import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=defense-pressure1';
 import { applyRebootResultView } from './reboot_result_ui.js?v=result-hook1';
 import {
@@ -24,7 +24,7 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=result-hook1';
+} from './reboot_screens.js?v=lobby-defer1';
 import { createRebootOnlineClient } from './reboot_online.js';
 const qs = (selector) => document.querySelector(selector);
 const query = new URLSearchParams(location.search);
@@ -109,8 +109,8 @@ let lastTime = performance.now();
 let resultShownFor = '';
 let profile = loadProfile();
 let pointerNavButton = null;
-let selectedUnitId = null;
-let selectedShopItemId = null;
+let selectedUnitId = null, selectedShopItemId = null;
+let loadingGateReady = false;
 const playtestRecorder = createPlaytestRecorder({
   enabled: playtestEnabled,
   storage: globalThis.localStorage,
@@ -180,8 +180,17 @@ function showRewardReveal(title, detail, icon = 'soft_currency', source = 'missi
 
 function hideLoadingGate() {
   if (!dom.loadingGate) return;
+  loadingGateReady = true;
   dom.loadingGate.dataset.loadingState = 'ready';
   dom.loadingGate.hidden = true;
+  hydrateDeferredLobbyDioramas();
+}
+
+function hydrateDeferredLobbyDioramas() {
+  for (const image of document.querySelectorAll('.operation-coop-diorama[data-full-src]')) {
+    const fullSrc = image.dataset.fullSrc;
+    if (fullSrc && image.getAttribute('src') !== fullSrc) image.src = fullSrc;
+  }
 }
 
 function scheduleWarmRebootAssets() {
@@ -343,6 +352,7 @@ function renderHomeScreens() {
   dom.seasonList.innerHTML = buildSeasonScreen(profile);
   updateNavAlerts();
   updateNavState();
+  if (loadingGateReady) hydrateDeferredLobbyDioramas();
 }
 
 function resultRewards(current) {

@@ -1180,6 +1180,23 @@ Postprocess: split the generated source into two equal cells, remove the green c
 Acceptance: bot mode shows a large generated partner companion on the upper partner board before the bot acts; online waiting shows the second link-beacon cell without implying the bot partner is present; both states read as cooperative presence, not empty UI.
 ```
 
+## Runtime Prompt: Lobby Co-op Defense Diorama
+
+```text
+Use case: stylized-concept
+Asset type: mobile game lobby operation diorama, raster PNG source for a commercial portrait cooperative tower-defense game.
+Primary request: Create one polished ProjectAuto lobby mini-diorama panel that instantly communicates two-player cooperative tower defense.
+Scene/backdrop: dark graphite sci-fi toy-board arena viewed from a slightly elevated isometric angle, made for a compact phone UI card. A winding neon signal road runs through the center with two small transparent-looking enemy noise creatures advancing on the lane. At the bottom left and bottom right are two allied defense boards with collectible relay units firing short cyan/gold bolts toward the lane, showing co-op support between two players. Include small UI-like metal frame details, cyan glass, warm gold trim, Korean mobile game premium finish.
+Composition: wide horizontal panel, no text, no logos, no numbers, no readable letters, no watermark. Leave upper-left and lower-right areas slightly calmer so existing UI copy can overlay. High contrast at small phone size, crisp silhouettes, layered depth, not a web card, not flat CSS, not a generic stock illustration.
+Style: high-end Korean mobile game, sci-fi toy-board cooperative defense, dark graphite metal, cyan signal glass, warm amber/gold trim, collectible reward-machine polish, readable at 390px portrait scale, consistent with ProjectAuto style-lock assets.
+Avoid: photoreal humans, big text, blank rectangles, flat gradients, browser UI, excessive purple/blue haze, blurry/cropped subject, web dashboard look.
+Runtime source: docs/design/generation/source/reboot/style-lock/20260522-lobby-coop-diorama-imagegen.png
+Runtime file: src/client/assets/generated/reboot-lobby-coop-diorama.png
+Critical preview file: src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg
+Postprocess: keep the generated source intact for archive, then resample to 1024px width for runtime without alpha conversion because the scene is a full-bleed rectangular diorama. Derive a 512px-wide JPEG preview for critical first paint; the lobby card uses that preview as its immediate background while the full PNG loads as the overlaid operation scene.
+Acceptance: the first lobby screen reads as a cooperative tower-defense game before the player reads any copy; two allied boards, enemy lane, and attack exchange are visible at 390px portrait scale; no extra buttons or explanatory text are added.
+```
+
 ## 후처리 기준
 
 필수:

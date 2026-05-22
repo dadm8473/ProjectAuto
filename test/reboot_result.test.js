@@ -1248,7 +1248,8 @@ test('lobby operation card shows the next authored combat beat', () => {
   assert.equal(lobby.includes('<strong>보스 막타 작전</strong>'), true);
   assert.equal(lobby.includes('<p>소환 · 결정타</p>'), true);
   assert.equal(lobby.includes('data-operation-poster="boss"'), true);
-  assert.equal(lobby.includes('reboot-lobby-operation-posters.png?v=operation-posters1'), true);
+  assert.equal(lobby.includes('reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1'), true);
+  assert.equal(lobby.includes('data-full-src="/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1"'), true);
   assert.equal(lobby.includes('class="operation-progress" aria-label="작전 진행 2/4"'), true);
   assert.equal((lobby.match(/class="operation-progress-node"/g) ?? []).length, 4);
   assert.equal(lobby.includes('data-operation-node="active"'), true);

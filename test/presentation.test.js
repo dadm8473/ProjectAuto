@@ -120,7 +120,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_hud.js?v=board-copy1'",
     "from './reboot_render.js?v=defense-pressure1'",
     "from './reboot_result_ui.js?v=result-hook1'",
-    "from './reboot_screens.js?v=result-hook1'",
+    "from './reboot_screens.js?v=lobby-defer1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -642,7 +642,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-hook1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-defer1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-select1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-flow1">'), false);
@@ -764,7 +764,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-hook1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=lobby-defer1"></script>'), true);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=defense-pressure1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shelf-select1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-stamps1"></script>'), false);
@@ -881,7 +881,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=route-core1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=result-hook1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=lobby-defer1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=shelf-select1'"), false);
   assert.equal(app.includes("from './reboot_result_ui.js?v=result-ui2'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), false);
@@ -933,11 +933,13 @@ test('startup uses a generated game loading gate while critical assets warm up',
     'src="/src/client/assets/generated/reboot-app-icon-192.png"',
     'class="loading-gate-title-plate"',
     'class="loading-gate-bar"',
-    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=mission-season-density1';",
+    "import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=lobby-defer1';",
     'function scheduleWarmRebootAssets()',
     'warmRebootAssets().catch(() => {});',
     'preloadCriticalRebootAssets().then(() => {\n  hideLoadingGate();\n  scheduleWarmRebootAssets();\n}, hideLoadingGate);',
     'function hideLoadingGate()',
+    'function hydrateDeferredLobbyDioramas()',
+    'hydrateDeferredLobbyDioramas();',
     "dom.loadingGate.dataset.loadingState = 'ready';",
     'dom.loadingGate.hidden = true;',
     "await page.locator('#loadingGate').waitFor({ state: 'hidden' });",
@@ -1537,7 +1539,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=result-hook1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-defer1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=objective-stamps1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=reward-flow1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=combat-meter-sockets-v2'), false);
@@ -2002,7 +2004,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=result-hook1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=lobby-defer1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -3826,22 +3828,24 @@ test('splash and lobby use generated hero squad art instead of empty landing spa
   assert.equal(css.includes('--hero-squad: url("/src/client/assets/generated/reboot-hero-squad.png")'), false);
 });
 
-test('lobby operation card uses a dedicated generated mission poster', async () => {
+test('lobby operation card uses a dedicated generated co-op defense scene', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
   for (const marker of [
-    '--lobby-operation-posters: url("/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1")',
+    '--lobby-coop-diorama-preview: url("/src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1")',
     '--lobby-operation-title-plate: url("/src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png?v=operation-title-plate1")',
     'class="operation-card"',
     'data-operation-poster="${operation.poster}"',
-    'class="operation-poster-frame"',
-    '/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1',
+    'data-operation-scene="coop-defense"',
+    'class="operation-coop-diorama"',
+    'src="/src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1"',
+    'data-full-src="/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1"',
+    '/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1',
     '.operation-card',
-    '.operation-poster-frame',
-    'width: 400%;',
+    'background-image: var(--lobby-coop-diorama-preview);',
+    '.operation-coop-diorama',
     '.operation-card[data-operation-poster="boss"]',
-    '--operation-poster-x: -25%;',
     '--lobby-operation-poster-height: 154px',
     'min-height: var(--lobby-operation-poster-height);',
     'class="operation-copy"',
@@ -3883,7 +3887,9 @@ test('lobby operation card uses a dedicated generated mission poster', async () 
   for (const forbidden of [
     'class="lobby-card operation-card"',
     '세 버튼으로 파트너 라인을 살리고 보스를 막으세요',
-    '.operation-card::after'
+    '.operation-card::after',
+    'class="operation-poster-frame"',
+    'class="lobby-toy-preview"'
   ]) {
     assert.equal(`${css}\n${screens}`.includes(forbidden), false, forbidden);
   }
@@ -3941,47 +3947,34 @@ test('lobby operation title uses a generated game nameplate instead of floating 
   }
 });
 
-test('lobby operation card stages generated unit enemy and reward sprites over the poster', async () => {
+test('lobby operation card uses a generated co-op tower defense diorama', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
   const { buildRebootLobby } = await import('../src/client/reboot_screens.js');
   const lobby = buildRebootLobby({ gems: 40, processedRuns: [] });
-  const previewStart = lobby.indexOf('<div class="lobby-toy-preview"');
-  const previewEnd = lobby.indexOf('</div>', previewStart);
-  const previewMarkup = lobby.slice(previewStart, previewEnd + '</div>'.length);
 
   for (const marker of [
-    'class="lobby-toy-preview"',
-    'class="lobby-preview-unit" data-sprite="spark_pin"',
-    'class="lobby-preview-unit" data-sprite="slow_coil"',
-    'class="lobby-preview-unit" data-sprite="rescue_coil"',
-    'class="lobby-preview-enemy" data-enemy-sprite="quick_noise"',
-    'class="lobby-preview-enemy" data-enemy-sprite="heavy_noise"',
-    'class="lobby-preview-reward reward-token" data-reward-icon="unlock_capsule"',
-    '.lobby-toy-preview',
-    '.lobby-preview-unit',
-    '.lobby-preview-enemy',
-    '.lobby-preview-reward',
-    'background-image: url("/src/client/assets/generated/reboot-unit-atlas.png");',
-    'background-size: 608px 76px;',
-    '.lobby-preview-unit[data-sprite="spark_pin"]',
-    '.lobby-preview-unit[data-sprite="slow_coil"]',
-    '.lobby-preview-unit[data-sprite="rescue_coil"]',
-    'background-image: url("/src/client/assets/generated/reboot-enemy-atlas-v3.png?v=enemy-atlas-v3");',
-    'background-size: 400% 100%;',
-    '.lobby-preview-enemy[data-enemy-sprite="quick_noise"]',
-    '.lobby-preview-enemy[data-enemy-sprite="heavy_noise"]',
+    '--lobby-coop-diorama-preview: url("/src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1")',
+    'class="operation-coop-diorama"',
+    'src="/src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1"',
+    'data-full-src="/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1"',
+    '/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1',
+    '.operation-coop-diorama',
+    'background-image: var(--lobby-coop-diorama-preview);',
+    'object-fit: cover;',
+    '--operation-diorama-x: 50%;',
+    'object-position: var(--operation-diorama-x) var(--operation-diorama-y);',
     '.operation-copy {\n  position: relative;\n  z-index: 3;',
     '.operation-progress {\n  position: absolute;\n  right: 12px;\n  bottom: 12px;\n  z-index: 4;'
   ]) {
     assert.equal(`${screens}\n${css}\n${lobby}`.includes(marker), true, marker);
   }
 
-  assert.notEqual(previewStart, -1, 'lobby preview markup is missing');
-  assert.match(previewMarkup, /^<div class="lobby-toy-preview" aria-hidden="true">/);
-  assert.equal(previewMarkup.includes('unit-sprite'), false, 'hidden lobby preview should not shadow visible collection unit sprites');
+  assert.equal(lobby.includes('class="lobby-toy-preview"'), false);
+  assert.equal(screens.includes('function lobbyToyPreviewMarkup'), false);
+  assert.equal(lobby.includes('class="operation-coop-diorama" src="/src/client/assets/generated/reboot-lobby-coop-diorama.png'), false);
 
-  const previewBlock = cssRuleBlock(css, '.lobby-toy-preview');
+  const previewBlock = cssRuleBlock(css, '.operation-coop-diorama');
   for (const forbidden of [
     'background: rgba(',
     'linear-gradient',
@@ -5817,11 +5810,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=retry-context1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=result-hook1'",
+    "from './reboot_screens.js?v=lobby-defer1'",
     "from './reboot_game.js?v=retry-context1'",
     "from '../shared/game.js?v=retry-context1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=result-hook1',
+    '/src/client/reboot_screens.js?v=lobby-defer1',
     '/src/shared/game.js?v=retry-context1',
     '/src/shared/reboot_game.js?v=retry-context1'
   ]) {
