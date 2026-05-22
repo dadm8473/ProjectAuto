@@ -315,6 +315,9 @@ const PARTNER_ASSIST_PINGS = {
 const MOMENT_CALLOUT_DURATION = 1.85;
 const MOMENT_CALLOUT_FADE_SECONDS = 0.5;
 const PARTNER_ASSIST_PING_DURATION = 2.4;
+const PARTNER_READY_PING_START = 0.78;
+const PARTNER_READY_PING_END = 2.7;
+const PARTNER_READY_PING_FADE_SECONDS = 0.42;
 
 const COSMETIC_SIGIL_INDEX = {
   'mythic-aura': 0,
@@ -1124,10 +1127,7 @@ function drawPartnerStandbySigil(ctx, state, assets = {}, partnerId = 'p2', opti
     return drawPartnerStandbySprite(ctx, assets.partnerStandbySigils, 1, 72, 52, 246, 90, 0.58 + pulse);
   }
 
-  const players = state.players ?? [];
-  const partnerPlayer = players.find((player) => normalizeBoardId(player.id) === normalizeBoardId(partnerId));
-  const isBotPartner = state.mode === 'bot' || partnerPlayer?.bot === true;
-  if (!isBotPartner) return false;
+  if (!isBotPartner(state, partnerId)) return false;
   const pulse = Math.max(0, Math.sin((Number(state.now) || 0) * 3.8)) * 0.12;
   const alpha = Math.min(0.92, 0.72 + pulse);
   const drew = drawPartnerStandbySprite(ctx, assets.partnerStandbySigils, 0, 92, 26, 206, 92, alpha);
@@ -1158,6 +1158,12 @@ function normalizeBoardId(boardId) {
 
 function partnerBoardId(localBoardId = 'p1') {
   return normalizeBoardId(localBoardId) === 'p1' ? 'p2' : 'p1';
+}
+
+function isBotPartner(state = {}, partnerId = 'p2') {
+  const players = state.players ?? [];
+  const partnerPlayer = players.find((player) => normalizeBoardId(player.id) === normalizeBoardId(partnerId));
+  return state.mode === 'bot' || partnerPlayer?.bot === true;
 }
 
 function partnerDangerActive(state, localBoardId = 'p1') {
@@ -1850,6 +1856,51 @@ function partnerAssistBody(event, meta) {
   return event?.action === 'rescue' ? `${unit.name} 구원` : `${unit.name} 소환`;
 }
 
+function partnerReadyAlpha(now = 0) {
+  if (now < PARTNER_READY_PING_START || now > PARTNER_READY_PING_END) return 0;
+  const enter = Math.min(1, (now - PARTNER_READY_PING_START) / 0.18);
+  const exit = Math.min(1, (PARTNER_READY_PING_END - now) / PARTNER_READY_PING_FADE_SECONDS);
+  return Math.max(0, Math.min(0.9, enter, exit));
+}
+
+function hasRecentLocalSummonCallout(state, localBoardId = 'p1') {
+  const selfId = normalizeBoardId(localBoardId);
+  return recentEvents(state, 'summon', MOMENT_CALLOUT_DURATION).some((event) => (
+    normalizeBoardId(event.playerId ?? selfId) === selfId
+  ));
+}
+
+function drawPartnerReadyPing(ctx, state, assets = {}, localBoardId = 'p1', options = {}) {
+  if (options.onlineWaiting || options.matchmakingBannerVisible) return;
+  if (hasRecentLocalPlayerActionSurge(state, localBoardId) || hasRecentLocalSummonCallout(state, localBoardId)) return;
+  if (recentEvents(state, 'partner_auto', PARTNER_ASSIST_PING_DURATION).length > 0) return;
+  if (recentWaveDirective(state)) return;
+  const partnerId = partnerBoardId(localBoardId);
+  const partnerBoard = state.boards?.[partnerId];
+  if (!partnerBoard || (partnerBoard.units?.length ?? 0) > 0 || !isBotPartner(state, partnerId)) return;
+  const alpha = partnerReadyAlpha(Number(state.now) || 0);
+  if (alpha <= 0) return;
+  const x = 91;
+  const y = 52;
+  const w = 208;
+  const h = 65;
+  const drewReadyPing = drawPartnerAssistSprite(ctx, assets.partnerAssistPings, PARTNER_ASSIST_PINGS.summon.index, x, y, w, h, alpha);
+  if (!drewReadyPing) return;
+  drawAtlasSprite(ctx, assets, 'ui', 'summon_charge', x + 34, y + 28, 24, alpha);
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.fillStyle = '#fff7dc';
+  ctx.shadowColor = '#58d7ff';
+  ctx.shadowBlur = 10;
+  ctx.font = '900 13px system-ui';
+  ctx.fillText('동료 준비', x + 66, y + 27);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(245, 240, 220, 0.82)';
+  ctx.font = '800 9px system-ui';
+  ctx.fillText('봇 자동 지원', x + 66, y + 41);
+  ctx.restore();
+}
+
 function drawPartnerAssistPing(ctx, state, assets = {}, localBoardId = 'p1') {
   if (hasRecentLocalPlayerActionSurge(state, localBoardId)) return;
   if (recentWaveDirective(state)) return;
@@ -1960,6 +2011,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
     drawBossWarningCutin(ctx, state, assets);
     drawPartnerDangerCutin(ctx, state, assets, localBoardId);
   }
+  drawPartnerReadyPing(ctx, state, assets, localBoardId, options);
   drawPartnerAssistPing(ctx, state, assets, localBoardId);
   drawCombatMomentCallout(ctx, state, assets);
 }

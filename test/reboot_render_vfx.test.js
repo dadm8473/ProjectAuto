@@ -2565,6 +2565,96 @@ test('bot partner standby sigil marks the empty partner board before bot acts', 
   );
 });
 
+test('bot partner ready ping uses the generated co-op banner after the intro', () => {
+  const ctx = mockContext();
+  const partnerAssistPings = image(640, 100);
+
+  drawRebootBattle(
+    ctx,
+    {
+      mode: 'bot',
+      now: 0.9,
+      players: [
+        { id: 'p1', bot: false },
+        { id: 'p2', bot: true }
+      ],
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      playerBoardTray: image(780, 320),
+      partnerAssistPings
+    }
+  );
+
+  const readyDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === partnerAssistPings);
+  assert.ok(readyDraw, 'expected generated partner-ready banner before the bot takes its first action');
+  assert.equal(readyDraw.args[1], 0, 'ready ping should reuse the summon/assist banner cell');
+  assert.equal(readyDraw.args[6] + readyDraw.args[8] <= 132, true, 'ready ping should stay in the partner-board lane');
+  assert.ok(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '동료 준비'));
+});
+
+test('bot partner ready ping does not stack over intro or first summon feedback', () => {
+  const duringIntro = mockContext();
+  const afterSummon = mockContext();
+  const partnerAssistPings = image(640, 100);
+  const state = {
+    mode: 'bot',
+    players: [
+      { id: 'p1', bot: false },
+      { id: 'p2', bot: true }
+    ],
+    boards: {
+      p1: { danger: 0, units: [] },
+      p2: { danger: 0, units: [] }
+    },
+    enemies: [],
+    effects: [],
+    actionState: { p1: { summon: true, merge: false, rescue: false } }
+  };
+
+  drawRebootBattle(
+    duringIntro,
+    { ...state, now: 0.32, events: [] },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      startCutin: image(390, 112),
+      playerBoardTray: image(780, 320),
+      partnerAssistPings
+    }
+  );
+  drawRebootBattle(
+    afterSummon,
+    { ...state, now: 1.2, events: [{ type: 'summon', at: 0.92, playerId: 'p1', unitId: 'spark_pin' }] },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      playerBoardTray: image(780, 320),
+      partnerAssistPings
+    }
+  );
+
+  assert.equal(
+    duringIntro.commands.some((command) => command.type === 'drawImage' && command.args[0] === partnerAssistPings),
+    false,
+    'ready ping should wait until the operation intro has cleared'
+  );
+  assert.equal(
+    afterSummon.commands.some((command) => command.type === 'drawImage' && command.args[0] === partnerAssistPings),
+    false,
+    'ready ping should yield to the player first-summon feedback'
+  );
+});
+
 test('online waiting uses the partner link atlas cell without showing playable cues', () => {
   const ctx = mockContext();
   const partnerStandbySigils = image(1024, 512);

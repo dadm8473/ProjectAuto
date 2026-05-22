@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v100');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v101');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
       '/src/client/styles.css?v=reward-flow1': cache
         ? Boolean(await cache.match('/src/client/styles.css?v=reward-flow1'))
         : false,
-      '/src/client/app.js?v=objective-focus1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=objective-focus1'))
+      '/src/client/app.js?v=partner-ready1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=partner-ready1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -150,8 +150,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_preload.js?v=mission-season-density1': cache
         ? Boolean(await cache.match('/src/client/reboot_preload.js?v=mission-season-density1'))
         : false,
-      '/src/client/reboot_render.js?v=battle-backdrop-v2': cache
-        ? Boolean(await cache.match('/src/client/reboot_render.js?v=battle-backdrop-v2'))
+      '/src/client/reboot_render.js?v=partner-ready1': cache
+        ? Boolean(await cache.match('/src/client/reboot_render.js?v=partner-ready1'))
         : false,
       '/src/client/reboot_result_ui.js?v=result-ui2': cache
         ? Boolean(await cache.match('/src/client/reboot_result_ui.js?v=result-ui2'))
@@ -238,7 +238,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v100', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v101', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1709,6 +1709,36 @@ async function assertCombatDockSafeArea(page) {
   );
 }
 
+async function assertCombatViewportLocked(page, label = 'combat battle') {
+  const geometry = await page.evaluate(() => {
+    const shell = document.querySelector('.shell')?.getBoundingClientRect();
+    const stage = document.querySelector('.stage-wrap')?.getBoundingClientRect();
+    const actionPanel = document.querySelector('.action-panel')?.getBoundingClientRect();
+    return {
+      viewportHeight: window.innerHeight,
+      clientHeight: document.documentElement.clientHeight,
+      documentScrollHeight: document.documentElement.scrollHeight,
+      bodyScrollHeight: document.body.scrollHeight,
+      bodyOverflow: getComputedStyle(document.body).overflow,
+      htmlOverflow: getComputedStyle(document.documentElement).overflow,
+      shellTop: Math.round(shell?.top ?? -1),
+      shellBottom: Math.round(shell?.bottom ?? -1),
+      shellHeight: Math.round(shell?.height ?? 0),
+      stageBottom: Math.round(stage?.bottom ?? -1),
+      actionPanelTop: Math.round(actionPanel?.top ?? -1),
+      actionPanelBottom: Math.round(actionPanel?.bottom ?? -1)
+    };
+  });
+  assert.equal(geometry.bodyOverflow, 'hidden', `${label} body should not scroll: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.htmlOverflow, 'hidden', `${label} document should not scroll: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.documentScrollHeight <= geometry.clientHeight + 1, true, `${label} document duplicates below viewport: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.bodyScrollHeight <= geometry.viewportHeight + 1, true, `${label} body duplicates below viewport: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.shellTop, 0, `${label} shell top drifted: ${JSON.stringify(geometry)}`);
+  assert.equal(Math.abs(geometry.shellBottom - geometry.viewportHeight) <= 1, true, `${label} shell does not lock to viewport: ${JSON.stringify(geometry)}`);
+  assert.equal(Math.abs(geometry.stageBottom - geometry.actionPanelTop) <= 1, true, `${label} battlefield overlaps or leaves a gap before dock: ${JSON.stringify(geometry)}`);
+  assert.equal(Math.abs(geometry.actionPanelBottom - geometry.viewportHeight) <= 1, true, `${label} dock does not end at viewport bottom: ${JSON.stringify(geometry)}`);
+}
+
 async function assertCombatHudMeterBounds(page, label = 'combat battle') {
   const geometry = await page.locator('.hud').evaluate((hud) => {
     const hudRect = hud.getBoundingClientRect();
@@ -2486,6 +2516,7 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#shopButton, #passButton, #adButton, #paidReviveButton').count(), 0);
   assert.equal(await page.locator('#bossMeter').isVisible(), false);
   assert.notEqual(await page.locator('.action-panel').evaluate((node) => getComputedStyle(node).display), 'none');
+  await assertCombatViewportLocked(page);
   await assertCombatDockSafeArea(page);
   await assertCombatOperationBadge(page);
   await assertCombatHudMeterBounds(page);
@@ -2689,6 +2720,7 @@ async function verifyCompactResult(page) {
   await page.getByRole('button', { name: '시작' }).click();
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).click();
   await page.locator('#summonButton').waitFor({ state: 'visible' });
+  await assertCombatViewportLocked(page, 'compact battle');
   await assertCombatOperationBadge(page, 'compact battle');
   await assertCombatHudMeterBounds(page, 'compact battle');
 

@@ -118,7 +118,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_action_ui.js?v=hud-meter1'",
     "from './reboot_audio.js?v=audio-safe1'",
     "from './reboot_hud.js?v=board-copy1'",
-    "from './reboot_render.js?v=battle-backdrop-v2'",
+    "from './reboot_render.js?v=partner-ready1'",
     "from './reboot_result_ui.js?v=result-ui2'",
     "from './reboot_screens.js?v=objective-focus1'",
     "from './reboot_online.js'"
@@ -762,7 +762,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-focus1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter-sockets-v2"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=meta-shelf-nameplates1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-command-board1"></script>'), false);
@@ -777,7 +778,6 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shop-copy1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=hud-meter1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-identity1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-atlas3"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-highlight1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=playtest-feedback1"></script>'), false);
@@ -844,7 +844,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=battle-backdrop-v2'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=partner-ready1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=battle-backdrop-v2'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=partner-standby2'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=enemy-atlas3'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=opening-route1'"), false);
@@ -3115,10 +3116,15 @@ test('combat renderer uses generated partner assist pings for bot co-op actions'
     'partnerAssistPings.src = REBOOT_EFFECT_MANIFEST.partnerAssistPings.src;',
 	    'PARTNER_ASSIST_PINGS',
 	    'const PARTNER_ASSIST_PING_DURATION = 2.4;',
+	    'const PARTNER_READY_PING_START = 0.78;',
 	    'function drawPartnerAssistSprite',
+	    'function drawPartnerReadyPing',
 	    'function drawPartnerAssistPing',
 	    'function hasRecentLocalPlayerActionSurge',
+	    'function hasRecentLocalSummonCallout',
 	    "recentEvents(state, 'partner_auto', PARTNER_ASSIST_PING_DURATION)",
+	    "ctx.fillText('동료 준비'",
+	    "ctx.fillText('봇 자동 지원'",
 	    'const ACTION_SURGE_DURATION = 2.0;',
 	    "recentEvents(state, type, ACTION_SURGE_DURATION)",
 	    'const meta = PARTNER_ASSIST_PINGS[event?.action] ?? PARTNER_ASSIST_PINGS.summon;',
@@ -3128,6 +3134,7 @@ test('combat renderer uses generated partner assist pings for bot co-op actions'
 	    'drawPartnerAssistSprite(ctx, assets.partnerAssistPings, meta.index, x, y, w, h, alpha);',
 	    'ctx.fillText(partnerAssistTitle(state, localBoardId)',
 	    'ctx.fillText(partnerAssistBody(event, meta)',
+	    'drawPartnerReadyPing(ctx, state, assets, localBoardId, options)',
 	    'drawPartnerAssistPing(ctx, state, assets, localBoardId)'
 	  ]) {
     assert.equal(render.includes(marker), true, marker);
@@ -5943,6 +5950,23 @@ test('combat HUD keeps three resource meters bounded on compact phones', async (
     '#dangerMeter::before { background-position: -36px 0; }'
   ]) {
     assert.equal(`${css}\n${qa}`.includes(marker), true, marker);
+  }
+});
+
+test('browser QA locks battle to one portrait viewport instead of a scroll page', async () => {
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    'async function assertCombatViewportLocked(page',
+    'document.documentElement.scrollHeight',
+    'document.body.scrollHeight',
+    'document duplicates below viewport',
+    'body duplicates below viewport',
+    'stageBottom - geometry.actionPanelTop',
+    'await assertCombatViewportLocked(page);',
+    "await assertCombatViewportLocked(page, 'compact battle');"
+  ]) {
+    assert.equal(qa.includes(marker), true, marker);
   }
 });
 
