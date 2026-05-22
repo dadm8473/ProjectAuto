@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v96');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v97');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=objective-focus1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=objective-focus1'))
+      '/src/client/styles.css?v=hud-values1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=hud-values1'))
         : false,
       '/src/client/app.js?v=objective-focus1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=objective-focus1'))
@@ -238,7 +238,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v96', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v97', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1671,11 +1671,13 @@ async function assertCombatHudMeterBounds(page, label = 'combat battle') {
     const hudRect = hud.getBoundingClientRect();
     return [...document.querySelectorAll('.meters > span')].map((meter) => {
       const meterRect = meter.getBoundingClientRect();
-      const label = meter.querySelector('.meter-label')?.getBoundingClientRect();
-      const value = meter.querySelector('.meter-value')?.getBoundingClientRect();
+      const labelNode = meter.querySelector('.meter-label');
+      const valueNode = meter.querySelector('.meter-value');
+      const label = labelNode?.getBoundingClientRect();
+      const value = valueNode?.getBoundingClientRect();
       return {
         id: meter.id,
-        labelText: meter.querySelector('.meter-label')?.textContent ?? '',
+        labelText: labelNode?.textContent ?? '',
         meterLeft: Math.round(meterRect.left),
         meterRight: Math.round(meterRect.right),
         hudLeft: Math.round(hudRect.left),
@@ -1684,6 +1686,7 @@ async function assertCombatHudMeterBounds(page, label = 'combat battle') {
         labelRight: Math.round(label?.right ?? 0),
         valueLeft: Math.round(value?.left ?? 0),
         valueRight: Math.round(value?.right ?? 0),
+        valueFontSize: Number.parseFloat(getComputedStyle(valueNode).fontSize),
         overflow: getComputedStyle(meter).overflow
       };
     });
@@ -1695,6 +1698,7 @@ async function assertCombatHudMeterBounds(page, label = 'combat battle') {
     assert.equal(meter.meterRight <= meter.hudRight, true, `${label} HUD meter escapes generated socket row: ${JSON.stringify(meter)}`);
     assert.equal(meter.valueLeft >= meter.meterLeft && meter.valueRight <= meter.meterRight, true, `${label} HUD meter value escapes generated socket: ${JSON.stringify(meter)}`);
     assert.equal(meter.labelLeft >= meter.meterLeft && meter.labelRight <= meter.meterRight, true, `${label} HUD meter label escapes generated socket: ${JSON.stringify(meter)}`);
+    assert.equal(meter.valueFontSize >= 10.5, true, `${label} HUD meter value is too small for phone play: ${JSON.stringify(meter)}`);
   }
 }
 
