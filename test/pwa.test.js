@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v104';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v105';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -41,8 +41,8 @@ test('service worker keeps the installable mobile game shell available after fir
     'event.request.mode === \'navigate\'',
     "caches.match('/index.html')",
     '/manifest.webmanifest',
-    '/src/client/styles.css?v=objective-stamps1',
-    '/src/client/app.js?v=objective-stamps1',
+    '/src/client/styles.css?v=shelf-select1',
+    '/src/client/app.js?v=shelf-select1',
     '/src/client/reboot_audio.js?v=audio-safe1',
     '/src/client/reboot_actions.js?v=combat-meter2',
     '/src/client/reboot_hud.js?v=board-copy1',
@@ -50,7 +50,7 @@ test('service worker keeps the installable mobile game shell available after fir
     '/src/client/reboot_preload.js?v=mission-season-density1',
     '/src/client/reboot_render.js?v=route-core1',
     '/src/client/reboot_result_ui.js?v=result-ui2',
-    '/src/client/reboot_screens.js?v=objective-stamps1',
+    '/src/client/reboot_screens.js?v=shelf-select1',
     '/src/client/reboot_action_ui.js?v=hud-meter1',
     '/src/client/reboot_online.js',
     '/src/shared/game.js?v=retry-context1',
@@ -93,6 +93,7 @@ test('service worker keeps the installable mobile game shell available after fir
     assert.equal(sw.includes(marker), true, marker);
   }
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v91';"), false);
+  assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v104';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v103';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v102';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v101';"), false);
@@ -108,6 +109,9 @@ test('service worker keeps the installable mobile game shell available after fir
   assert.equal(sw.includes('/src/client/app.js?v=battle-backdrop-v2'), false);
   assert.equal(sw.includes('/src/client/app.js?v=partner-ready1'), false);
   assert.equal(sw.includes('/src/client/app.js?v=objective-focus1'), false);
+  assert.equal(sw.includes('/src/client/app.js?v=objective-stamps1'), false);
+  assert.equal(sw.includes('/src/client/styles.css?v=objective-stamps1'), false);
+  assert.equal(sw.includes('/src/client/reboot_screens.js?v=objective-stamps1'), false);
   assert.equal(sw.includes('/src/client/reboot_preload.js?v=battle-backdrop-v2'), false);
   assert.equal(sw.includes('/src/client/reboot_render.js?v=battle-backdrop-v2'), false);
   assert.equal(sw.includes('/src/client/reboot_render.js?v=partner-ready1'), false);
@@ -242,10 +246,10 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v104'",
+    "cacheName === 'projectauto-reboot-shell-v105'",
     "await cache.match('/index.html')",
-    "await cache.match('/src/client/styles.css?v=objective-stamps1')",
-    "await cache.match('/src/client/app.js?v=objective-stamps1')",
+    "await cache.match('/src/client/styles.css?v=shelf-select1')",
+    "await cache.match('/src/client/app.js?v=shelf-select1')",
     "await cache.match('/src/client/reboot_audio.js?v=audio-safe1')",
     "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
     "await cache.match('/src/client/reboot_hud.js?v=board-copy1')",
@@ -253,7 +257,7 @@ test('browser QA verifies the runtime service worker cache activation', async ()
     "await cache.match('/src/client/reboot_preload.js?v=mission-season-density1')",
     "await cache.match('/src/client/reboot_render.js?v=route-core1')",
     "await cache.match('/src/client/reboot_result_ui.js?v=result-ui2')",
-    "await cache.match('/src/client/reboot_screens.js?v=objective-stamps1')",
+    "await cache.match('/src/client/reboot_screens.js?v=shelf-select1')",
     "await cache.match('/src/shared/game.js?v=retry-context1')",
     "await cache.match('/src/shared/reboot_game.js?v=retry-context1')",
     "await cache.match('/src/client/reboot_action_ui.js?v=hud-meter1')",
@@ -293,6 +297,7 @@ test('browser QA verifies the runtime service worker cache activation', async ()
     assert.equal(qa.includes(marker), true, marker);
   }
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v91'"), false);
+  assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v104'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v103'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v102'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v101'"), false);
@@ -309,10 +314,13 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   assert.equal(qa.includes("await cache.match('/src/client/reboot_preload.js?v=partner-standby2')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/app.js?v=battle-backdrop-v2')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/app.js?v=objective-focus1')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/app.js?v=objective-stamps1')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/styles.css?v=objective-stamps1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_preload.js?v=battle-backdrop-v2')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_render.js?v=battle-backdrop-v2')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_render.js?v=partner-ready1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_screens.js?v=objective-focus1')"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/reboot_screens.js?v=objective-stamps1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/styles.css?v=objective-slots1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_render.js?v=partner-standby2')"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v84'"), false);

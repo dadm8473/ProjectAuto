@@ -472,14 +472,15 @@ test('reboot shop renders earned-gem cosmetic purchases with owned and locked st
   const shop = buildRebootShop({ gems: 90, unlocks: ['founder-board'] });
 
   assert.equal(shop.includes('data-shop-buy="mythic-aura"'), true);
-  assert.equal(shop.includes('data-shop-buy="founder-board"'), true);
+  assert.equal(shop.includes('data-shop-buy="founder-board"'), false);
+  assert.equal(shop.includes('data-shop-select="founder-board"'), true);
   assert.equal(shop.includes('data-shop-cosmetic="mythic-aura"'), true);
   assert.equal(shop.includes('data-shop-cosmetic="founder-board"'), true);
   assert.equal(shop.includes('data-owned="true"'), true);
   assert.equal(shop.includes('90 보석'), true);
   assert.equal(shop.includes('140 보석'), true);
   assert.equal(shop.includes('>해금<'), true);
-  assert.equal(shop.includes('>착용<'), true);
+  assert.equal(shop.includes('>착용<'), false);
   assert.equal(shop.includes('lucky-cache'), false);
   assert.equal(shop.includes('run_boost'), false);
 });
@@ -537,10 +538,12 @@ test('reboot collection renders unit upgrade state from profile XP and levels', 
   assert.equal(collection.includes('Lv.2'), true);
   assert.equal(collection.includes('60 경험치'), true);
   assert.equal(collection.includes('>강화<'), true);
-  assert.equal(collection.includes('data-unit-upgrade="burst_pin"'), true);
+  assert.equal(collection.includes('data-unit-upgrade="toktok_amp"'), true);
+  assert.equal(collection.includes('data-unit-select="burst_pin"'), true);
+  assert.equal(collection.includes('data-unit-upgrade="burst_pin"'), false);
   assert.equal(collection.includes('40 경험치'), true);
-  assert.equal(collection.includes('aria-label="경험치 부족"'), true);
-  assert.equal(collection.includes('>부족<'), true);
+  assert.equal(collection.includes('강화 비용 60 경험치 · 경험치 부족"'), true);
+  assert.equal(collection.includes('>부족<'), false);
   assert.equal(collection.includes('>경험치 부족<'), false);
 });
 
@@ -592,8 +595,8 @@ test('locked unit and shop rows use short visual state tokens instead of repeate
   assert.equal(shop.includes('aria-label="보석 부족"'), true);
   assert.equal(collection.includes('>경험치 부족<'), false);
   assert.equal(shop.includes('>보석 부족<'), false);
-  assert.equal((collection.match(/class="card-passive-state" data-passive-state="locked" aria-label="경험치 부족">부족/g) ?? []).length >= 1, true);
-  assert.equal((shop.match(/class="card-passive-state" data-passive-state="locked" aria-label="보석 부족">부족/g) ?? []).length >= 1, true);
+  assert.equal((collection.match(/class="card-passive-state featured-unit-passive" data-passive-state="locked" aria-label="경험치 부족">부족/g) ?? []).length, 1);
+  assert.equal((shop.match(/class="card-passive-state featured-shop-passive" data-passive-state="locked" aria-label="보석 부족">부족/g) ?? []).length, 1);
 });
 
 test('meta screens start with compact actionable status headers', () => {
@@ -707,8 +710,9 @@ test('unit shelf cards expose compact roles and full accessible state', () => {
   assert.equal(collection.includes('<span class="role-pill" aria-label="공격 역할 · 피해">피해</span>'), true);
   assert.equal(collection.includes('data-role="support"'), true);
   assert.equal(collection.includes('<span class="role-pill" aria-label="지원 역할 · 증폭">증폭</span>'), true);
+  assert.equal(collection.includes('data-unit-select="spark_pin" aria-label="스파크 핀 대표 유닛으로 보기"'), true);
   assert.equal(collection.includes('data-unit-upgrade="spark_pin" aria-label="스파크 핀 강화"'), true);
-  assert.equal(collection.includes('<span class="unit-upgrade-label">강화</span>'), true);
+  assert.equal(collection.includes('<span class="unit-upgrade-label">강화</span>'), false);
 });
 
 test('shop shelf cards expose compact prices and full accessible state', () => {
@@ -743,6 +747,29 @@ test('collection and shop items sit inside a generated shelf grid', () => {
   assert.equal(shop.indexOf('class="meta-showcase"') < shop.indexOf('class="meta-shelf-grid"'), true);
   assert.equal(collection.indexOf('class="meta-shelf-grid"') < collection.indexOf('class="screen-card unit-card"'), true);
   assert.equal(shop.indexOf('class="meta-shelf-grid"') < shop.indexOf('class="screen-card shop-card"'), true);
+});
+
+test('collection and shop lower shelves select the featured item instead of repeating commerce buttons', () => {
+  const collection = buildRebootCollection(
+    { xp: 80, unitLevels: { spark_pin: 2, burst_pin: 1 } },
+    { selectedUnitId: 'burst_pin' }
+  );
+  const shop = buildRebootShop(
+    { gems: 80, unlocks: ['merge-effect'], equippedCosmetic: 'merge-effect' },
+    { selectedShopItemId: 'rescue-effect' }
+  );
+
+  assert.equal(collection.includes('data-featured-unit="burst_pin"'), true);
+  assert.equal(shop.includes('data-featured-shop="rescue-effect"'), true);
+  assert.equal(collection.includes('class="meta-shelf-grid" data-shelf-kind="collection" data-shelf-mode="select-preview"'), true);
+  assert.equal(shop.includes('class="meta-shelf-grid" data-shelf-kind="shop" data-shelf-mode="select-preview"'), true);
+  assert.equal((collection.match(/class="shelf-select-pad" data-unit-select=/g) ?? []).length, 8);
+  assert.equal((shop.match(/class="shelf-select-pad" data-shop-select=/g) ?? []).length, 5);
+  assert.equal((collection.match(/data-unit-upgrade=/g) ?? []).length, 1);
+  assert.equal((shop.match(/data-shop-buy=/g) ?? []).length, 1);
+  assert.equal(collection.includes('data-shelf-selected="true"'), true);
+  assert.equal(shop.includes('data-shelf-selected="true"'), true);
+  assert.equal(collection.includes('<span class="unit-upgrade-label">강화</span>'), false);
 });
 
 test('mission and season rows sit inside a generated progress board', () => {
@@ -1104,13 +1131,22 @@ test('shop turns owned cosmetics into equipped expression instead of dead BM car
     unlocks: ['mythic-aura', 'merge-effect'],
     equippedCosmetic: 'mythic-aura'
   });
+  const equippedFeature = buildRebootShop(
+    {
+      gems: 300,
+      unlocks: ['mythic-aura', 'merge-effect'],
+      equippedCosmetic: 'mythic-aura'
+    },
+    { selectedShopItemId: 'mythic-aura' }
+  );
 
   assert.equal(shop.includes('data-equipped="true"'), true);
   assert.equal(shop.includes('data-equipped="false"'), true);
   assert.equal(shop.includes('class="cosmetic-equip-aura"'), true);
   assert.equal(shop.includes('data-cosmetic-effect="mythic-aura"'), true);
-  assert.equal(shop.includes('class="card-passive-state" data-passive-state="owned" aria-label="장착중">장착중<'), true);
-  assert.equal(shop.includes('data-shop-buy="merge-effect" aria-label="합성 플레어 착용">착용<'), true);
+  assert.equal(equippedFeature.includes('class="card-passive-state featured-shop-passive" data-passive-state="owned" aria-label="장착중">장착중<'), true);
+  assert.equal(shop.includes('data-shop-select="merge-effect" aria-label="합성 플레어 추천 외형으로 보기"'), true);
+  assert.equal(shop.includes('data-shop-buy="merge-effect" aria-label="합성 플레어 착용">착용<'), false);
   assert.equal(shop.includes('data-shop-buy="founder-board" aria-label="파운더 보드 해금">해금<'), true);
   assert.equal(shop.includes('>보유<'), false);
 });

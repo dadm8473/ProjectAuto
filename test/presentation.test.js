@@ -120,7 +120,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_hud.js?v=board-copy1'",
     "from './reboot_render.js?v=route-core1'",
     "from './reboot_result_ui.js?v=result-ui2'",
-    "from './reboot_screens.js?v=objective-stamps1'",
+    "from './reboot_screens.js?v=shelf-select1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -642,7 +642,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-select1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-flow1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-meter-sockets-v2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-nameplates1">'), false);
@@ -762,7 +763,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-stamps1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shelf-select1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-stamps1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=route-core1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-focus1"></script>'), false);
@@ -874,7 +876,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=shelf-select1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=objective-focus1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=board-copy1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=shop-chips1'"), false);
@@ -1527,7 +1530,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=objective-stamps1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=shelf-select1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=objective-stamps1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=reward-flow1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=combat-meter-sockets-v2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=meta-shelf-nameplates1'), false);
@@ -1991,7 +1995,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=shelf-select1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2169,8 +2173,8 @@ test('inactive meta state chips use generated icons and compact copy', async () 
     "function passiveCardState(label, state = 'locked', displayLabel = label)",
     'aria-label="${label}"',
     '${displayLabel}',
-    "passiveCardState('경험치 부족', 'locked', '부족')",
-    "passiveCardState('보석 부족', 'locked', '부족')",
+    "passiveCardStateMarkup('경험치 부족', 'locked', '부족', 'featured-unit-passive')",
+    "passiveCardStateMarkup('보석 부족', 'locked', '부족', 'featured-shop-passive')",
     '.card-passive-state::before',
     'background-image: var(--meta-card-state-badges);',
     '.card-passive-state[data-passive-state="locked"]::before',
@@ -2183,28 +2187,27 @@ test('inactive meta state chips use generated icons and compact copy', async () 
   assert.equal(screens.includes('>보석 부족<'), false);
 });
 
-test('meta shelf passive chips show short labels instead of empty slots', async () => {
+test('meta shelf selection pads keep lower cards visual while preserving tap targets', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const screens = await readFile('src/client/reboot_screens.js', 'utf8');
 
   for (const marker of [
-    "passiveCardState('경험치 부족', 'locked', '부족')",
-    "passiveCardState('보석 부족', 'locked', '부족')",
-    "passiveCardState('장착중', 'owned')",
-    '.meta-shelf-grid .card-passive-state',
-    'grid-template-columns: 18px auto;',
-    'width: auto;',
-    'min-width: 58px;',
-    'font-size: 10px;',
-    'background-image: var(--meta-shelf-nameplates);'
+    'class="shelf-select-pad" data-unit-select="${unit.id}"',
+    'class="shelf-select-pad" data-shop-select="${item.id}"',
+    '.meta-shelf-grid .shelf-select-pad',
+    'color: transparent;',
+    'font-size: 0;',
+    'background-image: none;',
+    '.meta-shelf-grid [data-shelf-selected="true"] .shelf-select-pad::before'
   ]) {
     assert.equal(`${css}\n${screens}`.includes(marker), true, marker);
   }
 
-  const shelfPassiveBlock = cssRuleBlock(css, '.meta-shelf-grid .card-passive-state');
-  assert.equal(shelfPassiveBlock.includes('font-size: 0;'), false);
-  assert.equal(shelfPassiveBlock.includes('grid-template-columns: 1fr;'), false);
-  assert.equal(shelfPassiveBlock.includes('overflow: hidden;'), false);
+  const shelfSelectBlock = cssRuleBlock(css, '.meta-shelf-grid .shelf-select-pad');
+  assert.equal(shelfSelectBlock.includes('background-image: var(--meta-command-ribbons);'), false);
+  assert.equal(shelfSelectBlock.includes('min-height: 44px;'), false);
+  assert.equal(screens.includes("passiveCardState('경험치 부족', 'locked', '부족')"), false);
+  assert.equal(screens.includes("passiveCardState('보석 부족', 'locked', '부족')"), false);
 });
 
 test('meta screen titles use generated header plates instead of browser default h1', async () => {
@@ -2959,8 +2962,8 @@ test('shop equipped cosmetics use generated expression aura instead of inert own
     'data-equipped="${equipped}"',
     'class="cosmetic-equip-aura"',
     'data-cosmetic-effect="${item.id}"',
-    'const action = equipped',
-    'passiveCardState(\'장착중\', \'owned\')',
+    'featured-shop-passive',
+    'data-shop-select="${item.id}"',
     'equippedCosmetic: cosmetic',
     'showRewardReveal(\'외형 장착\'',
     '.cosmetic-equip-aura',
@@ -4406,8 +4409,10 @@ test('client settles result rewards into profile and wires shop purchases', asyn
     'seedName: current.seedName',
     'const operation = nextLobbyOperation(profile);',
     'seedName: operation.seedName',
-    'buildRebootShop(profile)',
-    'data-shop-buy="${item.id}"',
+    'buildRebootShop(profile, { selectedShopItemId })',
+    'data-shop-buy="${featuredItem.id}"',
+    'data-shop-select="${item.id}"',
+    'selectedShopItemId',
     'dom.shopList.addEventListener'
   ]) {
     assert.equal(`${app}\n${screens}`.includes(marker), true, marker);
@@ -4730,12 +4735,14 @@ test('client wires unit training to profile XP and collection rerender', async (
   for (const marker of [
     'unitLevels',
     'unitUpgradeCost',
-    'data-unit-upgrade="${unit.id}"',
+    'data-unit-upgrade="${featuredUnit.id}"',
+    'data-unit-select="${unit.id}"',
+    'selectedUnitId',
     'handleUnitUpgrade',
     'profile.xp < cost',
     'profile.unitLevels?.[unit.id]',
     'dom.collectionList.addEventListener',
-    'buildRebootCollection(profile)'
+    'buildRebootCollection(profile, { selectedUnitId })'
   ]) {
     assert.equal(`${app}\n${screens}`.includes(marker), true, marker);
   }
@@ -5059,7 +5066,7 @@ test('mission and season use a generated progress board instead of bare stacked 
     assert.equal(boardCardBlock.includes(marker), true, marker);
   }
 
-  const boardFrameBlock = css.slice(css.indexOf('.meta-progress-board .mission-card::before,'), css.indexOf('.meta-progress-board .card-state-badge'));
+  const boardFrameBlock = css.slice(css.indexOf('.meta-progress-board .mission-card::before,'), css.indexOf('.meta-shelf-grid .shelf-select-pad'));
   for (const marker of [
     'background-image: var(--meta-objective-command-slots);',
     'background-size: 400% 100%;',
@@ -5759,11 +5766,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=retry-context1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=objective-stamps1'",
+    "from './reboot_screens.js?v=shelf-select1'",
     "from './reboot_game.js?v=retry-context1'",
     "from '../shared/game.js?v=retry-context1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=objective-stamps1',
+    '/src/client/reboot_screens.js?v=shelf-select1',
     '/src/shared/game.js?v=retry-context1',
     '/src/shared/reboot_game.js?v=retry-context1'
   ]) {
@@ -5780,6 +5787,8 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     '/src/client/reboot_actions.js?v=merge-reason1',
     '/src/client/reboot_screens.js?v=lobby-focus1',
     '/src/client/reboot_screens.js?v=boss-vitality1',
+    "from './reboot_screens.js?v=objective-stamps1'",
+    '/src/client/reboot_screens.js?v=objective-stamps1',
     "from './reboot_screens.js?v=objective-focus1'",
     '/src/client/reboot_screens.js?v=objective-focus1',
     "\n  '/src/shared/game.js',",

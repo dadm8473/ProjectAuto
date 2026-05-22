@@ -757,12 +757,14 @@ export function buildRebootLobby(model = {}) {
   `;
 }
 
-export function buildRebootCollection(profile = {}) {
+export function buildRebootCollection(profile = {}, options = {}) {
   const xp = profile.xp ?? 0;
   const unitLevels = profile.unitLevels ?? {};
-  const featuredUnit = Object.values(REBOOT_UNITS).find((unit) => xp >= unitUpgradeCost(unitLevels[unit.id] ?? 1)) ?? Object.values(REBOOT_UNITS)[0];
+  const unitRoster = Object.values(REBOOT_UNITS);
+  const selectedUnit = REBOOT_UNITS[options.selectedUnitId];
+  const featuredUnit = selectedUnit ?? unitRoster.find((unit) => xp >= unitUpgradeCost(unitLevels[unit.id] ?? 1)) ?? unitRoster[0];
   const showcase = buildUnitFeaturedShowcase({ featuredUnit, profile, xp, unitLevels });
-  const units = Object.values(REBOOT_UNITS).map((unit) => {
+  const units = unitRoster.map((unit) => {
     const level = unitLevels[unit.id] ?? 1;
     const cost = unitUpgradeCost(level);
     const ready = xp >= cost;
@@ -770,11 +772,10 @@ export function buildRebootCollection(profile = {}) {
     const roleValue = unitRoleValueLabel(unit.role);
     const unitStateLabel = ready ? '강화 가능' : '경험치 부족';
     const tileState = ready ? 'ready' : 'locked';
-    const action = ready
-      ? `<button type="button" data-unit-upgrade="${unit.id}" aria-label="${unit.name} 강화"><span class="unit-upgrade-label">강화</span></button>`
-      : passiveCardState('경험치 부족', 'locked', '부족');
+    const selected = unit.id === featuredUnit.id;
+    const action = `<button type="button" class="shelf-select-pad" data-unit-select="${unit.id}" aria-label="${unit.name} 대표 유닛으로 보기"></button>`;
     return `
-    <article class="screen-card unit-card" data-unit-card="${unit.id}" data-role="${unit.role}" data-tile-state="${tileState}" aria-label="${unit.name} · ${roleLabel} · ${roleValue} · Lv.${level} · 강화 비용 ${cost} 경험치 · ${unitStateLabel}">
+    <article class="screen-card unit-card" data-unit-card="${unit.id}" data-role="${unit.role}" data-tile-state="${tileState}" data-shelf-selected="${selected}" aria-label="${unit.name} · ${roleLabel} · ${roleValue} · Lv.${level} · 강화 비용 ${cost} 경험치 · ${unitStateLabel}">
       ${cardStateBadge(ready ? 'ready' : 'locked')}
       <span class="sprite-token unit-sprite" data-sprite="${unit.spriteKey}"></span>
       <div class="card-copy">
@@ -788,7 +789,7 @@ export function buildRebootCollection(profile = {}) {
     </article>
   `;
   }).join('');
-  return `${showcase}<section class="meta-shelf-grid" data-shelf-kind="collection">${units}</section>`;
+  return `${showcase}<section class="meta-shelf-grid" data-shelf-kind="collection" data-shelf-mode="select-preview">${units}</section>`;
 }
 
 function shopFeatureState({ item, profile, unlocks, gems }) {
@@ -853,11 +854,12 @@ function buildShopFeaturedShowcase({ featuredItem, profile, unlocks, gems }) {
   });
 }
 
-export function buildRebootShop(profile = {}) {
+export function buildRebootShop(profile = {}, options = {}) {
   const gems = profile.gems ?? 0;
   const unlocks = Array.isArray(profile.unlocks) ? profile.unlocks : [];
   const items = SHOP.items.filter((item) => item.category === 'cosmetic' && item.grant?.cosmetic);
-  const featuredItem = items.find((item) => !unlocks.includes(item.grant.cosmetic) && gems >= (item.price?.gems ?? 0)) ?? items[0];
+  const selectedItem = items.find((item) => item.id === options.selectedShopItemId);
+  const featuredItem = selectedItem ?? items.find((item) => !unlocks.includes(item.grant.cosmetic) && gems >= (item.price?.gems ?? 0)) ?? items[0];
   const showcase = buildShopFeaturedShowcase({ featuredItem, profile, unlocks, gems });
   const shopItems = items.map((item) => {
     const cosmetic = item.grant.cosmetic;
@@ -868,15 +870,10 @@ export function buildRebootShop(profile = {}) {
     const cardState = owned || equipped ? 'owned' : locked ? 'locked' : 'ready';
     const tileState = equipped ? 'equipped' : owned ? 'owned' : locked ? 'locked' : 'ready';
     const shopStateLabel = equipped ? '장착중' : owned ? '착용 가능' : locked ? '보석 부족' : '해금 가능';
-    const action = equipped
-      ? passiveCardState('장착중', 'owned')
-      : owned
-        ? `<button type="button" data-shop-buy="${item.id}" aria-label="${item.name} 착용">착용</button>`
-        : locked
-          ? passiveCardState('보석 부족', 'locked', '부족')
-          : `<button type="button" data-shop-buy="${item.id}" aria-label="${item.name} 해금">해금</button>`;
+    const selected = item.id === featuredItem.id;
+    const action = `<button type="button" class="shelf-select-pad" data-shop-select="${item.id}" aria-label="${item.name} 추천 외형으로 보기"></button>`;
     return `
-    <article class="screen-card shop-card" data-item="${item.id}" data-shop-purpose="cosmetic-only" data-owned="${owned}" data-equipped="${equipped}" data-tile-state="${tileState}" aria-label="${item.name} · ${item.description} · ${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL} · 해금 비용 ${price} 보석 · ${shopStateLabel}">
+    <article class="screen-card shop-card" data-item="${item.id}" data-shop-purpose="cosmetic-only" data-owned="${owned}" data-equipped="${equipped}" data-tile-state="${tileState}" data-shelf-selected="${selected}" aria-label="${item.name} · ${item.description} · ${SHOP_PURPOSE_LABEL} · ${SHOP_NO_POWER_LABEL} · 해금 비용 ${price} 보석 · ${shopStateLabel}">
       ${cardStateBadge(cardState)}
       <span class="cosmetic-equip-aura" data-cosmetic-effect="${item.id}" aria-hidden="true"></span>
       <span class="sprite-token shop-cosmetic" data-shop-cosmetic="${item.id}"></span>
@@ -890,7 +887,7 @@ export function buildRebootShop(profile = {}) {
     </article>
   `;
   }).join('');
-  return `${showcase}<section class="meta-shelf-grid" data-shelf-kind="shop">${shopItems}</section>`;
+  return `${showcase}<section class="meta-shelf-grid" data-shelf-kind="shop" data-shelf-mode="select-preview">${shopItems}</section>`;
 }
 
 export function buildMissionScreen(profile = {}) {

@@ -24,7 +24,7 @@ import {
   REBOOT_MISSIONS,
   startRebootRetry,
   unitUpgradeCost
-} from './reboot_screens.js?v=objective-stamps1';
+} from './reboot_screens.js?v=shelf-select1';
 import { createRebootOnlineClient } from './reboot_online.js';
 const qs = (selector) => document.querySelector(selector);
 const query = new URLSearchParams(location.search);
@@ -109,6 +109,8 @@ let lastTime = performance.now();
 let resultShownFor = '';
 let profile = loadProfile();
 let pointerNavButton = null;
+let selectedUnitId = null;
+let selectedShopItemId = null;
 const playtestRecorder = createPlaytestRecorder({
   enabled: playtestEnabled,
   storage: globalThis.localStorage,
@@ -335,8 +337,8 @@ function renderHomeScreens() {
   const launchOperation = nextLobbyOperation(profile);
   dom.launchBotLabel.textContent = launchOperation.cta;
   dom.launchBotButton.setAttribute('aria-label', launchOperation.launchAriaLabel);
-  dom.collectionList.innerHTML = buildRebootCollection(profile);
-  dom.shopList.innerHTML = buildRebootShop(profile);
+  dom.collectionList.innerHTML = buildRebootCollection(profile, { selectedUnitId });
+  dom.shopList.innerHTML = buildRebootShop(profile, { selectedShopItemId });
   dom.missionsList.innerHTML = buildMissionScreen(profile);
   dom.seasonList.innerHTML = buildSeasonScreen(profile);
   updateNavAlerts();
@@ -383,6 +385,12 @@ function flashMetaClaim(container, selector, kind) {
 }
 
 function handleShopPurchase(event) {
+  const selectButton = event.target.closest('[data-shop-select]');
+  if (selectButton) {
+    selectedShopItemId = selectButton.dataset.shopSelect;
+    renderHomeScreens();
+    return;
+  }
   const button = event.target.closest('[data-shop-buy]');
   if (!button) return;
   const item = SHOP.items.find((entry) => entry.id === button.dataset.shopBuy && entry.category === 'cosmetic' && entry.grant?.cosmetic);
@@ -434,6 +442,12 @@ function handleLobbyOpen(event) {
 }
 
 function handleUnitUpgrade(event) {
+  const selectButton = event.target.closest('[data-unit-select]');
+  if (selectButton) {
+    selectedUnitId = selectButton.dataset.unitSelect;
+    renderHomeScreens();
+    return;
+  }
   const button = event.target.closest('[data-unit-upgrade]');
   if (!button) return;
   const unit = REBOOT_UNITS[button.dataset.unitUpgrade];
