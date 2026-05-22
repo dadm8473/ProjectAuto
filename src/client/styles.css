@@ -595,6 +595,10 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   font-weight: 800;
 }
 
+body[data-app-screen="battle"] .brand span {
+  display: none;
+}
+
 .meters {
   display: grid;
   flex: 1 1 clamp(220px, 60vw, 258px);
@@ -634,18 +638,11 @@ body:not([data-app-screen="battle"]) .stage-wrap {
 }
 
 .meter-label {
-  position: relative;
-  z-index: 2;
-  color: rgba(159, 247, 231, 0.9);
-  font-size: clamp(7px, 2.05vw, 9px);
-  font-weight: 950;
-  line-height: 1;
-  white-space: nowrap;
+  display: none;
 }
 
 #dangerMeter .meter-label {
-  max-width: 24px;
-  color: rgba(255, 183, 132, 0.92);
+  display: none;
 }
 
 .meter-value {
@@ -730,25 +727,14 @@ body:not([data-app-screen="battle"]) .stage-wrap {
   }
 
   .meters > span {
-    gap: 2px;
+    gap: 3px;
     padding: 4px 1px;
     font-size: 8px;
   }
 
   .meter-value {
-    min-width: 18px;
-    font-size: 11px;
-  }
-
-  .meter-label {
-    max-width: 18px;
-    overflow: hidden;
-    font-size: 6px;
-  }
-
-  #dangerMeter .meter-label {
-    max-width: 30px;
-    font-size: 6px;
+    min-width: 22px;
+    font-size: 13px;
   }
 
   .meters > span::before {

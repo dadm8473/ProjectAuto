@@ -643,7 +643,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-poster-crop1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-icon-meters1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-poster-crop1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-defer1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-select1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), false);
@@ -1547,7 +1548,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=lobby-poster-crop1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=hud-icon-meters1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-poster-crop1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-defer1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=objective-stamps1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=reward-flow1'), false);
@@ -2013,7 +2015,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=lobby-poster-crop1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=hud-icon-meters1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -6140,22 +6142,25 @@ test('combat HUD keeps three resource meters bounded on compact phones', async (
     'grid-template-columns: repeat(3, minmax(0, 1fr));',
     'white-space: nowrap;',
     'overflow: hidden;',
-    '#dangerMeter .meter-label {\n  max-width: 24px;',
+    'body[data-app-screen="battle"] .brand span {\n  display: none;',
+    '.meter-label {\n  display: none;',
+    '#dangerMeter .meter-label {\n  display: none;',
     'assertCombatHudMeterBounds(page)',
     'await assertCombatHudMeterBounds(page, \'compact battle\');',
     'HUD meter value escapes generated socket',
+    "labelDisplay: labelStyle?.display ?? ''",
+    'HUD meter should use generated icon sockets and aria labels instead of cramped visible text labels',
+    'hidden HUD meter label still occupies socket space',
+    'ariaLabel.length > meter.labelText.length',
     'valueFontSize: Number.parseFloat(getComputedStyle(valueNode).fontSize)',
     'HUD meter value is too small for phone play',
     '@media (max-width: 360px)',
     '.brand span {\n    display: none;',
     'max-width: 182px;',
-    '.meters > span {\n    gap: 2px;',
+    '.meters > span {\n    gap: 3px;',
     'padding: 4px 1px;',
-    '.meter-value {\n    min-width: 18px;',
-    'font-size: 11px;',
-    '.meter-label {\n    max-width: 18px;',
-    'overflow: hidden;',
-    '#dangerMeter .meter-label {\n    max-width: 30px;\n    font-size: 6px;',
+    '.meter-value {\n    min-width: 22px;',
+    'font-size: 13px;',
     '.meters > span::before {\n    width: 12px;',
     '#rescueMeter::before { background-position: -24px 0; }',
     '#dangerMeter::before { background-position: -36px 0; }'
@@ -6249,8 +6254,8 @@ test('combat HUD values are visually dominant over labels on phone sockets', asy
   assert.notEqual(compactStart, -1, 'compact HUD media query is missing');
   const compactCss = css.slice(compactStart);
   const compactValueBlock = cssRuleBlock(compactCss, '.meter-value');
-  assert.equal(compactValueBlock.includes('font-size: 11px;'), true);
-  assert.equal(compactValueBlock.includes('min-width: 18px;'), true);
+  assert.equal(compactValueBlock.includes('font-size: 13px;'), true);
+  assert.equal(compactValueBlock.includes('min-width: 22px;'), true);
 });
 
 test('combat HUD meters use generated state pulses for ready and danger values', async () => {
