@@ -13,6 +13,8 @@ const ACTION_SURGE_DURATION = 2.0;
 const ACTION_SURGE_HOLD_SECONDS = 0.85;
 const COMBAT_REVEAL_DURATION = 1.16;
 const COMBAT_REVEAL_HOLD_SECONDS = 0.54;
+const FIRST_SUMMON_PAYOFF_DURATION = 1.86;
+const FIRST_SUMMON_PAYOFF_HOLD_SECONDS = 1.04;
 const NEXT_WAVE_PREVIEW_LEAD_SECONDS = 6.4;
 const NEXT_WAVE_PREVIEW_FADE_IN_SECONDS = 0.72;
 const MERGE_REWARD_SIGIL_DURATION = 1.9;
@@ -1664,7 +1666,7 @@ function drawCombatVfx(ctx, state, assets = {}, localBoardId = 'p1', imageBackdr
 }
 
 function firstPlayerSummonRewardEvent(state, localBoardId = 'p1') {
-  return firstPlayerRecentEvent(state, 'summon', 1.35, localBoardId);
+  return firstPlayerRecentEvent(state, 'summon', FIRST_SUMMON_PAYOFF_DURATION, localBoardId);
 }
 
 function firstPlayerRecentEvent(state, type, windowSeconds, localBoardId = 'p1') {
@@ -1727,8 +1729,8 @@ function drawFirstSummonRewardSpotlight(ctx, state, assets = {}, localBoardId = 
   if (!event || !image?.complete || image.naturalWidth <= 0) return false;
   const point = boardVfxPoint(state, event, localBoardId);
   const elapsed = Math.max(0, state.now - event.at);
-  const alpha = Math.min(0.94, eventAlpha(state, event, 1.35) * 1.2);
-  const swell = 1 + Math.max(0, Math.sin(elapsed * Math.PI * 3.2)) * 0.08;
+  const alpha = Math.min(0.94, sustainedEventAlpha(state, event, FIRST_SUMMON_PAYOFF_DURATION, FIRST_SUMMON_PAYOFF_HOLD_SECONDS) * 1.16);
+  const swell = 1 + Math.max(0, Math.sin(elapsed * Math.PI * 3.0)) * 0.1;
   const w = 196 * swell;
   const h = 98 * swell;
   return drawImageCover(ctx, image, point.x - w / 2, point.y + 18 - h / 2, w, h, alpha);
@@ -1740,12 +1742,12 @@ function drawFirstSummonIgnition(ctx, state, assets = {}, localBoardId = 'p1') {
   if (!event || !image?.complete || image.naturalWidth <= 0) return false;
   const point = boardVfxPoint(state, event, localBoardId);
   const elapsed = Math.max(0, state.now - event.at);
-  const alpha = Math.min(0.9, eventAlpha(state, event, 1.15) * 1.18);
-  const swell = 1 + Math.max(0, Math.sin(elapsed * Math.PI * 3.4)) * 0.08;
+  const alpha = Math.min(0.9, sustainedEventAlpha(state, event, FIRST_SUMMON_PAYOFF_DURATION, FIRST_SUMMON_PAYOFF_HOLD_SECONDS) * 1.18);
+  const swell = 1 + Math.max(0, Math.sin(elapsed * Math.PI * 3.2)) * 0.1;
 
-  drawSummonIgnitionSprite(ctx, image, 0, point.x, point.y + 10, 150 * swell, 112 * swell, alpha * 0.88);
-  drawSummonIgnitionSprite(ctx, image, 1, point.x + 72, point.y - 66, 184, 104, alpha * 0.74);
-  drawSummonIgnitionSprite(ctx, image, 2, point.x + 40, point.y - 28, 96, 96, alpha * 0.82);
+  drawSummonIgnitionSprite(ctx, image, 0, point.x, point.y + 10, 164 * swell, 122 * swell, alpha * 0.9);
+  drawSummonIgnitionSprite(ctx, image, 1, point.x + 78, point.y - 72, 208, 116, alpha * 0.78);
+  drawSummonIgnitionSprite(ctx, image, 2, point.x + 44, point.y - 30, 106, 106, alpha * 0.84);
   return true;
 }
 

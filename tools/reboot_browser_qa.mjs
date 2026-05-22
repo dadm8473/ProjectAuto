@@ -89,7 +89,7 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v105');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v106');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
@@ -150,8 +150,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_preload.js?v=mission-season-density1': cache
         ? Boolean(await cache.match('/src/client/reboot_preload.js?v=mission-season-density1'))
         : false,
-      '/src/client/reboot_render.js?v=route-core1': cache
-        ? Boolean(await cache.match('/src/client/reboot_render.js?v=route-core1'))
+      '/src/client/reboot_render.js?v=first-payoff1': cache
+        ? Boolean(await cache.match('/src/client/reboot_render.js?v=first-payoff1'))
         : false,
       '/src/client/reboot_result_ui.js?v=result-ui2': cache
         ? Boolean(await cache.match('/src/client/reboot_result_ui.js?v=result-ui2'))
@@ -238,7 +238,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v105', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v106', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }

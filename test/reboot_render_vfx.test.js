@@ -2906,6 +2906,53 @@ test('first player summon sends generated ignition from board toward track befor
   assert.deepEqual(actionFlashDraws(ctx.commands, 0), [], 'summon ignition should not hand off to the old compact action flash');
 });
 
+test('first summon payoff keeps generated ignition after the reveal flash clears', () => {
+  const ctx = mockContext();
+  drawRebootBattle(
+    ctx,
+    {
+      now: 2.12,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'spark_pin' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'noise_shard', spriteKey: 'noise_shard' }],
+      events: [{ type: 'summon', at: 0.64, playerId: 'p1' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      combatRevealVfx: image(1920, 512),
+      summonIgnition: image(768, 256),
+      firstCommandSpotlight: image(256, 128),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const ignitionDraws = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 768
+      && command.args[0].naturalHeight === 256
+      && [0, 256, 512].includes(command.args[1])
+  ));
+  const spotlightDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0].naturalWidth === 256
+      && command.args[0].naturalHeight === 128
+      && command.args[7] >= 188
+      && command.args[8] >= 94
+  ));
+
+  assert.equal(combatRevealIndex(ctx.commands, 0), -1, 'test must cover the post-reveal payoff window');
+  assert.equal(ignitionDraws.length >= 2, true, 'first summon should keep board-to-track ignition after reveal fades');
+  assert.ok(spotlightDraw, 'first summon should keep a generated payoff spotlight after reveal fades');
+});
+
 test('second online player gets first summon premium VFX on their own lower board', () => {
   const ctx = mockContext();
   drawRebootBattle(

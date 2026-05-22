@@ -1,4 +1,4 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v105';
+const CACHE_NAME = 'projectauto-reboot-shell-v106';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
@@ -11,7 +11,7 @@ const APP_SHELL_URLS = [
   '/src/client/reboot_hud.js?v=board-copy1',
   '/src/client/reboot_playtest.js?v=playtest2',
   '/src/client/reboot_preload.js?v=mission-season-density1',
-  '/src/client/reboot_render.js?v=route-core1',
+  '/src/client/reboot_render.js?v=first-payoff1',
   '/src/client/reboot_result_ui.js?v=result-ui2',
   '/src/client/reboot_screens.js?v=shelf-select1',
   '/src/client/reboot_online.js',
