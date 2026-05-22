@@ -955,6 +955,7 @@ body[data-app-screen="season"] .toast {
   text-align: center;
   text-shadow: 0 3px 11px rgba(0, 0, 0, 0.72);
   filter: drop-shadow(0 20px 36px rgba(0, 0, 0, 0.58));
+  pointer-events: none;
 }
 
 .reward-reveal[hidden] {

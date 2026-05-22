@@ -642,7 +642,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-fit1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-flow1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-meter-sockets-v2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-nameplates1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-command-board1">'), false);
@@ -699,6 +699,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-passive-icon1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-cta1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-cta2">'), false);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-fit1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-values1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=action-focus1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-claim-primary1">'), false);
@@ -1523,7 +1524,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=result-fit1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=reward-flow1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=combat-meter-sockets-v2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=meta-shelf-nameplates1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-command-board1'), false);
@@ -1986,7 +1987,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=result-fit1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=reward-flow1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -4536,13 +4537,14 @@ test('browser QA verifies reward reveal uses the generated payoff stage', async 
   const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
 
   for (const marker of [
-    'async function assertRewardRevealGeneratedSurface(page)',
+    "async function assertRewardRevealGeneratedSurface(page, expected = { kind: 'soft_currency', source: 'missions' })",
     'reboot-reward-reveal-payoff-stage',
     "getComputedStyle(node, '::after')",
     'assert.match(surface.afterBackgroundImage, /reboot-reward-reveal-payoff-stage/',
-    'assert.equal(surface.datasetRevealKind, \'soft_currency\'',
+    'assert.equal(surface.datasetRevealKind, expected.kind',
     'const minimumWidth = Math.min(298, surface.viewportWidth - 22);',
-    'await assertRewardRevealGeneratedSurface(page);'
+    'await assertRewardRevealGeneratedSurface(page);',
+    "await assertRewardRevealGeneratedSurface(page, { kind: 'season_progress', source: 'season' });"
   ]) {
     assert.equal(qa.includes(marker), true, marker);
   }
@@ -4577,6 +4579,7 @@ test('profile rewards use a generated reveal panel instead of toast-only feedbac
     '--reward-reveal-panel: url("/src/client/assets/generated/reboot-reward-reveal-panel.png?v=reward-reveal")',
     '--reward-reveal-payoff-stage: url("/src/client/assets/generated/reboot-reward-reveal-payoff-stage.png?v=reward-payoff-stage1")',
     '.reward-reveal',
+    'pointer-events: none;',
     '.reward-reveal::after',
     '.reward-reveal[hidden]',
     'background-image: var(--reward-reveal-panel);',

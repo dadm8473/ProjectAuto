@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v99');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v100');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=result-fit1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=result-fit1'))
+      '/src/client/styles.css?v=reward-flow1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=reward-flow1'))
         : false,
       '/src/client/app.js?v=objective-focus1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=objective-focus1'))
@@ -238,7 +238,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v99', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v100', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -2057,7 +2057,7 @@ async function assertRewardToastGeneratedSurface(page) {
   assert.equal(surface.width >= 188 && surface.height >= 46, true, `reward toast collapsed: ${JSON.stringify(surface)}`);
 }
 
-async function assertRewardRevealGeneratedSurface(page) {
+async function assertRewardRevealGeneratedSurface(page, expected = { kind: 'soft_currency', source: 'missions' }) {
   await page.waitForFunction(() => {
     const node = document.querySelector('#rewardReveal');
     return node && !node.hidden && Number(getComputedStyle(node, '::after').opacity) > 0.6;
@@ -2126,8 +2126,8 @@ async function assertRewardRevealGeneratedSurface(page) {
   });
   assert.equal(surface.missing, undefined, `reward reveal unavailable: ${JSON.stringify(surface)}`);
   assert.equal(surface.hidden, false, `reward reveal unexpectedly hidden: ${JSON.stringify(surface)}`);
-  assert.equal(surface.datasetRevealKind, 'soft_currency', `reward reveal kind changed: ${JSON.stringify(surface)}`);
-  assert.equal(surface.datasetRevealSource, 'missions', `reward reveal source should identify the reward station: ${JSON.stringify(surface)}`);
+  assert.equal(surface.datasetRevealKind, expected.kind, `reward reveal kind changed: ${JSON.stringify(surface)}`);
+  assert.equal(surface.datasetRevealSource, expected.source, `reward reveal source should identify the reward station: ${JSON.stringify(surface)}`);
   assert.match(surface.sourceBackgroundImage, /reboot-nav-icons/, `reward reveal source seal uses generated station icon: ${JSON.stringify(surface)}`);
   assert.equal(surface.sourceBackgroundSize, '500% 100%', `reward reveal source seal sizing changed: ${JSON.stringify(surface)}`);
   assert.equal(surface.sourceWidth >= 30 && surface.sourceHeight >= 30, true, `reward reveal source seal collapsed: ${JSON.stringify(surface)}`);
@@ -2659,6 +2659,28 @@ async function verifyFastPlaythrough(page) {
   await assertRewardRevealGeneratedSurface(page);
   assert.match(await page.locator('#seasonList').textContent(), /받기/);
   assert.match(await page.locator('#missionsList .mission-card').first().textContent(), /받음/);
+  const seasonClaimHit = await page.locator('#seasonList .season-track-board .featured-objective-action').first().evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const target = document.elementFromPoint(centerX, centerY);
+    const reveal = document.querySelector('#rewardReveal');
+    return {
+      text: node.textContent?.trim(),
+      revealVisible: Boolean(reveal && !reveal.hidden),
+      hitTag: target?.tagName ?? '',
+      hitId: target?.id ?? '',
+      hitClass: target?.className ?? '',
+      hitIsButton: target === node || node.contains(target),
+      buttonTop: Math.round(rect.top),
+      buttonBottom: Math.round(rect.bottom)
+    };
+  });
+  assert.equal(seasonClaimHit.revealVisible, true, `mission reward reveal should remain visible as payoff: ${JSON.stringify(seasonClaimHit)}`);
+  assert.equal(seasonClaimHit.hitIsButton, true, `reward reveal blocks the next season claim CTA: ${JSON.stringify(seasonClaimHit)}`);
+  await page.locator('#seasonList .season-track-board .featured-objective-action').first().click();
+  await assertRewardRevealGeneratedSurface(page, { kind: 'season_progress', source: 'season' });
+  assert.match(await page.locator('#rewardReveal').textContent(), /시즌 보상/);
 }
 
 async function verifyCompactResult(page) {
