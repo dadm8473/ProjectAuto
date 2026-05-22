@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v130');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v131');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=mission-season-rails1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=mission-season-rails1'))
+      '/src/client/styles.css?v=result-highlight-label1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=result-highlight-label1'))
         : false,
       '/src/client/app.js?v=start-cutin-focus1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=start-cutin-focus1'))
@@ -116,6 +116,15 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2'))
+        : false,
+      '/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail-alpha1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail-alpha1'))
+        : false,
+      '/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy-alpha1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy-alpha1'))
+        : false,
+      '/src/client/assets/generated/reboot-result-medals.png?v=result-medals': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-medals.png?v=result-medals'))
         : false,
       '/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1'))
@@ -250,7 +259,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v130', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v131', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1285,6 +1294,8 @@ async function assertResultGeneratedCopySurfaces(page) {
   assert.match(nextGoal.ariaLabel ?? '', /^다음 목표 /, `result next goal aria label is unclear: ${JSON.stringify(nextGoal)}`);
   assert.equal(parseFloat(nextGoal.beforeWidth) >= 20 && parseFloat(nextGoal.beforeHeight) >= 20, true, `result next goal medal collapsed: ${JSON.stringify(nextGoal)}`);
 
+  await assertResultHighlightLabelPlates(page);
+
   const highlightSurfaces = await page.locator('.result-highlights span').evaluateAll((nodes) => nodes.map((node) => {
     const rect = node.getBoundingClientRect();
     const style = getComputedStyle(node);
@@ -1386,6 +1397,32 @@ async function assertResultGeneratedCopySurfaces(page) {
   for (const button of actionButtons) {
     assert.equal(button.height >= 42, true, `result action lost touch height: ${JSON.stringify(actionButtons)}`);
     assert.equal(button.bottom <= button.panelBottom - 10, true, `result action is clipped by the panel: ${JSON.stringify(actionButtons)}`);
+  }
+}
+
+async function assertResultHighlightLabelPlates(page) {
+  const labels = await page.locator('.result-highlights b').evaluateAll((nodes) => nodes.map((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    return {
+      text: node.textContent?.trim(),
+      backgroundImage: style.backgroundImage,
+      backgroundSize: style.backgroundSize,
+      boxShadow: style.boxShadow,
+      display: style.display,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      scrollWidth: node.scrollWidth
+    };
+  }));
+  assert.equal(labels.length >= 1, true, `result highlight labels missing: ${JSON.stringify(labels)}`);
+  for (const label of labels) {
+    assert.match(label.backgroundImage, /reboot-result-copy-plates/, `result highlight label lacks generated copy plate: ${JSON.stringify(label)}`);
+    assert.equal(label.backgroundSize, '200% 100%', `result highlight label plate sizing changed: ${JSON.stringify(label)}`);
+    assert.equal(label.boxShadow, 'none', `result highlight label still has css shadow surface: ${JSON.stringify(label)}`);
+    assert.equal(['grid', 'inline-grid'].includes(label.display), true, `result highlight label should be a stable generated plate: ${JSON.stringify(label)}`);
+    assert.equal(label.width > 0 && label.height >= 22, true, `result highlight label plate collapsed: ${JSON.stringify(label)}`);
+    assert.equal(label.scrollWidth <= label.width + 1, true, `result highlight label overflows generated plate: ${JSON.stringify(label)}`);
   }
 }
 

@@ -1,9 +1,9 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v130';
+const CACHE_NAME = 'projectauto-reboot-shell-v131';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/src/client/styles.css?v=mission-season-rails1',
+  '/src/client/styles.css?v=result-highlight-label1',
   '/src/client/app.js?v=start-cutin-focus1',
   '/src/client/reboot_audio.js?v=audio-safe1',
   '/src/client/reboot_actions.js?v=combat-meter2',
@@ -50,6 +50,9 @@ const APP_SHELL_URLS = [
   '/src/client/assets/generated/reboot-meta-showcase-copy-plates.png?v=showcase-nameplate1',
   '/src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png?v=meta-shelf-nameplates1',
   '/src/client/assets/generated/reboot-result-screen-lighting.png?v=screen-lighting1',
+  '/src/client/assets/generated/reboot-result-detail-strips.png?v=result-detail-alpha1',
+  '/src/client/assets/generated/reboot-result-copy-plates.png?v=result-copy-alpha1',
+  '/src/client/assets/generated/reboot-result-medals.png?v=result-medals',
   '/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1',
   '/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1',
   '/src/client/assets/generated/reboot-reward-reveal-payoff-stage.png?v=reward-payoff-stage1',

@@ -6048,9 +6048,23 @@ body[data-app-screen="season"] .app-screen::after {
 .result-medal[data-result-medal="tactics"] { background-position: 100% 0; }
 
 .result-highlights b {
+  display: inline-grid;
+  place-items: center start;
+  flex: 1 1 auto;
   min-width: 0;
+  max-width: 100%;
+  min-height: 24px;
+  padding: 3px 11px 4px;
   font-size: 12px;
   line-height: 1.05;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background-image: var(--result-copy-plates);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  filter: saturate(1.08) brightness(1.08) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
 }
 
 .result-reward {

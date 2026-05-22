@@ -643,7 +643,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-season-rails1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-highlight-label1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-season-rails1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=splash-start-frame1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-icon-meters1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-poster-crop1">'), false);
@@ -1552,7 +1553,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=mission-season-rails1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-highlight-label1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=mission-season-rails1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=splash-start-frame1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hud-icon-meters1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-poster-crop1'), false);
@@ -2021,7 +2023,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=mission-season-rails1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=result-highlight-label1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2858,6 +2860,27 @@ test('result highlights use generated run medal badges instead of text-only call
   const medalBlock = css.slice(css.indexOf('.result-medal {'), css.indexOf('.result-medal[data-result-medal="rescue"]'));
   assert.equal(medalBlock.includes('linear-gradient'), false);
   assert.equal(medalBlock.includes('border:'), false);
+});
+
+test('result highlight labels sit on generated copy plates instead of thin line text', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    '.result-highlights b {',
+    'display: inline-grid;',
+    'background-image: var(--result-copy-plates);',
+    'background-size: 200% 100%;',
+    'assertResultHighlightLabelPlates(page)'
+  ]) {
+    assert.equal(`${css}\n${qa}`.includes(marker), true, marker);
+  }
+
+  const labelBlock = cssRuleBlock(css, '.result-highlights b');
+  assert.equal(labelBlock.includes('background-position: 100% 0;'), true);
+  assert.equal(labelBlock.includes('background: rgba'), false);
+  assert.equal(labelBlock.includes('border:'), false);
+  assert.equal(labelBlock.includes('box-shadow'), false);
 });
 
 test('result title uses generated Korean wordmark art while preserving accessible copy', async () => {
