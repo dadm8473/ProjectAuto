@@ -960,6 +960,64 @@ test('active early combat keeps generated pressure marks on the lane before enem
   );
 });
 
+test('active defense shows generated attacks and impact bursts even between hit events', () => {
+  const ctx = mockContext();
+  const hitBolts = image(768, 128);
+  const enemyImpactBursts = image(768, 256);
+  const enemies = image(1024, 256);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 8.4,
+      boards: {
+        p1: {
+          danger: 0,
+          units: [
+            { spriteKey: 'spark_pin', grade: 1 },
+            { spriteKey: 'slow_coil', grade: 1 }
+          ]
+        },
+        p2: { danger: 0, units: [{ spriteKey: 'burst_pin' }] }
+      },
+      enemies: [
+        { enemyId: 'noise_shard', spriteKey: 'noise_shard', boardId: 'p1', progress: 0.42 },
+        { enemyId: 'quick_noise', spriteKey: 'quick_noise', boardId: 'p1', progress: 0.58 }
+      ],
+      events: [{ type: 'summon', at: 0.62, playerId: 'p1', unitId: 'spark_pin' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      enemies,
+      board: image(1280, 256),
+      hitBolts,
+      enemyImpactBursts,
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const sustainedBolts = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === hitBolts
+      && command.args[7] <= 108
+      && command.args[8] <= 42
+  ));
+  const sustainedImpacts = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === enemyImpactBursts
+      && command.args[7] >= 44
+      && command.args[8] >= 44
+  ));
+  const damageText = ctx.commands.filter((command) => command.type === 'fillText' && /^\d/.test(command.args[0]));
+
+  assert.equal(sustainedBolts.length >= 2, true, 'active defense should show generated attack trajectories between hit events');
+  assert.equal(sustainedImpacts.length >= 2, true, 'active defense should show generated impact bursts on pressured enemies');
+  assert.deepEqual(damageText, [], 'sustained defense pressure should stay visual and not add noisy damage text');
+});
+
 test('early combat lulls keep a generated incoming-wave object on the track', () => {
   const ctx = mockContext();
   const enemies = image(1024, 256);

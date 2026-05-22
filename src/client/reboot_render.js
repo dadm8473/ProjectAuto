@@ -21,6 +21,7 @@ const MERGE_REWARD_SIGIL_DURATION = 1.9;
 const MERGE_REWARD_SIGIL_HOLD_SECONDS = 0.85;
 const FLOATING_DAMAGE_TTL = 0.62;
 const COMBAT_SHAKE_MAX_PX = 8;
+const SUSTAINED_DEFENSE_START_SECONDS = 3.4;
 const GENERATED_TRACK_PATH = [
   { p: 0, x: 196, y: 158 },
   { p: 0.12, x: 214, y: 183 },
@@ -1629,7 +1630,46 @@ function drawHitDamageNumbers(ctx, state, imageBackdrop = true, reducedMotion = 
   }
 }
 
+function drawSustainedDefenseVfx(ctx, state, assets = {}, localBoardId = 'p1', imageBackdrop = true) {
+  const now = Number(state.now) || 0;
+  if (now < SUSTAINED_DEFENSE_START_SECONDS) return false;
+  if (!hasFirstPlayerAction(state)) return false;
+
+  const enemies = (state.enemies ?? []).filter(Boolean);
+  if (enemies.length <= 0) return false;
+
+  const selfId = normalizeBoardId(localBoardId);
+  const units = (state.boards?.[selfId]?.units ?? [])
+    .map((unit, slot) => ({ unit, slot }))
+    .filter(({ unit }) => Boolean(unit));
+  if (units.length <= 0) return false;
+
+  let drew = false;
+  const engagementCount = Math.min(3, enemies.length, Math.max(1, units.length));
+  for (let index = 0; index < engagementCount; index += 1) {
+    const enemy = enemies[index];
+    const unit = units[index % units.length];
+    const from = boardSlotPoint(selfId, unit.slot, localBoardId);
+    const to = enemyScreenPoint(state, index, enemy, imageBackdrop);
+    const targetType = enemy.spriteKey ?? enemy.enemyId;
+    const pulse = Math.max(0, Math.sin(now * 6.8 + index * 1.35));
+    const alpha = Math.min(0.62, 0.3 + pulse * 0.22);
+    const target = {
+      x: to.x + Math.sin(now * 3.2 + index) * 2,
+      y: to.y - 2 + Math.cos(now * 2.8 + index) * 1.5
+    };
+
+    const boltDrew = drawHitBoltSprite(ctx, assets.hitBolts, from, target, targetType, alpha);
+    const impactDrew = drawEnemyImpactBurst(ctx, assets.enemyImpactBursts, target.x, target.y, targetType, alpha * 0.94);
+    const sparkDrew = drawAtlasSprite(ctx, assets, 'vfx', 'enemy_hit_spark', target.x + 5, target.y - 5, isBossEnemy(enemy) ? 54 : 38, alpha * 0.68);
+    drew = drew || boltDrew || impactDrew || sparkDrew;
+  }
+
+  return drew;
+}
+
 function drawCombatImpactVfx(ctx, state, assets = {}, localBoardId = 'p1', imageBackdrop = true) {
+  drawSustainedDefenseVfx(ctx, state, assets, localBoardId, imageBackdrop);
   drawHitBeams(ctx, state, assets, localBoardId, imageBackdrop);
   drawDeathBursts(ctx, state, assets, imageBackdrop);
   drawCombatVfx(ctx, state, assets, localBoardId, imageBackdrop);

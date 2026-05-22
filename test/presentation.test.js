@@ -118,7 +118,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_action_ui.js?v=hud-meter1'",
     "from './reboot_audio.js?v=audio-safe1'",
     "from './reboot_hud.js?v=board-copy1'",
-    "from './reboot_render.js?v=first-payoff1'",
+    "from './reboot_render.js?v=defense-pressure1'",
     "from './reboot_result_ui.js?v=result-ui2'",
     "from './reboot_screens.js?v=shelf-select1'",
     "from './reboot_online.js'"
@@ -763,7 +763,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shelf-select1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=defense-pressure1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shelf-select1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-stamps1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=route-core1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready1"></script>'), false);
@@ -847,7 +848,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=first-payoff1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=defense-pressure1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=first-payoff1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=partner-ready1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-backdrop-v2'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=partner-standby2'"), false);
