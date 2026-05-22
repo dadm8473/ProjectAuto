@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v121';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v122';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -41,8 +41,8 @@ test('service worker keeps the installable mobile game shell available after fir
     'event.request.mode === \'navigate\'',
     "caches.match('/index.html')",
     '/manifest.webmanifest',
-    '/src/client/styles.css?v=operation-road1',
-    '/src/client/app.js?v=moment-scenes1',
+    '/src/client/styles.css?v=operation-poster-map1',
+    '/src/client/app.js?v=operation-poster-map1',
     '/src/client/reboot_audio.js?v=audio-safe1',
     '/src/client/reboot_actions.js?v=combat-meter2',
     '/src/client/reboot_hud.js?v=board-copy1',
@@ -50,7 +50,7 @@ test('service worker keeps the installable mobile game shell available after fir
     '/src/client/reboot_preload.js?v=lobby-defer1',
     '/src/client/reboot_render.js?v=moment-scenes1',
     '/src/client/reboot_result_ui.js?v=result-hook1',
-    '/src/client/reboot_screens.js?v=operation-road1',
+    '/src/client/reboot_screens.js?v=operation-poster-map1',
     '/src/client/reboot_action_ui.js?v=hud-meter1',
     '/src/client/reboot_online.js',
     '/src/shared/game.js?v=retry-context1',
@@ -59,6 +59,7 @@ test('service worker keeps the installable mobile game shell available after fir
     '/src/client/assets/generated/reboot-app-shell-backdrop.png',
     '/src/client/assets/generated/reboot-sound-toggle.png?v=sound-toggle1',
     '/src/client/assets/generated/reboot-title-wordmark-v1.png?v=title-wordmark1',
+    '/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1',
     '/src/client/assets/generated/reboot-result-title-won-v1.png?v=result-title2',
     '/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2',
     '/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1',
@@ -119,7 +120,6 @@ test('service worker keeps the installable mobile game shell available after fir
   assert.equal(sw.includes('/src/client/styles.css?v=shelf-select1'), false);
   assert.equal(sw.includes('/src/client/reboot_result_ui.js?v=result-ui2'), false);
   assert.equal(sw.includes('/src/client/reboot_screens.js?v=shelf-select1'), false);
-  assert.equal(sw.includes('/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1'), false);
   assert.equal(sw.includes('/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1'), false);
   assert.equal(sw.includes('/src/client/styles.css?v=objective-stamps1'), false);
   assert.equal(sw.includes('/src/client/reboot_screens.js?v=objective-stamps1'), false);
@@ -260,10 +260,10 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v121'",
+    "cacheName === 'projectauto-reboot-shell-v122'",
     "await cache.match('/index.html')",
-    "await cache.match('/src/client/styles.css?v=operation-road1')",
-    "await cache.match('/src/client/app.js?v=moment-scenes1')",
+    "await cache.match('/src/client/styles.css?v=operation-poster-map1')",
+    "await cache.match('/src/client/app.js?v=operation-poster-map1')",
     "await cache.match('/src/client/reboot_audio.js?v=audio-safe1')",
     "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
     "await cache.match('/src/client/reboot_hud.js?v=board-copy1')",
@@ -271,13 +271,14 @@ test('browser QA verifies the runtime service worker cache activation', async ()
     "await cache.match('/src/client/reboot_preload.js?v=lobby-defer1')",
     "await cache.match('/src/client/reboot_render.js?v=moment-scenes1')",
     "await cache.match('/src/client/reboot_result_ui.js?v=result-hook1')",
-    "await cache.match('/src/client/reboot_screens.js?v=operation-road1')",
+    "await cache.match('/src/client/reboot_screens.js?v=operation-poster-map1')",
     "await cache.match('/src/shared/game.js?v=retry-context1')",
     "await cache.match('/src/shared/reboot_game.js?v=retry-context1')",
     "await cache.match('/src/client/reboot_action_ui.js?v=hud-meter1')",
     "await cache.match('/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1')",
     "await cache.match('/src/client/assets/generated/reboot-sound-toggle.png?v=sound-toggle1')",
     "await cache.match('/src/client/assets/generated/reboot-title-wordmark-v1.png?v=title-wordmark1')",
+    "await cache.match('/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1')",
     "await cache.match('/src/client/assets/generated/reboot-result-title-won-v1.png?v=result-title2')",
     "await cache.match('/src/client/assets/generated/reboot-result-title-lost-v1.png?v=result-title2')",
     "await cache.match('/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1')",
@@ -338,7 +339,6 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   assert.equal(qa.includes("await cache.match('/src/client/styles.css?v=shelf-select1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_result_ui.js?v=result-ui2')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_screens.js?v=shelf-select1')"), false);
-  assert.equal(qa.includes("await cache.match('/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/styles.css?v=objective-stamps1')"), false);
   assert.equal(qa.includes("await cache.match('/src/client/reboot_preload.js?v=battle-backdrop-v2')"), false);

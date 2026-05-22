@@ -89,15 +89,15 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v121');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v122');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=operation-road1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=operation-road1'))
+      '/src/client/styles.css?v=operation-poster-map1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=operation-poster-map1'))
         : false,
-      '/src/client/app.js?v=moment-scenes1': cache
-        ? Boolean(await cache.match('/src/client/app.js?v=moment-scenes1'))
+      '/src/client/app.js?v=operation-poster-map1': cache
+        ? Boolean(await cache.match('/src/client/app.js?v=operation-poster-map1'))
         : false,
       '/src/client/reboot_audio.js?v=audio-safe1': cache
         ? Boolean(await cache.match('/src/client/reboot_audio.js?v=audio-safe1'))
@@ -107,6 +107,9 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/assets/generated/reboot-title-wordmark-v1.png?v=title-wordmark1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-title-wordmark-v1.png?v=title-wordmark1'))
+        : false,
+      '/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1'))
         : false,
       '/src/client/assets/generated/reboot-result-title-won-v1.png?v=result-title2': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-title-won-v1.png?v=result-title2'))
@@ -156,8 +159,8 @@ async function verifyInstallableShell(page) {
       '/src/client/reboot_result_ui.js?v=result-hook1': cache
         ? Boolean(await cache.match('/src/client/reboot_result_ui.js?v=result-hook1'))
         : false,
-      '/src/client/reboot_screens.js?v=operation-road1': cache
-        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=operation-road1'))
+      '/src/client/reboot_screens.js?v=operation-poster-map1': cache
+        ? Boolean(await cache.match('/src/client/reboot_screens.js?v=operation-poster-map1'))
         : false,
       '/src/shared/game.js?v=retry-context1': cache
         ? Boolean(await cache.match('/src/shared/game.js?v=retry-context1'))
@@ -244,7 +247,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v121', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v122', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1489,12 +1492,15 @@ async function assertOperationDioramaStaysReadable(page) {
     const intel = document.querySelector('#lobbyScreen .operation-intel-board');
     const card = document.querySelector('#lobbyScreen .operation-card');
     const diorama = document.querySelector('#lobbyScreen .operation-coop-diorama');
-    if (!intel || !card || !diorama) {
+    const poster = document.querySelector('#lobbyScreen .operation-poster-scene');
+    if (!intel || !card || !diorama || !poster) {
       return { missing: true };
     }
     const intelRect = intel.getBoundingClientRect();
     const cardRect = card.getBoundingClientRect();
     const dioramaRect = diorama.getBoundingClientRect();
+    const posterRect = poster.getBoundingClientRect();
+    const posterStyle = getComputedStyle(poster);
     return {
       viewportWidth: window.innerWidth,
       card: {
@@ -1518,6 +1524,19 @@ async function assertOperationDioramaStaysReadable(page) {
         naturalWidth: diorama.naturalWidth,
         naturalHeight: diorama.naturalHeight
       },
+      poster: {
+        width: Math.round(posterRect.width),
+        height: Math.round(posterRect.height),
+        left: Math.round(posterRect.left),
+        right: Math.round(posterRect.right),
+        top: Math.round(posterRect.top),
+        bottom: Math.round(posterRect.bottom),
+        scene: poster.getAttribute('data-operation-scene'),
+        backgroundImage: posterStyle.backgroundImage,
+        backgroundSize: posterStyle.backgroundSize,
+        backgroundPosition: posterStyle.backgroundPosition,
+        opacity: Number.parseFloat(posterStyle.opacity)
+      },
       intel: {
         left: Math.round(intelRect.left),
         right: Math.round(intelRect.right),
@@ -1530,6 +1549,13 @@ async function assertOperationDioramaStaysReadable(page) {
   assert.equal(geometry.missing, undefined, `operation diorama geometry unavailable: ${JSON.stringify(geometry)}`);
   assert.match(geometry.card.backgroundImage, /reboot-lobby-coop-diorama-preview\.jpg/);
   assert.match(geometry.diorama.src, /reboot-lobby-coop-diorama\.png\?v=lobby-coop-diorama1/);
+  assert.match(geometry.poster.backgroundImage, /reboot-lobby-operation-posters\.png\?v=operation-posters1/, `operation poster atlas missing: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.poster.backgroundSize, '400% 100%', `operation poster atlas is not sliced into authored scenes: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.poster.opacity < 1, true, `operation poster should not fully hide the loaded diorama: ${JSON.stringify(geometry)}`);
+  assert.equal(['first', 'boss', 'recovery', 'response'].includes(geometry.poster.scene), true, `operation poster scene key missing: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.poster.left <= geometry.card.left + 1, true, `operation poster leaves card left edge: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.poster.right >= geometry.card.right - 1, true, `operation poster leaves card right edge: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.poster.height >= geometry.card.height - 1, true, `operation poster does not fill card height: ${JSON.stringify(geometry)}`);
   assert.equal(geometry.diorama.complete, true, `operation diorama did not load: ${JSON.stringify(geometry)}`);
   assert.equal(geometry.diorama.naturalWidth >= 1024, true, `operation diorama source is too small: ${JSON.stringify(geometry)}`);
   assert.equal(geometry.diorama.left <= geometry.card.left + 1, true, `operation diorama leaves card left edge: ${JSON.stringify(geometry)}`);

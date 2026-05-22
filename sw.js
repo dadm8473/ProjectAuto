@@ -1,10 +1,10 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v121';
+const CACHE_NAME = 'projectauto-reboot-shell-v122';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/src/client/styles.css?v=operation-road1',
-  '/src/client/app.js?v=moment-scenes1',
+  '/src/client/styles.css?v=operation-poster-map1',
+  '/src/client/app.js?v=operation-poster-map1',
   '/src/client/reboot_audio.js?v=audio-safe1',
   '/src/client/reboot_actions.js?v=combat-meter2',
   '/src/client/reboot_action_ui.js?v=hud-meter1',
@@ -13,7 +13,7 @@ const APP_SHELL_URLS = [
   '/src/client/reboot_preload.js?v=lobby-defer1',
   '/src/client/reboot_render.js?v=moment-scenes1',
   '/src/client/reboot_result_ui.js?v=result-hook1',
-  '/src/client/reboot_screens.js?v=operation-road1',
+  '/src/client/reboot_screens.js?v=operation-poster-map1',
   '/src/client/reboot_online.js',
   '/src/shared/game.js?v=retry-context1',
   '/src/shared/reboot_game.js?v=retry-context1',
@@ -31,6 +31,7 @@ const APP_SHELL_URLS = [
   '/src/client/assets/generated/reboot-meta-caption-plate.png?v=meta-caption1',
   '/src/client/assets/generated/reboot-app-shell-backdrop.png',
   '/src/client/assets/generated/reboot-app-shell-backdrop.png?v=shell-backdrop1',
+  '/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1',
   '/src/client/assets/generated/reboot-collection-training-board-v1.png?v=collection-training-board1',
   '/src/client/assets/generated/reboot-shop-display-board-v1.png?v=shop-display-board1',
   '/src/client/assets/generated/reboot-shop-banner-v2.png?v=shop-banner2',

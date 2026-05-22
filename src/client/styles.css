@@ -59,6 +59,7 @@
   --meta-lower-console: url("/src/client/assets/generated/reboot-meta-lower-console.png?v=meta-lower-console2");
   --lobby-operation: url("/src/client/assets/generated/reboot-lobby-operation-banner.png");
   --lobby-coop-diorama-preview: url("/src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1");
+  --lobby-operation-posters: url("/src/client/assets/generated/reboot-lobby-operation-posters.png?v=operation-posters1");
   --lobby-operation-title-plate: url("/src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png?v=operation-title-plate1");
   --lobby-operation-progress-rail: url("/src/client/assets/generated/reboot-lobby-operation-progress-rail.png?v=operation-progress1");
   --lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1");
@@ -2450,6 +2451,31 @@ body[data-app-screen="season"] .app-screen::after {
 .operation-card[data-operation-poster="response"] {
   --operation-diorama-x: 62%;
   --operation-diorama-y: 52%;
+}
+
+.operation-poster-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: var(--lobby-operation-posters);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 0 0;
+  opacity: 0.82;
+  filter: saturate(1.08) contrast(1.06);
+  pointer-events: none;
+}
+
+.operation-poster-scene[data-operation-scene="boss"] {
+  background-position: 33.333% 0;
+}
+
+.operation-poster-scene[data-operation-scene="recovery"] {
+  background-position: 66.666% 0;
+}
+
+.operation-poster-scene[data-operation-scene="response"] {
+  background-position: 100% 0;
 }
 
 .operation-progress {

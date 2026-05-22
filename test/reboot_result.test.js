@@ -1260,9 +1260,24 @@ test('lobby operation card shows the next authored combat beat', () => {
   assert.equal(lobby.includes('data-operation-poster="boss"'), true);
   assert.equal(lobby.includes('reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1'), true);
   assert.equal(lobby.includes('data-full-src="/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1"'), true);
+  assert.equal(lobby.includes('class="operation-poster-scene" data-operation-scene="boss"'), true);
   assert.equal(lobby.includes('class="operation-progress operation-road" aria-label="작전 로드 2/4: 완료 1단계, 현재 보스 막타 작전, 잠김 3-4단계"'), true);
   assert.equal((lobby.match(/class="operation-progress-node operation-road-node"/g) ?? []).length, 4);
   assert.equal(lobby.includes('data-operation-node="active"'), true);
+});
+
+test('lobby operation poster swaps generated map art for each authored operation', () => {
+  const first = buildRebootLobby({ processedRuns: [] });
+  const boss = buildRebootLobby({ processedRuns: ['run-1'] });
+  const recovery = buildRebootLobby({ processedRuns: ['run-1', 'run-2'] });
+  const response = buildRebootLobby({ processedRuns: ['run-1', 'run-2', 'run-3'] });
+
+  assert.equal(first.includes('class="operation-poster-scene" data-operation-scene="first"'), true);
+  assert.equal(boss.includes('class="operation-poster-scene" data-operation-scene="boss"'), true);
+  assert.equal(recovery.includes('class="operation-poster-scene" data-operation-scene="recovery"'), true);
+  assert.equal(response.includes('class="operation-poster-scene" data-operation-scene="response"'), true);
+  assert.equal((boss.match(/class="operation-poster-scene"/g) ?? []).length, 1);
+  assert.equal(boss.includes('class="operation-poster-button"'), false);
 });
 
 test('lobby operation card presents reward threat and progress as compact game intel chips', () => {

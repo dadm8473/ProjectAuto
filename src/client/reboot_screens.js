@@ -755,6 +755,7 @@ export function buildRebootLobby(model = {}) {
     ${buildLobbyProfilePlate(model)}
     <section class="operation-card" data-operation-poster="${operation.poster}" data-operation-scene="coop-defense">
       <img class="operation-coop-diorama" src="/src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1" data-full-src="/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1" alt="" aria-hidden="true" decoding="async" loading="lazy">
+      <span class="operation-poster-scene" data-operation-scene="${operation.poster}" aria-hidden="true"></span>
       ${operationProgressMarkup(operation)}
       ${operationIntelMarkup(operation)}
       <div class="operation-copy">
