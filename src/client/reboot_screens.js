@@ -666,12 +666,35 @@ function buildUnitFeaturedShowcase({ featuredUnit, profile, xp, unitLevels }) {
   });
 }
 
+function compactStepRange(steps) {
+  if (!steps.length) return '';
+  const first = steps[0];
+  const last = steps[steps.length - 1];
+  return first === last ? `${first}단계` : `${first}-${last}단계`;
+}
+
+function operationRoadAriaLabel(operation, roadNodes) {
+  const clearedSteps = roadNodes.filter((node) => node.state === 'cleared').map((node) => node.step);
+  const lockedSteps = roadNodes.filter((node) => node.state === 'locked').map((node) => node.step);
+  const parts = [
+    clearedSteps.length ? `완료 ${compactStepRange(clearedSteps)}` : '완료 없음',
+    `현재 ${operation.title}`
+  ];
+  if (lockedSteps.length) parts.push(`잠김 ${compactStepRange(lockedSteps)}`);
+  return `작전 로드 ${operation.step}/${operation.total}: ${parts.join(', ')}`;
+}
+
 function operationProgressMarkup(operation) {
+  const roadNodes = LOBBY_OPERATION_SEQUENCE.map((operationNode, index) => {
+    const step = index + 1;
+    const state = step < operation.step ? 'cleared' : step === operation.step ? 'current' : 'locked';
+    return { ...operationNode, step, state };
+  });
   return `
-      <span class="operation-progress" aria-label="작전 진행 ${operation.step}/${operation.total}">
-        ${Array.from({ length: operation.total }, (_, index) => {
-          const step = index + 1;
-          return `<span class="operation-progress-node" data-operation-node="${step === operation.step ? 'active' : 'idle'}" aria-hidden="true"></span>`;
+      <span class="operation-progress operation-road" aria-label="${operationRoadAriaLabel(operation, roadNodes)}">
+        ${roadNodes.map((roadNode) => {
+          const step = roadNode.step;
+          return `<span class="operation-progress-node operation-road-node" data-operation-node="${step === operation.step ? 'active' : 'idle'}" data-operation-road-state="${roadNode.state}" aria-hidden="true"><b aria-hidden="true">${step}</b></span>`;
         }).join('')}
       </span>`;
 }

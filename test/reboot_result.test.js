@@ -1260,8 +1260,8 @@ test('lobby operation card shows the next authored combat beat', () => {
   assert.equal(lobby.includes('data-operation-poster="boss"'), true);
   assert.equal(lobby.includes('reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1'), true);
   assert.equal(lobby.includes('data-full-src="/src/client/assets/generated/reboot-lobby-coop-diorama.png?v=lobby-coop-diorama1"'), true);
-  assert.equal(lobby.includes('class="operation-progress" aria-label="작전 진행 2/4"'), true);
-  assert.equal((lobby.match(/class="operation-progress-node"/g) ?? []).length, 4);
+  assert.equal(lobby.includes('class="operation-progress operation-road" aria-label="작전 로드 2/4: 완료 1단계, 현재 보스 막타 작전, 잠김 3-4단계"'), true);
+  assert.equal((lobby.match(/class="operation-progress-node operation-road-node"/g) ?? []).length, 4);
   assert.equal(lobby.includes('data-operation-node="active"'), true);
 });
 
@@ -1351,6 +1351,27 @@ test('lobby profile rank plate exposes higher medals and caps max rank progress'
   assert.equal(cappedLobby.includes('aria-label="지휘관 랭크 Lv.99, 최고 랭크 도달"'), true);
   assert.equal(cappedLobby.includes('<strong>Lv.99</strong>'), true);
   assert.equal(cappedLobby.includes('style="--profile-progress:100%"'), true);
+});
+
+test('lobby operation poster shows a four-step operation road without adding commands', () => {
+  const lobby = buildRebootLobby({
+    gems: 24,
+    processedRuns: ['run-1'],
+    claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic'],
+    claimedPassTiers: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    unlocks: ['mythic-aura', 'founder-board', 'merge-effect', 'rescue-effect', 'profile-frame']
+  });
+
+  assert.equal(lobby.includes('class="operation-progress operation-road"'), true);
+  assert.equal(lobby.includes('aria-label="작전 로드 2/4: 완료 1단계, 현재 보스 막타 작전, 잠김 3-4단계"'), true);
+  assert.equal((lobby.match(/class="operation-progress-node operation-road-node"/g) ?? []).length, 4);
+  assert.equal(lobby.includes('data-operation-road-state="cleared"'), true);
+  assert.equal(lobby.includes('data-operation-road-state="current"'), true);
+  assert.equal(lobby.includes('data-operation-road-state="locked"'), true);
+  assert.equal(lobby.includes('<b aria-hidden="true">2</b>'), true);
+  assert.equal(lobby.includes('data-operation-road-state="current" aria-hidden="true"><b aria-hidden="true">2</b>'), true);
+  assert.equal(lobby.includes('class="operation-road-action"'), false);
+  assert.equal(lobby.includes('data-lobby-open="missions"'), false);
 });
 
 test('lobby next action uses compact game-state chips while preserving meaning for assistive tech', () => {

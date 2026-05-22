@@ -2472,6 +2472,15 @@ body[data-app-screen="season"] .app-screen::after {
   filter: drop-shadow(0 7px 12px rgba(0, 0, 0, 0.48));
 }
 
+.operation-progress.operation-road {
+  right: 9px;
+  bottom: 9px;
+  grid-template-columns: repeat(4, 22px);
+  gap: 7px;
+  width: clamp(128px, 34vw, 144px);
+  padding: 5px 14px;
+}
+
 .operation-progress-node {
   width: 20px;
   height: 20px;
@@ -2487,6 +2496,43 @@ body[data-app-screen="season"] .app-screen::after {
   background-position: 0 0;
   filter: saturate(1.18) brightness(1.15) drop-shadow(0 4px 8px rgba(88, 215, 255, 0.35));
   opacity: 1;
+}
+
+.operation-road-node {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: rgba(255, 247, 217, 0.86);
+  font-size: 9px;
+  font-weight: 1000;
+  line-height: 1;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.76);
+}
+
+.operation-road-node b {
+  transform: translateY(-0.5px);
+}
+
+.operation-road-node[data-operation-road-state="cleared"] {
+  background-position: 50% 0;
+  filter: saturate(1.02) brightness(1.04) drop-shadow(0 4px 7px rgba(142, 230, 210, 0.26));
+  opacity: 0.96;
+}
+
+.operation-road-node[data-operation-road-state="current"] {
+  background-position: 0 0;
+  color: #ffffff;
+  filter: saturate(1.22) brightness(1.2) drop-shadow(0 4px 9px rgba(88, 215, 255, 0.38));
+  opacity: 1;
+}
+
+.operation-road-node[data-operation-road-state="locked"] {
+  background-position: 100% 0;
+  color: rgba(245, 240, 220, 0.52);
+  filter: saturate(0.58) brightness(0.72) drop-shadow(0 3px 5px rgba(0, 0, 0, 0.42));
+  opacity: 0.72;
 }
 
 .operation-intel-board {

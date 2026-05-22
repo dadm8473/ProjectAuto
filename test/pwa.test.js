@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v120';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v121';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -41,7 +41,7 @@ test('service worker keeps the installable mobile game shell available after fir
     'event.request.mode === \'navigate\'',
     "caches.match('/index.html')",
     '/manifest.webmanifest',
-    '/src/client/styles.css?v=objective-slot-label1',
+    '/src/client/styles.css?v=operation-road1',
     '/src/client/app.js?v=moment-scenes1',
     '/src/client/reboot_audio.js?v=audio-safe1',
     '/src/client/reboot_actions.js?v=combat-meter2',
@@ -50,7 +50,7 @@ test('service worker keeps the installable mobile game shell available after fir
     '/src/client/reboot_preload.js?v=lobby-defer1',
     '/src/client/reboot_render.js?v=moment-scenes1',
     '/src/client/reboot_result_ui.js?v=result-hook1',
-    '/src/client/reboot_screens.js?v=objective-slot-label1',
+    '/src/client/reboot_screens.js?v=operation-road1',
     '/src/client/reboot_action_ui.js?v=hud-meter1',
     '/src/client/reboot_online.js',
     '/src/shared/game.js?v=retry-context1',
@@ -260,9 +260,9 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v120'",
+    "cacheName === 'projectauto-reboot-shell-v121'",
     "await cache.match('/index.html')",
-    "await cache.match('/src/client/styles.css?v=objective-slot-label1')",
+    "await cache.match('/src/client/styles.css?v=operation-road1')",
     "await cache.match('/src/client/app.js?v=moment-scenes1')",
     "await cache.match('/src/client/reboot_audio.js?v=audio-safe1')",
     "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
@@ -271,7 +271,7 @@ test('browser QA verifies the runtime service worker cache activation', async ()
     "await cache.match('/src/client/reboot_preload.js?v=lobby-defer1')",
     "await cache.match('/src/client/reboot_render.js?v=moment-scenes1')",
     "await cache.match('/src/client/reboot_result_ui.js?v=result-hook1')",
-    "await cache.match('/src/client/reboot_screens.js?v=objective-slot-label1')",
+    "await cache.match('/src/client/reboot_screens.js?v=operation-road1')",
     "await cache.match('/src/shared/game.js?v=retry-context1')",
     "await cache.match('/src/shared/reboot_game.js?v=retry-context1')",
     "await cache.match('/src/client/reboot_action_ui.js?v=hud-meter1')",
