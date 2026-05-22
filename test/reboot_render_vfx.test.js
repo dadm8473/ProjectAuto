@@ -783,6 +783,48 @@ test('operation intro cutin uses the selected operation title instead of generic
   assert.equal(labels.includes('작전 시작'), false, 'intro cutin should not collapse every operation to generic start copy');
 });
 
+test('operation intro cutin uses the full generated banner with strong readable copy', () => {
+  const ctx = mockContext();
+  const startCutin = image(390, 112);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 0.28,
+      seedName: 'tutorial_success',
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units: image(1280, 256),
+      board: image(1280, 256),
+      openingThreatPreview: image(512, 256),
+      startCutin
+    },
+    {
+      operation: { hudTitle: '첫 구원', threatLabel: '보스 저지' }
+    }
+  );
+
+  const startCutinDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === startCutin);
+  const titleFontIndex = ctx.commands.findIndex((command) => command.type === 'font' && command.value.includes('22px'));
+  const titleDraw = ctx.commands.find((command) => command.type === 'fillText' && command.args[0] === '첫 구원');
+
+  assert.ok(startCutinDraw, 'operation intro should draw the generated start banner');
+  assert.equal(startCutinDraw.args[5], 0, 'start banner should span the full canvas width');
+  assert.equal(startCutinDraw.args[6] <= 166, true, `start banner sits too low: ${startCutinDraw.args[6]}`);
+  assert.equal(startCutinDraw.args[8] >= 108, true, `start banner crops too much generated art: ${startCutinDraw.args[8]}`);
+  assert.equal(alphaBeforeCommand(ctx.commands, startCutinDraw) >= 0.9, true, `start banner alpha is too weak: ${alphaBeforeCommand(ctx.commands, startCutinDraw)}`);
+  assert.notEqual(titleFontIndex, -1, 'operation title should use a larger mobile-readable font');
+  assert.ok(titleDraw, 'operation intro title should still render over the generated banner');
+});
+
 test('opening threat preview stays continuous when the operation intro clears', () => {
   const openingThreatPreview = image(512, 256);
   const samples = [0.55, 0.56, 0.57].map((now) => {

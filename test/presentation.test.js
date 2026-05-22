@@ -119,7 +119,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_action_ui.js?v=hud-meter1'",
     "from './reboot_audio.js?v=audio-safe1'",
     "from './reboot_hud.js?v=board-copy1'",
-    "from './reboot_render.js?v=first-summon-reveal1'",
+    "from './reboot_render.js?v=start-cutin-focus1'",
     "from './reboot_result_ui.js?v=result-hook1'",
     "from './reboot_screens.js?v=operation-poster-map1'",
     "from './reboot_online.js'"
@@ -767,7 +767,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=first-summon-reveal1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=start-cutin-focus1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=first-summon-reveal1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=operation-combat-cutin1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready-compact1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=defense-pressure1"></script>'), false);
@@ -855,7 +856,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=first-summon-reveal1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=start-cutin-focus1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=first-summon-reveal1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=operation-combat-cutin1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=partner-ready-compact1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=first-payoff1'"), false);
@@ -3468,9 +3470,10 @@ test('combat starts with a generated operation cutin instead of a silent canvas 
     'OPERATION_START_CUTIN_END - state.now',
     'function combatStartOperationCopy(operation = {})',
     'const operation = combatStartOperationCopy(operationMeta);',
-    'drawImageCover(ctx, image, 0, 180, 390, 86',
-    'const alpha = Math.min(introIn, introOut) * 0.82;',
-    "ctx.strokeStyle = 'rgba(2, 6, 7, 0.78)';",
+    'drawImageCover(ctx, image, 0, 164, 390, 112',
+    'const alpha = Math.min(introIn, introOut) * 0.96;',
+    "ctx.strokeStyle = 'rgba(2, 6, 7, 0.86)';",
+    "ctx.font = '950 22px system-ui';",
     'ctx.strokeText?.(operation.title',
     'ctx.fillText(operation.title',
     'ctx.fillText(operation.subtitle',
