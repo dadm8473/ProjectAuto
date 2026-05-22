@@ -30,7 +30,7 @@ test('service worker keeps the installable mobile game shell available after fir
   const sw = await readRequiredFile('sw.js');
 
   for (const marker of [
-    "const CACHE_NAME = 'projectauto-reboot-shell-v133';",
+    "const CACHE_NAME = 'projectauto-reboot-shell-v134';",
     "self.addEventListener('install'",
     "self.addEventListener('activate'",
     "self.addEventListener('fetch'",
@@ -41,7 +41,7 @@ test('service worker keeps the installable mobile game shell available after fir
     'event.request.mode === \'navigate\'',
     "caches.match('/index.html')",
     '/manifest.webmanifest',
-    '/src/client/styles.css?v=objective-slot-nameplates1',
+    '/src/client/styles.css?v=lobby-intel-badges1',
     '/src/client/app.js?v=start-cutin-focus1',
     '/src/client/reboot_audio.js?v=audio-safe1',
     '/src/client/reboot_actions.js?v=combat-meter2',
@@ -69,6 +69,7 @@ test('service worker keeps the installable mobile game shell available after fir
     '/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1',
     '/src/client/assets/generated/reboot-meta-status-plaques.png?v=meta-status-plaques1',
     '/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress',
+    '/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges-alpha1',
     '/src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png?v=meta-shelf-nameplates1',
     '/src/client/assets/generated/reboot-combat-meter-sockets-v2.png?v=meter-sockets-v2',
     '/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1',
@@ -109,7 +110,9 @@ test('service worker keeps the installable mobile game shell available after fir
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v128';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v129';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v130';"), false);
+  assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v133';"), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v132';"), false);
+  assert.equal(sw.includes('/src/client/styles.css?v=objective-slot-nameplates1'), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v131';"), false);
   assert.equal(sw.includes('/src/client/styles.css?v=lobby-profile-badge1'), false);
   assert.equal(sw.includes("const CACHE_NAME = 'projectauto-reboot-shell-v107';"), false);
@@ -278,9 +281,9 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   for (const marker of [
     'async function verifyInstallableShell(page)',
     'navigator.serviceWorker.ready',
-    "cacheName === 'projectauto-reboot-shell-v133'",
+    "cacheName === 'projectauto-reboot-shell-v134'",
     "await cache.match('/index.html')",
-    "await cache.match('/src/client/styles.css?v=objective-slot-nameplates1')",
+    "await cache.match('/src/client/styles.css?v=lobby-intel-badges1')",
     "await cache.match('/src/client/app.js?v=start-cutin-focus1')",
     "await cache.match('/src/client/reboot_audio.js?v=audio-safe1')",
     "await cache.match('/src/client/reboot_actions.js?v=combat-meter2')",
@@ -306,6 +309,7 @@ test('browser QA verifies the runtime service worker cache activation', async ()
     "await cache.match('/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1')",
     "await cache.match('/src/client/assets/generated/reboot-meta-status-plaques.png?v=meta-status-plaques1')",
     "await cache.match('/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress')",
+    "await cache.match('/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges-alpha1')",
     "await cache.match('/src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png?v=meta-shelf-nameplates1')",
     "await cache.match('/src/client/assets/generated/reboot-combat-meter-sockets-v2.png?v=meter-sockets-v2')",
     "await cache.match('/src/client/assets/generated/reboot-meta-title-wordmarks-v1.png?v=meta-title-wordmark1')",
@@ -345,7 +349,9 @@ test('browser QA verifies the runtime service worker cache activation', async ()
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v128'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v129'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v130'"), false);
+  assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v133'"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v132'"), false);
+  assert.equal(qa.includes("await cache.match('/src/client/styles.css?v=objective-slot-nameplates1')"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v131'"), false);
   assert.equal(qa.includes("await cache.match('/src/client/styles.css?v=lobby-profile-badge1')"), false);
   assert.equal(qa.includes("cacheName === 'projectauto-reboot-shell-v107'"), false);

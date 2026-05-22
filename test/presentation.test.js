@@ -643,7 +643,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-slot-nameplates1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-intel-badges1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-slot-nameplates1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile-badge1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-highlight-label1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-season-rails1">'), false);
@@ -1555,7 +1556,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=objective-slot-nameplates1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-intel-badges1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=objective-slot-nameplates1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-profile-badge1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-highlight-label1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=mission-season-rails1'), false);
@@ -2027,7 +2029,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=objective-slot-nameplates1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=lobby-intel-badges1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -4139,6 +4141,7 @@ test('lobby reward and next hooks use generated intel strips instead of web card
   for (const marker of [
     '--lobby-intel-strips: url("/src/client/assets/generated/reboot-lobby-intel-strips.png?v=intel-strips-alpha1")',
     '--lobby-next-beacons: url("/src/client/assets/generated/reboot-lobby-next-beacons.png?v=lobby-next")',
+    '--meta-mini-badges: url("/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges-alpha1")',
     'class="lobby-intel-strip reward-hook coop-hook"',
     'aria-label="동료 준비됨, 보유 보석 ${gems}, 외형 해금 전용 재화"',
     'class="lobby-partner-capsule" aria-hidden="true"',
@@ -4185,6 +4188,7 @@ test('lobby reward and next hooks use generated intel strips instead of web card
     '.reward-hook .lobby-currency-icon',
     '.reward-hook .lobby-currency-value',
     '.reward-hook .lobby-currency-label',
+    '.reward-hook .lobby-partner-status,\n.reward-hook .lobby-currency-label',
     'font-size: clamp(12px, 3.49vw, 15px);',
     'color: #ffe58f;',
     'text-shadow: 0 2px 7px rgba(0, 0, 0, 0.78);',
@@ -4231,6 +4235,21 @@ test('lobby reward and next hooks use generated intel strips instead of web card
   assert.equal(partnerAvatarBlock.includes('background-image: url("/src/client/assets/generated/reboot-unit-atlas.png");'), true);
   assert.equal(partnerAvatarBlock.includes('background-size: calc(var(--lobby-partner-avatar-size) * 8) var(--lobby-partner-avatar-size);'), true);
   assert.equal(cssRuleBlock(css, '.reward-hook .lobby-partner-avatar[data-sprite="rescue_coil"]').includes('background-position: calc(var(--lobby-partner-avatar-size) * -4) 0;'), true);
+
+  const intelBadgeBlock = cssRuleBlock(css, '.reward-hook .lobby-partner-status,\n.reward-hook .lobby-currency-label');
+  for (const marker of [
+    'display: inline-grid;',
+    'place-items: center;',
+    'min-width: 34px;',
+    'min-height: 18px;',
+    'padding: 2px 8px 3px;',
+    'background-image: var(--meta-mini-badges);',
+    'background-size: 300% 100%;',
+    'background-position: 0 0;',
+    'filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.46));'
+  ]) {
+    assert.equal(intelBadgeBlock.includes(marker), true, marker);
+  }
 
   for (const forbidden of [
     'class="lobby-card reward-hook"',

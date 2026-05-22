@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v133');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v134');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=objective-slot-nameplates1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=objective-slot-nameplates1'))
+      '/src/client/styles.css?v=lobby-intel-badges1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=lobby-intel-badges1'))
         : false,
       '/src/client/app.js?v=start-cutin-focus1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=start-cutin-focus1'))
@@ -137,6 +137,9 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress'))
+        : false,
+      '/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges-alpha1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges-alpha1'))
         : false,
       '/src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png?v=meta-shelf-nameplates1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png?v=meta-shelf-nameplates1'))
@@ -265,7 +268,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v133', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v134', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1700,16 +1703,41 @@ async function assertLobbyProfilePlate(page, label, expectedLevel) {
 }
 
 async function assertBattleReadyLobbyStaysFocused(page) {
-  const surface = await page.evaluate(() => ({
-    nextHookCount: document.querySelectorAll('#lobbyScreen .next-hook').length,
-    operationVisible: Boolean(document.querySelector('#lobbyScreen .operation-card')),
-    launchVisible: Boolean(document.querySelector('#launchBotButton')),
-    rewardVisible: Boolean(document.querySelector('#lobbyScreen .reward-hook'))
-  }));
+  const surface = await page.evaluate(() => {
+    const readBadge = (selector) => {
+      const node = document.querySelector(selector);
+      const rect = node?.getBoundingClientRect();
+      const style = node ? getComputedStyle(node) : null;
+      return {
+        text: node?.textContent?.trim() ?? '',
+        backgroundImage: style?.backgroundImage ?? '',
+        backgroundSize: style?.backgroundSize ?? '',
+        borderTopWidth: style?.borderTopWidth ?? '',
+        boxShadow: style?.boxShadow ?? '',
+        width: Math.round(rect?.width ?? 0),
+        height: Math.round(rect?.height ?? 0)
+      };
+    };
+    return {
+      nextHookCount: document.querySelectorAll('#lobbyScreen .next-hook').length,
+      operationVisible: Boolean(document.querySelector('#lobbyScreen .operation-card')),
+      launchVisible: Boolean(document.querySelector('#launchBotButton')),
+      rewardVisible: Boolean(document.querySelector('#lobbyScreen .reward-hook')),
+      partnerStatus: readBadge('#lobbyScreen .lobby-partner-status'),
+      currencyLabel: readBadge('#lobbyScreen .lobby-currency-label')
+    };
+  });
   assert.equal(surface.operationVisible, true, `battle-ready lobby lost operation poster: ${JSON.stringify(surface)}`);
   assert.equal(surface.launchVisible, true, `battle-ready lobby lost launch command: ${JSON.stringify(surface)}`);
   assert.equal(surface.rewardVisible, true, `battle-ready lobby lost currency strip: ${JSON.stringify(surface)}`);
   assert.equal(surface.nextHookCount, 0, `battle-ready lobby should not duplicate the launch intent: ${JSON.stringify(surface)}`);
+  for (const [badgeLabel, badge] of Object.entries({ partnerStatus: surface.partnerStatus, currencyLabel: surface.currencyLabel })) {
+    assert.match(badge.backgroundImage, /reboot-meta-mini-badges/, `${badgeLabel} lost generated lobby intel badge: ${JSON.stringify(surface)}`);
+    assert.equal(badge.backgroundSize, '300% 100%', `${badgeLabel} badge atlas is not sliced: ${JSON.stringify(surface)}`);
+    assert.equal(badge.borderTopWidth, '0px', `${badgeLabel} still uses css border: ${JSON.stringify(surface)}`);
+    assert.equal(badge.boxShadow, 'none', `${badgeLabel} still uses css shadow surface: ${JSON.stringify(surface)}`);
+    assert.equal(badge.width >= 34 && badge.height >= 18, true, `${badgeLabel} badge is too small: ${JSON.stringify(surface)}`);
+  }
 }
 
 async function assertLobbyLaunchCommandConsole(page, label) {

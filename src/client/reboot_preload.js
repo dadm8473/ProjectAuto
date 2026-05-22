@@ -33,6 +33,7 @@ export const REBOOT_WARMUP_ASSETS = [
   '/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1',
   '/src/client/assets/generated/reboot-meta-status-plaques.png?v=meta-status-plaques1',
   '/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress',
+  '/src/client/assets/generated/reboot-meta-mini-badges.png?v=meta-badges-alpha1',
   '/src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png?v=meta-shelf-nameplates1',
   '/src/client/assets/generated/reboot-reward-reveal-payoff-stage.png?v=reward-payoff-stage1',
   '/src/client/assets/generated/reboot-collection-training-board-v1.png?v=collection-training-board1',
