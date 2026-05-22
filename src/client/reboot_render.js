@@ -1928,24 +1928,20 @@ function drawPartnerReadyPing(ctx, state, assets = {}, localBoardId = 'p1', opti
   if (!partnerBoard || (partnerBoard.units?.length ?? 0) > 0 || !isBotPartner(state, partnerId)) return;
   const alpha = partnerReadyAlpha(Number(state.now) || 0);
   if (alpha <= 0) return;
-  const x = 91;
-  const y = 52;
-  const w = 208;
-  const h = 65;
+  const x = 108;
+  const y = 43;
+  const w = 176;
+  const h = 52;
   const drewReadyPing = drawPartnerAssistSprite(ctx, assets.partnerAssistPings, PARTNER_ASSIST_PINGS.summon.index, x, y, w, h, alpha);
   if (!drewReadyPing) return;
-  drawAtlasSprite(ctx, assets, 'ui', 'summon_charge', x + 34, y + 28, 24, alpha);
+  drawAtlasSprite(ctx, assets, 'ui', 'summon_charge', x + 30, y + 26, 24, alpha);
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.fillStyle = '#fff7dc';
   ctx.shadowColor = '#58d7ff';
-  ctx.shadowBlur = 10;
-  ctx.font = '900 13px system-ui';
-  ctx.fillText('동료 준비', x + 66, y + 27);
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = 'rgba(245, 240, 220, 0.82)';
-  ctx.font = '800 9px system-ui';
-  ctx.fillText('봇 자동 지원', x + 66, y + 41);
+  ctx.shadowBlur = 8;
+  ctx.font = '900 15px system-ui';
+  ctx.fillText('동료 준비', x + 62, y + 32);
   ctx.restore();
 }
 

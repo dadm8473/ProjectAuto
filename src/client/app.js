@@ -8,7 +8,7 @@ import { createRebootAudio } from './reboot_audio.js?v=audio-safe1';
 import { updateCombatHudMeters } from './reboot_hud.js?v=board-copy1';
 import { createPlaytestRecorder } from './reboot_playtest.js?v=playtest2';
 import { preloadCriticalRebootAssets, warmRebootAssets } from './reboot_preload.js?v=lobby-defer1';
-import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=defense-pressure1';
+import { createRebootAssetImages, drawRebootBattle } from './reboot_render.js?v=partner-ready-compact1';
 import { applyRebootResultView } from './reboot_result_ui.js?v=result-hook1';
 import {
   buildMetaNavAlerts,

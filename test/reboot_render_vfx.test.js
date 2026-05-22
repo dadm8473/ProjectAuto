@@ -2732,8 +2732,10 @@ test('bot partner ready ping uses the generated co-op banner after the intro', (
   const readyDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === partnerAssistPings);
   assert.ok(readyDraw, 'expected generated partner-ready banner before the bot takes its first action');
   assert.equal(readyDraw.args[1], 0, 'ready ping should reuse the summon/assist banner cell');
-  assert.equal(readyDraw.args[6] + readyDraw.args[8] <= 132, true, 'ready ping should stay in the partner-board lane');
+  assert.equal(readyDraw.args[8] <= 54, true, 'ready ping should be compact enough to avoid covering early threats');
+  assert.equal(readyDraw.args[6] + readyDraw.args[8] <= 104, true, 'ready ping should stay high in the partner-board lane');
   assert.ok(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '동료 준비'));
+  assert.equal(ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '봇 자동 지원'), false);
 });
 
 test('bot partner ready ping does not stack over intro or first summon feedback', () => {
