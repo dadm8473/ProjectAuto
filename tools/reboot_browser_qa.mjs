@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v123');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v124');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=operation-poster-map1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=operation-poster-map1'))
+      '/src/client/styles.css?v=lobby-poster-crop1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=lobby-poster-crop1'))
         : false,
       '/src/client/app.js?v=operation-combat-cutin1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=operation-combat-cutin1'))
@@ -247,7 +247,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v123', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v124', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1535,7 +1535,8 @@ async function assertOperationDioramaStaysReadable(page) {
         backgroundImage: posterStyle.backgroundImage,
         backgroundSize: posterStyle.backgroundSize,
         backgroundPosition: posterStyle.backgroundPosition,
-        opacity: Number.parseFloat(posterStyle.opacity)
+        opacity: Number.parseFloat(posterStyle.opacity),
+        transform: posterStyle.transform
       },
       intel: {
         left: Math.round(intelRect.left),
@@ -1551,6 +1552,7 @@ async function assertOperationDioramaStaysReadable(page) {
   assert.match(geometry.diorama.src, /reboot-lobby-coop-diorama\.png\?v=lobby-coop-diorama1/);
   assert.match(geometry.poster.backgroundImage, /reboot-lobby-operation-posters\.png\?v=operation-posters1/, `operation poster atlas missing: ${JSON.stringify(geometry)}`);
   assert.equal(geometry.poster.backgroundSize, '400% 100%', `operation poster atlas is not sliced into authored scenes: ${JSON.stringify(geometry)}`);
+  assert.match(geometry.poster.transform, /matrix\(1\.16/, `operation poster should crop atlas gutters instead of showing black side rails: ${JSON.stringify(geometry)}`);
   assert.equal(geometry.poster.opacity < 1, true, `operation poster should not fully hide the loaded diorama: ${JSON.stringify(geometry)}`);
   assert.equal(['first', 'boss', 'recovery', 'response'].includes(geometry.poster.scene), true, `operation poster scene key missing: ${JSON.stringify(geometry)}`);
   assert.equal(geometry.poster.left <= geometry.card.left + 1, true, `operation poster leaves card left edge: ${JSON.stringify(geometry)}`);

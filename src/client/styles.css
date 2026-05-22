@@ -2462,6 +2462,8 @@ body[data-app-screen="season"] .app-screen::after {
   background-size: 400% 100%;
   background-position: 0 0;
   opacity: 0.82;
+  transform: scale(1.16);
+  transform-origin: center;
   filter: saturate(1.08) contrast(1.06);
   pointer-events: none;
 }

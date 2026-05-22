@@ -643,7 +643,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=operation-poster-map1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-poster-crop1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-defer1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-select1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), false);
@@ -1545,7 +1545,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=operation-poster-map1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-poster-crop1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-defer1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=objective-stamps1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=reward-flow1'), false);
@@ -2011,7 +2011,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=operation-poster-map1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=lobby-poster-crop1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -3891,6 +3891,8 @@ test('lobby operation card uses a dedicated generated co-op defense scene', asyn
     '.operation-poster-scene',
     'background-image: var(--lobby-operation-posters);',
     'background-size: 400% 100%;',
+    'transform: scale(1.16);',
+    'transform-origin: center;',
     'opacity: 0.82;',
     '.operation-card[data-operation-poster="boss"]',
     '.operation-poster-scene[data-operation-scene="boss"]',
@@ -3946,6 +3948,7 @@ test('lobby operation card uses a dedicated generated co-op defense scene', asyn
   const posterBlock = cssRuleBlock(css, '.operation-poster-scene');
   assert.equal(posterBlock.includes('opacity: 0.82;'), true, 'operation poster should blend with the loaded diorama');
   assert.equal(posterBlock.includes('opacity: 1;'), false, 'operation poster should not fully hide the loaded diorama');
+  assert.equal(posterBlock.includes('transform: scale(1.16);'), true, 'operation poster should crop generated atlas gutters out of the card');
 
   for (const forbidden of [
     'class="lobby-card operation-card"',
