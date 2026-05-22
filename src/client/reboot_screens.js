@@ -434,9 +434,11 @@ function buildMissionStampBoard(profile = {}, claimed = new Set()) {
   const featuredMission = missionStates.find(({ state }) => state === 'ready')?.mission;
   const focus = missionFocusModel(missionStates);
   const boardState = featuredMission ? 'ready' : 'locked';
+  const currentMissionId = missionStates.find(({ state }) => state !== 'claimed')?.mission.id ?? '';
   const stamps = missionStates.map(({ mission, progress, state }) => {
+    const currentAttrs = mission.id === currentMissionId ? ' data-mission-current="true" aria-current="step"' : '';
     return `
-      <span class="mission-stamp-slot" data-mission-state="${state}" data-mission-id="${mission.id}" aria-label="${mission.title} ${progress}/${mission.target}">
+      <span class="mission-stamp-slot" data-mission-state="${state}" data-mission-id="${mission.id}"${currentAttrs} aria-label="${mission.title} ${progress}/${mission.target}">
         <span class="reward-token mission-reward-token" data-reward-icon="${rewardIconForGrant(mission.reward, 'mission')}" aria-hidden="true"></span>
       </span>
     `;
@@ -468,18 +470,21 @@ function seasonCardState(state) {
   return 'locked';
 }
 
+function seasonCurrentTierState(tierStates) {
+  return tierStates.find(({ state }) => state === 'ready') ?? tierStates.find(({ state }) => state !== 'claimed');
+}
+
 function seasonFocusModel(tierStates, xp) {
-  const ready = tierStates.find(({ state }) => state === 'ready');
-  if (ready) {
+  const current = seasonCurrentTierState(tierStates);
+  if (current?.state === 'ready') {
     return {
       state: 'ready',
       label: '받을 보상',
-      title: `${ready.index + 1}단계 · ${rewardGrantCompactLabel(ready.tier.grant)}`,
-      detail: `${rewardGrantCompactLabel(ready.tier.grant)} · ${Math.min(xp, ready.tier.xp)}/${ready.tier.xp} XP`
+      title: `${current.index + 1}단계 · ${rewardGrantCompactLabel(current.tier.grant)}`,
+      detail: `${rewardGrantCompactLabel(current.tier.grant)} · ${Math.min(xp, current.tier.xp)}/${current.tier.xp} XP`
     };
   }
 
-  const current = tierStates.find(({ state }) => state !== 'claimed');
   if (current) {
     return {
       state: 'locked',
@@ -524,7 +529,7 @@ function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
     return { tier, index, state };
   });
   const featuredTier = tierStates.find(({ state }) => state === 'ready');
-  const currentTier = tierStates.find(({ state }) => state !== 'claimed');
+  const currentTier = seasonCurrentTierState(tierStates);
   const currentIndex = currentTier?.index ?? -1;
   const focus = seasonFocusModel(tierStates, xp);
   const rewardStatus = claimable > 0 ? CLAIM_ACTION_LABEL : currentTier ? `다음 ${currentTier.tier.xp}` : '완료';
@@ -880,6 +885,7 @@ export function buildRebootShop(profile = {}, options = {}) {
 export function buildMissionScreen(profile = {}) {
   const claimed = new Set(profile.claimedMissions ?? []);
   const board = buildMissionStampBoard(profile, claimed);
+  const currentMissionId = REBOOT_MISSIONS.find((mission) => !claimed.has(mission.id))?.id ?? '';
   const missions = REBOOT_MISSIONS.map((mission) => {
     const progress = missionProgress(profile, mission);
     const done = progress >= mission.target;
@@ -893,8 +899,9 @@ export function buildMissionScreen(profile = {}) {
       : done
         ? passiveObjectiveState('수령 가능', 'ready')
         : passiveObjectiveState('진행중', 'locked');
+    const currentAttrs = mission.id === currentMissionId ? ' data-objective-current="true" aria-current="step"' : '';
     return `
-    <article class="screen-card mission-card" data-mission="${mission.id}" data-owned="${received}" data-objective-state="${stampState}" aria-label="${mission.title} · 미션 진행 ${progress}/${mission.target} · 보상 ${rewardLabel} · ${actionLabel}">
+    <article class="screen-card mission-card" data-mission="${mission.id}" data-owned="${received}" data-objective-state="${stampState}"${currentAttrs} aria-label="${mission.title} · 미션 진행 ${progress}/${mission.target} · 보상 ${rewardLabel} · ${actionLabel}">
       ${cardStateBadge(cardState)}
       <span class="reward-token mission-reward-token" data-reward-icon="${rewardIconForGrant(mission.reward, 'mission')}"></span>
       <div class="card-copy">
@@ -926,12 +933,15 @@ export function buildSeasonScreen(profile = {}) {
   const claimed = new Set(profile.claimedPassTiers ?? []);
   const xp = profile.xp ?? 0;
   const board = buildSeasonTrackBoard(profile, claimed);
-  const currentIndex = SHOP.pass.tiers.findIndex((tier, index) => !claimed.has(index) && xp < tier.xp);
-  const tiers = SHOP.pass.tiers.map((tier, index) => {
+  const tierStates = SHOP.pass.tiers.map((tier, index) => {
+    const state = seasonState(xp, tier, index, claimed);
+    return { tier, index, state };
+  });
+  const currentIndex = seasonCurrentTierState(tierStates)?.index ?? -1;
+  const tiers = tierStates.map(({ tier, index, state: stampState }) => {
     const done = xp >= tier.xp;
     const received = claimed.has(index);
     const progress = Math.min(tier.xp, xp);
-    const stampState = seasonState(xp, tier, index, claimed);
     const cardState = seasonCardState(stampState);
     const actionLabel = objectiveStateLabel(stampState);
     const rewardLabel = seasonRewardLabel(tier.grant);

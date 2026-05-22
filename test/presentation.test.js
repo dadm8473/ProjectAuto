@@ -120,7 +120,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_hud.js?v=board-copy1'",
     "from './reboot_render.js?v=opening-placement1'",
     "from './reboot_result_ui.js?v=result-hook1'",
-    "from './reboot_screens.js?v=lobby-defer1'",
+    "from './reboot_screens.js?v=objective-route1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -642,7 +642,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-state-glow1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-route1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-defer1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-select1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), false);
@@ -884,7 +884,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=route-core1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=lobby-defer1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=objective-route1'"), true);
   assert.equal(app.includes("from './reboot_screens.js?v=shelf-select1'"), false);
   assert.equal(app.includes("from './reboot_result_ui.js?v=result-ui2'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), false);
@@ -1544,7 +1544,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=shelf-state-glow1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=objective-route1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-defer1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=objective-stamps1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=reward-flow1'), false);
@@ -2010,7 +2010,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=shelf-state-glow1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=objective-route1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -5148,7 +5148,9 @@ test('mission and season use a generated progress board instead of bare stacked 
     '.meta-progress-board .season-card[data-objective-state="ready"]::before { background-position: 33.333% 0; }',
     '.meta-progress-board .mission-card[data-objective-state="claimed"]::before,',
     '.meta-progress-board .season-card[data-objective-state="claimed"]::before { background-position: 66.666% 0; }',
-    '.meta-progress-board .season-card[data-objective-current="true"]::before { background-position: 100% 0; }'
+    '.meta-progress-board .mission-card[data-objective-current="true"]::before,',
+    '.meta-progress-board .season-card[data-objective-current="true"]::before',
+    'background-position: 100% 0;'
   ]) {
     assert.equal(boardFrameBlock.includes(marker), true, marker);
   }
@@ -5558,6 +5560,45 @@ test('mission and season boards promote the next condition on generated focus pl
   assert.equal(focusTextBlock.includes('white-space: nowrap;'), true);
 });
 
+test('mission and season boards link the current objective with generated route cues', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+  const missions = buildMissionScreen({ processedRuns: [], claimedMissions: [] });
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
+  const combined = `${css}\n${screens}\n${missions}\n${season}`;
+
+  for (const marker of [
+    'data-mission-current="true"',
+    'data-objective-current="true"',
+    '.objective-focus::after',
+    'background-image: var(--meta-progress-bars);',
+    '.mission-stamp-slot[data-mission-current="true"]::after',
+    '.meta-progress-board .mission-card[data-objective-current="true"]::before,',
+    '.meta-progress-board .season-card[data-objective-current="true"]::before',
+    'mix-blend-mode: screen;'
+  ]) {
+    assert.equal(combined.includes(marker), true, marker);
+  }
+
+  const focusRouteBlock = cssRuleBlock(css, '.objective-focus::after');
+  assert.equal(focusRouteBlock.includes('linear-gradient'), false);
+  assert.equal(focusRouteBlock.includes('box-shadow'), false);
+
+  const readySeason = buildSeasonScreen({ xp: 80, claimedPassTiers: [] });
+  assert.match(
+    readySeason,
+    /class="season-track-node" data-season-state="ready" data-pass-tier="0" data-season-current="true" aria-current="step"/
+  );
+  assert.match(
+    readySeason,
+    /class="screen-card season-card" data-pass-tier="0" data-owned="false" data-objective-state="ready" data-objective-current="true" aria-current="step"/
+  );
+  assert.doesNotMatch(
+    readySeason,
+    /class="screen-card season-card" data-pass-tier="1"[^>]*data-objective-current="true"/
+  );
+});
+
 test('mission contract board narrows its counter plate on compact phones', async () => {
   const css = await readFile('src/client/styles.css', 'utf8');
   const compactMissionCounterBlock = cssRuleBlock(css, '.mission-stamp-board .mission-board-copy strong');
@@ -5837,11 +5878,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=retry-context1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=lobby-defer1'",
+    "from './reboot_screens.js?v=objective-route1'",
     "from './reboot_game.js?v=retry-context1'",
     "from '../shared/game.js?v=retry-context1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=lobby-defer1',
+    '/src/client/reboot_screens.js?v=objective-route1',
     '/src/shared/game.js?v=retry-context1',
     '/src/shared/reboot_game.js?v=retry-context1'
   ]) {
