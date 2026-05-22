@@ -1,9 +1,9 @@
-const CACHE_NAME = 'projectauto-reboot-shell-v131';
+const CACHE_NAME = 'projectauto-reboot-shell-v132';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/src/client/styles.css?v=result-highlight-label1',
+  '/src/client/styles.css?v=lobby-profile-badge1',
   '/src/client/app.js?v=start-cutin-focus1',
   '/src/client/reboot_audio.js?v=audio-safe1',
   '/src/client/reboot_actions.js?v=combat-meter2',
@@ -55,6 +55,8 @@ const APP_SHELL_URLS = [
   '/src/client/assets/generated/reboot-result-medals.png?v=result-medals',
   '/src/client/assets/generated/reboot-result-reward-board-v1.png?v=result-reward-board1',
   '/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1',
+  '/src/client/assets/generated/reboot-meta-status-plaques.png?v=meta-status-plaques1',
+  '/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress',
   '/src/client/assets/generated/reboot-reward-reveal-payoff-stage.png?v=reward-payoff-stage1',
   '/src/client/assets/generated/reboot-lobby-coop-diorama-preview.jpg?v=lobby-coop-diorama-preview1',
   '/src/client/assets/generated/reboot-lobby-operation-title-plate-v1.png?v=operation-title-plate1',

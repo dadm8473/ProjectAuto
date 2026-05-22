@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v131');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v132');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=result-highlight-label1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=result-highlight-label1'))
+      '/src/client/styles.css?v=lobby-profile-badge1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=lobby-profile-badge1'))
         : false,
       '/src/client/app.js?v=start-cutin-focus1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=start-cutin-focus1'))
@@ -131,6 +131,12 @@ async function verifyInstallableShell(page) {
         : false,
       '/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-result-command-board-v1.png?v=result-command-board1'))
+        : false,
+      '/src/client/assets/generated/reboot-meta-status-plaques.png?v=meta-status-plaques1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-status-plaques.png?v=meta-status-plaques1'))
+        : false,
+      '/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress'))
         : false,
       '/src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png?v=meta-shelf-nameplates1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-shelf-nameplates-v1.png?v=meta-shelf-nameplates1'))
@@ -259,7 +265,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v131', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v132', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1647,10 +1653,10 @@ async function assertLobbyProfilePlate(page, label, expectedLevel) {
   assert.equal(plate.emblemBackgroundImage.includes('reboot-result-medals'), true, `${label} profile emblem lost generated medal: ${JSON.stringify(plate)}`);
   assert.equal(plate.progressBackgroundImage.includes('reboot-meta-progress-bars'), true, `${label} profile progress lost generated track: ${JSON.stringify(plate)}`);
   assert.equal(plate.progressBeforeBackgroundImage.includes('reboot-meta-progress-bars'), true, `${label} profile progress fill lost generated art: ${JSON.stringify(plate)}`);
-  assert.equal(plate.width >= 132 && plate.width <= 178, true, `${label} profile plate width is not compact: ${JSON.stringify(plate)}`);
-  assert.equal(plate.height >= 58 && plate.height <= 72, true, `${label} profile plate height is not compact: ${JSON.stringify(plate)}`);
-  assert.equal(plate.labelInsetTop >= 15, true, `${label} profile label floats on the plaque rim: ${JSON.stringify(plate)}`);
-  assert.equal(plate.labelGap >= 2, true, `${label} profile label crowds level text: ${JSON.stringify(plate)}`);
+  assert.equal(plate.width >= 180 && plate.width <= 228, true, `${label} profile plate is not a staged command badge: ${JSON.stringify(plate)}`);
+  assert.equal(plate.height >= 74 && plate.height <= 90, true, `${label} profile plate lost command badge height: ${JSON.stringify(plate)}`);
+  assert.equal(plate.labelInsetTop >= 16, true, `${label} profile label floats on the plaque rim: ${JSON.stringify(plate)}`);
+  assert.equal(plate.labelGap >= 3, true, `${label} profile label crowds level text: ${JSON.stringify(plate)}`);
   assert.equal(plate.left >= 8 && plate.right <= plate.viewportWidth - 8, true, `${label} profile plate leaves viewport: ${JSON.stringify(plate)}`);
   assert.equal(plate.bottom <= plate.operationTop - 10, true, `${label} profile plate crowds operation poster: ${JSON.stringify(plate)}`);
   assert.equal(plate.bottom <= plate.launchTop - 10, true, `${label} profile plate crowds launch controls: ${JSON.stringify(plate)}`);

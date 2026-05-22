@@ -643,7 +643,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-highlight-label1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile-badge1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-highlight-label1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-season-rails1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=splash-start-frame1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-icon-meters1">'), false);
@@ -1553,7 +1554,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=result-highlight-label1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-profile-badge1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-highlight-label1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=mission-season-rails1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=splash-start-frame1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hud-icon-meters1'), false);
@@ -2023,7 +2025,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=result-highlight-label1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile-badge1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -4294,14 +4296,18 @@ test('lobby commander rank uses generated game plates without adding a profile m
     '.lobby-profile-plate',
     '.lobby-screen > #lobbyContent',
     'Keep absolute lobby account chrome anchored to the full app screen.',
-    'min-height: clamp(62px, 16vw, 70px);',
-    'row-gap: 2px;',
-    'padding: 16px 13px 6px 10px;',
+    'top: calc(clamp(8px, 2.8vw, 14px) + var(--app-safe-area-top));',
+    'width: clamp(184px, 54vw, 220px);',
+    'min-height: clamp(76px, 20vw, 86px);',
+    'grid-template-columns: clamp(42px, 12vw, 50px) minmax(0, 1fr);',
+    'row-gap: 3px;',
+    'padding: 18px 16px 8px 12px;',
     'background-image: var(--meta-status-plaques);',
     '.lobby-profile-emblem',
     'background-image: var(--result-medals);',
     '.lobby-profile-progress',
     'background-image: var(--meta-progress-bars);',
+    'width: min(100%, 118px);',
     '.lobby-profile-progress[data-progress-kind="season"]',
     '.lobby-profile-progress::before',
     '.lobby-profile-progress[data-progress-kind="season"]::before',
