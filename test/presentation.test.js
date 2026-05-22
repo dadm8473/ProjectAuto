@@ -643,7 +643,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile-badge1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-slot-nameplates1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile-badge1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-highlight-label1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-season-rails1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=splash-start-frame1">'), false);
@@ -1554,7 +1555,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=lobby-profile-badge1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=objective-slot-nameplates1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-profile-badge1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-highlight-label1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=mission-season-rails1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=splash-start-frame1'), false);
@@ -2025,7 +2027,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=lobby-profile-badge1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=objective-slot-nameplates1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -5943,7 +5945,7 @@ test('mission and season rows show compact generated progress readouts inside ea
     assert.equal(copyBlock.includes(marker), true, marker);
   }
   const stampDensityBlock = cssRuleBlock(css, '.meta-progress-board[data-intel-density="stamp"] .card-copy');
-  assert.equal(stampDensityBlock.includes('grid-template-rows: 18px minmax(20px, auto) 16px;'), true);
+  assert.equal(stampDensityBlock.includes('grid-template-rows: 26px minmax(20px, auto) 16px;'), true);
   assert.equal(missions.includes('data-intel-density="stamp"'), true);
   assert.equal(season.includes('data-intel-density="stamp"'), true);
 
@@ -5982,6 +5984,12 @@ test('mission and season rows use compact visible slot labels without adding ext
   }
 
   const titleBlock = cssRuleBlock(css, '.meta-progress-board .objective-slot-title');
+  assert.equal(titleBlock.includes('background-image: var(--meta-shelf-nameplates);'), true);
+  assert.equal(titleBlock.includes('background-size: 400% 100%;'), true);
+  assert.equal(titleBlock.includes('background-position: 66.666% 0;'), true);
+  assert.equal(titleBlock.includes('width: min(100%, 174px);'), true);
+  assert.equal(titleBlock.includes('padding: 4px 16px 6px;'), true);
+  assert.equal(titleBlock.includes('min-height: 26px;'), true);
   assert.equal(titleBlock.includes('text-overflow: ellipsis;'), true);
   assert.equal(titleBlock.includes('white-space: nowrap;'), true);
   assert.equal(titleBlock.includes('letter-spacing: 0;'), true);

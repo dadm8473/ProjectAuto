@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v132');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v133');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=lobby-profile-badge1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=lobby-profile-badge1'))
+      '/src/client/styles.css?v=objective-slot-nameplates1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=objective-slot-nameplates1'))
         : false,
       '/src/client/app.js?v=start-cutin-focus1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=start-cutin-focus1'))
@@ -265,7 +265,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v132', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v133', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -585,6 +585,42 @@ async function assertMetaShowcaseChips(page, selector, label, expectedCount) {
     assert.equal(chip.width >= 74 && chip.height >= 26, true, `${label} chip too small: ${JSON.stringify(chip)}`);
     assert.equal(chip.left >= 0 && chip.right <= chip.viewportWidth, true, `${label} chip leaves viewport: ${JSON.stringify(chip)}`);
     assert.equal(chip.top >= 0 && chip.bottom <= chip.viewportHeight, true, `${label} chip leaves vertical viewport: ${JSON.stringify(chip)}`);
+  }
+}
+
+async function assertObjectiveSlotNameplates(page, selector, label) {
+  const plates = await page.locator(selector).evaluateAll((nodes) => nodes.map((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    return {
+      text: node.textContent?.trim() ?? '',
+      backgroundImage: style.backgroundImage,
+      backgroundSize: style.backgroundSize,
+      borderTopWidth: style.borderTopWidth,
+      borderRightWidth: style.borderRightWidth,
+      borderBottomWidth: style.borderBottomWidth,
+      borderLeftWidth: style.borderLeftWidth,
+      boxShadow: style.boxShadow,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      scrollWidth: node.scrollWidth,
+      clientWidth: node.clientWidth,
+      scrollHeight: node.scrollHeight,
+      clientHeight: node.clientHeight
+    };
+  }));
+  assert.equal(plates.length > 0, true, `${label} slot labels missing`);
+  for (const plate of plates) {
+    assert.match(plate.backgroundImage, /reboot-meta-shelf-nameplates/, `${label} slot label lacks generated nameplate: ${JSON.stringify(plate)}`);
+    assert.equal(plate.backgroundSize, '400% 100%', `${label} slot nameplate atlas is not sliced: ${JSON.stringify(plate)}`);
+    assert.deepEqual(
+      [plate.borderTopWidth, plate.borderRightWidth, plate.borderBottomWidth, plate.borderLeftWidth],
+      ['0px', '0px', '0px', '0px'],
+      `${label} slot label still uses css border: ${JSON.stringify(plate)}`
+    );
+    assert.equal(plate.boxShadow, 'none', `${label} slot label still uses css shadow: ${JSON.stringify(plate)}`);
+    assert.equal(plate.width >= 112 && plate.height >= 24, true, `${label} slot label too small: ${JSON.stringify(plate)}`);
+    assert.equal(plate.scrollWidth <= plate.clientWidth && plate.scrollHeight <= plate.clientHeight, true, `${label} slot label clips text: ${JSON.stringify(plate)}`);
   }
 }
 
@@ -2627,6 +2663,7 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#missionsList .mission-stamp-slot').count(), 3);
   assert.equal(await page.locator('#missionsList .mission-card').count(), 3);
   await assertGeneratedCardSurface(page, '#missionsList .mission-card', 'mission row card', /reboot-meta-objective-command-slots/);
+  await assertObjectiveSlotNameplates(page, '#missionsList .objective-slot-title', 'mission row');
   await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
   await page.getByRole('button', { name: '시즌', exact: true }).click();
   await assertActiveNavLabelPlate(page, '시즌', 'season');
@@ -2662,6 +2699,7 @@ async function verifyShell(page, viewport) {
   assert.equal(await page.locator('#seasonList .season-card').count(), 4);
   assert.equal(await page.locator('#seasonList .season-card[data-objective-current="true"]').count(), 1);
   await assertGeneratedCardSurface(page, '#seasonList .season-card', 'season row card', /reboot-meta-objective-command-slots/);
+  await assertObjectiveSlotNameplates(page, '#seasonList .objective-slot-title', 'season row');
   await page.getByRole('button', { name: '준비실로 돌아가기' }).click();
 
   await page.getByRole('button', { name: '첫 구원 작전 출격' }).click();

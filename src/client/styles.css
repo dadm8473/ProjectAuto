@@ -5439,8 +5439,9 @@ body[data-app-screen="season"] .app-screen::after {
 .meta-progress-board .objective-slot-title {
   display: inline-grid;
   place-items: center;
-  max-width: min(100%, 150px);
-  min-height: 18px;
+  width: min(100%, 174px);
+  min-height: 26px;
+  padding: 4px 16px 6px;
   overflow: hidden;
   color: #fff7dc;
   font-size: clamp(11px, 3.2vw, 13px);
@@ -5450,6 +5451,11 @@ body[data-app-screen="season"] .app-screen::after {
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
+  background-image: var(--meta-shelf-nameplates);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 66.666% 0;
+  filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.5));
   pointer-events: none;
   text-shadow:
     0 2px 5px rgba(0, 0, 0, 0.92),
@@ -5489,7 +5495,7 @@ body[data-app-screen="season"] .app-screen::after {
 }
 
 .meta-progress-board[data-intel-density="stamp"] .card-copy {
-  grid-template-rows: 18px minmax(20px, auto) 16px;
+  grid-template-rows: 26px minmax(20px, auto) 16px;
   gap: 2px;
 }
 
