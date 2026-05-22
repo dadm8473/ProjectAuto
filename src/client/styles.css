@@ -6037,7 +6037,7 @@ body[data-app-screen="season"] .app-screen::after {
 
 .result-reward-icon {
   grid-column: 1;
-  grid-row: 1 / span 2;
+  grid-row: 1 / span 3;
   justify-self: center;
   align-self: center;
   width: clamp(54px, calc(var(--result-panel-width) * 0.16), 62px);
@@ -6086,6 +6086,62 @@ body[data-app-screen="season"] .app-screen::after {
   background-position: 33.333% 0;
   filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.42));
   white-space: nowrap;
+}
+
+.result-reward-hook {
+  position: relative;
+  z-index: 1;
+  grid-column: 2;
+  justify-self: center;
+  display: inline-grid;
+  grid-template-columns: 20px minmax(0, auto) auto;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  min-height: 24px;
+  padding: 2px 8px 3px 6px;
+  color: #dff9ff;
+  font-size: 10px;
+  font-weight: 1000;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.78);
+  background-image: var(--meta-command-ribbons);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  background-position: 66.666% 0;
+  filter: drop-shadow(0 5px 9px rgba(0, 0, 0, 0.44));
+}
+
+.result-reward-hook::before {
+  content: "";
+  width: 20px;
+  aspect-ratio: 1 / 1;
+  background-image: var(--lobby-next-beacons);
+  background-repeat: no-repeat;
+  background-size: 500% 100%;
+  background-position: 0 0;
+  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.48));
+}
+
+.result-reward-hook b {
+  color: #fff2b4;
+}
+
+.result-reward-hook[data-reward-hook="mission"]::before {
+  background-position: 0 0;
+}
+
+.result-reward-hook[data-reward-hook="season"]::before {
+  background-position: 25% 0;
+}
+
+.result-reward-hook[data-reward-hook="training"]::before {
+  background-position: 50% 0;
+}
+
+.result-reward-hook[data-reward-hook="shop"]::before {
+  background-position: 75% 0;
 }
 
 @keyframes resultLootPulse {
@@ -6299,6 +6355,18 @@ body[data-app-screen="season"] .app-screen::after {
   .result-reward-chip {
     min-height: 22px;
     padding: 2px 7px 3px;
+  }
+
+  .result-reward-hook {
+    min-height: 20px;
+    grid-template-columns: 18px minmax(0, auto) auto;
+    gap: 3px;
+    padding: 1px 7px 2px 5px;
+    font-size: 9px;
+  }
+
+  .result-reward-hook::before {
+    width: 18px;
   }
 
   .result-overlay .result-action-button {

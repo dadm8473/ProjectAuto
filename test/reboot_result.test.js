@@ -68,6 +68,12 @@ test('result model promotes ready profile rewards and growth as the primary resu
   assert.equal(missionModel.primaryAction.label, '미션 받기');
   assert.equal(missionModel.primaryAction.title, '받을 미션 보상');
   assert.equal(missionModel.primaryAction.ariaLabel, '받을 미션 보상 수령');
+  assert.deepEqual(missionModel.rewardHook, {
+    label: '미션 보상',
+    status: '받기',
+    title: '받을 미션 보상',
+    beacon: 'mission'
+  });
   assert.deepEqual(missionModel.secondaryAction, {
     label: '다시 방어',
     action: 'retry',
@@ -91,6 +97,7 @@ test('result model promotes ready profile rewards and growth as the primary resu
   assert.equal(seasonModel.primaryAction.label, '시즌 받기');
   assert.equal(seasonModel.primaryAction.title, '시즌 보상 도착');
   assert.equal(seasonModel.primaryAction.ariaLabel, '시즌 보상 도착 수령');
+  assert.equal(seasonModel.rewardHook.beacon, 'season');
   assert.equal(seasonModel.secondaryAction.action, 'retry');
 
   const trainingModel = buildRebootResultModel({
@@ -108,6 +115,12 @@ test('result model promotes ready profile rewards and growth as the primary resu
   assert.equal(trainingModel.primaryAction.action, 'collection');
   assert.equal(trainingModel.primaryAction.label, '유닛 강화');
   assert.equal(trainingModel.primaryAction.ariaLabel, '유닛 강화 가능 열기');
+  assert.deepEqual(trainingModel.rewardHook, {
+    label: '강화 가능',
+    status: '강화',
+    title: '유닛 강화 가능',
+    beacon: 'training'
+  });
   assert.equal(trainingModel.secondaryAction.action, 'retry');
 
   const shopModel = buildRebootResultModel({
@@ -126,6 +139,7 @@ test('result model promotes ready profile rewards and growth as the primary resu
   assert.equal(shopModel.primaryAction.action, 'shop');
   assert.equal(shopModel.primaryAction.label, '외형 해금');
   assert.equal(shopModel.primaryAction.ariaLabel, '외형 해금 가능 열기');
+  assert.equal(shopModel.rewardHook.beacon, 'shop');
   assert.equal(shopModel.secondaryAction.action, 'retry');
 });
 

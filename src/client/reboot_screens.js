@@ -1036,6 +1036,14 @@ export function buildRebootResultModel({ result, rewards = [], profile, seedName
     },
     rewards,
     ...resultRewardPresentation(reason, won),
+    rewardHook: nextAction && won && nextAction.screen !== 'battle'
+      ? {
+          label: nextAction.label,
+          status: nextAction.status,
+          title: nextAction.title,
+          beacon: nextAction.beacon
+        }
+      : null,
     primaryAction,
     secondaryAction,
     forbiddenActions: []

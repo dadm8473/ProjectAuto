@@ -119,8 +119,8 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_audio.js?v=audio-safe1'",
     "from './reboot_hud.js?v=board-copy1'",
     "from './reboot_render.js?v=defense-pressure1'",
-    "from './reboot_result_ui.js?v=result-ui2'",
-    "from './reboot_screens.js?v=shelf-select1'",
+    "from './reboot_result_ui.js?v=result-hook1'",
+    "from './reboot_screens.js?v=result-hook1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -642,7 +642,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-select1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-hook1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-select1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-flow1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-meter-sockets-v2">'), false);
@@ -763,7 +764,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=defense-pressure1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-hook1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=defense-pressure1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shelf-select1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-stamps1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=route-core1"></script>'), false);
@@ -879,7 +881,9 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=route-core1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=shelf-select1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=result-hook1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=shelf-select1'"), false);
+  assert.equal(app.includes("from './reboot_result_ui.js?v=result-ui2'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=objective-focus1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=board-copy1'"), false);
@@ -1533,7 +1537,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=shelf-select1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=result-hook1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=objective-stamps1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=reward-flow1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=combat-meter-sockets-v2'), false);
@@ -1998,7 +2002,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=shelf-select1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=result-hook1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2623,14 +2627,15 @@ test('result reward copy names the earned currency instead of a generic reward n
     "if (reward.type === 'soft') return `보석 +${reward.amount}`;",
     "if (reward.type === 'xp') return `경험치 +${reward.amount}`;",
     'id="resultReward" class="result-reward" role="group"',
-    "resultReward.setAttribute('aria-label', `획득 ${formatResultRewards(model.rewards)}`);",
+    'const hookLabel = formatResultRewardHook(model.rewardHook);',
+    "resultReward.setAttribute('aria-label', `획득 ${formatResultRewards(model.rewards)}${hookLabel ? `. ${hookLabel}` : ''}`);",
     'resultReward.dataset.rewardTone = model.rewardTone;',
     'class="result-reward-label" aria-hidden="true"',
     'class="result-reward-icon"',
     'class="result-reward-value" aria-hidden="true"',
     'const rewardItems = rewards.length',
     'class="result-reward-chip" data-reward-kind="${resultRewardKind(reward)}"',
-    'resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel)'
+    'resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel, model.rewardHook)'
   ]) {
     assert.equal(`${index}\n${app}\n${resultUi}`.includes(marker), true, marker);
   }
@@ -2656,11 +2661,11 @@ test('result reward uses a generated claim capsule instead of a text strip', asy
     'display: flex;\n  flex-wrap: wrap;',
     '.result-reward-chip',
     'background-image: var(--meta-command-ribbons);',
-    'export function resultRewardMarkup(rewards = [], icon, label)',
+    'export function resultRewardMarkup(rewards = [], icon, label, hook = null)',
     'class="result-reward-label"',
     'class="result-reward-icon"',
     'class="result-reward-value"',
-    'resultReward.innerHTML = resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel);',
+    'resultReward.innerHTML = resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel, model.rewardHook);',
     '.result-reward-icon',
     'background-image: url("/src/client/assets/generated/reboot-reward-icons.png");',
     '.result-reward-icon[data-reward-icon="unlock_capsule"]',
@@ -2690,6 +2695,35 @@ test('result reward uses a generated claim capsule instead of a text strip', asy
     assert.equal(chipBlock.includes(marker), true, marker);
   }
   assert.equal(css.includes('.result-reward-chip[data-reward-kind="xp"]'), true);
+});
+
+test('result reward panel exposes the next growth hook with generated beacon art', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const resultUi = await readFile('src/client/reboot_result_ui.js', 'utf8');
+  const screens = await readFile('src/client/reboot_screens.js', 'utf8');
+
+  for (const marker of [
+    'rewardHook: nextAction && won && nextAction.screen !== \'battle\'',
+    'resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel, model.rewardHook)',
+    'function resultRewardHookMarkup(hook)',
+    'class="result-reward-hook"',
+    'data-reward-hook="${selectorValue(hook.beacon)}"',
+    'resultReward.dataset.rewardHook = model.rewardHook?.beacon ?? \'none\';',
+    '.result-reward-hook',
+    'background-image: var(--meta-command-ribbons);',
+    '.result-reward-hook::before',
+    'background-image: var(--lobby-next-beacons);',
+    '.result-reward-hook[data-reward-hook="mission"]::before',
+    '.result-reward-hook[data-reward-hook="season"]::before',
+    '.result-reward-hook[data-reward-hook="training"]::before',
+    '.result-reward-hook[data-reward-hook="shop"]::before'
+  ]) {
+    assert.equal(`${css}\n${resultUi}\n${screens}`.includes(marker), true, marker);
+  }
+
+  const hookBlock = cssRuleBlock(css, '.result-reward-hook');
+  assert.equal(hookBlock.includes('linear-gradient'), false);
+  assert.equal(hookBlock.includes('border:'), false);
 });
 
 test('result reward and actions sit inside one generated post-battle command board', async () => {
@@ -4568,6 +4602,20 @@ test('browser QA verifies reward reveal uses the generated payoff stage', async 
   }
 });
 
+test('browser QA verifies result reward hook routes the next growth action', async () => {
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+
+  for (const marker of [
+    "await page.locator('#resultReward').getAttribute('data-reward-hook')",
+    "await page.locator('#resultReward').getAttribute('aria-label')",
+    '/다음 미션 보상 받기/',
+    "await page.locator('.result-reward-hook').getAttribute('data-reward-hook')",
+    "await page.locator('.result-reward-hook b').textContent()"
+  ]) {
+    assert.equal(qa.includes(marker), true, marker);
+  }
+});
+
 test('browser QA clicks the lobby next-action strip before trusting meta routing', async () => {
   const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
 
@@ -5769,11 +5817,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=retry-context1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=shelf-select1'",
+    "from './reboot_screens.js?v=result-hook1'",
     "from './reboot_game.js?v=retry-context1'",
     "from '../shared/game.js?v=retry-context1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=shelf-select1',
+    '/src/client/reboot_screens.js?v=result-hook1',
     '/src/shared/game.js?v=retry-context1',
     '/src/shared/reboot_game.js?v=retry-context1'
   ]) {

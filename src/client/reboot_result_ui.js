@@ -11,11 +11,21 @@ export function formatResultRewards(rewards = []) {
   return rewards.map(resultRewardText).join(' · ');
 }
 
-export function resultRewardMarkup(rewards = [], icon, label) {
+function formatResultRewardHook(hook) {
+  if (!hook) return '';
+  return `다음 ${hook.label} ${hook.status}`;
+}
+
+function resultRewardHookMarkup(hook) {
+  if (!hook) return '';
+  return `<span class="result-reward-hook" data-reward-hook="${selectorValue(hook.beacon)}" aria-hidden="true"><span>${hook.label}</span><b>${hook.status}</b></span>`;
+}
+
+export function resultRewardMarkup(rewards = [], icon, label, hook = null) {
   const rewardItems = rewards.length
     ? rewards.map((reward) => `<span class="result-reward-chip" data-reward-kind="${resultRewardKind(reward)}">${resultRewardText(reward)}</span>`).join('')
     : '<span class="result-reward-chip" data-reward-kind="soft">보석 +0</span>';
-  return `<span class="result-reward-label" aria-hidden="true">${label}</span> <span class="result-reward-icon" data-reward-icon="${selectorValue(icon)}" aria-hidden="true"></span> <strong class="result-reward-value" aria-hidden="true">${rewardItems}</strong>`;
+  return `<span class="result-reward-label" aria-hidden="true">${label}</span> <span class="result-reward-icon" data-reward-icon="${selectorValue(icon)}" aria-hidden="true"></span> <strong class="result-reward-value" aria-hidden="true">${rewardItems}</strong>${resultRewardHookMarkup(hook)}`;
 }
 
 export function resultHighlightMarkup(model) {
@@ -55,9 +65,11 @@ export function applyRebootResultView({ dom, model, rewardClaimActions = new Set
   resultNextGoal.dataset.resultGoalTone = model.nextGoal.tone;
   resultNextGoal.setAttribute('aria-label', `다음 목표 ${model.nextGoal.label}`);
   resultHighlights.innerHTML = resultHighlightMarkup(model);
-  resultReward.setAttribute('aria-label', `획득 ${formatResultRewards(model.rewards)}`);
+  const hookLabel = formatResultRewardHook(model.rewardHook);
+  resultReward.setAttribute('aria-label', `획득 ${formatResultRewards(model.rewards)}${hookLabel ? `. ${hookLabel}` : ''}`);
   resultReward.dataset.rewardTone = model.rewardTone;
-  resultReward.innerHTML = resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel);
+  resultReward.dataset.rewardHook = model.rewardHook?.beacon ?? 'none';
+  resultReward.innerHTML = resultRewardMarkup(model.rewards, model.rewardIcon, model.rewardLabel, model.rewardHook);
   resultRetryLabel.textContent = model.primaryAction.label;
   resultRetryButton.title = model.primaryAction.title ?? model.primaryAction.label;
   resultRetryButton.setAttribute('aria-label', model.primaryAction.ariaLabel ?? model.primaryAction.label);

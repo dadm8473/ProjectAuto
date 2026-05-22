@@ -46,6 +46,7 @@ test('result view module applies tactical goal, reward, and action state without
     rewardTone: 'standard',
     rewardIcon: 'soft_currency',
     rewardLabel: '획득',
+    rewardHook: { label: '강화 가능', status: '강화', title: '유닛 강화 가능', beacon: 'training' },
     primaryAction: { label: '미션 받기', action: 'claim-missions', title: '받을 미션 보상', ariaLabel: '받을 미션 보상 수령' },
     secondaryAction: { label: '다시 방어', action: 'retry', title: '보스 막타 작전', ariaLabel: '보스 막타 작전 시작' }
   };
@@ -58,8 +59,11 @@ test('result view module applies tactical goal, reward, and action state without
   assert.equal(dom.resultNextGoal.dataset.resultGoalTone, 'rescue');
   assert.equal(dom.resultNextGoal.attributes['aria-label'], '다음 목표 위험 80 직전 구원');
   assert.match(dom.resultHighlights.innerHTML, /data-result-medal="rescue"/);
-  assert.equal(dom.resultReward.attributes['aria-label'], '획득 보석 +20');
+  assert.equal(dom.resultReward.attributes['aria-label'], '획득 보석 +20. 다음 강화 가능 강화');
+  assert.equal(dom.resultReward.dataset.rewardHook, 'training');
   assert.match(dom.resultReward.innerHTML, /data-reward-icon="soft_currency"/);
+  assert.match(dom.resultReward.innerHTML, /class="result-reward-hook" data-reward-hook="training"/);
+  assert.match(dom.resultReward.innerHTML, /강화 가능/);
   assert.equal(dom.resultRetryLabel.textContent, '미션 받기');
   assert.equal(dom.resultRetryButton.dataset.resultOpen, 'claim-missions');
   assert.equal(dom.resultLobbyButton.dataset.resultOpen, 'retry');
