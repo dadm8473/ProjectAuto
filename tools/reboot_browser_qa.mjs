@@ -89,12 +89,12 @@ async function verifyInstallableShell(page) {
       })
     ]);
     const cacheKeys = await caches.keys();
-    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v128');
+    const cacheName = cacheKeys.find((cacheName) => cacheName === 'projectauto-reboot-shell-v130');
     const cache = cacheName ? await caches.open(cacheName) : null;
     const cached = {
       '/index.html': cache ? Boolean(await cache.match('/index.html')) : false,
-      '/src/client/styles.css?v=splash-start-frame1': cache
-        ? Boolean(await cache.match('/src/client/styles.css?v=splash-start-frame1'))
+      '/src/client/styles.css?v=mission-season-rails1': cache
+        ? Boolean(await cache.match('/src/client/styles.css?v=mission-season-rails1'))
         : false,
       '/src/client/app.js?v=start-cutin-focus1': cache
         ? Boolean(await cache.match('/src/client/app.js?v=start-cutin-focus1'))
@@ -219,6 +219,9 @@ async function verifyInstallableShell(page) {
       '/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-season-reward-board-v1.png?v=season-reward-board1'))
         : false,
+      '/src/client/assets/generated/reboot-meta-objective-rails.png?v=objective-rails1': cache
+        ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-objective-rails.png?v=objective-rails1'))
+        : false,
       '/src/client/assets/generated/reboot-meta-objective-command-slots-v1.png?v=objective-slots1': cache
         ? Boolean(await cache.match('/src/client/assets/generated/reboot-meta-objective-command-slots-v1.png?v=objective-slots1'))
         : false,
@@ -247,7 +250,7 @@ async function verifyInstallableShell(page) {
   assert.equal(status.supported, true, 'service worker and cache storage should be available');
   assert.equal(status.scope.endsWith('/'), true, `service worker scope should cover root: ${JSON.stringify(status)}`);
   assert.equal(status.scriptURL.endsWith('/sw.js'), true, `service worker script should be sw.js: ${JSON.stringify(status)}`);
-  assert.equal(status.cacheName, 'projectauto-reboot-shell-v128', `missing shell cache: ${JSON.stringify(status)}`);
+  assert.equal(status.cacheName, 'projectauto-reboot-shell-v130', `missing shell cache: ${JSON.stringify(status)}`);
   for (const [url, hit] of Object.entries(status.cached)) {
     assert.equal(hit, true, `shell cache missing ${url}: ${JSON.stringify(status)}`);
   }
@@ -1728,6 +1731,31 @@ async function assertSplashStartCtaGeneratedFrame(page) {
   assert.equal(surface.beforeBackgroundImage, 'none', `splash start CTA pseudo-frame still draws generic chrome: ${JSON.stringify(surface)}`);
 }
 
+async function assertObjectiveBoardRailBacking(page, selector, kind) {
+  const surface = await page.locator(selector).evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const before = getComputedStyle(node, '::before');
+    return {
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      beforeContent: before.content,
+      beforeBackgroundImage: before.backgroundImage,
+      beforeBackgroundSize: before.backgroundSize,
+      beforeBackgroundPosition: before.backgroundPosition,
+      beforeOpacity: Number.parseFloat(before.opacity),
+      beforePointerEvents: before.pointerEvents,
+      beforeZIndex: before.zIndex
+    };
+  });
+  assert.equal(surface.width >= 300 && surface.height >= 170, true, `${kind} board rail target is too small: ${JSON.stringify(surface)}`);
+  assert.notEqual(surface.beforeContent, 'none', `${kind} board rail pseudo layer is missing: ${JSON.stringify(surface)}`);
+  assert.match(surface.beforeBackgroundImage, /reboot-meta-objective-rails/, `${kind} board lacks generated objective rail backing: ${JSON.stringify(surface)}`);
+  assert.equal(surface.beforeBackgroundSize, '200% 100%', `${kind} board rail should use two generated atlas cells: ${JSON.stringify(surface)}`);
+  assert.equal(surface.beforeOpacity >= 0.72, true, `${kind} board rail is too faint to unify the board: ${JSON.stringify(surface)}`);
+  assert.equal(surface.beforePointerEvents, 'none', `${kind} board rail should not block taps: ${JSON.stringify(surface)}`);
+  assert.equal(surface.beforeZIndex, '0', `${kind} board rail should stay behind readable controls: ${JSON.stringify(surface)}`);
+}
+
 async function assertSplashSeasonBadge(page, label) {
   const badge = await page.locator('.splash-season').evaluate((node) => {
     const rect = node.getBoundingClientRect();
@@ -2542,6 +2570,7 @@ async function verifyShell(page, viewport) {
   await assertMetaStationHeader(page, '#missionsScreen', 'missions');
   await page.locator('#missionsList .mission-stamp-board').waitFor({ state: 'visible' });
   await assertMissionCommandBoard(page, 'missions');
+  await assertObjectiveBoardRailBacking(page, '#missionsScreen .mission-stamp-board', 'mission');
   await assertMetaCaptionPlates(page, '#missionsScreen .mission-board-copy span, #missionsScreen .mission-board-copy p', 'missions', 2);
   const missionBoardCopy = await page.locator('#missionsScreen .mission-board-copy').evaluate((node) => ({
     label: node.querySelector('span')?.textContent?.trim() ?? '',
@@ -2561,6 +2590,7 @@ async function verifyShell(page, viewport) {
   await assertMetaStationHeader(page, '#seasonScreen', 'season');
   await page.locator('#seasonList .season-track-board').waitFor({ state: 'visible' });
   await assertSeasonRewardBoard(page, 'season');
+  await assertObjectiveBoardRailBacking(page, '#seasonScreen .season-track-board', 'season');
   await assertMetaCaptionPlates(page, '#seasonScreen .season-board-copy span, #seasonScreen .season-board-copy p', 'season', 2);
   const seasonBoardCopy = await page.locator('#seasonScreen .season-board-copy').evaluate((node) => ({
     label: node.querySelector('span')?.textContent?.trim() ?? '',

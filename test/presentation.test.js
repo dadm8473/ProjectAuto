@@ -643,7 +643,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=splash-start-frame1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=mission-season-rails1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=splash-start-frame1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=hud-icon-meters1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-poster-crop1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-defer1">'), false);
@@ -1551,7 +1552,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=splash-start-frame1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=mission-season-rails1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=splash-start-frame1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=hud-icon-meters1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-poster-crop1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-defer1'), false);
@@ -2019,7 +2021,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=splash-start-frame1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=mission-season-rails1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -5675,6 +5677,33 @@ test('mission and season boards link the current objective with generated route 
     readySeason,
     /class="screen-card season-card" data-pass-tier="1"[^>]*data-objective-current="true"/
   );
+});
+
+test('mission and season top boards use generated objective rail backplates instead of floating islands', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+  const qa = await readFile('tools/reboot_browser_qa.mjs', 'utf8');
+  const combined = `${css}\n${qa}`;
+
+  for (const marker of [
+    '--meta-objective-rails: url("/src/client/assets/generated/reboot-meta-objective-rails.png?v=objective-rails1")',
+    '#missionsList .mission-stamp-board::before,\n#seasonList .season-track-board::before',
+    'background-image: var(--meta-objective-rails);',
+    'background-size: 200% 100%;',
+    '#missionsList .mission-stamp-board::before {',
+    'background-position: 0 0;',
+    '#seasonList .season-track-board::before {',
+    'background-position: 100% 0;',
+    'assertObjectiveBoardRailBacking(page, \'#missionsScreen .mission-stamp-board\', \'mission\')',
+    'assertObjectiveBoardRailBacking(page, \'#seasonScreen .season-track-board\', \'season\')'
+  ]) {
+    assert.equal(combined.includes(marker), true, marker);
+  }
+
+  const railBlock = cssRuleBlock(css, '#missionsList .mission-stamp-board::before,\n#seasonList .season-track-board::before');
+  assert.equal(railBlock.includes('z-index: 0;'), true);
+  assert.equal(railBlock.includes('pointer-events: none;'), true);
+  assert.equal(railBlock.includes('linear-gradient'), false);
+  assert.equal(railBlock.includes('background: rgba'), false);
 });
 
 test('mission contract board narrows its counter plate on compact phones', async () => {

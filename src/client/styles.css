@@ -92,6 +92,7 @@
   --meta-progress-bars: url("/src/client/assets/generated/reboot-meta-progress-bars.png?v=meta-progress");
   --meta-card-state-badges: url("/src/client/assets/generated/reboot-meta-card-state-badges.png?v=meta-card-states");
   --meta-claim-bursts: url("/src/client/assets/generated/reboot-meta-claim-bursts.png?v=claim-bursts");
+  --meta-objective-rails: url("/src/client/assets/generated/reboot-meta-objective-rails.png?v=objective-rails1");
   --meta-objective-status-stamps: url("/src/client/assets/generated/reboot-meta-objective-status-stamps.png?v=objective-stamps1");
   --meta-objective-command-slots: url("/src/client/assets/generated/reboot-meta-objective-command-slots-v1.png?v=objective-slots1");
   --combat-hud-frame: url("/src/client/assets/generated/reboot-combat-hud-frame.png");
@@ -3474,6 +3475,35 @@ body[data-app-screen="season"] .app-screen::after {
   z-index: 0;
   background: transparent;
   pointer-events: none;
+}
+
+#missionsList .mission-stamp-board::before,
+#seasonList .season-track-board::before {
+  content: "";
+  position: absolute;
+  left: clamp(14px, 4vw, 18px);
+  right: clamp(14px, 4vw, 18px);
+  top: 50%;
+  z-index: 0;
+  height: clamp(64px, 18vw, 82px);
+  transform: translateY(-50%);
+  background-image: var(--meta-objective-rails);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  background-position: 0 0;
+  opacity: 0.76;
+  pointer-events: none;
+  filter: saturate(1.12) brightness(1.06) drop-shadow(0 10px 18px rgba(0, 0, 0, 0.5));
+}
+
+#missionsList .mission-stamp-board::before {
+  background-position: 0 0;
+  top: 56%;
+}
+
+#seasonList .season-track-board::before {
+  background-position: 100% 0;
+  top: 46%;
 }
 
 .mission-board-copy,
