@@ -3771,6 +3771,61 @@ test('summon moment scene names the revealed unit and role', () => {
   assert.match(detailFont, /12px/, 'unit identity should stay readable on a phone-scale action scene');
 });
 
+test('summon moment scene stays as a unit reveal card with a generated unit portrait', () => {
+  const ctx = mockContext();
+  const units = image(1280, 256);
+  const momentCallouts = image(1170, 144);
+  drawRebootBattle(
+    ctx,
+    {
+      now: 12.45,
+      boards: {
+        p1: { danger: 0, units: [{ spriteKey: 'slow_coil' }] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [{ enemyId: 'quick_noise', spriteKey: 'quick_noise' }],
+      events: [{ type: 'summon', at: 10.1, playerId: 'p1', unitId: 'slow_coil' }],
+      effects: []
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      units,
+      enemies: image(1024, 256),
+      board: image(1280, 256),
+      vfx: image(1280, 256),
+      momentCallouts,
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const sceneDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === momentCallouts
+      && command.args[7] >= 328
+      && command.args[8] >= 122
+  ));
+  const portraitDraw = ctx.commands.find((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === units
+      && command.args[1] === 512
+      && command.args[5] >= 38
+      && command.args[5] <= 108
+      && command.args[6] >= 292
+      && command.args[6] <= 390
+      && command.args[7] >= 64
+      && command.args[8] >= 64
+  ));
+
+  assert.ok(sceneDraw, 'late summon feedback should stay as a premium generated reveal card');
+  assert.ok(portraitDraw, 'summon reveal card should show the actual generated unit portrait');
+  assert.equal(
+    ctx.commands.some((command) => command.type === 'fillText' && command.args[0] === '느림 코일 · 제어/감속'),
+    true,
+    'unit reveal card should still explain why the summoned unit matters'
+  );
+});
+
 test('summon moment scene explains control units as slow value, not only role taxonomy', () => {
   const ctx = mockContext();
   drawRebootBattle(

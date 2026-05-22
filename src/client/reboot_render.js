@@ -323,8 +323,8 @@ const PARTNER_ASSIST_PINGS = {
   rescue: { index: 1, icon: 'rescue_action', body: '구원 지원' }
 };
 
-const MOMENT_CALLOUT_DURATION = 1.85;
-const MOMENT_CALLOUT_FADE_SECONDS = 0.5;
+const MOMENT_CALLOUT_DURATION = 2.72;
+const MOMENT_CALLOUT_FADE_SECONDS = 0.62;
 const PARTNER_ASSIST_PING_DURATION = 2.4;
 const PARTNER_READY_PING_START = 0.78;
 const PARTNER_READY_PING_END = 2.7;
@@ -1919,30 +1919,58 @@ function drawCombatMomentCallout(ctx, state, assets = {}, localBoardId = 'p1') {
 
   const alpha = momentCalloutAlpha(state, event);
   const rise = (1 - alpha) * 6;
-  const x = 38;
-  const w = 314;
-  const h = 116;
+  const x = event.type === 'summon' ? 26 : 38;
+  const w = event.type === 'summon' ? 338 : 314;
+  const h = event.type === 'summon' ? 128 : 116;
   const y = momentCalloutBaseY(state, localBoardId) - rise;
 
   const drewMomentCallout = drawMomentCalloutPanel(ctx, assets.momentCallouts, meta.index, x, y, w, h, alpha);
   if (!drewMomentCallout && !drawActionStampPanel(ctx, assets.actionStamps, meta.index, x, y, w, h, alpha)) return;
+  const summonUnit = event.type === 'summon' ? REBOOT_UNITS[event.unitIdResult ?? event.unitId] : null;
+  const drewSummonPortrait = summonUnit
+    ? drawSummonMomentPortrait(ctx, assets, summonUnit, x, y, alpha)
+    : false;
+  const copyX = event.type === 'summon' && drewSummonPortrait ? x + 134 : x + 124;
   ctx.save();
-  drawAtlasSprite(ctx, assets, 'ui', meta.icon, x + 82, y + 58, 34, alpha);
+  if (!drewSummonPortrait) drawAtlasSprite(ctx, assets, 'ui', meta.icon, x + 82, y + 58, 34, alpha);
   ctx.globalAlpha *= alpha;
   ctx.fillStyle = '#fff7dc';
   ctx.shadowColor = meta.index === 1 ? '#f4c95d' : '#58d7ff';
   ctx.shadowBlur = 15;
   ctx.font = '950 18px system-ui';
-  ctx.fillText(meta.title, x + 124, y + 57);
+  ctx.fillText(meta.title, copyX, y + 57);
   const detail = momentCalloutDetail(event, meta);
   if (detail) {
     ctx.shadowColor = '#071314';
     ctx.shadowBlur = 6;
     ctx.fillStyle = 'rgba(255, 248, 218, 0.94)';
     ctx.font = '850 12px system-ui';
-    ctx.fillText(detail, x + 124, y + 76);
+    ctx.fillText(detail, copyX, y + 78);
   }
   ctx.restore();
+}
+
+function drawSummonMomentPortrait(ctx, assets, unit, x, y, alpha = 1) {
+  const cx = x + 72;
+  const cy = y + 64;
+  drawUnitActivationRing(ctx, assets, cx, cy + 9, 66, alpha * 0.52, true);
+  const drewUnit = drawAtlasSprite(ctx, assets, 'units', unit.spriteKey, cx, cy, 78, alpha);
+  if (!drewUnit) return false;
+
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.fillStyle = 'rgba(12, 26, 27, 0.72)';
+  ctx.shadowColor = UNIT_COLORS[unit.spriteKey] ?? '#58d7ff';
+  ctx.shadowBlur = 8;
+  roundedRect(ctx, x + 41, y + 91, 62, 18, 7);
+  ctx.fill();
+  ctx.fillStyle = '#fff7dc';
+  ctx.shadowBlur = 5;
+  ctx.font = '850 10px system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText(UNIT_ROLE_LABELS[unit.role] ?? '유닛', x + 72, y + 104);
+  ctx.restore();
+  return true;
 }
 
 function momentCalloutDetail(event, meta) {
