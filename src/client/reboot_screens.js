@@ -270,6 +270,10 @@ function passiveCardState(label, state = 'locked', displayLabel = label) {
   return passiveCardStateMarkup(label, state, displayLabel);
 }
 
+function passiveObjectiveState(label, state = 'locked') {
+  return passiveCardStateMarkup(label, state, '', 'objective-passive-icon');
+}
+
 function rewardGrantLabel(grant = {}) {
   if (grant.gems) return `${grant.gems} 보석`;
   if (grant.cosmetic) return '외형';
@@ -901,17 +905,16 @@ export function buildMissionScreen(profile = {}) {
     const actionLabel = objectiveStateLabel(stampState);
     const rewardLabel = rewardGrantLabel(mission.reward);
     const action = received
-      ? passiveCardState('받음', 'owned')
+      ? passiveObjectiveState('받음', 'owned')
       : done
-        ? passiveCardState('수령 가능', 'ready', '준비')
-        : passiveCardState('진행중', 'locked', '대기');
+        ? passiveObjectiveState('수령 가능', 'ready')
+        : passiveObjectiveState('진행중', 'locked');
     return `
     <article class="screen-card mission-card" data-mission="${mission.id}" data-owned="${received}" data-objective-state="${stampState}" aria-label="${mission.title} · 미션 진행 ${progress}/${mission.target} · 보상 ${rewardLabel} · ${actionLabel}">
       ${cardStateBadge(cardState)}
       <span class="reward-token mission-reward-token" data-reward-icon="${rewardIconForGrant(mission.reward, 'mission')}"></span>
       <div class="card-copy">
-        <span class="role-pill">미션</span>
-        <strong>${mission.title}</strong>
+        <strong class="objective-title-sr">${mission.title}</strong>
         ${objectiveReadout(progress, mission.target)}
         <p class="objective-detail">${mission.goal}</p>
         ${buildMetaProgress('mission', progress, mission.target, `미션 진행 ${progress}/${mission.target}`)}
@@ -921,7 +924,7 @@ export function buildMissionScreen(profile = {}) {
     </article>
   `;
   }).join('');
-  return `${board}<section class="meta-progress-board" data-progress-board="missions" data-board-layout="mission-contracts">${missions}</section>`;
+  return `${board}<section class="meta-progress-board" data-progress-board="missions" data-board-layout="mission-contracts" data-intel-density="stamp">${missions}</section>`;
 }
 
 function seasonRewardLabel(grant = {}) {
@@ -949,18 +952,17 @@ export function buildSeasonScreen(profile = {}) {
     const actionLabel = objectiveStateLabel(stampState);
     const rewardLabel = seasonRewardLabel(tier.grant);
     const action = received
-      ? passiveCardState('받음', 'owned')
+      ? passiveObjectiveState('받음', 'owned')
       : done
-        ? passiveCardState('수령 가능', 'ready', '준비')
-        : passiveCardState('진행중', 'locked', '대기');
+        ? passiveObjectiveState('수령 가능', 'ready')
+        : passiveObjectiveState('진행중', 'locked');
     const currentAttrs = index === currentIndex ? ' data-objective-current="true" aria-current="step"' : '';
     return `
     <article class="screen-card season-card" data-pass-tier="${index}" data-owned="${received}" data-objective-state="${stampState}"${currentAttrs} aria-label="${index + 1}단계 · 시즌 경험치 ${progress}/${tier.xp} · 보상 ${rewardLabel} · ${actionLabel}">
       ${cardStateBadge(cardState)}
       <span class="reward-token season-reward-token" data-reward-icon="${rewardIconForGrant(tier.grant, 'season')}"></span>
       <div class="card-copy">
-        <span class="role-pill">시즌</span>
-        <strong>${index + 1}단계 · ${rewardGrantCompactLabel(tier.grant)}</strong>
+        <strong class="objective-title-sr">${index + 1}단계 · ${rewardGrantCompactLabel(tier.grant)}</strong>
         ${objectiveReadout(progress, tier.xp)}
         <p class="objective-detail">${progress}/${tier.xp} 경험치</p>
         ${buildMetaProgress('season', progress, tier.xp, `시즌 경험치 ${progress}/${tier.xp}`)}
@@ -970,7 +972,7 @@ export function buildSeasonScreen(profile = {}) {
     </article>
   `;
   }).join('');
-  return `${board}<section class="meta-progress-board" data-progress-board="season" data-board-layout="season-pass-tiers">${tiers}</section>`;
+  return `${board}<section class="meta-progress-board" data-progress-board="season" data-board-layout="season-pass-tiers" data-intel-density="stamp">${tiers}</section>`;
 }
 
 export function buildRebootResultModel({ result, rewards = [], profile, seedName } = {}) {

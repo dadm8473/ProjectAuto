@@ -120,7 +120,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_hud.js?v=board-copy1'",
     "from './reboot_render.js?v=route-core1'",
     "from './reboot_result_ui.js?v=result-ui2'",
-    "from './reboot_screens.js?v=objective-focus1'",
+    "from './reboot_screens.js?v=objective-stamps1'",
     "from './reboot_online.js'"
   ]) {
     assert.equal(app.includes(marker), true, marker);
@@ -642,7 +642,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-flow1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-flow1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=combat-meter-sockets-v2">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-shelf-nameplates1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-command-board1">'), false);
@@ -683,7 +684,6 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-rails1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-verdict1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=result-outcome-aura1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=first-summon-console1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=nav-selector1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=cooldown-label1">'), false);
@@ -762,7 +762,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=route-core1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-stamps1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=route-core1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-focus1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=combat-meter-sockets-v2"></script>'), false);
@@ -817,7 +818,6 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=first-summon-beacon1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=result-capsules1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=pre-summon-cue1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-stamps1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-label1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=action-stamps1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=enemy-impact-bursts1"></script>'), false);
@@ -874,7 +874,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_render.js?v=player-tray1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-cosmetic1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=season-current1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=objective-focus1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), true);
+  assert.equal(app.includes("from './reboot_screens.js?v=objective-focus1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=board-copy1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=shop-chips1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=pending-copy1'"), false);
@@ -891,7 +892,6 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(app.includes("from './reboot_screens.js?v=lobby-focus1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=shelf-price1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-item-status1'"), false);
-  assert.equal(app.includes("from './reboot_screens.js?v=objective-stamps1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=post-reward-route1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-shelf-grid1'"), false);
   assert.equal(app.includes("from './reboot_screens.js?v=meta-badges1'"), false);
@@ -1527,7 +1527,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=reward-flow1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=objective-stamps1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=reward-flow1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=combat-meter-sockets-v2'), false);
   assert.equal(html.includes('/src/client/styles.css?v=meta-shelf-nameplates1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=result-command-board1'), false);
@@ -1990,7 +1991,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=reward-flow1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -5100,6 +5101,15 @@ test('mission and season rows compress into reward-track slots instead of large 
   ]) {
     assert.equal(boardTitleBlock.includes(marker), true, marker);
   }
+  const hiddenObjectiveTitleBlock = cssRuleBlock(css, '.meta-progress-board .objective-title-sr');
+  for (const marker of [
+    'position: absolute;',
+    'width: 1px;',
+    'height: 1px;',
+    'clip: rect(0 0 0 0);'
+  ]) {
+    assert.equal(hiddenObjectiveTitleBlock.includes(marker), true, marker);
+  }
 
   const progressBlock = cssRuleBlock(css, '.meta-progress-board .meta-progress');
   assert.equal(progressBlock.includes('width: min(100%, 148px);'), true);
@@ -5493,9 +5503,12 @@ test('mission and season reward rows avoid duplicate claim buttons below the top
 
   assert.equal((missions.match(/data-mission-claim="/g) ?? []).length, 1);
   assert.equal((season.match(/data-pass-claim="/g) ?? []).length, 1);
-  assert.equal(missions.includes('data-passive-state="ready" aria-label="수령 가능">준비</span>'), true);
-  assert.equal(season.includes('data-passive-state="ready" aria-label="수령 가능">준비</span>'), true);
+  assert.equal(missions.includes('class="card-passive-state objective-passive-icon" data-passive-state="ready" aria-label="수령 가능"></span>'), true);
+  assert.equal(season.includes('class="card-passive-state objective-passive-icon" data-passive-state="ready" aria-label="수령 가능"></span>'), true);
+  assert.equal(missions.includes('data-passive-state="ready" aria-label="수령 가능">준비</span>'), false);
+  assert.equal(season.includes('data-passive-state="ready" aria-label="수령 가능">준비</span>'), false);
   assert.equal(css.includes('.meta-progress-board .card-passive-state[data-passive-state="ready"]'), true);
+  assert.equal(css.includes('.meta-progress-board .objective-passive-icon'), true);
   assert.equal(css.includes('background-position: 0 0;'), true);
 });
 
@@ -5674,6 +5687,10 @@ test('mission and season rows show compact generated progress readouts inside ea
   ]) {
     assert.equal(copyBlock.includes(marker), true, marker);
   }
+  const stampDensityBlock = cssRuleBlock(css, '.meta-progress-board[data-intel-density="stamp"] .card-copy');
+  assert.equal(stampDensityBlock.includes('grid-template-rows: minmax(22px, auto) 16px;'), true);
+  assert.equal(missions.includes('data-intel-density="stamp"'), true);
+  assert.equal(season.includes('data-intel-density="stamp"'), true);
 
   const readoutBlock = cssRuleBlock(css, '.meta-progress-board .objective-readout');
   for (const marker of [
@@ -5742,11 +5759,11 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     "return { ok: false, reason: '전력이 부족합니다.' };",
     "from '../shared/game.js?v=retry-context1'",
     "from './reboot_actions.js?v=combat-meter2'",
-    "from './reboot_screens.js?v=objective-focus1'",
+    "from './reboot_screens.js?v=objective-stamps1'",
     "from './reboot_game.js?v=retry-context1'",
     "from '../shared/game.js?v=retry-context1'",
     '/src/client/reboot_actions.js?v=combat-meter2',
-    '/src/client/reboot_screens.js?v=objective-focus1',
+    '/src/client/reboot_screens.js?v=objective-stamps1',
     '/src/shared/game.js?v=retry-context1',
     '/src/shared/reboot_game.js?v=retry-context1'
   ]) {
@@ -5763,6 +5780,8 @@ test('combat summon resource is named 전력 so it is not confused with the summ
     '/src/client/reboot_actions.js?v=merge-reason1',
     '/src/client/reboot_screens.js?v=lobby-focus1',
     '/src/client/reboot_screens.js?v=boss-vitality1',
+    "from './reboot_screens.js?v=objective-focus1'",
+    '/src/client/reboot_screens.js?v=objective-focus1',
     "\n  '/src/shared/game.js',",
     "\n  '/src/shared/reboot_game.js',"
   ]) {

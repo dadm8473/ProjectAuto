@@ -575,7 +575,7 @@ test('inactive meta states render as passive chips instead of disabled fake acti
 
   for (const html of [collection, shop, missions, season]) {
     assert.equal(html.includes('disabled>'), false);
-    assert.equal(html.includes('class="card-passive-state"'), true);
+    assert.equal(html.includes('card-passive-state'), true);
   }
 
   assert.equal((collection.match(/<button type="button" data-unit-upgrade=/g) ?? []).length, 0);
@@ -761,8 +761,8 @@ test('season progress board uses compact reward names for phone slots', () => {
   const season = buildSeasonScreen({ xp: 0, claimedPassTiers: [] });
 
   assert.equal(season.includes('2단계 · 외형'), true);
-  assert.equal(season.includes('<strong>1단계 · 20보석</strong>'), true);
-  assert.equal(season.includes('<strong>3단계 · 80보석</strong>'), true);
+  assert.equal(season.includes('<strong class="objective-title-sr">1단계 · 20보석</strong>'), true);
+  assert.equal(season.includes('<strong class="objective-title-sr">3단계 · 80보석</strong>'), true);
   assert.equal(season.includes('<strong>3단계 · 80 보석</strong>'), false);
   assert.equal(season.includes('외형 보상'), false);
 });
@@ -827,7 +827,8 @@ test('ready mission rows use status stamps while the top board owns the claim bu
 
   assert.equal((missions.match(/data-mission-claim="/g) ?? []).length, 1);
   assert.equal(missions.includes('class="featured-objective-action" data-mission-claim="first-run"'), true);
-  assert.equal(missions.includes('class="card-passive-state" data-passive-state="ready" aria-label="수령 가능">준비</span>'), true);
+  assert.equal(missions.includes('class="card-passive-state objective-passive-icon" data-passive-state="ready" aria-label="수령 가능"></span>'), true);
+  assert.equal(missions.includes('aria-label="수령 가능">준비</span>'), false);
 });
 
 test('mission board uses a passive generated command when no reward is ready', () => {
@@ -887,7 +888,8 @@ test('ready season rows use status stamps while the top board owns the claim but
 
   assert.equal((season.match(/data-pass-claim="/g) ?? []).length, 1);
   assert.equal(season.includes('class="featured-objective-action" data-pass-claim="0"'), true);
-  assert.equal(season.includes('class="card-passive-state" data-passive-state="ready" aria-label="수령 가능">준비</span>'), true);
+  assert.equal(season.includes('class="card-passive-state objective-passive-icon" data-passive-state="ready" aria-label="수령 가능"></span>'), true);
+  assert.equal(season.includes('aria-label="수령 가능">준비</span>'), false);
 });
 
 test('season board uses a passive generated command when no reward is ready', () => {
@@ -1018,7 +1020,8 @@ test('mission screen renders profile progress and claim states', () => {
   assert.equal(missions.includes('data-reward-icon="soft_currency"'), true);
   assert.equal(missions.includes('첫 작전 완료'), true);
   assert.equal(missions.includes('유닛 강화'), true);
-  assert.equal(missions.includes('>받음<'), true);
+  assert.equal(missions.includes('aria-label="받음"'), true);
+  assert.equal(missions.includes('>받음<'), false);
   assert.equal(missions.includes('>받기<'), true);
   assert.equal(missions.includes('>수령</button>'), false);
 });
@@ -1042,6 +1045,29 @@ test('mission and season objective rows keep readable labels while reducing visi
   assert.equal(readySeason.includes('data-pass-claim="1" aria-label="2단계 시즌 보상 외형 수령">받기</button>'), true);
   assert.equal(missions.includes('class="objective-detail"'), true);
   assert.equal(season.includes('class="objective-cost shop-price"'), true);
+});
+
+test('mission and season lower objective rows collapse into passive intel stamps', () => {
+  const missions = buildMissionScreen({
+    processedRuns: ['run-1'],
+    unitLevels: { spark_pin: 2 },
+    unlocks: [],
+    claimedMissions: ['first-run']
+  });
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
+
+  assert.equal(missions.includes('class="meta-progress-board" data-progress-board="missions" data-board-layout="mission-contracts" data-intel-density="stamp"'), true);
+  assert.equal(season.includes('class="meta-progress-board" data-progress-board="season" data-board-layout="season-pass-tiers" data-intel-density="stamp"'), true);
+  assert.equal((missions.match(/class="objective-title-sr"/g) ?? []).length, 3);
+  assert.equal((season.match(/class="objective-title-sr"/g) ?? []).length, 4);
+  assert.equal(missions.includes('<span class="role-pill">미션</span>'), false);
+  assert.equal(season.includes('<span class="role-pill">시즌</span>'), false);
+  assert.equal(missions.includes('class="card-passive-state" data-passive-state="locked" aria-label="진행중">대기</span>'), false);
+  assert.equal(season.includes('class="card-passive-state" data-passive-state="locked" aria-label="진행중">대기</span>'), false);
+  assert.equal(missions.includes('class="card-passive-state" data-passive-state="ready" aria-label="수령 가능">준비</span>'), false);
+  assert.equal(season.includes('class="card-passive-state" data-passive-state="ready" aria-label="수령 가능">준비</span>'), false);
+  assert.equal(missions.includes('class="card-passive-state objective-passive-icon" data-passive-state="locked" aria-label="진행중"></span>'), true);
+  assert.equal(season.includes('class="card-passive-state objective-passive-icon" data-passive-state="locked" aria-label="진행중"></span>'), true);
 });
 
 test('meta progression surfaces render compact visual progress bars', () => {
@@ -1117,8 +1143,10 @@ test('season screen renders pass tiers from profile XP and claim states', () => 
   assert.equal(season.includes('data-reward-icon="cosmetic_shard"'), true);
   assert.equal(season.includes('60 경험치'), true);
   assert.equal(season.includes('160 경험치'), true);
-  assert.equal(season.includes('>받음<'), true);
-  assert.equal(season.includes('>대기<'), true);
+  assert.equal(season.includes('aria-label="받음"'), true);
+  assert.equal(season.includes('aria-label="진행중"'), true);
+  assert.equal(season.includes('>받음<'), false);
+  assert.equal(season.includes('class="card-passive-state" data-passive-state="locked" aria-label="진행중">대기</span>'), false);
   assert.equal(season.includes('>진행중<'), false);
 });
 
