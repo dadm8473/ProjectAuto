@@ -801,6 +801,35 @@ test('mission board exposes one dominant claim command when a reward is ready', 
   assert.equal(missions.indexOf('class="mission-board-command"') < missions.indexOf('class="meta-progress-board"'), true);
 });
 
+test('mission board promotes one readable next condition instead of only a reward count', () => {
+  const locked = buildMissionScreen({ processedRuns: [], claimedMissions: [] });
+  const ready = buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] });
+  const claimed = buildMissionScreen({
+    processedRuns: ['run-1'],
+    unitLevels: { spark_pin: 2 },
+    unlocks: ['mythic-aura'],
+    claimedMissions: ['first-run', 'train-unit', 'unlock-cosmetic']
+  });
+
+  assert.equal(locked.includes('class="objective-focus" data-focus-kind="mission" data-focus-state="locked"'), true);
+  assert.equal(locked.includes('<span>다음 목표</span>'), true);
+  assert.equal(locked.includes('<strong>첫 작전 완료</strong>'), true);
+  assert.equal(locked.includes('<p>전투 1회 완료 · 0/1</p>'), true);
+  assert.equal(ready.includes('data-focus-kind="mission" data-focus-state="ready"'), true);
+  assert.equal(ready.includes('<span>받을 보상</span>'), true);
+  assert.equal(ready.includes('<p>20보석 · 1/1</p>'), true);
+  assert.equal(claimed.includes('data-focus-kind="mission" data-focus-state="complete"'), true);
+  assert.equal(claimed.includes('<strong>모든 미션 완료</strong>'), true);
+});
+
+test('ready mission rows use status stamps while the top board owns the claim button', () => {
+  const missions = buildMissionScreen({ processedRuns: ['run-1'], claimedMissions: [] });
+
+  assert.equal((missions.match(/data-mission-claim="/g) ?? []).length, 1);
+  assert.equal(missions.includes('class="featured-objective-action" data-mission-claim="first-run"'), true);
+  assert.equal(missions.includes('class="card-passive-state" data-passive-state="ready" aria-label="수령 가능">준비</span>'), true);
+});
+
 test('mission board uses a passive generated command when no reward is ready', () => {
   const missions = buildMissionScreen({ processedRuns: [], claimedMissions: [] });
 
@@ -834,6 +863,31 @@ test('season board exposes one dominant claim command when a reward is ready', (
   assert.equal(season.includes('class="reward-token board-feature-reward" data-reward-icon="season_progress"'), true);
   assert.equal(season.includes('class="featured-objective-action" data-pass-claim="0"'), true);
   assert.equal(season.indexOf('class="season-board-command"') < season.indexOf('class="meta-progress-board"'), true);
+});
+
+test('season board promotes the current pass target as the largest condition', () => {
+  const locked = buildSeasonScreen({ xp: 80, claimedPassTiers: [0] });
+  const ready = buildSeasonScreen({ xp: 80, claimedPassTiers: [] });
+  const complete = buildSeasonScreen({ xp: 520, claimedPassTiers: [0, 1, 2, 3] });
+
+  assert.equal(locked.includes('class="objective-focus" data-focus-kind="season" data-focus-state="locked"'), true);
+  assert.equal(locked.includes('<span>다음 보상</span>'), true);
+  assert.equal(locked.includes('<strong>2단계 · 외형</strong>'), true);
+  assert.equal(locked.includes('<p>80/160 XP</p>'), true);
+  assert.equal(ready.includes('data-focus-kind="season" data-focus-state="ready"'), true);
+  assert.equal(ready.includes('<span>받을 보상</span>'), true);
+  assert.equal(ready.includes('<strong>1단계 · 20보석</strong>'), true);
+  assert.equal(ready.includes('<p>20보석 · 60/60 XP</p>'), true);
+  assert.equal(complete.includes('data-focus-kind="season" data-focus-state="complete"'), true);
+  assert.equal(complete.includes('<strong>시즌 완료</strong>'), true);
+});
+
+test('ready season rows use status stamps while the top board owns the claim button', () => {
+  const season = buildSeasonScreen({ xp: 80, claimedPassTiers: [] });
+
+  assert.equal((season.match(/data-pass-claim="/g) ?? []).length, 1);
+  assert.equal(season.includes('class="featured-objective-action" data-pass-claim="0"'), true);
+  assert.equal(season.includes('class="card-passive-state" data-passive-state="ready" aria-label="수령 가능">준비</span>'), true);
 });
 
 test('season board uses a passive generated command when no reward is ready', () => {
@@ -878,7 +932,8 @@ test('mission and season top boards keep large copy numeric while preserving ful
   );
   assert.equal(missions.includes('<span>수령</span>'), true);
   assert.equal(missions.includes('<span>보상</span>'), false);
-  assert.equal(missions.includes('<span>받을 보상</span>'), false);
+  assert.equal(missions.includes('class="objective-focus" data-focus-kind="mission" data-focus-state="ready"'), true);
+  assert.equal(missions.includes('<span>받을 보상</span>'), true);
   assert.equal(missions.includes('<strong>1</strong>'), true);
   assert.equal(missions.includes('<p>받기</p>'), true);
   assert.equal(missions.includes('<p>수령 가능</p>'), false);

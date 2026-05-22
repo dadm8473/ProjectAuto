@@ -361,6 +361,45 @@ function missionCardState(state) {
   return 'locked';
 }
 
+function objectiveFocusMarkup(kind, focus) {
+  return `
+      <div class="objective-focus" data-focus-kind="${kind}" data-focus-state="${focus.state}" aria-label="${focus.label} · ${focus.title} · ${focus.detail}">
+        <span>${focus.label}</span>
+        <strong>${focus.title}</strong>
+        <p>${focus.detail}</p>
+      </div>
+    `;
+}
+
+function missionFocusModel(missionStates) {
+  const ready = missionStates.find(({ state }) => state === 'ready');
+  if (ready) {
+    return {
+      state: 'ready',
+      label: '받을 보상',
+      title: ready.mission.title,
+      detail: `${rewardGrantCompactLabel(ready.mission.reward)} · ${ready.progress}/${ready.mission.target}`
+    };
+  }
+
+  const next = missionStates.find(({ state }) => state !== 'claimed');
+  if (next) {
+    return {
+      state: 'locked',
+      label: '다음 목표',
+      title: next.mission.title,
+      detail: `${next.mission.goal} · ${next.progress}/${next.mission.target}`
+    };
+  }
+
+  return {
+    state: 'complete',
+    label: '완료',
+    title: '모든 미션 완료',
+    detail: '보상 수령 완료'
+  };
+}
+
 function buildFeaturedMissionCommand(featuredMission) {
   if (!featuredMission) {
     return `
@@ -389,6 +428,7 @@ function buildMissionStampBoard(profile = {}, claimed = new Set()) {
     return { mission, progress, state };
   });
   const featuredMission = missionStates.find(({ state }) => state === 'ready')?.mission;
+  const focus = missionFocusModel(missionStates);
   const boardState = featuredMission ? 'ready' : 'locked';
   const stamps = missionStates.map(({ mission, progress, state }) => {
     return `
@@ -405,6 +445,7 @@ function buildMissionStampBoard(profile = {}, claimed = new Set()) {
         <strong>${claimable}</strong>
         <p>${boardStatus}</p>
       </div>
+      ${objectiveFocusMarkup('mission', focus)}
       ${buildFeaturedMissionCommand(featuredMission)}
       <div class="mission-stamp-grid">${stamps}</div>
     </section>
@@ -421,6 +462,35 @@ function seasonCardState(state) {
   if (state === 'claimed') return 'owned';
   if (state === 'ready') return 'ready';
   return 'locked';
+}
+
+function seasonFocusModel(tierStates, xp) {
+  const ready = tierStates.find(({ state }) => state === 'ready');
+  if (ready) {
+    return {
+      state: 'ready',
+      label: '받을 보상',
+      title: `${ready.index + 1}단계 · ${rewardGrantCompactLabel(ready.tier.grant)}`,
+      detail: `${rewardGrantCompactLabel(ready.tier.grant)} · ${Math.min(xp, ready.tier.xp)}/${ready.tier.xp} XP`
+    };
+  }
+
+  const current = tierStates.find(({ state }) => state !== 'claimed');
+  if (current) {
+    return {
+      state: 'locked',
+      label: '다음 보상',
+      title: `${current.index + 1}단계 · ${rewardGrantCompactLabel(current.tier.grant)}`,
+      detail: `${Math.min(xp, current.tier.xp)}/${current.tier.xp} XP`
+    };
+  }
+
+  return {
+    state: 'complete',
+    label: '완료',
+    title: '시즌 완료',
+    detail: '모든 보상 수령'
+  };
 }
 
 function buildFeaturedSeasonCommand(featuredTier) {
@@ -452,6 +522,7 @@ function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
   const featuredTier = tierStates.find(({ state }) => state === 'ready');
   const currentTier = tierStates.find(({ state }) => state !== 'claimed');
   const currentIndex = currentTier?.index ?? -1;
+  const focus = seasonFocusModel(tierStates, xp);
   const rewardStatus = claimable > 0 ? CLAIM_ACTION_LABEL : currentTier ? `다음 ${currentTier.tier.xp}` : '완료';
   const boardState = featuredTier ? 'ready' : 'locked';
   const nodes = tierStates.map(({ tier, index, state }) => {
@@ -472,6 +543,7 @@ function buildSeasonTrackBoard(profile = {}, claimed = new Set()) {
         <strong>${xp}</strong>
         <p>${rewardStatus}</p>
       </div>
+      ${objectiveFocusMarkup('season', focus)}
       ${buildFeaturedSeasonCommand(featuredTier)}
       <div class="season-track-rail">${nodes}</div>
     </section>
@@ -831,7 +903,7 @@ export function buildMissionScreen(profile = {}) {
     const action = received
       ? passiveCardState('받음', 'owned')
       : done
-        ? `<button type="button" data-mission-claim="${mission.id}" aria-label="${mission.title} 보상 ${rewardLabel} 수령">${CLAIM_ACTION_LABEL}</button>`
+        ? passiveCardState('수령 가능', 'ready', '준비')
         : passiveCardState('진행중', 'locked', '대기');
     return `
     <article class="screen-card mission-card" data-mission="${mission.id}" data-owned="${received}" data-objective-state="${stampState}" aria-label="${mission.title} · 미션 진행 ${progress}/${mission.target} · 보상 ${rewardLabel} · ${actionLabel}">
@@ -879,7 +951,7 @@ export function buildSeasonScreen(profile = {}) {
     const action = received
       ? passiveCardState('받음', 'owned')
       : done
-        ? `<button type="button" data-pass-claim="${index}" aria-label="${index + 1}단계 시즌 보상 ${rewardLabel} 수령">${CLAIM_ACTION_LABEL}</button>`
+        ? passiveCardState('수령 가능', 'ready', '준비')
         : passiveCardState('진행중', 'locked', '대기');
     const currentAttrs = index === currentIndex ? ' data-objective-current="true" aria-current="step"' : '';
     return `
