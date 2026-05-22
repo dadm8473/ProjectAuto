@@ -642,7 +642,7 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-footer-shroud2">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-state-glow1">'), true);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-defer1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-select1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), false);
@@ -1544,7 +1544,7 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=meta-footer-shroud2'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=shelf-state-glow1'), true);
   assert.equal(html.includes('/src/client/styles.css?v=lobby-defer1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=objective-stamps1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=reward-flow1'), false);
@@ -2010,7 +2010,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=meta-footer-shroud2">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=shelf-state-glow1">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }
@@ -2424,6 +2424,26 @@ test('meta shelf tiles use generated status overlays instead of catalog cells', 
   const overlayBlock = css.slice(css.indexOf('.meta-shelf-grid .unit-card::before,'), css.indexOf('.meta-shelf-grid .card-state-badge'));
   assert.equal(overlayBlock.includes('background-image: none;'), false);
   assert.equal(overlayBlock.includes('linear-gradient'), false);
+});
+
+test('meta shelf selected tiles use a full generated state glow instead of only a tiny badge', async () => {
+  const css = await readFile('src/client/styles.css', 'utf8');
+
+  for (const marker of [
+    '.meta-shelf-grid .shelf-select-pad::after',
+    'background-image: var(--meta-item-status-overlays);',
+    'mix-blend-mode: screen;',
+    '.meta-shelf-grid [data-shelf-selected="true"] .shelf-select-pad::after',
+    '.meta-shelf-grid [data-tile-state="locked"][data-shelf-selected="true"] .shelf-select-pad::after',
+    '.meta-shelf-grid .shop-card[data-tile-state="owned"][data-shelf-selected="true"] .shelf-select-pad::after',
+    '.meta-shelf-grid .shop-card[data-tile-state="equipped"][data-shelf-selected="true"] .shelf-select-pad::after'
+  ]) {
+    assert.equal(css.includes(marker), true, marker);
+  }
+
+  const selectPadBlock = css.slice(css.indexOf('.meta-shelf-grid .shelf-select-pad::after'), css.indexOf('.meta-shelf-grid [data-shelf-selected="true"] .shelf-select-pad::before'));
+  assert.equal(selectPadBlock.includes('linear-gradient'), false);
+  assert.equal(selectPadBlock.includes('box-shadow'), false);
 });
 
 test('result screen uses generated status badges for win and loss peaks', async () => {
