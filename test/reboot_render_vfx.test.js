@@ -869,6 +869,48 @@ test('opening combat paints generated route beacons along the enemy path before 
   assert.equal(routeBeacons.length >= 3, true, 'expected generated route beacons to show the incoming path before the first summon');
 });
 
+test('opening route beacons appear as soon as the operation intro clears', () => {
+  const ctx = mockContext();
+  const enemyTrackTrails = image(1024, 128);
+
+  drawRebootBattle(
+    ctx,
+    {
+      mode: 'bot',
+      now: 0.96,
+      players: [
+        { id: 'p1', bot: false },
+        { id: 'p2', bot: true }
+      ],
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      enemyTrackTrails,
+      firstSummonBeacon: image(512, 512),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const routeBeacons = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === enemyTrackTrails
+      && command.args[1] === 256
+      && command.args[3] === 256
+      && command.args[4] === 128
+  ));
+
+  assert.equal(routeBeacons.length >= 3, true, 'post-intro battlefield should immediately advertise the incoming route');
+});
+
 test('active early combat keeps generated pressure marks on the lane before enemy sprites', () => {
   const ctx = mockContext();
   const enemyTrackTrails = image(1024, 128);
@@ -1234,6 +1276,40 @@ test('signal core gate anchors the protected end of the track before enemies arr
   assert.equal(coreCenterY >= 340 && coreCenterY <= 370, true, `signal core gate should anchor the visible lower generated track end: ${coreCenterY}`);
   assert.equal(coreBottom <= 392, true, `signal core gate should not be buried under the player board tray: ${coreBottom}`);
   assert.equal(coreIndex < enemyIndex, true, 'signal core gate should sit behind enemies so the threat reads clearly');
+});
+
+test('signal core gate gets an opening emphasis before the player acts', () => {
+  const ctx = mockContext();
+  const signalCoreGates = image(512, 192);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 1.1,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      signalCoreGates,
+      firstSummonBeacon: image(512, 512),
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const coreDraw = ctx.commands.find((command) => command.type === 'drawImage' && command.args[0] === signalCoreGates);
+  assert.ok(coreDraw, 'opening field should show the protected signal core');
+  assert.equal(coreDraw.args[7] >= 128, true, `opening signal core should be large enough to read: ${JSON.stringify(coreDraw.args)}`);
+  assert.equal(coreDraw.args[8] >= 90, true, `opening signal core should be tall enough to read: ${JSON.stringify(coreDraw.args)}`);
+  assert.equal(coreDraw.args[6] + coreDraw.args[8] <= 392, true, `opening signal core should not sink under the player board: ${JSON.stringify(coreDraw.args)}`);
+  assert.equal(alphaBeforeCommand(ctx.commands, coreDraw) >= 0.72, true, 'opening signal core should be bright enough to register');
 });
 
 test('signal core gate switches to critical art when an enemy reaches the endpoint', () => {

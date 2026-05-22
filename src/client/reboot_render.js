@@ -2,8 +2,10 @@ import { REBOOT_RULES, REBOOT_UNITS, REBOOT_WAVES } from '../shared/reboot_conte
 
 const OPERATION_START_CUTIN_END = 0.6;
 const OPERATION_START_CUTIN_FADE = 0.16;
+const OPENING_ROUTE_BEACON_START = 0.86;
 const OPENING_THREAT_PREVIEW_END = 3.6;
 const EARLY_LULL_THREAT_PREVIEW_END = 17.4;
+const OPENING_SIGNAL_CORE_EMPHASIS_END = 5.4;
 const FIRST_SUMMON_BEACON_END = 16;
 const WAVE_DIRECTIVE_DURATION = 2.1;
 const WAVE_DIRECTIVE_FADE_SECONDS = 0.48;
@@ -747,7 +749,7 @@ function drawOpeningRouteBeacons(ctx, state, assets = {}, options = {}, imageBac
   const now = Number(state.now) || 0;
   if (options.onlineWaiting || options.matchmakingBannerVisible) return false;
   const firstActionTaken = hasFirstPlayerAction(state);
-  const openingCue = !firstActionTaken && now >= 1.2 && now <= 10.8;
+  const openingCue = !firstActionTaken && now >= OPENING_ROUTE_BEACON_START && now <= 10.8;
   const cooldownLullCue = shouldDrawCooldownLullPressure(state, options);
   if (!openingCue && !cooldownLullCue) return false;
   const image = assets?.enemyTrackTrails;
@@ -828,14 +830,18 @@ function isSignalCoreCritical(state = {}) {
 function drawSignalCoreGate(ctx, image, state = {}, imageBackdrop = true) {
   if (!image?.complete || image.naturalWidth <= 0) return false;
   const critical = isSignalCoreCritical(state);
+  const openingEmphasis = !critical
+    && !hasFirstPlayerAction(state)
+    && (Number(state.now) || 0) >= OPERATION_START_CUTIN_END
+    && (Number(state.now) || 0) <= OPENING_SIGNAL_CORE_EMPHASIS_END;
   const index = critical ? 1 : 0;
   const cellWidth = image.naturalWidth / 2;
   const pulse = Math.max(0, Math.sin((Number(state.now) || 0) * (critical ? 7.2 : 3.2))) * 0.08;
-  const width = critical ? 146 : 116;
-  const height = critical ? 106 : 84;
-  const alpha = Math.min(0.94, (critical ? 0.84 : 0.62) + pulse);
+  const width = critical ? 146 : openingEmphasis ? 132 : 116;
+  const height = critical ? 106 : openingEmphasis ? 94 : 84;
+  const alpha = Math.min(0.94, (critical ? 0.84 : openingEmphasis ? 0.74 : 0.62) + pulse);
   const core = trackPointFromProgress(0.98, 0, imageBackdrop);
-  const drawY = imageBackdrop && critical ? core.y - 8 : core.y;
+  const drawY = imageBackdrop && critical ? core.y - 8 : imageBackdrop && openingEmphasis ? core.y - 4 : core.y;
   ctx.save();
   ctx.globalAlpha *= alpha;
   ctx.drawImage(image, index * cellWidth, 0, cellWidth, image.naturalHeight, core.x - width / 2, drawY - height / 2, width, height);
