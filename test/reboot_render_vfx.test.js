@@ -2545,6 +2545,82 @@ test('pre-summon board cue links the first command to the player socket', () => 
   assert.ok(cueDraw, 'expected generated pre-summon cue to glow over the first player socket');
 });
 
+test('opening tactical overlay previews secondary placement sockets before first summon', () => {
+  const ctx = mockContext();
+  const unitActivationRing = image(512, 512);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 1.2,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [],
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      unitActivationRing,
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const ghostPlacementRings = ctx.commands.filter((command) => (
+    command.type === 'drawImage'
+      && command.args[0] === unitActivationRing
+      && command.args[5] >= 78
+      && command.args[5] <= 172
+      && command.args[6] >= 448
+      && command.args[6] <= 470
+      && command.args[7] >= 82
+      && command.args[7] <= 98
+      && command.args[8] >= 56
+      && command.args[8] <= 72
+  ));
+
+  assert.equal(ghostPlacementRings.length >= 2, true, 'expected generated ghost rings on secondary first-summon sockets');
+  for (const ring of ghostPlacementRings) {
+    assert.equal(alphaBeforeCommand(ctx.commands, ring) >= 0.42, true, 'ghost placement rings should be readable on the generated player tray');
+  }
+});
+
+test('opening tactical overlay clears after the first local combat action', () => {
+  const ctx = mockContext();
+  const unitActivationRing = image(512, 512);
+
+  drawRebootBattle(
+    ctx,
+    {
+      now: 1.2,
+      boards: {
+        p1: { danger: 0, units: [] },
+        p2: { danger: 0, units: [] }
+      },
+      enemies: [],
+      events: [{ type: 'summon', playerId: 'p1', at: 1.1 }],
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
+    },
+    { width: 390, height: 620 },
+    {
+      backdrop: image(390, 620),
+      unitActivationRing,
+      playerBoardTray: image(780, 320)
+    }
+  );
+
+  const ghostPlacementRings = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === unitActivationRing
+  ));
+
+  assert.deepEqual(ghostPlacementRings, []);
+});
+
 test('pre-summon board cue stays hidden while waiting for an online partner', () => {
   const ctx = mockContext();
   const firstCommandSpotlight = image(256, 128);
@@ -3831,23 +3907,26 @@ test('operation start cutin clears before the first second even without player a
 test('online waiting hides opening combat cutins and threat previews so matchmaking stays quiet', () => {
   const ctx = mockContext();
   const enemies = image(1024, 256);
+  const unitActivationRing = image(512, 512);
   drawRebootBattle(
     ctx,
     {
-      now: 0.82,
+      now: 1.2,
       boards: {
         p1: { danger: 0, units: [] },
         p2: { danger: 0, units: [] }
       },
       enemies: [],
       events: [],
-      effects: []
+      effects: [],
+      actionState: { p1: { summon: true, merge: false, rescue: false } }
     },
     { width: 390, height: 620 },
     {
       backdrop: image(390, 620),
       board: image(1280, 256),
       startCutin: image(390, 112),
+      unitActivationRing,
       enemies,
       enemySpawnGates: image(768, 192),
       enemyTrackTrails: image(1024, 128),
@@ -3867,20 +3946,25 @@ test('online waiting hides opening combat cutins and threat previews so matchmak
       && command.args[0].naturalWidth === 512
       && command.args[0].naturalHeight === 256
   ));
+  const ghostPlacementRings = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === unitActivationRing
+  ));
 
   assert.deepEqual(startCutinDraws, []);
   assert.deepEqual(enemyDraws, []);
   assert.deepEqual(threatPreviewDraws, []);
+  assert.deepEqual(ghostPlacementRings, []);
 });
 
 test('matchmaking event banner hides playable first-summon guidance so ready copy stays readable', () => {
   const ctx = mockContext();
   const firstCommandSpotlight = image(256, 128);
   const firstSummonBeacon = image(512, 512);
+  const unitActivationRing = image(512, 512);
   drawRebootBattle(
     ctx,
     {
-      now: 0.35,
+      now: 1.2,
       boards: {
         p1: { danger: 0, units: [] },
         p2: { danger: 0, units: [] }
@@ -3896,6 +3980,7 @@ test('matchmaking event banner hides playable first-summon guidance so ready cop
       board: image(1280, 256),
       firstCommandSpotlight,
       firstSummonBeacon,
+      unitActivationRing,
       openingThreatPreview: image(512, 256),
       startCutin: image(390, 112)
     },
@@ -3918,11 +4003,15 @@ test('matchmaking event banner hides playable first-summon guidance so ready cop
   const firstBeaconDraws = ctx.commands.filter((command) => (
     command.type === 'drawImage' && command.args[0] === firstSummonBeacon
   ));
+  const ghostPlacementRings = ctx.commands.filter((command) => (
+    command.type === 'drawImage' && command.args[0] === unitActivationRing
+  ));
 
   assert.deepEqual(startCutinDraws, []);
   assert.deepEqual(threatPreviewDraws, []);
   assert.deepEqual(firstCommandDraws, []);
   assert.deepEqual(firstBeaconDraws, []);
+  assert.deepEqual(ghostPlacementRings, []);
 });
 
 test('equipped cosmetics render as a visual-only player board signature', () => {

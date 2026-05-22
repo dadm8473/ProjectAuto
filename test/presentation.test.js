@@ -118,7 +118,7 @@ test('client app is split into reboot modules and keeps app.js as bootstrap', as
     "from './reboot_action_ui.js?v=hud-meter1'",
     "from './reboot_audio.js?v=audio-safe1'",
     "from './reboot_hud.js?v=board-copy1'",
-    "from './reboot_render.js?v=partner-ready-compact1'",
+    "from './reboot_render.js?v=opening-placement1'",
     "from './reboot_result_ui.js?v=result-hook1'",
     "from './reboot_screens.js?v=lobby-defer1'",
     "from './reboot_online.js'"
@@ -642,7 +642,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   const css = await readFile('src/client/styles.css', 'utf8');
 
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=season-current1">'), false);
-  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-defer1">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=meta-footer-shroud2">'), true);
+  assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=lobby-defer1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=shelf-select1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=objective-stamps1">'), false);
   assert.equal(html.includes('<link rel="stylesheet" href="/src/client/styles.css?v=reward-flow1">'), false);
@@ -764,7 +765,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=merge-reason1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=cooldown-sweep1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=season-current1"></script>'), false);
-  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready-compact1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=opening-placement1"></script>'), true);
+  assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=partner-ready-compact1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=defense-pressure1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=shelf-select1"></script>'), false);
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=objective-stamps1"></script>'), false);
@@ -850,7 +852,8 @@ test('app shell cache-busts the game stylesheet for visual asset updates', async
   assert.equal(html.includes('<script type="module" src="/src/client/app.js?v=board-labels1"></script>'), false);
   assert.equal(app.includes("from '../shared/reboot_content.js?v=unit-roster1'"), true);
   assert.equal(app.includes("from '../shared/reboot_content.js';"), false);
-  assert.equal(app.includes("from './reboot_render.js?v=partner-ready-compact1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=opening-placement1'"), true);
+  assert.equal(app.includes("from './reboot_render.js?v=partner-ready-compact1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=first-payoff1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=partner-ready1'"), false);
   assert.equal(app.includes("from './reboot_render.js?v=battle-backdrop-v2'"), false);
@@ -1168,8 +1171,8 @@ test('meta screen lists fill the lower app area instead of stopping like a spars
     'grid-auto-rows: minmax(clamp(98px, 27vw, 112px), auto);',
     '-webkit-mask-image: linear-gradient(',
     'mask-image: linear-gradient(',
-    'calc(100% - 52px)',
-    'padding-bottom: calc(var(--lobby-bottom-dock-rendered-height) + 28px);',
+    'calc(100% - 128px)',
+    'padding-bottom: calc(var(--lobby-bottom-dock-rendered-height) + 58px);',
     'transparent 100%'
   ]) {
     assert.equal(listBlock.includes(marker), true, marker);
@@ -1191,9 +1194,10 @@ test('meta screen list mask fades short-phone card clipping into the generated f
   const listBlock = css.slice(css.indexOf('.screen-list {'), css.indexOf('.screen-list::-webkit-scrollbar'));
 
   for (const marker of [
-    'padding-bottom: calc(var(--lobby-bottom-dock-rendered-height) + 28px);',
-    '#000 calc(100% - 52px)',
-    'rgba(0, 0, 0, 0.72) calc(100% - 22px)',
+    'padding-bottom: calc(var(--lobby-bottom-dock-rendered-height) + 58px);',
+    '#000 calc(100% - 128px)',
+    'rgba(0, 0, 0, 0.58) calc(100% - 82px)',
+    'rgba(0, 0, 0, 0.2) calc(100% - 42px)',
     'transparent 100%'
   ]) {
     assert.equal(listBlock.includes(marker), true, marker);
@@ -1236,11 +1240,12 @@ test('meta screens use generated footer shroud instead of exposing lower console
 
   assert.equal(css.includes('--meta-footer-shroud: url("/src/client/assets/generated/reboot-meta-footer-shroud.png?v=meta-footer-shroud")'), true);
   for (const marker of [
-    'z-index: 24;',
-    'height: clamp(86px, 14dvh, 116px);',
+    'z-index: 26;',
+    'height: clamp(132px, 19dvh, 164px);',
     'background-image: var(--meta-footer-shroud);',
     'background-position: center bottom;',
     'background-size: 100% 100%;',
+    'filter: saturate(1.08) brightness(0.9);',
     'pointer-events: none;'
   ]) {
     assert.equal(block.includes(marker), true, marker);
@@ -1539,7 +1544,8 @@ test('first battle command stage is one imagegen summon pod, not three equal web
   }
 
   assert.equal(html.includes('/src/client/styles.css?v=season-current1'), false);
-  assert.equal(html.includes('/src/client/styles.css?v=lobby-defer1'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=meta-footer-shroud2'), true);
+  assert.equal(html.includes('/src/client/styles.css?v=lobby-defer1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=objective-stamps1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=reward-flow1'), false);
   assert.equal(html.includes('/src/client/styles.css?v=combat-meter-sockets-v2'), false);
@@ -2004,7 +2010,7 @@ test('meta showcase copy sits on generated nameplates instead of floating over a
     '.meta-showcase[data-showcase-kind="shop"] .meta-showcase-copy::before { background-position: 100% 0; }',
     '.meta-showcase-copy > *,\n.meta-showcase-stats > *',
     'z-index: 1;',
-    '<link rel="stylesheet" href="/src/client/styles.css?v=lobby-defer1">'
+    '<link rel="stylesheet" href="/src/client/styles.css?v=meta-footer-shroud2">'
   ]) {
     assert.equal(`${css}\n${html}`.includes(marker), true, marker);
   }

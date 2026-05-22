@@ -1747,6 +1747,28 @@ function drawPreSummonSocketCue(ctx, state, assets = {}, localBoardId = 'p1') {
   return drawImageCover(ctx, image, x, y, w, h, 0.42 + pulse);
 }
 
+function drawOpeningPlacementGhosts(ctx, state, assets = {}, localBoardId = 'p1') {
+  const selfId = normalizeBoardId(localBoardId);
+  const board = state.boards?.[selfId];
+  const image = assets?.unitActivationRing;
+  const now = Number(state.now) || 0;
+  if (!board || !image?.complete || image.naturalWidth <= 0) return false;
+  if ((board.units?.length ?? 0) > 0) return false;
+  if (state.actionState?.[selfId]?.summon !== true) return false;
+  if (firstPlayerActionTaken(state, selfId)) return false;
+  if (now < OPERATION_START_CUTIN_END || now > 5.2) return false;
+
+  const pulse = Math.max(0, Math.sin(now * 4.8));
+  const baseAlpha = Math.min(0.62, 0.48 + pulse * 0.14);
+  [1, 2].forEach((slot, index) => {
+    const point = boardSlotPoint(selfId, slot, selfId);
+    const w = index === 0 ? 92 : 86;
+    const h = index === 0 ? 64 : 60;
+    drawImageCover(ctx, image, point.x - w / 2, point.y - h / 2 - 4, w, h, baseAlpha * (index === 0 ? 1 : 0.92));
+  });
+  return true;
+}
+
 function drawFirstSummonLandingBeacon(ctx, state, assets = {}, localBoardId = 'p1') {
   const selfId = normalizeBoardId(localBoardId);
   const board = state.boards?.[selfId];
@@ -2037,6 +2059,7 @@ export function drawRebootBattle(ctx, state, layout = { width: 390, height: 620 
     drawPlayerBoardBridge(ctx, assets, layout);
     drawBoard(ctx, state.boards[localBoardId], 24, 392, 342, 138, '내 보드', false, assets, imageBackdrop);
     if (options.onlineWaiting) drawOnlineWaitingField(ctx, state, assets, options);
+    if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawOpeningPlacementGhosts(ctx, state, assets, localBoardId);
     if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawPreSummonSocketCue(ctx, state, assets, localBoardId);
     if (!options.onlineWaiting && !options.matchmakingBannerVisible) drawFirstSummonLandingBeacon(ctx, state, assets, localBoardId);
     drawFirstSummonIgnition(ctx, state, assets, localBoardId);

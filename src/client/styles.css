@@ -417,15 +417,16 @@ body[data-app-screen="season"] .shell::after {
   position: absolute;
   left: 50%;
   bottom: 0;
-  z-index: 24;
+  z-index: 26;
   width: 100%;
-  height: clamp(86px, 14dvh, 116px);
+  height: clamp(132px, 19dvh, 164px);
   transform: translateX(-50%);
   background-color: #010405;
   background-image: var(--meta-footer-shroud);
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: 100% 100%;
+  filter: saturate(1.08) brightness(0.9);
   pointer-events: none;
 }
 
@@ -3148,11 +3149,11 @@ body[data-app-screen="season"] .app-screen::after {
   max-height: none;
   overflow-x: hidden;
   overflow-y: auto;
-  padding-bottom: calc(var(--lobby-bottom-dock-rendered-height) + 28px);
+  padding-bottom: calc(var(--lobby-bottom-dock-rendered-height) + 58px);
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 52px), rgba(0, 0, 0, 0.72) calc(100% - 22px), transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 52px), rgba(0, 0, 0, 0.72) calc(100% - 22px), transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 128px), rgba(0, 0, 0, 0.58) calc(100% - 82px), rgba(0, 0, 0, 0.2) calc(100% - 42px), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 128px), rgba(0, 0, 0, 0.58) calc(100% - 82px), rgba(0, 0, 0, 0.2) calc(100% - 42px), transparent 100%);
 }
 
 .screen-list::-webkit-scrollbar {
